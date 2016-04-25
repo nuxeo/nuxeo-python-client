@@ -15,11 +15,11 @@ class NuxeoTest(TestCase):
 
     def test_headers(self):
         self._nuxeo.header('Add1', 'Value1')
-        headers = self._.headers()
+        headers = self._nuxeo.headers()
         self.assertEquals(headers['Add1'], 'Value1')
         extras = dict()
         extras['Add2'] = 'Value2'
         extras['Add1'] = 'Value3'
-        headers = self._.headers(extras)
+        headers = self._nuxeo.headers(extras)
         self.assertEquals(headers['Add2'], 'Value2')
         self.assertEquals(headers['Add1'], 'Value3')
