@@ -15,6 +15,10 @@ class UsersTest(NuxeoTest):
         except Exception:
             pass
 
+    def _create_georges(self):
+        opts = {'lastName': 'Abitbol', 'firstName': 'Georges', 'username': 'georges', 'company': 'Pom Pom Gali resort', 'password': 'Test'}
+        return self._nuxeo.users().create(opts)
+
     def test_fetch(self):
         user = self._nuxeo.users().fetch('Administrator')
         self.assertIsNotNone(user)
@@ -39,12 +43,27 @@ class UsersTest(NuxeoTest):
     def test_update_user(self):
         import time
         company = str(int(round(time.time() * 1000)))
-        opts = {'lastName': 'Abitbol', 'firstName': 'Georges', 'username': 'georges', 'company': 'Pom Pom Gali resort', 'password': 'Test'}
-        user = self._nuxeo.users().create(opts)
+        user = self._create_georges()
         user.properties['company'] = company
         user.save()
         user = self._nuxeo.users().fetch('georges')
         self.assertEqual(user.company, company)
         nuxeo = Nuxeo("http://localhost:8080/nuxeo", auth={'username': 'georges', 'password': 'Test'})
+        georges = nuxeo.login()
+        self.assertIsNotNone(georges)
+
+    def test_update_user_autoset_change_password(self):
+        user = self._create_georges()
+        user.password = 'Test2'
+        user.save()
+        user = self._nuxeo.users().fetch('georges')
+        nuxeo = Nuxeo("http://localhost:8080/nuxeo", auth={'username': 'georges', 'password': 'Test2'})
+        georges = nuxeo.login()
+        self.assertIsNotNone(georges)
+
+    def test_update_user_autoset_change_password(self):
+        user = self._create_georges()
+        user.change_password('Test3')
+        nuxeo = Nuxeo("http://localhost:8080/nuxeo", auth={'username': 'georges', 'password': 'Test3'})
         georges = nuxeo.login()
         self.assertIsNotNone(georges)

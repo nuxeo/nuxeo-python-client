@@ -273,6 +273,10 @@ class Nuxeo(object):
         from users import Users
         return Users(self)
 
+    def groups(self):
+        from groups import Groups
+        return Groups(self)
+
     def login(self):
         """Try to login and return the user.
 
