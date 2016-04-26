@@ -922,12 +922,16 @@ class Nuxeo(object):
     def get_download_buffer(self):
         return FILE_BUFFER_SIZE
 
-    def request(self, relative_url, adapter=None, timeout=-1, method='GET'):
+    def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET'):
         """Execute a REST API call"""
 
         url = self._rest_url + relative_url
         if adapter is not None:
             url += '/@' + adapter
+
+        if body is not None and not isinstance(body, str):
+            body = json.dumps(body)
+            print body
 
         headers = {
             "Content-Type": "application/json+nxrequest",
@@ -938,7 +942,7 @@ class Nuxeo(object):
         cookies = self._get_cookies()
         self.trace("Calling REST API %s with headers %r and cookies %r", url,
                   headers, cookies)
-        req = Request(url, headers=headers, method=method)
+        req = Request(url, headers=headers, method=method, data=body)
         timeout = self.timeout if timeout == -1 else timeout
         try:
             resp = self.opener.open(req, timeout=timeout)
