@@ -277,6 +277,10 @@ class Nuxeo(object):
         from groups import Groups
         return Groups(self)
 
+    def operation(self, name):
+        from operation import Operation
+        return Operation(name, self)
+
     def login(self):
         """Try to login and return the user.
 
@@ -397,6 +401,8 @@ class Nuxeo(object):
                 check_params=True, void_op=False, extra_headers=None,
                 file_out=None, **params):
         """Execute an Automation operation"""
+        if 'params' in params:
+            params = params['params']
         if check_params:
             self._check_params(command, params)
 
