@@ -935,7 +935,6 @@ class Nuxeo(object):
 
         if body is not None and not isinstance(body, str):
             body = json.dumps(body)
-            print body
 
         headers = {
             "Content-Type": "application/json+nxrequest",

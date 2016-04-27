@@ -22,6 +22,9 @@ class NuxeoObject(object):
     def is_lazy(self):
         return self._lazy
 
+    def get_id(self):
+        return self.id
+
     def load(self):
         self._lazy = False
         self._duplicate(self._service.get(self.id))
@@ -33,7 +36,7 @@ class NuxeoObject(object):
         self._service.update(self)
 
     def delete(self):
-        self._service.delete(self.id)
+        self._service.delete(self.get_id())
 
 
 class NuxeoAutosetObject(NuxeoObject):
@@ -92,7 +95,7 @@ class NuxeoService(object):
         self._nuxeo.request(self._path + '/' + id, method='DELETE')
 
     def update(self, obj):
-        self._nuxeo.request(self._path + '/' + obj.id, body={'entity-type': 'user', 'properties': obj.properties, 'id': obj.id}, method='PUT')
+        self._nuxeo.request(self._path + '/' + obj.get_id(), body={'entity-type': self._object_class.entity_type, 'properties': obj.properties, 'id': obj.get_id()}, method='PUT')
 
     def create(self, obj):
         if isinstance(obj, self._object_class):
@@ -100,5 +103,5 @@ class NuxeoService(object):
         elif isinstance(obj, dict):
             properties = obj
         else:
-            raise Exception("Need a dictionary of properties or a User object")
-        return self._object_class(self._nuxeo.request('user', method='POST', body={'entity-type': self._object_class.entity_type, 'properties': properties}), self)
+            raise Exception("Need a dictionary of properties or a " + self._object_class + " object")
+        return self._object_class(self._nuxeo.request(self._path, method='POST', body={'entity-type': self._object_class.entity_type, 'properties': properties}), self)
