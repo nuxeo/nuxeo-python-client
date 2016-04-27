@@ -7,13 +7,6 @@ from urllib2 import HTTPError
 
 class OperationTest(NuxeoTest):
 
-    def tearDown(self):
-        try:
-            group = self._nuxeo.groups().fetch('plops')
-            group.delete()
-        except Exception:
-            pass
-
     def test_params_setter(self):
         operation = self._nuxeo.operation('Noop')
         operation.params({'param1': 'foo', 'param2': 'bar'})
@@ -55,3 +48,12 @@ class OperationTest(NuxeoTest):
         with self.assertRaises(HTTPError) as ex:
             operation.execute()
         self.assertEqual(ex.exception.code, 404)
+
+    def test_document_list_update(self):
+        # TODO Waiting for the repository object
+        operation = self._nuxeo.operation('Document.Update')
+        operation.params({'name': 'workspaces'})
+        operation.input('/default-domain')
+        res = operation.execute()
+        self.assertEquals(res['entity-type'], 'document')
+        self.assertEquals(res['properties']['dc:title'], 'Workspaces')
