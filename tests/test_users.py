@@ -3,6 +3,7 @@ __author__ = 'loopingz'
 
 from test_nuxeo import NuxeoTest
 from nuxeo.nuxeo import Nuxeo
+from nuxeo.users import User
 from urllib2 import HTTPError
 
 
@@ -67,3 +68,14 @@ class UsersTest(NuxeoTest):
         nuxeo = Nuxeo("http://localhost:8080/nuxeo", auth={'username': 'georges', 'password': 'Test3'})
         georges = nuxeo.login()
         self.assertIsNotNone(georges)
+
+    def test_lazy_loading(self):
+        self._create_georges()
+        user = User(service=self._nuxeo.users(), id='georges')
+        # TODO Remove when lazy loading is working
+        with self.assertRaises(Exception) as ex:
+            self.assertEqual(user.firstName, 'Georges')
+        user.load()
+        self.assertEqual(user.firstName, 'Georges')
+        self.assertEqual(user.lastName, 'Abitbol')
+        self.assertEqual(user.company, 'Pom Pom Gali resort')

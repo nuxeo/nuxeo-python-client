@@ -5,12 +5,12 @@ class NuxeoObject(object):
 
     def __init__(self, obj=None, service=None, id=None):
         self._dirty = True
-        self._autoset = False
+        self._lazy = False
         self._service = service
         if obj is None:
-            self._lazy = True
             self.id = id
             self.properties = dict()
+            self._lazy = True
         elif isinstance(obj, dict):
             self._lazy = False
             if 'id' in obj:
@@ -22,11 +22,12 @@ class NuxeoObject(object):
     def is_lazy(self):
         return self._lazy
 
-    def _get(self):
+    def load(self):
+        self._lazy = False
         self._duplicate(self._service.get(self.id))
 
     def _duplicate(self, obj):
-        self.properties = obj.properties
+        self.properties = obj['properties']
 
     def save(self):
         self._service.update(self)
@@ -34,9 +35,13 @@ class NuxeoObject(object):
     def delete(self):
         self._service.delete(self.id)
 
-    def change_password(self, password):
-        self.properties['password'] = password
-        self._service.update(self)
+
+class NuxeoAutosetObject(NuxeoObject):
+
+    def __init__(self, obj=None, service=None, id=None):
+        self._autoset = False
+        super(NuxeoAutosetObject, self).__init__(obj=obj, service=service, id=id)
+
 
     def __setattr__(self, name, value):
         if name.startswith('_'):
@@ -52,10 +57,20 @@ class NuxeoObject(object):
     def __getattr__(self, item):
         if hasattr(self, item):
             return super(NuxeoObject, self).__getattribute__(item)
-        if item in self.properties:
+        if self._lazy:
+            raise Exception('Lazy loading is not yet implemented - use load()')
+            try:
+                self._lazy = False
+                self.load()
+                if hasattr(self, item):
+                    return super(NuxeoObject, self).__getattribute__(item)
+            except Exception as e:
+                raise e
+        if item.startswith('_'):
+            return super(NuxeoObject, self).__getattribute__(item)
+        if self._autoset and item in self.properties:
             return self.properties[item]
         raise AttributeError
-
 
 
 class NuxeoService(object):
@@ -67,8 +82,11 @@ class NuxeoService(object):
         self._path = path
         self._object_class = object_class
 
+    def get(self, id):
+        return self._nuxeo.request(self._path + '/' + id)
+
     def fetch(self, id):
-        return self._object_class(self._nuxeo.request(self._path + '/' + id), self)
+        return self._object_class(obj=self.get(id), service=self)
 
     def delete(self, id):
         self._nuxeo.request(self._path + '/' + id, method='DELETE')
