@@ -208,7 +208,7 @@ class Nuxeo(object):
     # TODO: handle system proxy detection under Linux,
     # see https://jira.nuxeo.com/browse/NXP-12068
 
-    def __init__(self, base_url, auth=None, proxies=None, proxy_exceptions=None, repository="default",
+    def __init__(self, base_url="http://localhost:8080/nuxeo", auth=None, proxies=None, proxy_exceptions=None, repository="default",
                  timeout=20, blob_timeout=60, cookie_jar=None,
                  upload_tmp_dir=None, check_suspended=None, api_path="api/v1/"):
         self._headers = {}
