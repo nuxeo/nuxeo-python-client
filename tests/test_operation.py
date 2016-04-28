@@ -7,6 +7,16 @@ from urllib2 import HTTPError
 
 class OperationTest(NuxeoTest):
 
+    def setUp(self):
+        super(OperationTest, self).setUp()
+        try:
+            doc = self._nuxeo.repository().fetch('/default-domain/workspaces')
+            docs = self._nuxeo.repository().query({'pageProvider': 'CURRENT_DOC_CHILDREN', 'queryParams': [doc.uid]})
+            for doc in docs['entries']:
+                doc.delete()
+        except Exception:
+            pass
+
     def test_params_setter(self):
         operation = self._nuxeo.operation('Noop')
         operation.params({'param1': 'foo', 'param2': 'bar'})
@@ -51,9 +61,36 @@ class OperationTest(NuxeoTest):
 
     def test_document_list_update(self):
         # TODO Waiting for the repository object
+        WS_ROOT_PATH = '/default-domain/workspaces';
+        WS_JS_TEST_1_NAME = 'ws-js-tests1';
+        WS_JS_TEST_2_NAME = 'ws-js-tests2';
+        WS_JS_TESTS_1_PATH = WS_ROOT_PATH + '/' + WS_JS_TEST_1_NAME;
+        WS_JS_TESTS_2_PATH = WS_ROOT_PATH + '/' + WS_JS_TEST_2_NAME;
+        newDoc1 = {
+          'name': WS_JS_TEST_1_NAME,
+          'type': 'Workspace',
+          'properties': {
+            'dc:title': WS_JS_TEST_1_NAME,
+          },
+        }
+        newDoc2 = {
+          'name': WS_JS_TEST_2_NAME,
+          'type': 'Workspace',
+          'properties': {
+            'dc:title': WS_JS_TEST_2_NAME,
+          },
+        }
+        doc1 = self._nuxeo.repository().create(WS_ROOT_PATH, newDoc1)
+        doc2 = self._nuxeo.repository().create(WS_ROOT_PATH, newDoc2)
         operation = self._nuxeo.operation('Document.Update')
-        operation.params({'name': 'workspaces'})
-        operation.input('/default-domain')
+        operation.params({'properties': {'dc:description':'sample description'}})
+        operation.input([doc1.path, doc2.path])
         res = operation.execute()
-        self.assertEquals(res['entity-type'], 'document')
-        self.assertEquals(res['properties']['dc:title'], 'Workspaces')
+        self.assertEquals(res['entity-type'], 'documents')
+        self.assertEquals(len(res['entries']), 2)
+        self.assertEquals(res['entries'][0]['path'], doc1.path)
+        self.assertEquals(res['entries'][0]['properties']['dc:description'], 'sample description')
+        self.assertEquals(res['entries'][1]['path'], doc2.path)
+        self.assertEquals(res['entries'][1]['properties']['dc:description'], 'sample description')
+        doc1.delete()
+        doc2.delete()

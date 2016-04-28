@@ -27,6 +27,251 @@ Check out the [API documentation](https://nuxeo.github.io/nuxeo-js-client/latest
 
 The Nuxeo Python client works only with Nuxeo Platform >= LTS 2015.
 
+## Quick Start
+
+This quick start guide will show how to do basics operations using the client.
+
+### Creating a Client
+
+```python
+nuxeo = new Nuxeo(
+  auth={
+    username: 'Administrator',
+    password: 'Administrator'
+  })
+```
+
+To connect to a different Nuxeo Platform Instance, you can use the following:
+
+```python
+nuxeo = new Nuxeo(
+  base_url='http://demo.nuxeo.com/nuxeo/',
+  auth={
+    username: 'Administrator',
+    password: 'Administrator'
+  })
+```
+
+### Operation
+
+`Operation` object allows you to execute an operation
+(or operation chain).
+
+See the [Operation](https://nuxeo.github.io/nuxeo-js-client/latest/Operation.html) documentation.
+
+#### Samples
+
+__Call an operation to create a new folder in the Root document__
+
+```python
+operation = nuxeo.operation('Document.Create')
+operation.params({
+    type: 'Folder',
+    name: 'My Folder',
+    properties: 'dc:title=My Folder \ndc:description=A Simple Folder'
+  })
+operation.input('/')
+doc = operation.execute()
+```
+
+### Request
+
+The `Request` object allows you to call the Nuxeo REST API.
+
+See the [Request](https://nuxeo.github.io/nuxeo-js-client/latest/Request.html) documentation.
+
+#### Samples
+
+__Fetch the Administrator user__
+
+```python
+user = nuxeo.request('user/Administrator')
+```
+
+__Fetch the whole list of Natures__
+
+```python
+natures = nuxeo.request('directory/nature')
+```
+
+### Repository
+
+The `Repository` object allows you to work with document.
+
+See the [Repository](https://nuxeo.github.io/nuxeo-js-client/latest/Repository.html) documentation.
+
+#### Samples
+
+__Create a `Repository` object__
+
+```python
+defaultRepository = nuxeo.repository(); // 'default' repository
+...
+testRepository = nuxeo.repository('test'); // 'test' repository
+...
+```
+
+__Fetch the Root document__
+
+```python
+nuxeo.repository().fetch('/')
+```
+
+__Create a new folder__
+
+```python
+newFolder = {
+  'entity-type': 'document',
+  name: 'a-folder',
+  type: 'Folder',
+  properties: {
+    'dc:title': 'foo',
+  }
+}
+folder = nuxeo.repository().create('/', newFolder)
+```
+
+__Delete a document__
+
+```javascript
+nuxeo.repository().delete('/a-folder')
+```
+
+### Document
+
+`Repository` object returns and works with `Document` objects. `Document` objects exposes a simpler API
+to work with a document.
+
+See the [Document](https://nuxeo.github.io/nuxeo-js-client/latest/Document.html) documentation.
+
+#### Samples
+
+__Retrieve a `Document` object__
+
+```python
+doc = nuxeo.repository().fetch('/')
+```
+
+__Set a document property__
+
+```python
+doc.set({ 'dc:title': 'foo' })
+```
+
+__Get a document property__
+
+```python
+doc.get('dc:title')
+```
+
+__Save an updated document__
+
+```python
+doc = nuxeo.repository().fetch('/')
+doc.set({ 'dc:title': 'foo' })
+doc.save()
+```
+
+### Users
+
+The `Users` object allows you to work with users.
+
+See the [Users](https://nuxeo.github.io/nuxeo-js-client/latest/Users.html) and
+[User](https://nuxeo.github.io/nuxeo-js-client/latest/User.html) documentation.
+
+#### Samples
+
+__Fetch an user__
+
+```pyton
+nuxeo.users().fetch('Administrator')
+```
+
+__Create a new user__
+
+```python
+newUser = {
+    username: 'leela',
+    firstName: 'Leela',
+    company: 'Futurama',
+    email: 'leela@futurama.com',
+  }
+user = nuxeo.users().create(newUser)
+```
+
+__Delete an user__
+
+```python
+nuxeo.users().delete('leela')
+```
+
+### Groups
+
+The `Groups` object allows you to work with groups.
+
+See the [Groups](https://nuxeo.github.io/nuxeo-js-client/latest/Groups.html) and
+[Group](https://nuxeo.github.io/nuxeo-js-client/latest/Group.html) documentation.
+
+#### Samples
+
+__Fetch a group__
+
+```python
+nuxeo.groups().fetch('administrators')
+```
+
+__Create a new group__
+
+```python
+newGroup = {
+  groupname: 'foo',
+  grouplabel: 'Foo',
+}
+group = nuxeo.groups().create(newGroup)
+```
+
+__Delete a group__
+
+```python
+nuxeo.groups().delete('foo')
+```
+
+### Directory
+
+The `Directory` object allows you to work with directories.
+
+See the [Directory](https://nuxeo.github.io/nuxeo-js-client/latest/Directory.html) and
+[DirectoryEntry](https://nuxeo.github.io/nuxeo-js-client/latest/DirectoryEntry.html) documentation.
+
+#### Samples
+
+__Fetch all entries of a directory__
+
+```python
+entries = nuxeo.directory('nature').fetchAll()
+```
+
+__Fetch a given directory entry__
+
+```python
+entry = nuxeo.directory('nature').fetch('article')
+```
+
+__Create a new directory entry__
+
+```python
+newEntry = {
+  id: 'foo',
+  label: 'Foo',
+}
+entry = nuxeo.directory('nature').create(newEntry)
+```
+
+__Delete a directory entry__
+
+```python
+nuxeo.directory('nature').delete('foo')
+```
 
 ## Contributing
 

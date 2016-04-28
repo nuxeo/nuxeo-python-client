@@ -12,6 +12,9 @@ class DirectoryEntry(NuxeoObject):
         self._entity_type = 'directoryEntry'
         self.directoryName = obj['directoryName']
 
+    def get_id(self):
+        return self.properties['id']
+
 
 class Directory(NuxeoService):
     """

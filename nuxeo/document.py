@@ -12,7 +12,10 @@ class Document(NuxeoAutosetObject):
         self.facets = obj['facets']
         self.repository = obj['repository']
         self.title = obj['title']
-        self.lastModified = obj['lastModified']
+        if 'lastModified' in obj:
+            self.lastModified = obj['lastModified']
+        else:
+            self.lastModified = None
         self.state = obj['state']
         self.isCheckedOut = obj['isCheckedOut']
         self.parentRef = obj['parentRef']

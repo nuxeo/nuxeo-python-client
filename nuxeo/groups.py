@@ -19,8 +19,6 @@ class Group(NuxeoObject):
     def get_id(self):
         return self.groupname
 
-    def get_members(self):
-        pass
 
 class Groups(NuxeoService):
     """

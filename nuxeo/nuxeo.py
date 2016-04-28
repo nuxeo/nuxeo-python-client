@@ -290,6 +290,13 @@ class Nuxeo(object):
         from operation import Operation
         return Operation(name, self)
 
+    def directory(self, name):
+        """
+        :return: An Operation object
+        """
+        from directory import Directory
+        return Directory(name, self)
+
     def repository(self, name='default', schemas=[]):
         """
         :return: A repository object
@@ -450,7 +457,11 @@ class Nuxeo(object):
             else:
                 json_struct['params'][k] = v
         if op_input:
-            json_struct['input'] = op_input
+            if isinstance(op_input, list):
+                json_struct['input'] = "docs:" + ",".join(op_input)
+                print json_struct['input']
+            else:
+                json_struct['input'] = op_input
         data = json.dumps(json_struct)
 
         req = urllib2.Request(url, data, headers)
