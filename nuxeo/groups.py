@@ -11,10 +11,14 @@ class Group(NuxeoObject):
         self._entity_type = 'group'
         self.groupname = obj['groupname']
         self.grouplabel = obj['grouplabel']
-        for group in obj['memberGroups']:
-            pass
-        self.memberGroups = obj['memberGroups']
-        self.memberUsers = obj['memberUsers']
+        if 'memberGroups' in obj:
+            self.memberGroups = obj['memberGroups']
+        else:
+            self.memberGroups = []
+        if 'memberUsers' in obj:
+            self.memberUsers = obj['memberUsers']
+        else:
+            self.memberUsers = []
 
     def get_id(self):
         return self.groupname
@@ -26,6 +30,7 @@ class Groups(NuxeoService):
     """
     def __init__(self, nuxeo):
         super(Groups, self).__init__(nuxeo, 'group', Group)
+        self._query = "?fetch.group=memberUsers&fetch.group=memberGroups"
 
     def _get_args(self, obj):
         args = {'entity-type': self._object_class.entity_type}
@@ -41,10 +46,13 @@ class Groups(NuxeoService):
             raise Exception("Need a dictionary of properties or a " + self._object_class + " object")
         return args
 
+    def get(self, id):
+        return self._nuxeo.request(self._path + '/' + id + self._query)
+
     def update(self, obj):
         args = self._get_args(obj)
-        self._nuxeo.request(self._path + '/' + obj.get_id(), body=args, method='PUT')
+        self._nuxeo.request(self._path + '/' + obj.get_id() + self._query, body=args, method='PUT', content_type="application/json")
 
     def create(self, obj):
         args = self._get_args(obj)
-        return self._object_class(self._nuxeo.request(self._path, method='POST', body=args), self)
+        return self._object_class(self._nuxeo.request(self._path + self._query, method='POST', body=args, content_type="application/json"), self)
