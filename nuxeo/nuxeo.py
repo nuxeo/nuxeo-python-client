@@ -60,7 +60,6 @@ def guess_mime_type(filename):
         return "application/octet-stream"
 
 DEFAULT_NUXEO_TX_TIMEOUT = 60
-CHANGE_SUMMARY_OPERATION = 'NuxeoDrive.GetChangeSummary'
 # Default buffer size for file upload / download and digest computation
 FILE_BUFFER_SIZE = 1024 ** 2
 
@@ -414,12 +413,6 @@ class Nuxeo(object):
                 for op_alias in op_aliases:
                     self.operations[op_alias] = operation
 
-        # Is event log id available in change summary?
-        # See https://jira.nuxeo.com/browse/NXP-14826
-        change_summary_op = self._check_operation(CHANGE_SUMMARY_OPERATION)
-        self.is_event_log_id = 'lowerBound' in [
-                        param['name'] for param in change_summary_op['params']]
-
     def execute(self, command, url=None, op_input=None, timeout=-1,
                 check_params=True, void_op=False, extra_headers=None,
                 file_out=None, **params):
@@ -459,7 +452,6 @@ class Nuxeo(object):
         if op_input:
             if isinstance(op_input, list):
                 json_struct['input'] = "docs:" + ",".join(op_input)
-                print json_struct['input']
             else:
                 json_struct['input'] = op_input
         data = json.dumps(json_struct)
@@ -782,18 +774,8 @@ class Nuxeo(object):
     def _check_operation(self, command):
         if self.operations is None:
             self.fetch_api()
-        print self.operations
         if command not in self.operations:
-            if command.startswith('NuxeoDrive.'):
-                raise AddonNotInstalled(
-                    "Either nuxeo-drive addon is not installed on server %s or"
-                    " server version is lighter than the minimum version"
-                    " compatible with the client version %s, in which case a"
-                    " downgrade of Nuxeo Drive is needed." % (
-                        self._base_url, self.client_version))
-            else:
-                raise ValueError("'%s' is not a registered operations."
-                                 % command)
+            raise ValueError("'%s' is not a registered operations." % command)
         return self.operations[command]
 
     def _check_params(self, command, params):
