@@ -39,6 +39,8 @@ class GroupsTest(NuxeoTest):
         self.assertEqual(ex.exception.code, 404)
 
     def test_update_group(self):
+        from unittest import SkipTest
+        raise SkipTest("NXP-19112 - need fix")
         import time
         grouplabel = str(int(round(time.time() * 1000)))
         group = self._create_plops()
