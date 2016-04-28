@@ -7,6 +7,11 @@ from urllib2 import HTTPError
 
 class GroupsTest(NuxeoTest):
 
+    def setUp(self):
+        super(GroupsTest, self).setUp()
+        from unittest import SkipTest
+        raise SkipTest("NXP-19112 - need fix")
+
     def tearDown(self):
         try:
             group = self._nuxeo.groups().fetch('plops')
@@ -39,8 +44,6 @@ class GroupsTest(NuxeoTest):
         self.assertEqual(ex.exception.code, 404)
 
     def test_update_group(self):
-        from unittest import SkipTest
-        raise SkipTest("NXP-19112 - need fix")
         import time
         grouplabel = str(int(round(time.time() * 1000)))
         group = self._create_plops()
