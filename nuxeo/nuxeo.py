@@ -234,7 +234,7 @@ class Nuxeo(object):
         if not api_path.endswith('/'):
             api_path += '/'
 
-        self.repository = repository
+        self._repository = repository
         self.user_id = None
         self._auth = ['', '']
         self._update_auth(auth=auth)
@@ -270,16 +270,32 @@ class Nuxeo(object):
         self.operations = None
 
     def users(self):
+        """
+        :return: The users service
+        """
         from users import Users
         return Users(self)
 
     def groups(self):
+        """
+        :return: The groups service
+        """
         from groups import Groups
         return Groups(self)
 
     def operation(self, name):
+        """
+        :return: An Operation object
+        """
         from operation import Operation
         return Operation(name, self)
+
+    def repository(self, name='default', schemas=[]):
+        """
+        :return: A repository object
+        """
+        from repository import Repository
+        return Repository(name, self, schemas=schemas)
 
     def login(self):
         """Try to login and return the user.
@@ -417,7 +433,7 @@ class Nuxeo(object):
         }
         if void_op:
             headers.update({"X-NXVoidOperation": "true"})
-        headers.update({"X-NXRepository": self.repository})
+        headers.update({"X-NXRepository": self._repository})
         if extra_headers is not None:
             headers.update(extra_headers)
         headers.update(self._get_common_headers())
@@ -932,7 +948,7 @@ class Nuxeo(object):
     def get_download_buffer(self):
         return FILE_BUFFER_SIZE
 
-    def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET'):
+    def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET', content_type="application/json+nxrequest", extra_headers=None):
         """Execute a REST API call"""
 
         url = self._rest_url + relative_url
@@ -943,11 +959,12 @@ class Nuxeo(object):
             body = json.dumps(body)
 
         headers = {
-            "Content-Type": "application/json+nxrequest",
+            "Content-Type": content_type,
             "Accept": "application/json+nxentity, */*",
         }
         headers.update(self._get_common_headers())
-
+        if extra_headers is not None:
+            headers.update(extra_headers)
         cookies = self._get_cookies()
         self.trace("Calling REST API %s with headers %r and cookies %r", url,
                   headers, cookies)

@@ -17,6 +17,8 @@ class NuxeoObject(object):
                 self.id = obj['id']
             if 'properties' in obj:
                 self.properties = obj['properties']
+            else:
+                self.properties = dict()
         self._dirty = False
 
     def is_lazy(self):
@@ -27,7 +29,7 @@ class NuxeoObject(object):
 
     def load(self):
         self._lazy = False
-        self._duplicate(self._service.get(self.id))
+        self._duplicate(self._service.get(self.get_id()))
 
     def _duplicate(self, obj):
         self.properties = obj['properties']
