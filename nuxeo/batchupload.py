@@ -48,6 +48,12 @@ class BatchUpload(object):
         url = self._nuxeo.automation_url.encode('ascii') + self.batch_upload_url
         pass
 
+    def compatibility_mode(self):
+        return self._compatibiliy_mode
+
+    def get_batch_id(self):
+        return self._batchid
+
     def _get_path(self):
         return self._path + '/' + self._batchid
 

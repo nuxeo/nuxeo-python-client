@@ -75,6 +75,11 @@ class BatchBlob(Blob):
             self.uploadedSize = self._size
         self.fileIdx = int(obj['fileIdx'])
 
+    def compatibility_mode(self):
+        return self._service.compatibility_mode()
+
+    def get_batch_id(self):
+        return self._service.get_batch_id()
 
 class BufferBlob(Blob):
     def __init__(self, buffer, name, mimetype='application/octect-stream'):

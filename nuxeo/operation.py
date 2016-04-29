@@ -20,7 +20,12 @@ class Operation(object):
     def execute(self):
         url = None
         input = self._input
-        if isinstance(self._input, BatchBlob):
-            url = self._service._rest_url + 'upload/' + input._service._batchid + '/' + str(input.fileIdx) + '/execute/' + self._type
-            input = None
-        return self._service.execute(self._type, url=url, params=self._params, op_input=input)
+        params = self._params
+        if isinstance(input, BatchBlob):
+            if input.compatibility_mode():
+                params['batchId'] = input.get_batch_id()
+                params['fileIdx'] = input.fileIdx
+            else:
+                url = self._service._rest_url + 'upload/' + input._service._batchid + '/' + str(input.fileIdx) + '/execute/' + self._type
+                input = None
+        return self._service.execute(self._type, url=url, params=params, op_input=input)
