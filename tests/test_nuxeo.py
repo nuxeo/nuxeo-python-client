@@ -1,10 +1,10 @@
 __author__ = 'loopingz'
 
-from unittest import TestCase
+from common import NuxeoTest
 from nuxeo.nuxeo import Nuxeo
 
 
-class NuxeoTest(TestCase):
+class LoginTest(NuxeoTest):
 
     def setUp(self):
         self._nuxeo =  Nuxeo("http://localhost:8080/nuxeo", auth={'username': 'Administrator', 'password': 'Administrator'})

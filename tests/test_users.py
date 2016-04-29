@@ -1,7 +1,7 @@
 __author__ = 'loopingz'
 
 
-from test_nuxeo import NuxeoTest
+from common import NuxeoTest
 from nuxeo.nuxeo import Nuxeo
 from nuxeo.users import User
 from urllib2 import HTTPError
