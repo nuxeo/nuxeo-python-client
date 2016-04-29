@@ -51,5 +51,7 @@ class BatchUploadTest(NuxeoTest):
             operation.execute()
             doc = self._nuxeo.repository(schemas=['dublincore', 'file']).fetch('/default-domain/workspaces/Document')
             self.assertIsNotNone(doc.properties['file:content'])
-        except Exception as e:
+            self.assertEqual(doc.fetch_blob(), 'data')
+        finally:
             doc.delete()
+
