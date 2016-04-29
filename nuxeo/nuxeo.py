@@ -579,3 +579,44 @@ class Nuxeo(object):
             raise
 
         return self._read_response(resp, url)
+
+    def _log_details(self, e):
+        if hasattr(e, "fp"):
+            detail = e.fp.read()
+            try:
+                exc = json.loads(detail)
+                message = exc.get('message')
+                stack = exc.get('stack')
+                error = exc.get('error')
+                if message:
+                    self.debug('Remote exception message: %s', message)
+                if stack:
+                    self.debug('Remote exception stack: %r', exc['stack'], exc_info=True)
+                else:
+                    self.debug('Remote exception details: %r', detail)
+                return exc.get('status'), exc.get('code'), message, error
+            except:
+                # Error message should always be a JSON message,
+                # but sometimes it's not
+                if '<html>' in detail:
+                    message = e
+                else:
+                    message = detail
+                self.error(message)
+                if isinstance(e, urllib2.HTTPError):
+                    return e.code, None, message, None
+        return None
+
+    def _read_response(self, response, url):
+        info = response.info()
+        s = response.read()
+        content_type = info.get('content-type', '')
+        cookies = self._get_cookies()
+        if content_type.startswith("application/json"):
+            self.trace("Response for '%s' with cookies %r: %r",
+                url, cookies, s)
+            return json.loads(s) if s else None
+        else:
+            self.trace("Response for '%s' with cookies %r has content-type %r",
+                url, cookies, content_type)
+            return s
