@@ -51,8 +51,8 @@ class Groups(NuxeoService):
 
     def update(self, obj):
         args = self._get_args(obj)
-        self._nuxeo.request(self._path + '/' + obj.get_id() + self._query, body=args, method='PUT', content_type="application/json")
+        self._nuxeo.request(self._path + '/' + obj.get_id() + self._query, body=args, method='PUT')
 
     def create(self, obj):
         args = self._get_args(obj)
-        return self._object_class(self._nuxeo.request(self._path + self._query, method='POST', body=args, content_type="application/json"), self)
+        return self._object_class(self._nuxeo.request(self._path + self._query, method='POST', body=args), self)

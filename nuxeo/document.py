@@ -25,6 +25,9 @@ class Document(NuxeoAutosetObject):
     def get_id(self):
         return self.uid
 
+    def fetch_blob(self, xpath='blobholder:0'):
+        return self._service.fetch_blob(self.get_id(), xpath)
+
     def set(self, properties):
         for key in properties:
             self.properties[key] = properties[key]

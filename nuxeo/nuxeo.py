@@ -15,27 +15,8 @@ from urllib2 import ProxyHandler
 from urlparse import urlparse
 from poster.streaminghttp import get_handlers
 import socket
-import mimetypes
 
 AUDIT_CHANGE_FINDER_TIME_RESOLUTION = 1.0
-WIN32_PATCHED_MIME_TYPES = {
-    'image/pjpeg': 'image/jpeg',
-    'image/x-png': 'image/png',
-    'image/bmp': 'image/x-ms-bmp',
-    'audio/x-mpg': 'audio/mpeg',
-    'video/x-mpeg2a': 'video/mpeg',
-    'application/x-javascript': 'application/javascript',
-    'application/x-msexcel': 'application/vnd.ms-excel',
-    'application/x-mspowerpoint': 'application/vnd.ms-powerpoint',
-    'application/x-mspowerpoint.12':
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-}
-
-
-def _patch_win32_mime_type(mime_type):
-    patched_mime_type = WIN32_PATCHED_MIME_TYPES.get(mime_type)
-    return patched_mime_type if patched_mime_type else mime_type
-
 
 def guess_digest_algorithm(digest):
     # For now only md5 and sha1 are supported
@@ -45,19 +26,6 @@ def guess_digest_algorithm(digest):
         return 'sha1'
     else:
         raise Exception('Unknown digest algorithm for %s' % digest)
-
-
-def guess_mime_type(filename):
-    mime_type, _ = mimetypes.guess_type(filename)
-    if mime_type:
-        if sys.platform == 'win32':
-            # Patch bad Windows MIME types
-            # See https://jira.nuxeo.com/browse/NXP-11660
-            # and http://bugs.python.org/issue15207
-            mime_type = _patch_win32_mime_type(mime_type)
-        return mime_type
-    else:
-        return "application/octet-stream"
 
 DEFAULT_NUXEO_TX_TIMEOUT = 60
 # Default buffer size for file upload / download and digest computation
@@ -247,11 +215,11 @@ class Nuxeo(object):
                                           url=self._base_url)
 
         # Build URL openers
-        self.opener = urllib2.build_opener(cookie_processor, proxy_handler)
+        #self.opener = urllib2.build_opener(cookie_processor, proxy_handler)
         self.streaming_opener = urllib2.build_opener(cookie_processor,
                                                      proxy_handler,
                                                      *get_handlers())
-
+        self.opener = self.streaming_opener
         # Set Proxy flag
         self.is_proxy = False
         opener_proxies = get_opener_proxies(self.opener)
@@ -295,6 +263,10 @@ class Nuxeo(object):
         """
         from directory import Directory
         return Directory(name, self)
+
+    def batch_upload(self):
+        from batchupload import BatchUpload
+        return BatchUpload(self)
 
     def repository(self, name='default', schemas=[]):
         """
@@ -538,12 +510,6 @@ class Nuxeo(object):
         finally:
             self._end_action()
 
-    def get_upload_buffer(self, input_file):
-        if sys.platform != 'win32':
-            return os.fstatvfs(input_file.fileno()).f_bsize
-        else:
-            return FILE_BUFFER_SIZE
-
     def trace(self, *args, **kwargs):
         pass
 
@@ -552,29 +518,7 @@ class Nuxeo(object):
 
     def error(self, *args, **kwargs):
         pass
-
-    def init_upload(self):
-        url = self._rest_url + self.batch_upload_path
-        headers = self._get_common_headers()
-        # Force empty data to perform a POST request
-        req = urllib2.Request(url, data='', headers=headers)
-        try:
-            resp = self.opener.open(req, timeout=self.timeout)
-        except Exception as e:
-            log_details = self._log_details(e)
-            if isinstance(log_details, tuple):
-                status, code, message, _ = log_details
-                if status == 404:
-                    raise NewUploadAPINotAvailable()
-                if status == 500:
-                    not_found_exceptions = ['com.sun.jersey.api.NotFoundException',
-                                            'org.nuxeo.ecm.webengine.model.TypeNotFoundException']
-                    for exception in not_found_exceptions:
-                        if code == exception or exception in message:
-                            raise NewUploadAPINotAvailable()
-            raise e
-        return self._read_response(resp, url)
-
+    '''
     def upload(self, batch_id, file_path, filename=None, file_index=0,
                mime_type=None):
         """Upload a file through an Automation batch
@@ -590,23 +534,6 @@ class Nuxeo(object):
             # Backward compatibility with old batch upload API
             url = self.automation_url.encode('ascii') + self.batch_upload_url
 
-        # HTTP headers
-        if filename is None:
-            filename = os.path.basename(file_path)
-        file_size = os.path.getsize(file_path)
-        if mime_type is None:
-            mime_type = guess_mime_type(filename)
-        # Quote UTF-8 filenames even though JAX-RS does not seem to be able
-        # to retrieve them as per: https://tools.ietf.org/html/rfc5987
-        filename = safe_filename(filename)
-        quoted_filename = urllib2.quote(filename.encode('utf-8'))
-        headers = {
-            "X-File-Name": quoted_filename,
-            "X-File-Size": file_size,
-            "X-File-Type": mime_type,
-            "Content-Type": "application/octet-stream",
-            "Content-Length": file_size,
-        }
         if not self.is_new_upload_api_available():
             headers.update({"X-Batch-Id": batch_id, "X-File-Idx": file_index})
         headers.update(self._get_common_headers())
@@ -635,7 +562,7 @@ class Nuxeo(object):
             input_file.close()
         self._end_action()
         return self._read_response(resp, url)
-
+    '''
 
     def _create_action(self, type, path, name):
         return {}
@@ -848,21 +775,6 @@ class Nuxeo(object):
 
         return str(time.time()) + '_' + str(random.randint(0, 1000000000))
 
-    def _read_data(self, file_object, buffer_size):
-        while True:
-            current_action = self._get_action()
-            if current_action is not None and current_action.suspend:
-                break
-            # Check if synchronization thread was suspended
-            if self.check_suspended is not None:
-                self.check_suspended('File upload: %s' % file_object.name)
-            r = file_object.read(buffer_size)
-            if not r:
-                break
-            if current_action is not None:
-                current_action.progress += buffer_size
-            yield r
-
     def do_get(self, url, file_out=None, digest=None, digest_algorithm=None):
         self.trace('Downloading file from %r to %r with digest=%s, digest_algorithm=%s', url, file_out, digest,
                   digest_algorithm)
@@ -941,14 +853,14 @@ class Nuxeo(object):
     def get_download_buffer(self):
         return FILE_BUFFER_SIZE
 
-    def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET', content_type="application/json+nxrequest", extra_headers=None):
+    def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET', content_type="application/json", extra_headers=None, raw_body=False):
         """Execute a REST API call"""
 
         url = self._rest_url + relative_url
         if adapter is not None:
             url += '/@' + adapter
 
-        if body is not None and not isinstance(body, str):
+        if body is not None and not isinstance(body, str) and not raw_body:
             body = json.dumps(body)
 
         headers = {
