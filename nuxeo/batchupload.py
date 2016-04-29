@@ -38,8 +38,10 @@ class BatchUpload(object):
         headers = {'Cache-Control': 'no-cache', 'X-File-Name': quoted_filename, 'X-File-Size': blob.get_size(), 'X-File-Type': blob.get_mimetype(), 'Content-Length': blob.get_size()}
         res = self._nuxeo.request(path, method="POST", body=blob.get_data(), content_type=blob.get_mimetype(), extra_headers=headers, raw_body=True)
         res['name'] = filename
-        self._blobs.append(BatchBlob(self, res))
+        blob = BatchBlob(self, res)
+        self._blobs.append(blob)
         self._upload_index+=1
+        return blob
 
     def _old_upload(self, blob):
         # headers.update({"X-Batch-Id": batch_id, "X-File-Idx": file_index})

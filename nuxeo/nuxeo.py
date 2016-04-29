@@ -15,6 +15,7 @@ from urllib2 import ProxyHandler
 from urlparse import urlparse
 from poster.streaminghttp import get_handlers
 import socket
+from blob import BatchBlob
 
 AUDIT_CHANGE_FINDER_TIME_RESOLUTION = 1.0
 

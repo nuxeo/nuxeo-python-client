@@ -172,6 +172,41 @@ doc.set({ 'dc:title': 'foo' })
 doc.save()
 ```
 
+### BatchUpload
+
+The `BatchUpload` object allows you to upload blobs to a Nuxeo Platform instance, and use them as operation input or
+as document property value.
+
+See the [BatchUpload](https://nuxeo.github.io/nuxeo-js-client/latest/BatchUpload.html) documentation.
+
+#### Samples
+
+__Create a Nuxeo.Blob to be uploaded__
+
+```python
+from nuxeo.blob import FileBlob
+from nuxeo.blob import BufferBlob
+BufferBlob('Content of this text', 'Test.txt', 'text/plain')
+...
+FileBlob('/path/to/file)
+```
+
+__Upload a blob__
+
+```python
+nuxeo.batch_upload().upload(blob)
+```
+
+__Attach an uploaded blob to a document__
+
+```python
+uploaded = nuxeo.batchUpload().upload(blob)
+operation = nuxeo.operation('Blob.AttachOnDocument')
+operation.params({'document':'/a-file'})
+operation.input(uploaded)
+operation.execute()
+```
+
 ### Users
 
 The `Users` object allows you to work with users.

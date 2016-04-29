@@ -11,7 +11,7 @@ class BatchUploadTest(NuxeoTest):
         self.batch = self._nuxeo.batch_upload()
         self.assertIsNotNone(self.batch)
         self.assertIsNone(self.batch._batchid)
-        self.batch.upload(BufferBlob('data', 'Test.txt', 'text/plain'))
+        self.upload = self.batch.upload(BufferBlob('data', 'Test.txt', 'text/plain'))
         self.assertIsNotNone(self.batch._batchid)
 
     def test_upload(self):
@@ -29,4 +29,27 @@ class BatchUploadTest(NuxeoTest):
 
     def test_fetch(self):
         blob = self.batch.fetch(0)
-        print blob
+        self.assertEqual(blob.fileIdx, 0)
+        self.assertEqual(blob.uploadType, 'normal')
+        self.assertEqual(blob.get_name(), 'Test.txt')
+        self.assertEqual(blob.get_size(), 4)
+
+    def test_operation(self):
+        newDoc = {
+            'name': 'Document',
+            'type': 'File',
+            'properties': {
+              'dc:title': 'foo',
+            }
+        }
+        doc = self._nuxeo.repository(schemas=['dublincore', 'file']).create('/default-domain/workspaces', newDoc)
+        try:
+            self.assertIsNone(doc.properties['file:content'])
+            operation = self._nuxeo.operation('Blob.AttachOnDocument')
+            operation.params({'document': '/default-domain/workspaces/Document'})
+            operation.input(self.upload)
+            operation.execute()
+            doc = self._nuxeo.repository(schemas=['dublincore', 'file']).fetch('/default-domain/workspaces/Document')
+            self.assertIsNotNone(doc.properties['file:content'])
+        except Exception as e:
+            doc.delete()

@@ -1,4 +1,5 @@
 __author__ = 'loopingz'
+from blob import BatchBlob
 
 class Operation(object):
     def __init__(self, type, service):
@@ -17,4 +18,9 @@ class Operation(object):
         self._input = input
 
     def execute(self):
-        return self._service.execute(self._type, params=self._params, op_input=self._input)
+        url = None
+        input = self._input
+        if isinstance(self._input, BatchBlob):
+            url = self._service._rest_url + 'upload/' + input._service._batchid + '/' + str(input.fileIdx) + '/execute/' + self._type
+            input = None
+        return self._service.execute(self._type, url=url, params=self._params, op_input=input)
