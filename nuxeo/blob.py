@@ -56,6 +56,26 @@ class Blob(object):
         return self._data
 
 
+class BatchBlob(Blob):
+    def __init__(self, service, obj):
+        self._service = service
+        if 'uploaded' in obj:
+            self.uploaded = obj['uploaded'] == "true"
+        else:
+            self.uploaded = True
+        self.uploadType = obj['uploadType']
+        self._name = obj['name']
+        if 'size' in obj:
+            self._size = int(obj['size'])
+        else:
+            self._size = 0
+        if 'uploadedSize' in obj:
+            self.uploadedSize = int(obj['uploadedSize'])
+        else:
+            self.uploadedSize = self._size
+        self.fileIdx = int(obj['fileIdx'])
+
+
 class BufferBlob(Blob):
     def __init__(self, buffer, name, mimetype='application/octect-stream'):
         super(BufferBlob, self).__init__()

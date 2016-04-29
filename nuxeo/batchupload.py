@@ -1,20 +1,12 @@
 __author__ = 'loopingz'
 import urllib2
 import re
-
+from blob import BatchBlob
 
 def safe_filename(name, replacement=u'-'):
     """Replace invalid character in candidate filename"""
     return re.sub(ur'(/|\\|\*|:|\||"|<|>|\?)', replacement, name)
 
-
-class BatchBlob(object):
-    def __init__(self, service, obj):
-        self._service = service
-        self.uploaded = obj['uploaded'] == "true"
-        self.uploadType = obj['uploadType']
-        self.uploadedSize = int(obj['uploadedSize'])
-        self.fileIdx = int(obj['fileIdx'])
 
 class BatchUpload(object):
 
@@ -29,6 +21,12 @@ class BatchUpload(object):
     def get_blobs(self):
         return self._blobs
 
+    def fetch(self, index):
+        path = self._get_path() + '/' + str(index)
+        res = self._nuxeo.request(path)
+        res['fileIdx'] = index
+        return BatchBlob(self, res)
+
     def upload(self, blob):
         if self._batchid is None:
             self._batchid = self._create_batchid()
@@ -39,6 +37,7 @@ class BatchUpload(object):
         path = self._get_path() + '/' + str(self._upload_index)
         headers = {'Cache-Control': 'no-cache', 'X-File-Name': quoted_filename, 'X-File-Size': blob.get_size(), 'X-File-Type': blob.get_mimetype(), 'Content-Length': blob.get_size()}
         res = self._nuxeo.request(path, method="POST", body=blob.get_data(), content_type=blob.get_mimetype(), extra_headers=headers, raw_body=True)
+        res['name'] = filename
         self._blobs.append(BatchBlob(self, res))
         self._upload_index+=1
 
