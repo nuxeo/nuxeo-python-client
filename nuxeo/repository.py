@@ -29,12 +29,30 @@ class Repository(object):
         return self._service.request(self._get_path(path) + "/@rendition/" + name, extra_headers=self._get_extra_headers())
 
     def fetch_renditions(self, path):
-        extra = self._get_extra_headers()
-        extra['enrichers-document'] = "renditions"
         renditions = []
-        for rendition in self._service.request(self._get_path(path), extra_headers=extra)["contextParameters"]["renditions"]:
+        for rendition in self._service.request(self._get_path(path),
+                extra_headers=self._get_extra_headers({'enrichers-document':'renditions'}))["contextParameters"]["renditions"]:
             renditions.append(rendition['name'])
         return renditions
+
+    def fetch_acls(self, path):
+        acls = []
+        for acl in self._service.request(self._get_path(path),
+                extra_headers={'enrichers-document':'acls'})["contextParameters"]["acls"]:
+            acls.append(acl)
+        return acls
+
+    def add_permission(self, uid, params):
+        operation = self._service.operation('Document.AddPermission')
+        operation.input(uid)
+        operation.params(params)
+        operation.execute()
+
+    def remove_permission(self, uid, params):
+        operation = self._service.operation('Document.RemovePermission')
+        operation.input(uid)
+        operation.params(params)
+        operation.execute()
 
     def convert(self, path, options):
         xpath = options['xpath'] if 'xpath' in options else 'blobholder:0'
@@ -61,11 +79,12 @@ class Repository(object):
         }
         return Document(self._service.request(self._get_path(uid), body=body, method="PUT", extra_headers=self._get_extra_headers()), self)
 
-    def _get_extra_headers(self):
+    def _get_extra_headers(self, extras=dict()):
         extras_header = dict()
         if len(self._schemas) > 0:
             extras_header['X-NXDocumentProperties'] = ",".join(self._schemas)
         extras_header['X-NXRepository'] = self._name
+        extras_header.update(extras)
         return extras_header
 
     def create(self, path, obj):

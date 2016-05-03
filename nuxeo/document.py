@@ -40,6 +40,15 @@ class Document(NuxeoAutosetObject):
     def convert(self, params):
         return self._service.convert(self.get_id(), params)
 
+    def fetch_acls(self):
+        return self._service.fetch_acls(self.get_id())
+
+    def add_permission(self, params):
+        return self._service.add_permission(self.get_id(), params)
+
+    def remove_permission(self, params):
+        return self._service.remove_permission(self.get_id(), params)
+
     def fetch_blob(self, xpath='blobholder:0'):
         return self._service.fetch_blob(self.get_id(), xpath)
 

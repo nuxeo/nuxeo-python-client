@@ -172,6 +172,43 @@ doc.set({ 'dc:title': 'foo' })
 doc.save()
 ```
 
+__Fetch the main Blob of a document__
+
+```python
+doc.fetch_blob()
+```
+
+__Convert a document main Blob to PDF__
+
+```python
+doc.convert({ format: 'pdf' })
+```
+
+__Fetch the 'thumbnail' rendition__
+
+```python
+doc.fetch_rendition('thumbnail')
+```
+
+__Fetch the ACLs__
+
+```python
+doc.fetch_acls()
+```
+
+__Add permission__
+
+```python
+doc.add_permission({'username': 'test', 'permission': 'Write'})
+```
+
+__Remove permission__
+
+```python
+doc.remove_permission({'id': 'members:Write:true:Administrator::'})
+```
+
+
 ### BatchUpload
 
 The `BatchUpload` object allows you to upload blobs to a Nuxeo Platform instance, and use them as operation input or

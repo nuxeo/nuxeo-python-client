@@ -132,13 +132,9 @@ class RepositoryTest(NuxeoTest):
         blob = self._nuxeo.batch_upload().upload(blob)
         doc.properties["file:content"] = blob
         doc.save()
-        #doc.refresh()
-        #self.assertEqual(doc.properties["file:content"]["name"], "foo.txt")
-        #self.assertEqual(doc.properties["file:content"]["length"], 3)
-        #self.assertEqual(doc.properties["file:content"]["mime-type"], "text/plain")
         return doc
 
-    def test_create_doc_and_convert(self):
+    def test_convert(self):
         doc = self._create_blob_file()
         res = doc.convert({'format': 'html'})
         self.assertTrue('<html>' in res)
@@ -157,27 +153,47 @@ class RepositoryTest(NuxeoTest):
         res = doc.convert({'converter': 'office2html'})
         self.assertTrue('<html>' in res)
         self.assertTrue('foo' in res)
-        doc.delete()
 
     def test_convert_xpath(self):
         doc = self._create_blob_file()
         res = doc.convert({ 'xpath': 'file:content', 'type': 'text/html' })
         self.assertTrue('<html>' in res)
         self.assertTrue('foo' in res)
-        doc.delete()
 
     def test_fetch_renditions(self):
         doc = self._create_blob_file()
         res = doc.fetch_renditions()
-        print res
         self.assertTrue('thumbnail' in res)
         self.assertTrue('xmlExport' in res)
         self.assertTrue('zipExport' in res)
-        doc.delete()
 
     def test_fetch_rendition(self):
         doc = self._create_blob_file()
         res = doc.fetch_rendition('xmlExport')
         self.assertTrue('<?xml version="1.0" encoding="UTF-8"?>' in res)
         self.assertTrue(('<path>'+RepositoryTest.WS_PYTHON_TESTS_PATH[1:]+'</path>') in res)
-        doc.delete()
+
+    def test_fetch_blob(self):
+        doc = self._create_blob_file()
+        res = doc.fetch_blob()
+        self.assertEqual(res, 'foo')
+
+    def test_fetch_acls(self):
+        doc = self._create_blob_file()
+        acls = doc.fetch_acls()
+        self.assertEqual(len(acls),1)
+        self.assertEqual(acls[0]['name'],'inherited')
+        self.assertEqual(acls[0]['aces'][0]["id"], 'Administrator:Everything:true:::')
+        self.assertEqual(acls[0]['aces'][1]["id"], 'members:Read:true:::')
+
+    def test_add_remove_permission(self):
+        doc = self._create_blob_file()
+        doc.add_permission({'username': 'members', 'permission': 'Write'})
+        acls = doc.fetch_acls()
+        self.assertEqual(len(acls), 2)
+        self.assertEqual(acls[0]['name'], 'local')
+        self.assertEqual(acls[0]['aces'][0]["id"], 'members:Write:true:Administrator::')
+        doc.remove_permission({'id': 'members:Write:true:Administrator::'})
+        acls = doc.fetch_acls()
+        self.assertEqual(len(acls), 1)
+        self.assertEqual(acls[0]['name'], 'inherited')
