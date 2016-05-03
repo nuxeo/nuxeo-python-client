@@ -197,3 +197,8 @@ class RepositoryTest(NuxeoTest):
         acls = doc.fetch_acls()
         self.assertEqual(len(acls), 1)
         self.assertEqual(acls[0]['name'], 'inherited')
+
+    def test_has_permission(self):
+        doc = self._create_blob_file()
+        self.assertTrue(doc.has_permission('Write'))
+        self.assertFalse(doc.has_permission('Foo'))

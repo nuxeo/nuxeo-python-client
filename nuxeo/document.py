@@ -49,6 +49,9 @@ class Document(NuxeoAutosetObject):
     def remove_permission(self, params):
         return self._service.remove_permission(self.get_id(), params)
 
+    def has_permission(self, params):
+        return self._service.has_permission(self.get_id(), params)
+
     def fetch_blob(self, xpath='blobholder:0'):
         return self._service.fetch_blob(self.get_id(), xpath)
 

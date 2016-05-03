@@ -54,6 +54,10 @@ class Repository(object):
         operation.params(params)
         operation.execute()
 
+    def has_permission(self, path, permission):
+        return permission in self._service.request(self._get_path(path),
+                    extra_headers={'enrichers-document':'permissions'})["contextParameters"]["permissions"]
+
     def convert(self, path, options):
         xpath = options['xpath'] if 'xpath' in options else 'blobholder:0'
         path = self._get_path(path) + "/@blob/" + xpath + '/@convert'
