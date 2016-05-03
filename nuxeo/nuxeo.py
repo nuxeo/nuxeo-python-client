@@ -10,6 +10,11 @@ from urlparse import urlparse
 from poster.streaminghttp import get_handlers
 import socket
 
+def json_helper(o):
+    if (hasattr(o, 'to_json')):
+        res = o.to_json()
+        return res
+    raise TypeError(repr(o) + "is not JSON serializable (no to_json found)")
 
 def force_decode(string, codecs=['utf-8', 'cp1252']):
     if isinstance(string, unicode):
@@ -389,7 +394,7 @@ class Nuxeo(object):
                 json_struct['input'] = "docs:" + ",".join(op_input)
             else:
                 json_struct['input'] = op_input
-        data = json.dumps(json_struct)
+        data = json.dumps(json_struct, default=json_helper)
 
         req = urllib2.Request(url, data, headers)
         timeout = self.timeout if timeout == -1 else timeout
@@ -558,7 +563,7 @@ class Nuxeo(object):
             url += '/@' + adapter
 
         if body is not None and not isinstance(body, str) and not raw_body:
-            body = json.dumps(body)
+            body = json.dumps(body, default=json_helper)
 
         headers = {
             "Content-Type": content_type,

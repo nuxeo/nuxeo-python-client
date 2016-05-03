@@ -4,7 +4,7 @@ __author__ = 'loopingz'
 from common import NuxeoTest
 from nuxeo.document import Document
 from urllib2 import HTTPError
-
+from nuxeo.blob import BufferBlob
 
 class RepositoryTest(NuxeoTest):
     WS_ROOT_PATH = '/default-domain/workspaces';
@@ -112,3 +112,72 @@ class RepositoryTest(NuxeoTest):
         self.assertEqual(len(docs['entries']), 1)
         self.assertTrue(isinstance(docs['entries'][0], Document))
         self.assertTrue(docs['entries'][0].title, 'Workspaces')
+
+
+    def _create_blob_file(self):
+        newDoc = {
+            'name': RepositoryTest.WS_PYTHON_TEST_NAME,
+            'type': 'File',
+            'properties': {
+              'dc:title': 'bar.txt',
+            }
+        }
+        doc = self._repository.create(RepositoryTest.WS_ROOT_PATH, newDoc)
+        self.assertIsNotNone(doc)
+        self.assertTrue(isinstance(doc, Document))
+        self.assertEqual(doc.path, RepositoryTest.WS_PYTHON_TESTS_PATH)
+        self.assertEqual(doc.type, 'File')
+        self.assertEqual(doc.properties['dc:title'], 'bar.txt')
+        blob = BufferBlob("foo", "foo.txt", "text/plain")
+        blob = self._nuxeo.batch_upload().upload(blob)
+        doc.properties["file:content"] = blob
+        doc.save()
+        #doc.refresh()
+        #self.assertEqual(doc.properties["file:content"]["name"], "foo.txt")
+        #self.assertEqual(doc.properties["file:content"]["length"], 3)
+        #self.assertEqual(doc.properties["file:content"]["mime-type"], "text/plain")
+        return doc
+
+    def test_create_doc_and_convert(self):
+        doc = self._create_blob_file()
+        res = doc.convert({'format': 'html'})
+        self.assertTrue('<html>' in res)
+        self.assertTrue('foo' in res)
+        doc.delete()
+
+    def test_convert_given_converter(self):
+        doc = self._create_blob_file()
+        res = doc.convert({'converter': 'office2html'})
+        self.assertTrue('<html>' in res)
+        self.assertTrue('foo' in res)
+        doc.delete()
+
+    def test_convert_given_converter(self):
+        doc = self._create_blob_file()
+        res = doc.convert({'converter': 'office2html'})
+        self.assertTrue('<html>' in res)
+        self.assertTrue('foo' in res)
+        doc.delete()
+
+    def test_convert_xpath(self):
+        doc = self._create_blob_file()
+        res = doc.convert({ 'xpath': 'file:content', 'type': 'text/html' })
+        self.assertTrue('<html>' in res)
+        self.assertTrue('foo' in res)
+        doc.delete()
+
+    def test_fetch_renditions(self):
+        doc = self._create_blob_file()
+        res = doc.fetch_renditions()
+        print res
+        self.assertTrue('thumbnail' in res)
+        self.assertTrue('xmlExport' in res)
+        self.assertTrue('zipExport' in res)
+        doc.delete()
+
+    def test_fetch_rendition(self):
+        doc = self._create_blob_file()
+        res = doc.fetch_rendition('xmlExport')
+        self.assertTrue('<?xml version="1.0" encoding="UTF-8"?>' in res)
+        self.assertTrue(('<path>'+RepositoryTest.WS_PYTHON_TESTS_PATH[1:]+'</path>') in res)
+        doc.delete()

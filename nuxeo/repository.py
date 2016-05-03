@@ -23,7 +23,18 @@ class Repository(object):
         return Document(self.get(path), self)
 
     def fetch_blob(self, path, xpath = 'blobholder:0'):
-        return self._service.request(self._get_path(path) + "/@blob/" + xpath)
+        return self._service.request(self._get_path(path) + "/@blob/" + xpath, extra_headers=self._get_extra_headers())
+
+    def fetch_rendition(self, path, name):
+        return self._service.request(self._get_path(path) + "/@rendition/" + name, extra_headers=self._get_extra_headers())
+
+    def fetch_renditions(self, path):
+        extra = self._get_extra_headers()
+        extra['enrichers-document'] = "renditions"
+        renditions = []
+        for rendition in self._service.request(self._get_path(path), extra_headers=extra)["contextParameters"]["renditions"]:
+            renditions.append(rendition['name'])
+        return renditions
 
     def convert(self, path, options):
         xpath = options['xpath'] if 'xpath' in options else 'blobholder:0'

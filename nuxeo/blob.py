@@ -75,6 +75,9 @@ class BatchBlob(Blob):
             self.uploadedSize = self._size
         self.fileIdx = int(obj['fileIdx'])
 
+    def to_json(self):
+        return {"upload-batch": self.get_batch_id(), "upload-fileId": str(self.fileIdx)}
+
     def compatibility_mode(self):
         return self._service.compatibility_mode()
 
