@@ -58,6 +58,22 @@ class Repository(object):
         return permission in self._service.request(self._get_path(path),
                     extra_headers={'enrichers-document':'permissions'})["contextParameters"]["permissions"]
 
+    def fetch_lock_status(self, path):
+        res = self._service.request(self._get_path(path), extra_headers={'fetch-document':'lock'})
+        if 'lockOwner' in res:
+            return {'lockCreated': res['lockOwner'], 'lockOwner': res['lockOwner']}
+        return {}
+
+    def unlock(self, uid):
+        operation = self._service.operation('Document.Unlock')
+        operation.input(uid)
+        return operation.execute()
+
+    def lock(self, uid):
+        operation = self._service.operation('Document.Lock')
+        operation.input(uid)
+        return operation.execute()
+
     def convert(self, path, options):
         xpath = options['xpath'] if 'xpath' in options else 'blobholder:0'
         path = self._get_path(path) + "/@blob/" + xpath + '/@convert'

@@ -208,6 +208,29 @@ __Remove permission__
 doc.remove_permission({'id': 'members:Write:true:Administrator::'})
 ```
 
+__Has permission__
+
+```python
+doc.has_permission('Write')
+```
+
+__Lock document__
+
+```python
+doc.lock()
+```
+
+__Unlock document__
+
+```python
+doc.unlock()
+```
+
+__Fetch Lock Status__
+
+```python
+doc.fetch_lock_status()
+```
 
 ### BatchUpload
 

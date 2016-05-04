@@ -202,3 +202,18 @@ class RepositoryTest(NuxeoTest):
         doc = self._create_blob_file()
         self.assertTrue(doc.has_permission('Write'))
         self.assertFalse(doc.has_permission('Foo'))
+
+    def test_locking(self):
+        doc = self._create_blob_file()
+        status = doc.fetch_lock_status()
+        self.assertEqual(status, {})
+        doc.lock()
+        status = doc.fetch_lock_status()
+        self.assertEqual(status['lockOwner'], 'Administrator')
+        self.assertTrue('lockCreated' in status)
+        # Exception
+        with self.assertRaises(HTTPError):
+            doc.lock()
+        doc.unlock()
+        status = doc.fetch_lock_status()
+        self.assertEqual(status, {})

@@ -40,6 +40,15 @@ class Document(NuxeoAutosetObject):
     def convert(self, params):
         return self._service.convert(self.get_id(), params)
 
+    def lock(self):
+        return self._service.lock(self.get_id())
+
+    def unlock(self):
+        return self._service.unlock(self.get_id())
+
+    def fetch_lock_status(self):
+        return self._service.fetch_lock_status(self.get_id())
+
     def fetch_acls(self):
         return self._service.fetch_acls(self.get_id())
 
