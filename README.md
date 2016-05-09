@@ -232,6 +232,20 @@ __Fetch Lock Status__
 doc.fetch_lock_status()
 ```
 
+__Start a workflow__
+
+```python
+doc.start_workflow('SerialDocumentReview')
+```
+
+__Complete a workflow task__
+
+```javascript
+task = workflow.fetch_tasks()
+variables = {'participants':['user:Administrator'],'assignees':['user:Administrator'], 'end_date':'2011-10-23T12:00:00.00Z'};
+task.complete('start_review', variables, comment='a comment');
+```
+
 ### BatchUpload
 
 The `BatchUpload` object allows you to upload blobs to a Nuxeo Platform instance, and use them as operation input or
@@ -389,9 +403,13 @@ libraries:
 
 A Nuxeo Platform instance needs to be running on `http://localhost:8080/nuxeo` for the tests to be run.
 
-Tests can be launched on Node.js with:
+Tests can be launched on Python Nosetests with:
 
     $ nosetests -v
+
+Tests can be launched without a server with Maven and Nosetests:
+
+    $ mvn -f ftest/pom.xml clean verify
 
 
 ### Reporting Issues

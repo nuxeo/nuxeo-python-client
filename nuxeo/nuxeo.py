@@ -211,6 +211,10 @@ class Nuxeo(object):
         from users import Users
         return Users(self)
 
+    def workflows(self):
+        from workflow import Workflows
+        return Workflows(self)
+
     def groups(self):
         """
         :return: The groups service
@@ -555,12 +559,16 @@ class Nuxeo(object):
 
         # TODO: add typechecking
 
-    def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET', content_type="application/json", extra_headers=None, raw_body=False):
+    def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET', content_type="application/json",
+                extra_headers=None, raw_body=False, query_params=dict()):
         """Execute a REST API call"""
 
         url = self._rest_url + relative_url
         if adapter is not None:
             url += '/@' + adapter
+
+        if (len(query_params)):
+            url += "?" + urlencode(query_params)
 
         if body is not None and not isinstance(body, str) and not raw_body:
             body = json.dumps(body, default=json_helper)

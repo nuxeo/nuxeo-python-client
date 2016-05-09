@@ -67,3 +67,20 @@ class Document(NuxeoAutosetObject):
     def set(self, properties):
         for key in properties:
             self.properties[key] = properties[key]
+
+    def move(self, dst, name = None):
+        self._service.move(self.get_id(), dst, name)
+        self.refresh()
+
+    def follow_transition(self, name):
+        self._service.follow_transition(self.get_id(), name)
+        self.refresh()
+
+    def fetch_audit(self):
+        return self._service.fetch_audit(self.get_id())
+
+    def fetch_workflows(self):
+        return self._service.fetch_workflows(self.get_id())
+
+    def start_workflow(self, name, options=dict()):
+        return self._service.start_workflow(name, self.get_id(), options)

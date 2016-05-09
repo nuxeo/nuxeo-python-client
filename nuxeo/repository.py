@@ -22,6 +22,9 @@ class Repository(object):
     def fetch(self, path):
         return Document(self.get(path), self)
 
+    def fetch_audit(self, path):
+        return self._service.request(self._get_path(path) + "/@audit")
+
     def fetch_blob(self, path, xpath = 'blobholder:0'):
         return self._service.request(self._get_path(path) + "/@blob/" + xpath, extra_headers=self._get_extra_headers())
 
@@ -136,3 +139,25 @@ class Repository(object):
             docs.append(Document(doc, self))
         result['entries']=docs
         return result
+
+    def follow_transition(self, uid, name):
+        operation = self._service.operation('Document.FollowLifecycleTransition')
+        operation.input(uid)
+        operation.params({'value': name})
+        operation.execute()
+
+    def move(self, uid, dst, name = None):
+        operation = self._service.operation('Document.Move')
+        operation.input(uid)
+        params = {'target': dst}
+        if name:
+            params['name'] = name
+        operation.params(params)
+        operation.execute()
+
+    def start_workflow(self, name, path, options):
+        return self._service.workflows().start(name, options, url=self._get_path(path) + "/@workflow")
+
+    def fetch_workflows(self, path):
+        from workflow import Workflow
+        return self._service.workflows()._map(self._service.request(self._get_path(path)+"/@workflow"), Workflow)
