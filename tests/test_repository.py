@@ -4,21 +4,13 @@ __author__ = 'loopingz'
 from common import NuxeoTest
 from nuxeo.document import Document
 from urllib2 import HTTPError
-from nuxeo.blob import BufferBlob
+
 
 class RepositoryTest(NuxeoTest):
-    WS_ROOT_PATH = '/default-domain/workspaces';
-    WS_PYTHON_TEST_NAME = 'ws-python-tests';
-    WS_PYTHON_TESTS_PATH = WS_ROOT_PATH + "/" + WS_PYTHON_TEST_NAME;
 
     def setUp(self):
         super(RepositoryTest, self).setUp()
-        self._repository = self._nuxeo.repository(schemas=['dublincore'])
-        try:
-            root = self._repository.fetch(RepositoryTest.WS_PYTHON_TESTS_PATH)
-            root.delete()
-        except Exception as e:
-            pass
+        self._clean_root()
 
     def test_fetch_root(self):
         root = self._repository.fetch('/')
@@ -32,39 +24,39 @@ class RepositoryTest(NuxeoTest):
 
     def test_create_doc_and_delete(self):
         newDoc = {
-            'name': RepositoryTest.WS_PYTHON_TEST_NAME,
+            'name': NuxeoTest.WS_PYTHON_TEST_NAME,
             'type': 'Workspace',
             'properties': {
               'dc:title': 'foo',
             }
         }
-        doc = self._repository.create(RepositoryTest.WS_ROOT_PATH, newDoc)
+        doc = self._repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
         self.assertIsNotNone(doc)
         self.assertTrue(isinstance(doc, Document))
-        self.assertEqual(doc.path, RepositoryTest.WS_PYTHON_TESTS_PATH)
+        self.assertEqual(doc.path, NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(doc.type, 'Workspace')
         self.assertEqual(doc.properties['dc:title'], 'foo')
         doc.delete()
         with self.assertRaises(HTTPError) as ex:
-            root = self._repository.fetch(RepositoryTest.WS_PYTHON_TESTS_PATH)
+            root = self._repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(ex.exception.code, 404)
 
 
     def test_update_doc_and_delete(self):
         newDoc = {
-            'name': RepositoryTest.WS_PYTHON_TEST_NAME,
+            'name': NuxeoTest.WS_PYTHON_TEST_NAME,
             'type': 'Workspace',
             'properties': {
               'dc:title': 'foo',
             }
         }
-        doc = self._repository.create(RepositoryTest.WS_ROOT_PATH, newDoc)
+        doc = self._repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
         uid = doc.uid
         path = doc.path
         self.assertIsNotNone(doc)
         doc.set({'dc:title': 'bar'})
         doc.save()
-        doc = self._repository.fetch(RepositoryTest.WS_PYTHON_TESTS_PATH)
+        doc = self._repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertTrue(isinstance(doc, Document))
         self.assertEqual(doc.uid, uid)
         self.assertEqual(doc.path, path)
@@ -113,27 +105,6 @@ class RepositoryTest(NuxeoTest):
         self.assertTrue(isinstance(docs['entries'][0], Document))
         self.assertTrue(docs['entries'][0].title, 'Workspaces')
 
-
-    def _create_blob_file(self):
-        newDoc = {
-            'name': RepositoryTest.WS_PYTHON_TEST_NAME,
-            'type': 'File',
-            'properties': {
-              'dc:title': 'bar.txt',
-            }
-        }
-        doc = self._repository.create(RepositoryTest.WS_ROOT_PATH, newDoc)
-        self.assertIsNotNone(doc)
-        self.assertTrue(isinstance(doc, Document))
-        self.assertEqual(doc.path, RepositoryTest.WS_PYTHON_TESTS_PATH)
-        self.assertEqual(doc.type, 'File')
-        self.assertEqual(doc.properties['dc:title'], 'bar.txt')
-        blob = BufferBlob("foo", "foo.txt", "text/plain")
-        blob = self._nuxeo.batch_upload().upload(blob)
-        doc.properties["file:content"] = blob
-        doc.save()
-        return doc
-
     def test_convert(self):
         doc = self._create_blob_file()
         res = doc.convert({'format': 'html'})
@@ -171,7 +142,7 @@ class RepositoryTest(NuxeoTest):
         doc = self._create_blob_file()
         res = doc.fetch_rendition('xmlExport')
         self.assertTrue('<?xml version="1.0" encoding="UTF-8"?>' in res)
-        self.assertTrue(('<path>'+RepositoryTest.WS_PYTHON_TESTS_PATH[1:]+'</path>') in res)
+        self.assertTrue(('<path>'+NuxeoTest.WS_PYTHON_TESTS_PATH[1:]+'</path>') in res)
 
     def test_fetch_blob(self):
         doc = self._create_blob_file()
