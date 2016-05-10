@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'nuxeo-python-client'
-copyright = u'2016, ataillefer@nuxeo.com rcattiau@nuxeo.com'
+copyright = u'2016, <a href="https://www.nuxeo.com">Nuxeo</a>'
 author = u'ataillefer@nuxeo.com rcattiau@nuxeo.com'
 
 # The version info for the project you're documenting, acts as replacement for
