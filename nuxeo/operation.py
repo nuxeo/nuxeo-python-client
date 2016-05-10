@@ -9,15 +9,28 @@ class Operation(object):
         self._input = None
 
     def params(self, params=None):
+        """
+        Get or add parameters to the operation
+
+        :param params: To add if None this method behave as a getter
+        :return: The Operation parameters
+        """
         if params is not None:
             for key in params:
                 self._params[key] = params[key]
         return self._params
 
     def input(self, input):
+        """
+        Set the input for this operation
+        """
         self._input = input
 
     def execute(self):
+        """
+        Execute the operation on the server
+        :return: Raw result from the server
+        """
         url = None
         input = self._input
         params = self._params

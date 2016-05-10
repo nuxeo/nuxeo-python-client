@@ -7,7 +7,9 @@ def safe_filename(name, replacement=u'-'):
     """Replace invalid character in candidate filename"""
     return re.sub(ur'(/|\\|\*|:|\||"|<|>|\?)', replacement, name)
 
-
+"""
+A BatchUpload represent a bucket on the Nuxeo Server that allows you to add binary to then do some operation on it
+"""
 class BatchUpload(object):
 
     def __init__(self, nuxeo):
@@ -19,15 +21,25 @@ class BatchUpload(object):
         self._blobs = []
 
     def get_blobs(self):
+        """Get blobs contained in this BatchUpload"""
         return self._blobs
 
     def fetch(self, index):
+        """Fetch a specific blob
+
+        :param index: Get specified index
+        """
         path = self._get_path() + '/' + str(index)
         res = self._nuxeo.request(path)
         res['fileIdx'] = index
         return BatchBlob(self, res)
 
     def upload(self, blob):
+        """Upload a new blob to the bucket
+        See the BufferBlob or FileBlob
+
+        :param blob: The blob to upload to this BatchUpload
+        """
         if self._batchid is None:
             self._batchid = self._create_batchid()
         if self._compatibiliy_mode:
@@ -58,6 +70,9 @@ class BatchUpload(object):
         return self._path + '/' + self._batchid
 
     def cancel(self):
+        """
+        Cancel a BatchUpload, cleaning the bucket on the server side
+        """
         if (self._batchid is None):
             return
         if self._compatibiliy_mode:

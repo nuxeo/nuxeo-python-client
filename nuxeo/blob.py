@@ -37,6 +37,10 @@ def guess_mime_type(filename):
 
 
 class Blob(object):
+    """
+    Abstract representation of a Blob
+    You should use FileBlob or BufferBlob
+    """
     def __init__(self):
         self._name = None
         self._size = 0
@@ -44,19 +48,30 @@ class Blob(object):
         self._mimetype = "application/octet-stream"
 
     def get_name(self):
+        """Return the name to use
+        """
         return self._name
 
     def get_size(self):
+        """Size in octets
+        """
         return self._size
 
     def get_mimetype(self):
+        """Mimetype for the content
+        """
         return self._mimetype
 
     def get_data(self):
+        """Data
+        """
         return self._data
 
 
 class BatchBlob(Blob):
+    """
+    Representation of an already uploaded Blob
+    """
     def __init__(self, service, obj):
         self._service = service
         if 'uploaded' in obj:
@@ -84,8 +99,17 @@ class BatchBlob(Blob):
     def get_batch_id(self):
         return self._service.get_batch_id()
 
+
 class BufferBlob(Blob):
+    """
+    InMemory content to upload to Nuxeo
+    """
     def __init__(self, buffer, name, mimetype='application/octect-stream'):
+        """
+        :param buffer: Content to upload to Nuxeo
+        :param name: Name to give to the file created on the server
+        :param mimetype: Mimetype of the content
+        """
         super(BufferBlob, self).__init__()
         self._name = name
         self._mimetype = mimetype
@@ -100,7 +124,15 @@ class BufferBlob(Blob):
 
 
 class FileBlob(Blob):
+    """
+    Represent a File as Blob for future upload
+    """
     def __init__(self, path, mimetype = None):
+        """
+
+        :param path: To the file
+        :param mimetype: If not specified client will try to guess
+        """
         super(FileBlob, self).__init__()
         self._path = path
         self._name = os.path.basename(self._path)

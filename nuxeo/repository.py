@@ -4,7 +4,11 @@ from urllib import urlencode
 
 
 class Repository(object):
+    """
+    Repository on Nuxeo allow you to CREATE/GET/UPDATE/DELETE documents from the repository
 
+    You also almost all the method from object Document except you have to specify the path or uid of the Document
+    """
     def __init__(self, name, service, schemas=[]):
         self._name = name
         self._service = service
@@ -20,6 +24,12 @@ class Repository(object):
         return self._service.request(self._get_path(path), extra_headers=self._get_extra_headers())
 
     def fetch(self, path):
+        """
+        Get a Document from Nuxeo
+
+        :param path: path to the Document or its ID
+        :return: Document object
+        """
         return Document(self.get(path), self)
 
     def fetch_audit(self, path):
@@ -111,6 +121,13 @@ class Repository(object):
         return extras_header
 
     def create(self, path, obj):
+        """
+        Create a new Document on the server
+
+        :param path: path to create the Document
+        :param obj: Document description: dict with at least (type,name,properties)
+        :return:
+        """
         body = {
             'entity-type': 'document',
             'type': obj['type'],
@@ -121,6 +138,11 @@ class Repository(object):
         return Document(self._service.request(self._get_path(path), body=body, method="POST", extra_headers=self._get_extra_headers()), self)
 
     def delete(self, path):
+        """
+        Delete a specific Document
+
+        :param path: Path or ID to the Document
+        """
         self._service.request(self._get_path(path), method="DELETE")
 
     def query(self, opts = dict()):

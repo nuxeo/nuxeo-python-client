@@ -4,7 +4,9 @@ from common import NuxeoService
 
 
 class Group(NuxeoObject):
-
+    """
+    Represent a Group on the server
+    """
     entity_type = 'group'
     def __init__(self, obj=None, service=None):
         super(Group, self).__init__(obj, service)
@@ -26,7 +28,7 @@ class Group(NuxeoObject):
 
 class Groups(NuxeoService):
     """
-    Users management
+    Groups management
     """
     def __init__(self, nuxeo):
         super(Groups, self).__init__(nuxeo, 'group', Group)
@@ -47,12 +49,29 @@ class Groups(NuxeoService):
         return args
 
     def get(self, id):
+        """
+        Get a group
+
+        :param id: Group name
+        :return:
+        """
         return self._nuxeo.request(self._path + '/' + id + self._query)
 
     def update(self, obj):
+        """
+        Update the group
+
+        :param obj: Group object
+        """
         args = self._get_args(obj)
         self._nuxeo.request(self._path + '/' + obj.get_id() + self._query, body=args, method='PUT')
 
     def create(self, obj):
+        """
+        Create a new group
+
+        :param obj:
+        :return: Group created
+        """
         args = self._get_args(obj)
         return self._object_class(self._nuxeo.request(self._path + self._query, method='POST', body=args), self)

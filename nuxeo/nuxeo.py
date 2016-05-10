@@ -1,4 +1,4 @@
-"""Common Nuxeo Automation client utilities."""
+"""Nuxeo REST API Client."""
 
 import base64
 import json
@@ -121,7 +121,7 @@ class Request(urllib2.Request):
 
 
 class Nuxeo(object):
-    """Client for the Nuxeo Content Automation HTTP API
+    """Client for the Nuxeo REST API
 
     timeout is a short timeout to avoid having calls to fast JSON operations
     to block and freeze the application in case of network issues.
@@ -142,7 +142,18 @@ class Nuxeo(object):
     """
     # TODO: handle system proxy detection under Linux,
     # see https://jira.nuxeo.com/browse/NXP-12068
-
+    ##
+    # @param base_url   Nuxeo server URL
+    # @param auth   Authentication parameter {'user': 'Administrator', 'password': 'Administrator'}
+    # @param proxies: Proxy definition
+    # @param proxy_exceptions: Exception rules for proxy
+    # @param repository: Repository to use by default
+    # @param timeout: Client timeout
+    # @param blob_timeout: Binary download timeout
+    # @param cookie_jar: Cookie storage
+    # @param upload_tmp_dir: Tmp file to use for buffering
+    # @param check_suspended: Method to call while doing network call so you can interrupt the download thread
+    # @param api_path: Default API Path
     def __init__(self, base_url="http://localhost:8080/nuxeo", auth=None, proxies=None, proxy_exceptions=None, repository="default",
                  timeout=20, blob_timeout=60, cookie_jar=None,
                  upload_tmp_dir=None, check_suspended=None, api_path="api/v1/"):
@@ -204,41 +215,14 @@ class Nuxeo(object):
         self.batch_upload_path = 'upload'
         self.operations = None
 
-    def users(self):
-        """
-        :return: The users service
-        """
-        from users import Users
-        return Users(self)
 
-    def workflows(self):
-        from workflow import Workflows
-        return Workflows(self)
+    def login(self):
+        """Try to login and return the user.
 
-    def groups(self):
+        :return: Current user
         """
-        :return: The groups service
-        """
-        from groups import Groups
-        return Groups(self)
-
-    def operation(self, name):
-        """
-        :return: An Operation object
-        """
-        from operation import Operation
-        return Operation(name, self)
-
-    def directory(self, name):
-        """
-        :return: An Operation object
-        """
-        from directory import Directory
-        return Directory(name, self)
-
-    def batch_upload(self):
-        from batchupload import BatchUpload
-        return BatchUpload(self)
+        self.execute('login', check_params=False)
+        return self.users().fetch(self.user_id)
 
     def repository(self, name='default', schemas=[]):
         """
@@ -247,19 +231,102 @@ class Nuxeo(object):
         from repository import Repository
         return Repository(name, self, schemas=schemas)
 
-    def login(self):
-        """Try to login and return the user.
-
+    def directory(self, name):
         """
-        self.execute('login', check_params=False)
-        return self.users().fetch(self.user_id)
+        :return: An Operation object
+        """
+        from directory import Directory
+        return Directory(name, self)
+
+    def operation(self, name):
+        """https://doc.nuxeo.com/display/NXDOC/Automation
+
+        :return: An Operation object to perform on Automation
+        """
+        from operation import Operation
+        return Operation(name, self)
+
+    def workflows(self):
+        """
+        :return: The Workflows service
+        """
+        from workflow import Workflows
+        return Workflows(self)
+
+    def users(self):
+        """
+        :return: The Users service
+        """
+        from users import Users
+        return Users(self)
+
+    def groups(self):
+        """
+        :return: The Groups service
+        """
+        from groups import Groups
+        return Groups(self)
+
+    def batch_upload(self):
+        """
+        :return: Return a bucket to upload document to Nuxeo server
+        """
+        from batchupload import BatchUpload
+        return BatchUpload(self)
+
+    def request_authentication_token(self, application_name, device_id, device_description, permission, revoke=False):
+        """Request and return a new token for the user
+        Token requires to have an application name and device id and permission the description is optional
+        Once the token received you can use it for future login
+        """
+        base_error_message = (
+            "Failed to connect to Nuxeo server %s with user %s"
+            " to acquire a token"
+        ) % (self._base_url, self.user_id)
+
+        parameters = {
+            'deviceId': device_id,
+            'applicationName': application_name,
+            'permission': permission,
+            'revoke': 'true' if revoke else 'false',
+        }
+        if device_description:
+            parameters['deviceDescription'] = device_description
+        url = self._base_url + 'authentication/token?'
+        url += urlencode(parameters)
+
+        headers = self._get_common_headers()
+        cookies = self._get_cookies()
+        self.trace("Calling %s with headers %r and cookies %r",
+                url, headers, cookies)
+        req = urllib2.Request(url, headers=headers)
+        try:
+            token = self.opener.open(req, timeout=self.timeout).read()
+        except urllib2.HTTPError as e:
+            if e.code == 401 or e.code == 403:
+                raise Unauthorized(self._base_url, self.user_id, e.code)
+            elif e.code == 404:
+                # Token based auth is not supported by this server
+                return None
+            else:
+                e.msg = base_error_message + ": HTTP error %d" % e.code
+                raise e
+        except Exception as e:
+            if hasattr(e, 'msg'):
+                e.msg = base_error_message + ": " + e.msg
+            raise
+        cookies = self._get_cookies()
+        self.trace("Got token '%s' with cookies %r", token, cookies)
+        # Use the (potentially re-newed) token from now on
+        if not revoke:
+            self._update_auth(token=token)
+        return token
 
     def header(self, name, value):
         """Define a header.
 
-        Keyword arguments:
-        name -- Header name
-        value -- Header value
+        :param name: -- Header name
+        :param value: -- Header value
         """
         self._headers[name] = value
 
@@ -267,8 +334,7 @@ class Nuxeo(object):
         """Return the headers that will be sent to the server
         You can set additional headers with extras argument.
 
-        Keyword arguments:
-        extras -- a dictionary or object of additional headers to set
+        :param extras: -- a dictionary or object of additional headers to set
         """
         headers = self._get_common_headers()
         if extras is not None:
@@ -360,7 +426,17 @@ class Nuxeo(object):
     def execute(self, command, url=None, op_input=None, timeout=-1,
                 check_params=True, void_op=False, extra_headers=None,
                 file_out=None, **params):
-        """Execute an Automation operation"""
+        """Execute an Automation operation
+
+        :param command: operation to execute
+        :param url: overrides the default url resolver
+        :param op_input: operation input
+        :param timeout: operation timeout
+        :param check_params: verify that the params are valid on the client side
+        :param void_op: If operation is a void operation
+        :param extra_headers: Headers to add to the request
+        :param file_out: Output result inside this file
+        :param **params: any additional param to add to the request"""
         if 'params' in params:
             params = params['params']
         if check_params:
@@ -454,51 +530,6 @@ class Nuxeo(object):
     def _end_action(self):
         pass
 
-    def request_authentication_token(self, application_name, device_id, device_description, permission, revoke=False):
-        """Request and return a new token for the user"""
-        base_error_message = (
-            "Failed to connect to Nuxeo server %s with user %s"
-            " to acquire a token"
-        ) % (self._base_url, self.user_id)
-
-        parameters = {
-            'deviceId': device_id,
-            'applicationName': application_name,
-            'permission': permission,
-            'revoke': 'true' if revoke else 'false',
-        }
-        if device_description:
-            parameters['deviceDescription'] = device_description
-        url = self._base_url + 'authentication/token?'
-        url += urlencode(parameters)
-
-        headers = self._get_common_headers()
-        cookies = self._get_cookies()
-        self.trace("Calling %s with headers %r and cookies %r",
-                url, headers, cookies)
-        req = urllib2.Request(url, headers=headers)
-        try:
-            token = self.opener.open(req, timeout=self.timeout).read()
-        except urllib2.HTTPError as e:
-            if e.code == 401 or e.code == 403:
-                raise Unauthorized(self._base_url, self.user_id, e.code)
-            elif e.code == 404:
-                # Token based auth is not supported by this server
-                return None
-            else:
-                e.msg = base_error_message + ": HTTP error %d" % e.code
-                raise e
-        except Exception as e:
-            if hasattr(e, 'msg'):
-                e.msg = base_error_message + ": " + e.msg
-            raise
-        cookies = self._get_cookies()
-        self.trace("Got token '%s' with cookies %r", token, cookies)
-        # Use the (potentially re-newed) token from now on
-        if not revoke:
-            self._update_auth(token=token)
-        return token
-
     def _update_auth(self, auth=None, password=None, token=None):
         """
         When username retrieved from database, check for unicode and convert to string.
@@ -561,7 +592,17 @@ class Nuxeo(object):
 
     def request(self, relative_url, body=None, adapter=None, timeout=-1, method='GET', content_type="application/json",
                 extra_headers=None, raw_body=False, query_params=dict()):
-        """Execute a REST API call"""
+        """Execute a REST API call
+
+        :param relative_url: url to call relative to the rest_url provide in constructor
+        :param body: body of the request
+        :param adpater: if specified will add the @adapter at the end of the url
+        :param timeout: timeout
+        :param method: HTTP method to use
+        :param content_type: For the request
+        :param extra_headers: Additional headers to send
+        :param raw_body: Avoid any processing on the body, by default body are serialize to json
+        :param query_params: Dict of the query parameter to add to the request ?param1=value1&param2=value2"""
 
         url = self._rest_url + relative_url
         if adapter is not None:

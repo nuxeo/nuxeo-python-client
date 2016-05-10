@@ -4,7 +4,9 @@ from common import NuxeoService
 
 
 class User(NuxeoAutosetObject):
-
+    """
+    Represent a User on the server
+    """
     entity_type = 'user'
     def __init__(self, obj=None, service=None, id=None):
         super(User, self).__init__(obj=obj, service=service, id=id)
@@ -15,6 +17,11 @@ class User(NuxeoAutosetObject):
             del self.properties['password']
 
     def change_password(self, password):
+        """
+        Change user password
+
+        :param password: New password to set
+        """
         self.properties['password'] = password
         self._service.update(self)
 
