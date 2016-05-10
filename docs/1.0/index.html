@@ -1,0 +1,1001 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Nuxeo Python Client &mdash; nuxeo-python-client 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="nuxeo-python-client 1.0 documentation" href="#" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nuxeo-python-client">
+<h1>Nuxeo Python Client<a class="headerlink" href="#nuxeo-python-client" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="nuxeo.nuxeo.Nuxeo">
+<em class="property">class </em><code class="descclassname">nuxeo.nuxeo.</code><code class="descname">Nuxeo</code><span class="sig-paren">(</span><em>base_url='http://localhost:8080/nuxeo'</em>, <em>auth=None</em>, <em>proxies=None</em>, <em>proxy_exceptions=None</em>, <em>repository='default'</em>, <em>timeout=20</em>, <em>blob_timeout=60</em>, <em>cookie_jar=None</em>, <em>upload_tmp_dir=None</em>, <em>check_suspended=None</em>, <em>api_path='api/v1/'</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Client for the Nuxeo REST API</p>
+<p>timeout is a short timeout to avoid having calls to fast JSON operations
+to block and freeze the application in case of network issues.</p>
+<p>blob_timeout is long (or infinite) timeout dedicated to long HTTP
+requests involving a blob transfer.</p>
+<p>Supports HTTP proxies.
+If proxies is given, it must be a dictionary mapping protocol names to
+URLs of proxies.
+If proxies is None, uses default proxy detection:
+read the list of proxies from the environment variables &lt;PROTOCOL&gt;_PROXY;
+if no proxy environment variables are set, then in a Windows environment
+proxy settings are obtained from the registry&#8217;s Internet Settings section,
+and in a Mac OS X environment proxy information is retrieved from the
+OS X System Configuration Framework.
+To disable autodetected proxy pass an empty dictionary.</p>
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.login">
+<code class="descname">login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to login and return the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Current user</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.repository">
+<code class="descname">repository</code><span class="sig-paren">(</span><em>name='default'</em>, <em>schemas=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.repository" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A repository object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.directory">
+<code class="descname">directory</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.directory" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An Operation object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.operation">
+<code class="descname">operation</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.operation" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://doc.nuxeo.com/display/NXDOC/Automation">https://doc.nuxeo.com/display/NXDOC/Automation</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An Operation object to perform on Automation</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.workflows">
+<code class="descname">workflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.workflows" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The Workflows service</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.users">
+<code class="descname">users</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.users" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The Users service</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.groups">
+<code class="descname">groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.groups" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The Groups service</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.batch_upload">
+<code class="descname">batch_upload</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.batch_upload" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Return a bucket to upload document to Nuxeo server</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.request_authentication_token">
+<code class="descname">request_authentication_token</code><span class="sig-paren">(</span><em>application_name</em>, <em>device_id</em>, <em>device_description</em>, <em>permission</em>, <em>revoke=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.request_authentication_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request and return a new token for the user
+Token requires to have an application name and device id and permission the description is optional
+Once the token received you can use it for future login</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.header">
+<code class="descname">header</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define a header.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; &#8211; Header name</li>
+<li><strong>value</strong> &#8211; &#8211; Header value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.headers">
+<code class="descname">headers</code><span class="sig-paren">(</span><em>extras=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the headers that will be sent to the server
+You can set additional headers with extras argument.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extras</strong> &#8211; &#8211; a dictionary or object of additional headers to set</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>command</em>, <em>url=None</em>, <em>op_input=None</em>, <em>timeout=-1</em>, <em>check_params=True</em>, <em>void_op=False</em>, <em>extra_headers=None</em>, <em>file_out=None</em>, <em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Automation operation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>command</strong> &#8211; operation to execute</li>
+<li><strong>url</strong> &#8211; overrides the default url resolver</li>
+<li><strong>op_input</strong> &#8211; operation input</li>
+<li><strong>timeout</strong> &#8211; operation timeout</li>
+<li><strong>check_params</strong> &#8211; verify that the params are valid on the client side</li>
+<li><strong>void_op</strong> &#8211; If operation is a void operation</li>
+<li><strong>extra_headers</strong> &#8211; Headers to add to the request</li>
+<li><strong>file_out</strong> &#8211; Output result inside this file</li>
+<li><strong>**params</strong> &#8211; <p>any additional param to add to the request</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.nuxeo.Nuxeo.request">
+<code class="descname">request</code><span class="sig-paren">(</span><em>relative_url</em>, <em>body=None</em>, <em>adapter=None</em>, <em>timeout=-1</em>, <em>method='GET'</em>, <em>content_type='application/json'</em>, <em>extra_headers=None</em>, <em>raw_body=False</em>, <em>query_params={}</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.nuxeo.Nuxeo.request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a REST API call</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>relative_url</strong> &#8211; url to call relative to the rest_url provide in constructor</li>
+<li><strong>body</strong> &#8211; body of the request</li>
+<li><strong>adpater</strong> &#8211; if specified will add the &#64;adapter at the end of the url</li>
+<li><strong>timeout</strong> &#8211; timeout</li>
+<li><strong>method</strong> &#8211; HTTP method to use</li>
+<li><strong>content_type</strong> &#8211; For the request</li>
+<li><strong>extra_headers</strong> &#8211; Additional headers to send</li>
+<li><strong>raw_body</strong> &#8211; Avoid any processing on the body, by default body are serialize to json</li>
+<li><strong>query_params</strong> &#8211; Dict of the query parameter to add to the request ?param1=value1&amp;param2=value2</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="batchupload">
+<h2>BatchUpload<a class="headerlink" href="#batchupload" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.batchupload.BatchUpload">
+<em class="property">class </em><code class="descclassname">nuxeo.batchupload.</code><code class="descname">BatchUpload</code><span class="sig-paren">(</span><em>nuxeo</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.batchupload.BatchUpload" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="nuxeo.batchupload.BatchUpload.cancel">
+<code class="descname">cancel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.batchupload.BatchUpload.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancel a BatchUpload, cleaning the bucket on the server side</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.batchupload.BatchUpload.fetch">
+<code class="descname">fetch</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.batchupload.BatchUpload.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a specific blob</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index</strong> &#8211; Get specified index</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.batchupload.BatchUpload.get_blobs">
+<code class="descname">get_blobs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.batchupload.BatchUpload.get_blobs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get blobs contained in this BatchUpload</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.batchupload.BatchUpload.upload">
+<code class="descname">upload</code><span class="sig-paren">(</span><em>blob</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.batchupload.BatchUpload.upload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload a new blob to the bucket
+See the BufferBlob or FileBlob</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob</strong> &#8211; The blob to upload to this BatchUpload</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-nuxeo.blob">
+<span id="blob-module"></span><h2>Blob module<a class="headerlink" href="#module-nuxeo.blob" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.blob.BatchBlob">
+<em class="property">class </em><code class="descclassname">nuxeo.blob.</code><code class="descname">BatchBlob</code><span class="sig-paren">(</span><em>service</em>, <em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.blob.BatchBlob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nuxeo.blob.Blob" title="nuxeo.blob.Blob"><code class="xref py py-class docutils literal"><span class="pre">nuxeo.blob.Blob</span></code></a></p>
+<p>Representation of an already uploaded Blob</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.blob.Blob">
+<em class="property">class </em><code class="descclassname">nuxeo.blob.</code><code class="descname">Blob</code><a class="headerlink" href="#nuxeo.blob.Blob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Abstract representation of a Blob
+You should use FileBlob or BufferBlob</p>
+<dl class="method">
+<dt id="nuxeo.blob.Blob.get_data">
+<code class="descname">get_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.blob.Blob.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.blob.Blob.get_mimetype">
+<code class="descname">get_mimetype</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.blob.Blob.get_mimetype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mimetype for the content</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.blob.Blob.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.blob.Blob.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the name to use</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.blob.Blob.get_size">
+<code class="descname">get_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.blob.Blob.get_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Size in octets</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.blob.BufferBlob">
+<em class="property">class </em><code class="descclassname">nuxeo.blob.</code><code class="descname">BufferBlob</code><span class="sig-paren">(</span><em>buffer</em>, <em>name</em>, <em>mimetype='application/octect-stream'</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.blob.BufferBlob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nuxeo.blob.Blob" title="nuxeo.blob.Blob"><code class="xref py py-class docutils literal"><span class="pre">nuxeo.blob.Blob</span></code></a></p>
+<p>InMemory content to upload to Nuxeo</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.blob.FileBlob">
+<em class="property">class </em><code class="descclassname">nuxeo.blob.</code><code class="descname">FileBlob</code><span class="sig-paren">(</span><em>path</em>, <em>mimetype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.blob.FileBlob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nuxeo.blob.Blob" title="nuxeo.blob.Blob"><code class="xref py py-class docutils literal"><span class="pre">nuxeo.blob.Blob</span></code></a></p>
+<p>Represent a File as Blob for future upload</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-nuxeo.directory">
+<span id="directory-module"></span><h2>Directory module<a class="headerlink" href="#module-nuxeo.directory" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.directory.Directory">
+<em class="property">class </em><code class="descclassname">nuxeo.directory.</code><code class="descname">Directory</code><span class="sig-paren">(</span><em>name</em>, <em>nuxeo</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.directory.Directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directory service allow you to modify a Directory on the server</p>
+<dl class="method">
+<dt id="nuxeo.directory.Directory.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.directory.Directory.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new entry in the directory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> &#8211; a object with properties attribute or a dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The new created entry</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.directory.Directory.fetchAll">
+<code class="descname">fetchAll</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.directory.Directory.fetchAll" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">all entries from the Directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.directory.Directory.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.directory.Directory.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update an entry in the directory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.directory.DirectoryEntry">
+<em class="property">class </em><code class="descclassname">nuxeo.directory.</code><code class="descname">DirectoryEntry</code><span class="sig-paren">(</span><em>obj=None</em>, <em>service=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.directory.DirectoryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Representation of an entry in a directory</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-nuxeo.document">
+<span id="document-module"></span><h2>Document module<a class="headerlink" href="#module-nuxeo.document" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.document.Document">
+<em class="property">class </em><code class="descclassname">nuxeo.document.</code><code class="descname">Document</code><span class="sig-paren">(</span><em>obj=None</em>, <em>service=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">nuxeo.common.NuxeoAutosetObject</span></code></p>
+<p>Represent a Document on the Nuxeo Server</p>
+<dl class="method">
+<dt id="nuxeo.document.Document.add_permission">
+<code class="descname">add_permission</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.add_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a permission to a document</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> &#8211; permission to add</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.convert">
+<code class="descname">convert</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the document to another format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> &#8211; Converter permission</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the converter result</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the current Document</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.fetch_acls">
+<code class="descname">fetch_acls</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.fetch_acls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch document ACLs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.fetch_audit">
+<code class="descname">fetch_audit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.fetch_audit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch audit for current document</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.fetch_blob">
+<code class="descname">fetch_blob</code><span class="sig-paren">(</span><em>xpath='blobholder:0'</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.fetch_blob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Document blob content</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xpath</strong> &#8211; by default first blob attached you can set the xpath to blobholder:1 for second blob and so on</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.fetch_lock_status">
+<code class="descname">fetch_lock_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.fetch_lock_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get lock status</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.fetch_rendition">
+<code class="descname">fetch_rendition</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.fetch_rendition" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; Rendition name to use</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The rendition content</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.fetch_renditions">
+<code class="descname">fetch_renditions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.fetch_renditions" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Available renditions for this document</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.fetch_workflows">
+<code class="descname">fetch_workflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.fetch_workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch the workflows running on this document</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.follow_transition">
+<code class="descname">follow_transition</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.follow_transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Follow a lifecycle transition on this document</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; transition name</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.has_permission">
+<code class="descname">has_permission</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.has_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify if a document has the permission</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.lock">
+<code class="descname">lock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lock the document</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.move">
+<code class="descname">move</code><span class="sig-paren">(</span><em>dst</em>, <em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move a document into another parent</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dst</strong> &#8211; The new parent path</li>
+<li><strong>name</strong> &#8211; New name if specified, normal move otherwise</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.refresh">
+<code class="descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Refresh the Document with last informations from the server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.remove_permission">
+<code class="descname">remove_permission</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.remove_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a permission to a document</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.start_workflow">
+<code class="descname">start_workflow</code><span class="sig-paren">(</span><em>name</em>, <em>options={}</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.start_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a workflow on a document</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; Workflow name</li>
+<li><strong>options</strong> &#8211; Workflow options</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the Workflow object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.document.Document.unlock">
+<code class="descname">unlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.document.Document.unlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unlock the document</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-nuxeo.groups">
+<span id="groups-module"></span><h2>Groups module<a class="headerlink" href="#module-nuxeo.groups" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.groups.Group">
+<em class="property">class </em><code class="descclassname">nuxeo.groups.</code><code class="descname">Group</code><span class="sig-paren">(</span><em>obj=None</em>, <em>service=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.groups.Group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a Group on the server</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.groups.Groups">
+<em class="property">class </em><code class="descclassname">nuxeo.groups.</code><code class="descname">Groups</code><span class="sig-paren">(</span><em>nuxeo</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.groups.Groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Groups management</p>
+<dl class="method">
+<dt id="nuxeo.groups.Groups.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.groups.Groups.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Group created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.groups.Groups.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>id</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.groups.Groups.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>id</strong> &#8211; Group name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.groups.Groups.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.groups.Groups.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> &#8211; Group object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-nuxeo.operation">
+<span id="operation-module"></span><h2>Operation module<a class="headerlink" href="#module-nuxeo.operation" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-nuxeo.repository">
+<span id="repository-module"></span><h2>Repository module<a class="headerlink" href="#module-nuxeo.repository" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.repository.Repository">
+<em class="property">class </em><code class="descclassname">nuxeo.repository.</code><code class="descname">Repository</code><span class="sig-paren">(</span><em>name</em>, <em>service</em>, <em>schemas=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.repository.Repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Repository on Nuxeo allow you to CREATE/GET/UPDATE/DELETE documents from the repository</p>
+<p>You also almost all the method from object Document except you have to specify the path or uid of the Document</p>
+<dl class="method">
+<dt id="nuxeo.repository.Repository.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>path</em>, <em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.repository.Repository.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new Document on the server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> &#8211; path to create the Document</li>
+<li><strong>obj</strong> &#8211; Document description: dict with at least (type,name,properties)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.repository.Repository.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.repository.Repository.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a specific Document</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; Path or ID to the Document</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.repository.Repository.fetch">
+<code class="descname">fetch</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.repository.Repository.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Document from Nuxeo</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; path to the Document or its ID</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Document object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-nuxeo.users">
+<span id="users-module"></span><h2>Users module<a class="headerlink" href="#module-nuxeo.users" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.users.User">
+<em class="property">class </em><code class="descclassname">nuxeo.users.</code><code class="descname">User</code><span class="sig-paren">(</span><em>obj=None</em>, <em>service=None</em>, <em>id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.users.User" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a User on the server</p>
+<dl class="method">
+<dt id="nuxeo.users.User.change_password">
+<code class="descname">change_password</code><span class="sig-paren">(</span><em>password</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.users.User.change_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change user password</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>password</strong> &#8211; New password to set</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.users.Users">
+<em class="property">class </em><code class="descclassname">nuxeo.users.</code><code class="descname">Users</code><span class="sig-paren">(</span><em>nuxeo</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.users.Users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Users management</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-nuxeo.workflow">
+<span id="workflow-module"></span><h2>Workflow module<a class="headerlink" href="#module-nuxeo.workflow" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nuxeo.workflow.Task">
+<em class="property">class </em><code class="descclassname">nuxeo.workflow.</code><code class="descname">Task</code><span class="sig-paren">(</span><em>obj=None</em>, <em>service=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a Task from a Workflow</p>
+<dl class="method">
+<dt id="nuxeo.workflow.Task.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><em>action</em>, <em>variables={}</em>, <em>comment=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Task.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Complete the task</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>action</strong> &#8211; to take</li>
+<li><strong>variables</strong> &#8211; to add to the Task</li>
+<li><strong>comment</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Updated task</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.workflow.Task.delegate">
+<code class="descname">delegate</code><span class="sig-paren">(</span><em>actors</em>, <em>comment=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Task.delegate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delegate the Task to someone else</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actors</strong> &#8211; </li>
+<li><strong>comment</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.workflow.Task.reassign">
+<code class="descname">reassign</code><span class="sig-paren">(</span><em>actors</em>, <em>comment=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Task.reassign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reassign the Task to someone else</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actors</strong> &#8211; </li>
+<li><strong>comment</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.workflow.Workflow">
+<em class="property">class </em><code class="descclassname">nuxeo.workflow.</code><code class="descname">Workflow</code><span class="sig-paren">(</span><em>obj=None</em>, <em>service=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a Workflow on the server</p>
+<dl class="method">
+<dt id="nuxeo.workflow.Workflow.fetch_graph">
+<code class="descname">fetch_graph</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Workflow.fetch_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the workflow graph</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Raw graph result</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.workflow.Workflow.fetch_tasks">
+<code class="descname">fetch_tasks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Workflow.fetch_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Tasks on this Workflow</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nuxeo.workflow.Workflows">
+<em class="property">class </em><code class="descclassname">nuxeo.workflow.</code><code class="descname">Workflows</code><span class="sig-paren">(</span><em>service</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Workflow services</p>
+<dl class="method">
+<dt id="nuxeo.workflow.Workflows.fetch_started_workflows">
+<code class="descname">fetch_started_workflows</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Workflows.fetch_started_workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the started workflow for a specific model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; Model name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Workflow launched with this model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.workflow.Workflows.fetch_tasks">
+<code class="descname">fetch_tasks</code><span class="sig-paren">(</span><em>options={}</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Workflows.fetch_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch the tasks from specific workflows</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>options</strong> &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">an Array of Task from the specified Workflows</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.workflow.Workflows.start">
+<code class="descname">start</code><span class="sig-paren">(</span><em>workflowModelName</em>, <em>workflowOptions={}</em>, <em>url=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflow.Workflows.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a workflow</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>workflowModelName</strong> &#8211; Name of the model</li>
+<li><strong>workflowOptions</strong> &#8211; Options for the Workflow</li>
+<li><strong>url</strong> &#8211; Use to override the default URL</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The Workflow object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Nuxeo Python Client</a><ul>
+<li><a class="reference internal" href="#batchupload">BatchUpload</a></li>
+<li><a class="reference internal" href="#module-nuxeo.blob">Blob module</a></li>
+<li><a class="reference internal" href="#module-nuxeo.directory">Directory module</a></li>
+<li><a class="reference internal" href="#module-nuxeo.document">Document module</a></li>
+<li><a class="reference internal" href="#module-nuxeo.groups">Groups module</a></li>
+<li><a class="reference internal" href="#module-nuxeo.operation">Operation module</a></li>
+<li><a class="reference internal" href="#module-nuxeo.repository">Repository module</a></li>
+<li><a class="reference internal" href="#module-nuxeo.users">Users module</a></li>
+<li><a class="reference internal" href="#module-nuxeo.workflow">Workflow module</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, ataillefer@nuxeo.com rcattiau@nuxeo.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
