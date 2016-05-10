@@ -21,7 +21,7 @@ from nuxeo import Nuxeo
 
 ## Documentation
 
-Check out the [API documentation](https://nuxeo.github.io/nuxeo-js-client/latest/).
+Check out the [API documentation](https://nuxeo.github.io/nuxeo-python-client/latest/).
 
 ## Requirements
 
@@ -57,7 +57,7 @@ nuxeo = new Nuxeo(
 `Operation` object allows you to execute an operation
 (or operation chain).
 
-See the [Operation](https://nuxeo.github.io/nuxeo-js-client/latest/Operation.html) documentation.
+See the [Operation](http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.operation) documentation.
 
 #### Samples
 
@@ -78,7 +78,7 @@ doc = operation.execute()
 
 The `Request` object allows you to call the Nuxeo REST API.
 
-See the [Request](https://nuxeo.github.io/nuxeo-js-client/latest/Request.html) documentation.
+See the [Request](http://nuxeo.github.io/nuxeo-python-client/latest/) documentation.
 
 #### Samples
 
@@ -98,7 +98,7 @@ natures = nuxeo.request('directory/nature')
 
 The `Repository` object allows you to work with document.
 
-See the [Repository](https://nuxeo.github.io/nuxeo-js-client/latest/Repository.html) documentation.
+See the [Repository](http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.repository) documentation.
 
 #### Samples
 
@@ -142,7 +142,7 @@ nuxeo.repository().delete('/a-folder')
 `Repository` object returns and works with `Document` objects. `Document` objects exposes a simpler API
 to work with a document.
 
-See the [Document](https://nuxeo.github.io/nuxeo-js-client/latest/Document.html) documentation.
+See the [Document](http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.document) documentation.
 
 #### Samples
 
@@ -251,7 +251,7 @@ task.complete('start_review', variables, comment='a comment');
 The `BatchUpload` object allows you to upload blobs to a Nuxeo Platform instance, and use them as operation input or
 as document property value.
 
-See the [BatchUpload](https://nuxeo.github.io/nuxeo-js-client/latest/BatchUpload.html) documentation.
+See the [BatchUpload](http://nuxeo.github.io/nuxeo-python-client/latest/#batchupload) documentation.
 
 #### Samples
 
@@ -285,8 +285,7 @@ operation.execute()
 
 The `Users` object allows you to work with users.
 
-See the [Users](https://nuxeo.github.io/nuxeo-js-client/latest/Users.html) and
-[User](https://nuxeo.github.io/nuxeo-js-client/latest/User.html) documentation.
+See the [Users](http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.users) documentation.
 
 #### Samples
 
@@ -318,8 +317,7 @@ nuxeo.users().delete('leela')
 
 The `Groups` object allows you to work with groups.
 
-See the [Groups](https://nuxeo.github.io/nuxeo-js-client/latest/Groups.html) and
-[Group](https://nuxeo.github.io/nuxeo-js-client/latest/Group.html) documentation.
+See the [Groups](http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.groups) documentation.
 
 #### Samples
 
@@ -349,8 +347,7 @@ nuxeo.groups().delete('foo')
 
 The `Directory` object allows you to work with directories.
 
-See the [Directory](https://nuxeo.github.io/nuxeo-js-client/latest/Directory.html) and
-[DirectoryEntry](https://nuxeo.github.io/nuxeo-js-client/latest/DirectoryEntry.html) documentation.
+See the [Directory](http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.directory) documentation.
 
 #### Samples
 
