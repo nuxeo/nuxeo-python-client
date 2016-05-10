@@ -34,21 +34,21 @@ This quick start guide will show how to do basics operations using the client.
 ### Creating a Client
 
 ```python
-nuxeo = new Nuxeo(
+nuxeo = Nuxeo(
   auth={
-    username: 'Administrator',
-    password: 'Administrator'
+    'username': 'Administrator',
+    'password': 'Administrator'
   })
 ```
 
 To connect to a different Nuxeo Platform Instance, you can use the following:
 
 ```python
-nuxeo = new Nuxeo(
+nuxeo = Nuxeo(
   base_url='http://demo.nuxeo.com/nuxeo/',
   auth={
-    username: 'Administrator',
-    password: 'Administrator'
+    'username': 'Administrator',
+    'password': 'Administrator'
   })
 ```
 
@@ -66,9 +66,9 @@ __Call an operation to create a new folder in the Root document__
 ```python
 operation = nuxeo.operation('Document.Create')
 operation.params({
-    type: 'Folder',
-    name: 'My Folder',
-    properties: 'dc:title=My Folder \ndc:description=A Simple Folder'
+    'type': 'Folder',
+    'name': 'My Folder',
+    'properties': 'dc:title=My Folder \ndc:description=A Simple Folder'
   })
 operation.input('/')
 doc = operation.execute()
@@ -122,9 +122,9 @@ __Create a new folder__
 ```python
 newFolder = {
   'entity-type': 'document',
-  name: 'a-folder',
-  type: 'Folder',
-  properties: {
+  'name': 'a-folder',
+  'type': 'Folder',
+  'properties': {
     'dc:title': 'foo',
   }
 }
@@ -181,7 +181,7 @@ doc.fetch_blob()
 __Convert a document main Blob to PDF__
 
 ```python
-doc.convert({ format: 'pdf' })
+doc.convert({ 'format': 'pdf' })
 ```
 
 __Fetch the 'thumbnail' rendition__
@@ -274,7 +274,7 @@ nuxeo.batch_upload().upload(blob)
 __Attach an uploaded blob to a document__
 
 ```python
-uploaded = nuxeo.batchUpload().upload(blob)
+uploaded = nuxeo.batch_upload().upload(blob)
 operation = nuxeo.operation('Blob.AttachOnDocument')
 operation.params({'document':'/a-file'})
 operation.input(uploaded)
@@ -299,10 +299,10 @@ __Create a new user__
 
 ```python
 newUser = {
-    username: 'leela',
-    firstName: 'Leela',
-    company: 'Futurama',
-    email: 'leela@futurama.com',
+    'username': 'leela',
+    'firstName': 'Leela',
+    'company': 'Futurama',
+    'email': 'leela@futurama.com',
   }
 user = nuxeo.users().create(newUser)
 ```
@@ -331,8 +331,8 @@ __Create a new group__
 
 ```python
 newGroup = {
-  groupname: 'foo',
-  grouplabel: 'Foo',
+  'groupname': 'foo',
+  'grouplabel': 'Foo',
 }
 group = nuxeo.groups().create(newGroup)
 ```
@@ -367,8 +367,8 @@ __Create a new directory entry__
 
 ```python
 newEntry = {
-  id: 'foo',
-  label: 'Foo',
+  'id': 'foo',
+  'label': 'Foo',
 }
 entry = nuxeo.directory('nature').create(newEntry)
 ```
