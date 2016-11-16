@@ -9,6 +9,7 @@
   </unzip>
   <import file="${out.dir}/nuxeo-ftest.xml" />
 
+  <property name="mp.install" value="nuxeo-jsf-ui" />
   <target name="prepare-environment" depends="_init,prepare-db,prepare-tomcat">
     <copy file="src/test/resources/cors-config.xml" todir="${nuxeo.nxserver}/config/" />
   </target>
