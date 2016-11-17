@@ -9,9 +9,13 @@
   </unzip>
   <import file="${out.dir}/nuxeo-ftest.xml" />
 
-  <property name="mp.install" value="nuxeo-jsf-ui" />
+  <property name="mp.install"
+    value="file:${out.dir}/nuxeo-marketplace-jsf-ui-${nuxeo.distribution.version}.zip" />
   <target name="prepare-environment" depends="_init,prepare-db,prepare-tomcat">
     <copy file="src/test/resources/cors-config.xml" todir="${nuxeo.nxserver}/config/" />
+    <copy todir="${out.dir}">
+      <artifact:file key="org.nuxeo.ecm.distribution:nuxeo-marketplace-jsf-ui::zip" />
+    </copy>
   </target>
   <target name="run-python-tests">
       <echo level="info">################### Starting Nuxeo Python Client functional tests ###################</echo>
