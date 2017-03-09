@@ -9,9 +9,9 @@ This is an on-going project, supported by Nuxeo.
 ## Getting Started
 
 
-After installing [Python](https://www.python.org/downloads/), use `pip` to install the `nuxeo-client` package:
+After installing [Python](https://www.python.org/downloads/), use `pip` to install the `nuxeo-python-client` package:
 
-    $ pip install nuxeo-client
+    $ pip install nuxeo-python-client
 
 Then, use the following `import` statement to have access to the Nuxeo API:
 
