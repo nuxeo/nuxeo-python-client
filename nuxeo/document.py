@@ -17,9 +17,9 @@ class Document(NuxeoAutosetObject):
         self.facets = obj['facets']
         self.repository = obj['repository']
         self.title = obj['title']
-        if 'lastModified' in obj:
+        try:
             self.lastModified = obj['lastModified']
-        else:
+        except KeyError:
             self.lastModified = None
         self.state = obj['state']
         self.isCheckedOut = obj['isCheckedOut']

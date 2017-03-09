@@ -21,6 +21,11 @@ class NuxeoObject(object):
                 self.properties = dict()
         self._dirty = False
 
+    def __repr__(self):
+        ret = ', '.join('{}={}'.format(*item) for item in vars(self).items()
+                        if not item[0].startswith('_'))
+        return u'<{}({})>'.format(type(self).__name__, ret)
+
     def is_lazy(self):
         return self._lazy
 
