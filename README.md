@@ -16,7 +16,7 @@ After installing [Python](https://www.python.org/downloads/), use `pip` to insta
 Then, use the following `import` statement to have access to the Nuxeo API:
 
 ```python
-from nuxeo import Nuxeo
+from nuxeo.nuxeo import Nuxeo
 ```
 
 ## Documentation
