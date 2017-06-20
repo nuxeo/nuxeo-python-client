@@ -1,1 +1,1 @@
-__author__ = 'loopingz'
+__version__ = '1.0.2'
