@@ -11,12 +11,12 @@ This is an on-going project, supported by Nuxeo.
 
 After installing [Python](https://www.python.org/downloads/), use `pip` to install the `nuxeo-python-client` package:
 
-    $ pip install nuxeo-python-client
+    $ pip install --upgrade nuxeo-python-client
 
 Then, use the following `import` statement to have access to the Nuxeo API:
 
 ```python
-from nuxeo.nuxeo import Nuxeo
+from nuxeo import Nuxeo
 ```
 
 ## Documentation
@@ -417,7 +417,7 @@ You can report issues on [answers.nuxeo.com](http://answers.nuxeo.com).
 
 ## License
 
-[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt) Copyright (c) Nuxeo SA
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt) Copyright (c) Nuxeo
 
 
 ## About Nuxeo

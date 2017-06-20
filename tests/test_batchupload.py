@@ -1,5 +1,4 @@
-__author__ = 'loopingz'
-
+# coding: utf-8
 from nuxeo.blob import BufferBlob
 from test_nuxeo import NuxeoTest
 

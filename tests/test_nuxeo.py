@@ -1,7 +1,6 @@
-__author__ = 'loopingz'
-
-from common import NuxeoTest
+# coding: utf-8
 from nuxeo.nuxeo import Nuxeo
+from .common import NuxeoTest
 
 
 class LoginTest(NuxeoTest):

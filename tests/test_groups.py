@@ -1,8 +1,7 @@
-__author__ = 'loopingz'
-
-
-from common import NuxeoTest
+# coding: utf-8
 from urllib2 import HTTPError
+
+from .common import NuxeoTest
 
 
 class GroupsTest(NuxeoTest):

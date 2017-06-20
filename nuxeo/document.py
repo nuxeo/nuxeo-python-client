@@ -1,6 +1,5 @@
-__author__ = 'loopingz'
-
-from common import NuxeoAutosetObject
+# coding: utf-8
+from .common import NuxeoAutosetObject
 
 
 class Document(NuxeoAutosetObject):

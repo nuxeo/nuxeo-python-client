@@ -1,5 +1,5 @@
-__author__ = 'loopingz'
-from common import NuxeoObject
+# coding: utf-8
+from .common import NuxeoObject
 
 
 class Workflow(NuxeoObject):

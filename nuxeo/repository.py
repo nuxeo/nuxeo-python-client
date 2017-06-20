@@ -1,6 +1,8 @@
-__author__ = 'loopingz'
-from document import Document
+# coding: utf-8
 from urllib import urlencode
+
+from .document import Document
+from .workflow import Workflow
 
 
 class Repository(object):
@@ -181,5 +183,4 @@ class Repository(object):
         return self._service.workflows().start(name, options, url=self._get_path(path) + "/@workflow")
 
     def fetch_workflows(self, path):
-        from workflow import Workflow
         return self._service.workflows()._map(self._service.request(self._get_path(path)+"/@workflow"), Workflow)

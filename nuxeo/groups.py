@@ -1,6 +1,5 @@
-__author__ = 'loopingz'
-from common import NuxeoObject
-from common import NuxeoService
+# coding: utf-8
+from .common import NuxeoObject, NuxeoService
 
 
 class Group(NuxeoObject):

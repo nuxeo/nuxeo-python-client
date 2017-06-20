@@ -1,7 +1,5 @@
-__author__ = 'loopingz'
-
-from nuxeo.blob import BufferBlob
-from test_nuxeo import NuxeoTest
+# coding: utf-8
+from .common import NuxeoTest
 
 
 class WorkflowTest(NuxeoTest):

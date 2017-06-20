@@ -1,7 +1,12 @@
-__author__ = 'loopingz'
-import urllib2
+# coding: utf-8
 import re
-from blob import BatchBlob
+
+import urllib2
+
+from .blob import BatchBlob
+
+__all__ = ['BatchUpload']
+
 
 def safe_filename(name, replacement=u'-'):
     """Replace invalid character in candidate filename"""
