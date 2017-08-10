@@ -1,14 +1,27 @@
-"""Nuxeo REST API Client."""
+# coding: utf-8
+""" Nuxeo REST API Client. """
 
 import base64
 import json
-import urllib2
+import socket
 import tempfile
 from urllib import urlencode
+
+import urllib2
+from poster.streaminghttp import get_handlers
 from urllib2 import ProxyHandler
 from urlparse import urlparse
-from poster.streaminghttp import get_handlers
-import socket
+
+from .batchupload import BatchUpload
+from .directory import Directory
+from .groups import Groups
+from .operation import Operation
+from .repository import Repository
+from .users import Users
+from .workflow import Workflows
+
+__all__ = ['Nuxeo']
+
 
 def json_helper(o):
     if (hasattr(o, 'to_json')):
@@ -228,14 +241,12 @@ class Nuxeo(object):
         """
         :return: A repository object
         """
-        from repository import Repository
         return Repository(name, self, schemas=schemas)
 
     def directory(self, name):
         """
         :return: An Operation object
         """
-        from directory import Directory
         return Directory(name, self)
 
     def operation(self, name):
@@ -243,35 +254,30 @@ class Nuxeo(object):
 
         :return: An Operation object to perform on Automation
         """
-        from operation import Operation
         return Operation(name, self)
 
     def workflows(self):
         """
         :return: The Workflows service
         """
-        from workflow import Workflows
         return Workflows(self)
 
     def users(self):
         """
         :return: The Users service
         """
-        from users import Users
         return Users(self)
 
     def groups(self):
         """
         :return: The Groups service
         """
-        from groups import Groups
         return Groups(self)
 
     def batch_upload(self):
         """
         :return: Return a bucket to upload document to Nuxeo server
         """
-        from batchupload import BatchUpload
         return BatchUpload(self)
 
     def request_authentication_token(self, application_name, device_id, device_description, permission, revoke=False):

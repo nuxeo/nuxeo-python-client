@@ -1,4 +1,4 @@
-__author__ = 'loopingz'
+# coding: utf-8
 
 
 class NuxeoObject(object):

@@ -1,9 +1,8 @@
-__author__ = 'loopingz'
-
-
-from common import NuxeoTest
-from nuxeo.document import Document
+# coding: utf-8
 from urllib2 import HTTPError
+
+from nuxeo.document import Document
+from .common import NuxeoTest
 
 
 class RepositoryTest(NuxeoTest):

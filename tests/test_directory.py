@@ -1,9 +1,7 @@
-__author__ = 'loopingz'
-
-
-from common import NuxeoTest
-from nuxeo.document import Document
+# coding: utf-8
 from urllib2 import HTTPError
+
+from .common import NuxeoTest
 
 
 class DirectoryTest(NuxeoTest):

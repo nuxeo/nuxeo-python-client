@@ -1,7 +1,16 @@
-__author__ = 'loopingz'
+# coding: utf-8
+import mimetypes
 import os
 import sys
-import mimetypes
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+__all__ = ['Blob', 'BatchBlob', 'BufferBlob', 'FileBlob']
+
+
 FILE_BUFFER_SIZE = 1024 ** 2
 
 WIN32_PATCHED_MIME_TYPES = {
@@ -116,7 +125,6 @@ class BufferBlob(Blob):
         self._buffer = buffer
 
     def get_data(self):
-        from StringIO import StringIO
         return StringIO(self._buffer)
 
     def get_size(self):

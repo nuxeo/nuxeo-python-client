@@ -1,5 +1,6 @@
-__author__ = 'loopingz'
-from blob import BatchBlob
+# coding: utf-8
+from .blob import BatchBlob
+
 
 class Operation(object):
     def __init__(self, type, service):
