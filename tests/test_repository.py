@@ -40,7 +40,6 @@ class RepositoryTest(NuxeoTest):
             root = self._repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(ex.exception.code, 404)
 
-
     def test_update_doc_and_delete(self):
         newDoc = {
             'name': NuxeoTest.WS_PYTHON_TEST_NAME,
@@ -116,13 +115,6 @@ class RepositoryTest(NuxeoTest):
         res = doc.convert({'converter': 'office2html'})
         self.assertTrue('<html>' in res)
         self.assertTrue('foo' in res)
-        doc.delete()
-
-    def test_convert_given_converter(self):
-        doc = self._create_blob_file()
-        res = doc.convert({'converter': 'office2html'})
-        self.assertTrue('<html>' in res)
-        self.assertTrue('foo' in res)
 
     def test_convert_xpath(self):
         doc = self._create_blob_file()
@@ -177,13 +169,13 @@ class RepositoryTest(NuxeoTest):
         doc = self._create_blob_file()
         status = doc.fetch_lock_status()
         self.assertEqual(status, {})
+        self.assertFalse(doc.is_locked())
         doc.lock()
         status = doc.fetch_lock_status()
         self.assertEqual(status['lockOwner'], 'Administrator')
-        self.assertTrue('lockCreated' in status)
-        # Exception
+        self.assertIn('lockCreated', status)
+        self.assertTrue(doc.is_locked())
         with self.assertRaises(HTTPError):
             doc.lock()
         doc.unlock()
-        status = doc.fetch_lock_status()
-        self.assertEqual(status, {})
+        self.assertFalse(doc.is_locked())
