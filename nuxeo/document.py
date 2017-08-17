@@ -65,6 +65,12 @@ class Document(NuxeoAutosetObject):
         """
         return self._service.convert(self.get_id(), params)
 
+    def is_locked(self):
+        """
+        Get lock status
+        """
+        return not not self.fetch_lock_status()
+
     def lock(self):
         """
         Lock the document
@@ -79,7 +85,7 @@ class Document(NuxeoAutosetObject):
 
     def fetch_lock_status(self):
         """
-        Get lock status
+        Get lock informations
         """
         return self._service.fetch_lock_status(self.get_id())
 

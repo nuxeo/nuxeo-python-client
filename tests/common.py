@@ -1,6 +1,8 @@
 # coding: utf-8
 from unittest import TestCase
 
+from nuxeo.blob import BufferBlob
+from nuxeo.document import Document
 from nuxeo.nuxeo import Nuxeo
 
 
@@ -22,8 +24,6 @@ class NuxeoTest(TestCase):
             pass
 
     def _create_blob_file(self):
-        from nuxeo.blob import BufferBlob
-        from nuxeo.document import Document
         newDoc = {
             'name': NuxeoTest.WS_PYTHON_TEST_NAME,
             'type': 'File',

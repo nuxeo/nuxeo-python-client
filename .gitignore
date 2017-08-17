@@ -5,6 +5,7 @@
 *~
 target
 bin
+.cache/
 coverage
 .coverage
 htmlcov
