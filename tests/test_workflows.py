@@ -8,11 +8,11 @@ class WorkflowTest(NuxeoTest):
         super(WorkflowTest, self).setUp()
         self._clean_root()
         try:
-            self._repository.delete('/task-root')
-            self._repository.delete('/document-route-instances-root')
+            self.repository.delete('/task-root')
+            self.repository.delete('/document-route-instances-root')
         except:
             pass
-        self._workflows = self._nuxeo.workflows()
+        self._workflows = self.nuxeo.workflows()
 
     def test_get_workflows(self):
         workflow = self._workflows.start('SerialDocumentReview')

@@ -7,6 +7,7 @@ class User(NuxeoAutosetObject):
     Represent a User on the server
     """
     entity_type = 'user'
+
     def __init__(self, obj=None, service=None, id=None):
         super(User, self).__init__(obj=obj, service=service, id=id)
         self._autoset = True
