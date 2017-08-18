@@ -1,5 +1,6 @@
 # coding: utf-8
-from urllib2 import HTTPError
+import operator
+import urllib2
 
 from nuxeo.document import Document
 from .common import NuxeoTest
@@ -12,13 +13,13 @@ class RepositoryTest(NuxeoTest):
         self._clean_root()
 
     def test_fetch_root(self):
-        root = self._repository.fetch('/')
+        root = self.repository.fetch('/')
         self.assertIsNotNone(root)
         self.assertTrue(isinstance(root, Document))
 
     def test_fetch_non_existing(self):
-        with self.assertRaises(HTTPError) as ex:
-            root = self._repository.fetch('/zone51')
+        with self.assertRaises(urllib2.HTTPError) as ex:
+            root = self.repository.fetch('/zone51')
         self.assertEqual(ex.exception.code, 404)
 
     def test_create_doc_and_delete(self):
@@ -29,15 +30,15 @@ class RepositoryTest(NuxeoTest):
               'dc:title': 'foo',
             }
         }
-        doc = self._repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
+        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
         self.assertIsNotNone(doc)
         self.assertTrue(isinstance(doc, Document))
         self.assertEqual(doc.path, NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(doc.type, 'Workspace')
         self.assertEqual(doc.properties['dc:title'], 'foo')
         doc.delete()
-        with self.assertRaises(HTTPError) as ex:
-            root = self._repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
+        with self.assertRaises(urllib2.HTTPError) as ex:
+            root = self.repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(ex.exception.code, 404)
 
     def test_update_doc_and_delete(self):
@@ -48,13 +49,13 @@ class RepositoryTest(NuxeoTest):
               'dc:title': 'foo',
             }
         }
-        doc = self._repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
+        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
         uid = doc.uid
         path = doc.path
         self.assertIsNotNone(doc)
         doc.set({'dc:title': 'bar'})
         doc.save()
-        doc = self._repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
+        doc = self.repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertTrue(isinstance(doc, Document))
         self.assertEqual(doc.uid, uid)
         self.assertEqual(doc.path, path)
@@ -62,7 +63,7 @@ class RepositoryTest(NuxeoTest):
         doc.delete()
 
     def test_query(self):
-        docs = self._repository.query({'query': 'SELECT * FROM Document WHERE ecm:primaryType = \'Domain\''})
+        docs = self.repository.query({'query': 'SELECT * FROM Document WHERE ecm:primaryType = \'Domain\''})
         self.assertEqual(docs['numberOfPages'], 1)
         self.assertEqual(docs['resultsCount'], 1)
         self.assertEqual(docs['currentPageSize'], 1)
@@ -71,8 +72,8 @@ class RepositoryTest(NuxeoTest):
         self.assertTrue(isinstance(docs['entries'][0], Document))
 
     def test_page_provider(self):
-        doc = self._repository.fetch('/default-domain')
-        docs = self._repository.query({'pageProvider': 'CURRENT_DOC_CHILDREN', 'queryParams': [doc.uid]})
+        doc = self.repository.fetch('/default-domain')
+        docs = self.repository.query({'pageProvider': 'CURRENT_DOC_CHILDREN', 'queryParams': [doc.uid]})
         self.assertEqual(docs['numberOfPages'], 1)
         self.assertEqual(docs['resultsCount'], 3)
         self.assertEqual(docs['currentPageSize'], 3)
@@ -80,22 +81,22 @@ class RepositoryTest(NuxeoTest):
         self.assertEqual(len(docs['entries']), 3)
 
     def test_page_provider_pagination(self):
-        doc = self._repository.fetch('/default-domain')
-        docs = self._repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 0, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
+        doc = self.repository.fetch('/default-domain')
+        docs = self.repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 0, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
         self.assertEqual(docs['currentPageSize'], 1)
         self.assertEqual(docs['currentPageIndex'], 0)
         self.assertEqual(docs['isNextPageAvailable'], True)
         self.assertEqual(len(docs['entries']), 1)
         self.assertTrue(isinstance(docs['entries'][0], Document))
         self.assertTrue(docs['entries'][0].title, 'Section')
-        docs = self._repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 1, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
+        docs = self.repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 1, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
         self.assertEqual(docs['currentPageSize'], 1)
         self.assertEqual(docs['currentPageIndex'], 1)
         self.assertEqual(docs['isNextPageAvailable'], True)
         self.assertEqual(len(docs['entries']), 1)
         self.assertTrue(isinstance(docs['entries'][0], Document))
         self.assertTrue(docs['entries'][0].title, 'Templates')
-        docs = self._repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 2, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
+        docs = self.repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 2, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
         self.assertEqual(docs['currentPageSize'], 1)
         self.assertEqual(docs['currentPageIndex'], 2)
         self.assertEqual(docs['isNextPageAvailable'], False)
@@ -143,10 +144,11 @@ class RepositoryTest(NuxeoTest):
     def test_fetch_acls(self):
         doc = self._create_blob_file()
         acls = doc.fetch_acls()
-        self.assertEqual(len(acls),1)
-        self.assertEqual(acls[0]['name'],'inherited')
-        self.assertEqual(acls[0]['aces'][0]["id"], 'Administrator:Everything:true:::')
-        self.assertEqual(acls[0]['aces'][1]["id"], 'members:Read:true:::')
+        self.assertEqual(len(acls), 1)
+        self.assertEqual(acls[0]['name'], 'inherited')
+        aces = list(sorted(acls[0]['aces'], key=operator.itemgetter('id')))
+        self.assertEqual(aces[0]['id'], 'Administrator:Everything:true:::')
+        self.assertEqual(aces[1]['id'], 'members:Read:true:::')
 
     def test_add_remove_permission(self):
         doc = self._create_blob_file()
@@ -175,7 +177,7 @@ class RepositoryTest(NuxeoTest):
         self.assertEqual(status['lockOwner'], 'Administrator')
         self.assertIn('lockCreated', status)
         self.assertTrue(doc.is_locked())
-        with self.assertRaises(HTTPError):
+        with self.assertRaises(urllib2.HTTPError):
             doc.lock()
         doc.unlock()
         self.assertFalse(doc.is_locked())

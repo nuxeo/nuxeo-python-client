@@ -9,15 +9,15 @@ class OperationTest(NuxeoTest):
     def setUp(self):
         super(OperationTest, self).setUp()
         try:
-            doc = self._nuxeo.repository().fetch('/default-domain/workspaces')
-            docs = self._nuxeo.repository().query({'pageProvider': 'CURRENT_DOC_CHILDREN', 'queryParams': [doc.uid]})
+            doc = self.nuxeo.repository().fetch('/default-domain/workspaces')
+            docs = self.nuxeo.repository().query({'pageProvider': 'CURRENT_DOC_CHILDREN', 'queryParams': [doc.uid]})
             for doc in docs['entries']:
                 doc.delete()
         except Exception:
             pass
 
     def test_params_setter(self):
-        operation = self._nuxeo.operation('Noop')
+        operation = self.nuxeo.operation('Noop')
         operation.params({'param1': 'foo', 'param2': 'bar'})
         self.assertEqual(operation._params['param1'],'foo')
         self.assertEqual(operation._params['param2'],'bar')
@@ -28,14 +28,14 @@ class OperationTest(NuxeoTest):
         self.assertEqual(operation._params['param3'],'plop')
 
     def test_document_fetch_by_property_params_validation(self):
-        operation = self._nuxeo.operation('Document.FetchByProperty')
+        operation = self.nuxeo.operation('Document.FetchByProperty')
         # Missing mandatory params
         operation.params({'property': 'dc:title'})
         with self.assertRaises(ValueError):
             operation.execute()
 
     def test_document_fetch_by_property(self):
-        operation = self._nuxeo.operation('Document.FetchByProperty')
+        operation = self.nuxeo.operation('Document.FetchByProperty')
         operation.params({'property': 'dc:title', 'values': 'Workspaces'})
         res = operation.execute()
         self.assertEquals(res['entity-type'], 'documents')
@@ -43,7 +43,7 @@ class OperationTest(NuxeoTest):
         self.assertEquals(res['entries'][0]['properties']['dc:title'], 'Workspaces')
 
     def test_document_get_child(self):
-        operation = self._nuxeo.operation('Document.GetChild')
+        operation = self.nuxeo.operation('Document.GetChild')
         operation.params({'name': 'workspaces'})
         operation.input('/default-domain')
         res = operation.execute()
@@ -51,7 +51,7 @@ class OperationTest(NuxeoTest):
         self.assertEquals(res['properties']['dc:title'], 'Workspaces')
 
     def test_document_get_child_unknown(self):
-        operation = self._nuxeo.operation('Document.GetChild')
+        operation = self.nuxeo.operation('Document.GetChild')
         operation.params({'name': 'Workspaces'})
         operation.input('/default-domain')
         with self.assertRaises(HTTPError) as ex:
@@ -79,9 +79,9 @@ class OperationTest(NuxeoTest):
             'dc:title': WS_JS_TEST_2_NAME,
           },
         }
-        doc1 = self._nuxeo.repository().create(WS_ROOT_PATH, newDoc1)
-        doc2 = self._nuxeo.repository().create(WS_ROOT_PATH, newDoc2)
-        operation = self._nuxeo.operation('Document.Update')
+        doc1 = self.nuxeo.repository().create(WS_ROOT_PATH, newDoc1)
+        doc2 = self.nuxeo.repository().create(WS_ROOT_PATH, newDoc2)
+        operation = self.nuxeo.operation('Document.Update')
         operation.params({'properties': {'dc:description':'sample description'}})
         operation.input([doc1.path, doc2.path])
         res = operation.execute()

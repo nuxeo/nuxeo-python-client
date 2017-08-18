@@ -8,7 +8,7 @@ class DirectoryTest(NuxeoTest):
 
     def setUp(self):
         super(DirectoryTest, self).setUp()
-        self._directory = self._nuxeo.directory('nature')
+        self._directory = self.nuxeo.directory('nature')
         try:
             entry = self._directory.fetch('foo')
             entry.delete()
