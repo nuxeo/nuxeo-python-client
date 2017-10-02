@@ -12,7 +12,7 @@ __all__ = ['BatchUpload']
 
 def safe_filename(name, replacement='-'):
     """ Replace invalid character in candidate filename. """
-    return re.sub(r'(/|\\|\*|:|\||"|<|>|\?)', replacement, name)
+    return re.sub(r'([/\\*:|"<>?])', replacement, name)
 
 
 class BatchUpload(object):
