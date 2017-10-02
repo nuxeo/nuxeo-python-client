@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import  unicode_literals
+
 import re
 
 import urllib2
@@ -8,14 +10,16 @@ from .blob import BatchBlob
 __all__ = ['BatchUpload']
 
 
-def safe_filename(name, replacement=u'-'):
-    """Replace invalid character in candidate filename"""
-    return re.sub(ur'(/|\\|\*|:|\||"|<|>|\?)', replacement, name)
+def safe_filename(name, replacement='-'):
+    """ Replace invalid character in candidate filename. """
+    return re.sub(r'(/|\\|\*|:|\||"|<|>|\?)', replacement, name)
 
-"""
-A BatchUpload represent a bucket on the Nuxeo Server that allows you to add binary to then do some operation on it
-"""
+
 class BatchUpload(object):
+    """
+    A BatchUpload represent a bucket on the Nuxeo Server that allows
+    you to add binary to then do some operation on it.
+    """
 
     def __init__(self, nuxeo):
         self._nuxeo = nuxeo
@@ -23,28 +27,28 @@ class BatchUpload(object):
         self._batchid = None
         self._upload_index = 0
         self._compatibiliy_mode = False
-        self._blobs = []
-
-    def get_blobs(self):
-        """Get blobs contained in this BatchUpload"""
-        return self._blobs
+        self.blobs = []
 
     def fetch(self, index):
-        """Fetch a specific blob
-
-        :param index: Get specified index
         """
+        Fetch a specific blob.
+
+        :param index: Get specified index.
+        """
+
         path = self._get_path() + '/' + str(index)
         res = self._nuxeo.request(path)
         res['fileIdx'] = index
         return BatchBlob(self, res)
 
     def upload(self, blob):
-        """Upload a new blob to the bucket
-        See the BufferBlob or FileBlob
-
-        :param blob: The blob to upload to this BatchUpload
         """
+        Upload a new blob to the bucket.
+        See the :class:`BufferBlob` or :class:`FileBlob`.
+
+        :param blob: The blob to upload to this BatchUpload.
+        """
+
         if self._batchid is None:
             self._batchid = self._create_batchid()
         if self._compatibiliy_mode:
@@ -52,17 +56,32 @@ class BatchUpload(object):
         filename = safe_filename(blob.get_name())
         quoted_filename = urllib2.quote(filename.encode('utf-8'))
         path = self._get_path() + '/' + str(self._upload_index)
-        headers = {'Cache-Control': 'no-cache', 'X-File-Name': quoted_filename, 'X-File-Size': blob.get_size(), 'X-File-Type': blob.get_mimetype(), 'Content-Length': blob.get_size()}
-        res = self._nuxeo.request(path, method="POST", body=blob.get_data(), content_type=blob.get_mimetype(), extra_headers=headers, raw_body=True)
+        headers = {
+            'Cache-Control': 'no-cache',
+            'X-File-Name': quoted_filename,
+            'X-File-Size': blob.get_size(),
+            'X-File-Type': blob.get_mimetype(),
+            'Content-Length': blob.get_size(),
+        }
+        res = self._nuxeo.request(
+            path,
+            method='POST',
+            body=blob.get_data(),
+            content_type=blob.get_mimetype(),
+            extra_headers=headers,
+            raw_body=True,
+        )
         res['name'] = filename
         blob = BatchBlob(self, res)
-        self._blobs.append(blob)
-        self._upload_index+=1
+        self.blobs.append(blob)
+        self._upload_index += 1
         return blob
 
-    def _old_upload(self, blob):
-        # headers.update({"X-Batch-Id": batch_id, "X-File-Idx": file_index})
+    def _old_upload(self, _):
+        """
+        # headers.update({'X-Batch-Id': batch_id, 'X-File-Idx': file_index})
         url = self._nuxeo.automation_url.encode('ascii') + self.batch_upload_url
+        """
         pass
 
     def compatibility_mode(self):
@@ -72,23 +91,23 @@ class BatchUpload(object):
         return self._batchid
 
     def _get_path(self):
-        return self._path + '/' + self._batchid
+        return self._path + self._batchid
 
     def cancel(self):
-        """
-        Cancel a BatchUpload, cleaning the bucket on the server side
-        """
-        if (self._batchid is None):
+        """ Cancel a BatchUpload, cleaning the bucket on the server side. """
+
+        if self._batchid is None:
             return
+
         if self._compatibiliy_mode:
             return
-        self._nuxeo.request(self._get_path(), method="DELETE")
+
+        self._nuxeo.request(self._get_path(), method='DELETE')
         self._batchid = None
 
     def _create_batchid(self):
         try:
-            res = self._nuxeo.request(self._path, method="POST")
-            return res['batchId']
+            res = self._nuxeo.request(self._path, method='POST')
         except Exception as e:
             log_details = self._log_details(e)
             if isinstance(log_details, tuple):
@@ -96,9 +115,13 @@ class BatchUpload(object):
                 if status == 404:
                     self._compatibiliy_mode = True
                 if status == 500:
-                    not_found_exceptions = ['com.sun.jersey.api.NotFoundException',
-                                            'org.nuxeo.ecm.webengine.model.TypeNotFoundException']
+                    not_found_exceptions = [
+                        'com.sun.jersey.api.NotFoundException',
+                        'org.nuxeo.ecm.webengine.model.TypeNotFoundException',
+                    ]
                     for exception in not_found_exceptions:
                         if code == exception or exception in message:
                             self._compatibiliy_mode = True
             raise e
+        else:
+            return res['batchId']

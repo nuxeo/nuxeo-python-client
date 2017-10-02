@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 from urllib import urlencode
 
 from .document import Document
@@ -7,55 +9,60 @@ from .workflow import Workflow
 
 class Repository(object):
     """
-    Repository on Nuxeo allow you to CREATE/GET/UPDATE/DELETE documents from the repository
+    Repository on Nuxeo allow you to CREATE/GET/UPDATE/DELETE documents
+    from the repository.
 
-    You also almost all the method from object Document except you have to specify the path or uid of the Document
+    You also almost all the method from object Document except you have to
+    specify the path or uid of the Document.
     """
-    def __init__(self, name, service, schemas=[]):
+
+    def __init__(self, name, service, schemas=None):
         self._name = name
         self._service = service
-        self._schemas = schemas
+        self._schemas = schemas or []
 
     def _get_path(self, path):
         if path.startswith('/'):
-            return "repo/" + self._name + "/path/" + path
-        else:
-            return "repo/" + self._name + "/id/" + path
+            return 'repo/' + self._name + '/path' + path
+        return 'repo/' + self._name + '/id/' + path
 
     def get(self, path):
-        return self._service.request(self._get_path(path), extra_headers=self._get_extra_headers())
+        return self._service.request(
+            self._get_path(path), extra_headers=self._get_extra_headers())
 
     def fetch(self, path):
         """
-        Get a Document from Nuxeo
+        Get a Document from Nuxeo.
 
-        :param path: path to the Document or its ID
-        :return: Document object
+        :param path: path to the Document or its ID.
+        :return: Document object.
         """
         return Document(self.get(path), self)
 
     def fetch_audit(self, path):
-        return self._service.request(self._get_path(path) + "/@audit")
+        return self._service.request(self._get_path(path) + '/@audit')
 
-    def fetch_blob(self, path, xpath = 'blobholder:0'):
-        return self._service.request(self._get_path(path) + "/@blob/" + xpath, extra_headers=self._get_extra_headers())
+    def fetch_blob(self, path, xpath='blobholder:0'):
+        return self._service.request(
+            self._get_path(path) + '/@blob/' + xpath,
+            extra_headers=self._get_extra_headers())
 
     def fetch_rendition(self, path, name):
-        return self._service.request(self._get_path(path) + "/@rendition/" + name, extra_headers=self._get_extra_headers())
+        return self._service.request(
+            self._get_path(path) + '/@rendition/' + name,
+            extra_headers=self._get_extra_headers())
 
     def fetch_renditions(self, path):
-        renditions = []
-        for rendition in self._service.request(self._get_path(path),
-                extra_headers=self._get_extra_headers({'enrichers-document':'renditions'}))["contextParameters"]["renditions"]:
-            renditions.append(rendition['name'])
-        return renditions
+        ret = self._service.request(
+            self._get_path(path),
+            extra_headers={'enrichers-document': 'renditions'})
+        return [rend['name'] for rend in ret['contextParameters']['renditions']]
 
     def fetch_acls(self, path):
-        acls = []
-        for acl in self._service.request(self._get_path(path),
-                extra_headers={'enrichers-document':'acls'})["contextParameters"]["acls"]:
-            acls.append(acl)
-        return acls
+        ret = self._service.request(
+            self._get_path(path),
+            extra_headers={'enrichers-document': 'acls'})
+        return ret['contextParameters']['acls']
 
     def add_permission(self, uid, params):
         operation = self._service.operation('Document.AddPermission')
@@ -70,14 +77,19 @@ class Repository(object):
         operation.execute()
 
     def has_permission(self, path, permission):
-        return permission in self._service.request(self._get_path(path),
-                    extra_headers={'enrichers-document':'permissions'})["contextParameters"]["permissions"]
+        ret = self._service.request(
+            self._get_path(path),
+            extra_headers={'enrichers-document': 'permissions'})
+        return permission in ret['contextParameters']['permissions']
 
     def fetch_lock_status(self, path):
-        res = self._service.request(self._get_path(path), extra_headers={'fetch-document':'lock'})
+        ret = dict()
+        res = self._service.request(
+            self._get_path(path), extra_headers={'fetch-document': 'lock'})
         if 'lockOwner' in res:
-            return {'lockCreated': res['lockOwner'], 'lockOwner': res['lockOwner']}
-        return {}
+            ret['lockCreated'] = res['lockOwner']
+            ret['lockOwner'] = res['lockOwner']
+        return ret
 
     def unlock(self, uid):
         operation = self._service.operation('Document.Unlock')
@@ -91,12 +103,13 @@ class Repository(object):
 
     def convert(self, path, options):
         xpath = options['xpath'] if 'xpath' in options else 'blobholder:0'
-        path = self._get_path(path) + "/@blob/" + xpath + '/@convert'
+        path = self._get_path(path) + '/@blob/' + xpath + '/@convert'
         if 'xpath' in options:
             del options['xpath']
-        if ("converter" not in options and "type" not in options and "format" not in options):
-            raise ValueError("One of converter,type,format is mandatory in options")
-        path += "?" + urlencode(options, True)
+        if 'converter' not in options and 'type' not in options and 'format' not in options:
+            raise ValueError('One of converter, type, format is mandatory in options')
+
+        path += '?' + urlencode(options, True)
         return self._service.request(path)
 
     def update(self, obj, uid=None):
@@ -106,62 +119,78 @@ class Repository(object):
         elif isinstance(obj, dict):
             properties = obj
         else:
-            raise Exception("Argument should be either a dict or a Document object")
+            raise ValueError('Argument should be either a dict or a Document object')
+
         body = {
             'entity-type': 'document',
             'uid': uid,
             'properties': properties
         }
-        return Document(self._service.request(self._get_path(uid), body=body, method="PUT", extra_headers=self._get_extra_headers()), self)
+        return Document(
+            self._service.request(self._get_path(uid),
+                                  body=body,
+                                  method='PUT',
+                                  extra_headers=self._get_extra_headers()),
+            self)
 
-    def _get_extra_headers(self, extras=dict()):
+    def _get_extra_headers(self, extras=None):
         extras_header = dict()
-        if len(self._schemas) > 0:
-            extras_header['X-NXDocumentProperties'] = ",".join(self._schemas)
+        if self._schemas:
+            extras_header['X-NXDocumentProperties'] = ','.join(self._schemas)
         extras_header['X-NXRepository'] = self._name
-        extras_header.update(extras)
+        if extras:
+            extras_header.update(extras)
         return extras_header
 
     def create(self, path, obj):
         """
-        Create a new Document on the server
+        Create a new Document on the server.
 
-        :param path: path to create the Document
-        :param obj: Document description: dict with at least (type,name,properties)
-        :return:
+        :param path: Path to create the Document.
+        :param dict obj: Document description: at least type, name, properties.
+        :rtype: Document
         """
+
         body = {
             'entity-type': 'document',
             'type': obj['type'],
             'name': obj['name'],
-            'properties': obj['properties']
+            'properties': obj['properties'],
         }
 
-        return Document(self._service.request(self._get_path(path), body=body, method="POST", extra_headers=self._get_extra_headers()), self)
+        return Document(
+            self._service.request(self._get_path(path),
+                                  body=body,
+                                  method='POST',
+                                  extra_headers=self._get_extra_headers()),
+            self)
 
     def delete(self, path):
         """
-        Delete a specific Document
+        Delete a specific Document.
 
-        :param path: Path or ID to the Document
+        :param path: Path or ID to the Document.
         """
-        self._service.request(self._get_path(path), method="DELETE")
+        self._service.request(self._get_path(path), method='DELETE')
 
-    def query(self, opts = dict()):
+    def query(self, opts=None):
         path = 'query/'
+        opts = opts or {}
         if 'query' in opts:
             path += 'NXQL'
         elif 'pageProvider' in opts:
             path += opts['pageProvider']
         else:
-            raise Exception("Need either a pageProvider or a query")
-        path += "?" + urlencode(opts, True)
-        result = self._service.request(path, extra_headers=self._get_extra_headers())
+            raise ValueError('Need either a pageProvider or a query')
+
+        path += '?' + urlencode(opts, True)
+        result = self._service.request(
+            path, extra_headers=self._get_extra_headers())
+
         # Mapping entries to Document
-        docs = []
-        for doc in result['entries']:
-            docs.append(Document(doc, self))
-        result['entries']=docs
+        docs = [Document(doc, self) for doc in result['entries']]
+        result['entries'] = docs
+
         return result
 
     def follow_transition(self, uid, name):
@@ -170,7 +199,7 @@ class Repository(object):
         operation.params({'value': name})
         operation.execute()
 
-    def move(self, uid, dst, name = None):
+    def move(self, uid, dst, name=None):
         operation = self._service.operation('Document.Move')
         operation.input(uid)
         params = {'target': dst}
@@ -180,7 +209,9 @@ class Repository(object):
         operation.execute()
 
     def start_workflow(self, name, path, options):
-        return self._service.workflows().start(name, options, url=self._get_path(path) + "/@workflow")
+        return self._service.workflows().start(
+            name, options, url=self._get_path(path) + '/@workflow')
 
     def fetch_workflows(self, path):
-        return self._service.workflows()._map(self._service.request(self._get_path(path)+"/@workflow"), Workflow)
+        return self._service.workflows()._map(
+            self._service.request(self._get_path(path)+'/@workflow'), Workflow)
