@@ -72,7 +72,7 @@ class BatchUpload(object):
         return self._batchid
 
     def _get_path(self):
-        return self._path + '/' + self._batchid
+        return self._path + self._batchid
 
     def cancel(self):
         """

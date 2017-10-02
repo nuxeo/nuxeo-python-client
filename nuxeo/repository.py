@@ -18,7 +18,7 @@ class Repository(object):
 
     def _get_path(self, path):
         if path.startswith('/'):
-            return "repo/" + self._name + "/path/" + path
+            return "repo/" + self._name + "/path" + path
         else:
             return "repo/" + self._name + "/id/" + path
 
