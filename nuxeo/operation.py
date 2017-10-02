@@ -36,10 +36,6 @@ class Operation(object):
         input = self._input
         params = self._params
         if isinstance(input, BatchBlob):
-            if input.compatibility_mode():
-                params['batchId'] = input.get_batch_id()
-                params['fileIdx'] = input.fileIdx
-            else:
-                url = self._service._rest_url + 'upload/' + input._service._batchid + '/' + str(input.fileIdx) + '/execute/' + self._type
-                input = None
+            url = self._service._rest_url + 'upload/' + input._service._batchid + '/' + str(input.fileIdx) + '/execute/' + self._type
+            input = None
         return self._service.execute(self._type, url=url, params=params, op_input=input)
