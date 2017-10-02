@@ -159,7 +159,7 @@ class FileBlob(Blob):
         return FILE_BUFFER_SIZE
 
     def _read_data(self, file_object, buffer_size):
-        while 'there is data to process':
+        while 'processing data':
             # Check if synchronization thread was suspended
             r = file_object.read(buffer_size)
             if not r:
