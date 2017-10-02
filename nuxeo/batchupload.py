@@ -12,7 +12,7 @@ __all__ = ['BatchUpload']
 
 def safe_filename(name, replacement='-'):
     """ Replace invalid character in candidate filename. """
-    return re.sub(r'(/|\\|\*|:|\||"|<|>|\?)', replacement, name)
+    return re.sub(r'([/\\*:|"<>?])', replacement, name)
 
 
 class BatchUpload(object):
@@ -26,7 +26,6 @@ class BatchUpload(object):
         self._path = 'upload/'
         self._batchid = None
         self._upload_index = 0
-        self._compatibiliy_mode = False
         self.blobs = []
 
     def fetch(self, index):
@@ -51,8 +50,6 @@ class BatchUpload(object):
 
         if self._batchid is None:
             self._batchid = self._create_batchid()
-        if self._compatibiliy_mode:
-            return self._old_upload(blob)
         filename = safe_filename(blob.get_name())
         quoted_filename = urllib2.quote(filename.encode('utf-8'))
         path = self._get_path() + '/' + str(self._upload_index)
@@ -77,16 +74,6 @@ class BatchUpload(object):
         self._upload_index += 1
         return blob
 
-    def _old_upload(self, _):
-        """
-        # headers.update({'X-Batch-Id': batch_id, 'X-File-Idx': file_index})
-        url = self._nuxeo.automation_url.encode('ascii') + self.batch_upload_url
-        """
-        pass
-
-    def compatibility_mode(self):
-        return self._compatibiliy_mode
-
     def get_batch_id(self):
         return self._batchid
 
@@ -99,29 +86,8 @@ class BatchUpload(object):
         if self._batchid is None:
             return
 
-        if self._compatibiliy_mode:
-            return
-
         self._nuxeo.request(self._get_path(), method='DELETE')
         self._batchid = None
 
     def _create_batchid(self):
-        try:
-            res = self._nuxeo.request(self._path, method='POST')
-        except Exception as e:
-            log_details = self._log_details(e)
-            if isinstance(log_details, tuple):
-                status, code, message, _ = log_details
-                if status == 404:
-                    self._compatibiliy_mode = True
-                if status == 500:
-                    not_found_exceptions = [
-                        'com.sun.jersey.api.NotFoundException',
-                        'org.nuxeo.ecm.webengine.model.TypeNotFoundException',
-                    ]
-                    for exception in not_found_exceptions:
-                        if code == exception or exception in message:
-                            self._compatibiliy_mode = True
-            raise e
-        else:
-            return res['batchId']
+        return self._nuxeo.request(self._path, method='POST')['batchId']
