@@ -186,8 +186,11 @@ class Repository(object):
         path += '?' + urlencode(opts, True)
         result = self._service.request(
             path, extra_headers=self._get_extra_headers())
+
         # Mapping entries to Document
-        result['entries'] = [Document(doc, self) for doc in result['entries']]
+        docs = [Document(doc, self) for doc in result['entries']]
+        result['entries'] = docs
+
         return result
 
     def follow_transition(self, uid, name):
