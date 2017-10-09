@@ -24,12 +24,13 @@ __all__ = ['Nuxeo']
 
 
 def json_helper(o):
-    if (hasattr(o, 'to_json')):
+    if hasattr(o, 'to_json'):
         res = o.to_json()
         return res
     raise TypeError(repr(o) + "is not JSON serializable (no to_json found)")
 
-def force_decode(string, codecs=['utf-8', 'cp1252']):
+
+def force_decode(string, codecs=('utf-8', 'cp1252')):
     if isinstance(string, unicode):
         string = string.encode('utf-8')
     for codec in codecs:
@@ -602,7 +603,7 @@ class Nuxeo(object):
 
         :param relative_url: url to call relative to the rest_url provide in constructor
         :param body: body of the request
-        :param adpater: if specified will add the @adapter at the end of the url
+        :param adapter: if specified will add the @adapter at the end of the url
         :param timeout: timeout
         :param method: HTTP method to use
         :param content_type: For the request
@@ -614,7 +615,7 @@ class Nuxeo(object):
         if adapter is not None:
             url += '/@' + adapter
 
-        if (len(query_params)):
+        if query_params:
             url += "?" + urlencode(query_params)
 
         if body is not None and not isinstance(body, str) and not raw_body:
@@ -628,8 +629,8 @@ class Nuxeo(object):
         if extra_headers is not None:
             headers.update(extra_headers)
         cookies = self._get_cookies()
-        self.trace("Calling REST API %s with headers %r and cookies %r", url,
-                  headers, cookies)
+        self.trace('Calling REST API %s with headers %r and cookies %r',
+                   url, headers, cookies)
         req = Request(url, headers=headers, method=method, data=body)
         timeout = self.timeout if timeout == -1 else timeout
         try:

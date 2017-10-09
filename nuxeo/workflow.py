@@ -1,11 +1,11 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 from .common import NuxeoObject
 
 
 class Workflow(NuxeoObject):
-    """
-    Represent a Workflow on the server
-    """
+    """ Represent a Workflow on the server. """
 
     def __init__(self, obj=None, service=None):
         super(Workflow, self).__init__(obj=obj, service=service)
@@ -24,7 +24,7 @@ class Workflow(NuxeoObject):
 
     def fetch_graph(self):
         """
-        Get the workflow graph
+        Get the workflow graph.
 
         :return: Raw graph result
         """
@@ -33,66 +33,66 @@ class Workflow(NuxeoObject):
 
     def fetch_tasks(self):
         """
-
         :return: Tasks on this Workflow
         """
-        return self._service.fetch_tasks({'workflowModelName': self.workflowModelName, 'workflowInstanceId': self.id})
+        return self._service.fetch_tasks(
+            {'workflowModelName': self.workflowModelName,
+             'workflowInstanceId': self.id})
 
 
 class Task(NuxeoObject):
-    """
-    Represent a Task from a Workflow
-    """
+    """ Represent a Task from a Workflow. """
 
     def __init__(self, obj=None, service=None):
         super(Task, self).__init__(obj=obj, service=service)
         self._read(obj)
 
-    def complete(self, action, variables=dict(), comment=None):
+    def complete(self, action, variables=None, comment=None):
         """
-        Complete the task
+        Complete the task.
 
         :param action: to take
         :param variables: to add to the Task
         :param comment:
         :return: Updated task
         """
+
         body = {'entity-type': 'task', 'id': self.get_id()}
         params = dict()
         params.update(self.variables)
-        if (comment):
+        if comment:
             params['comment'] = comment
+        variables = variables or {}
         params.update(variables)
-        body['variables']=variables
+        body['variables'] = variables
+
         # To get Nuxeo service
-        self._read(self._service._service.request('task/' + self.get_id() + '/' + action, body=body, method="PUT"))
+        req = self._service._service.request(
+            'task/' + self.get_id() + '/' + action, body=body, method='PUT')
+        self._read(req)
         return self
 
     def reassign(self, actors, comment=None):
-        """
-        Reassign the Task to someone else
+        """ Reassign the Task to someone else. """
 
-        :param actors:
-        :param comment:
-        """
-        query_params = dict()
-        query_params['actors'] = actors
+        query_params = {'actors': actors}
         if comment:
             query_params['comment'] = comment
-        self._read(self._service._service.request('task/' + self.get_id() + '/reassign', query_params=query_params, method="PUT"))
+        req = self._service._service.request(
+            'task/' + self.get_id() + '/reassign',
+            query_params=query_params, method='PUT')
+        self._read(req)
 
     def delegate(self, actors, comment=None):
-        """
-        Delegate the Task to someone else
+        """ Delegate the Task to someone else. """
 
-        :param actors:
-        :param comment:
-        """
-        query_params = dict()
-        query_params['delegatedActors'] = actors
+        query_params = {'delegatedActors': actors}
         if comment:
             query_params['comment'] = comment
-        self._read(self._service._service.request('task/' + self.get_id() + '/delegate', query_params=query_params, method="PUT"))
+        req = self._service._service.request(
+            'task/' + self.get_id() + '/delegate',
+            query_params=query_params, method='PUT')
+        self._read(req)
 
     def _read(self, obj):
         self.directive = obj['directive']
@@ -110,58 +110,59 @@ class Task(NuxeoObject):
         self.workflowModelName = obj['workflowModelName']
 
 
-class Workflows():
-    """
-    Workflow services
-    """
+class Workflows(object):
+    """ Workflow services. """
+
     def __init__(self, service):
         self._service = service
 
-    def start(self, workflowModelName, workflowOptions = dict(), url=None):
+    def start(self, model, options=None, url=None):
         """
-        Start a workflow
+        Start a workflow.
 
-        :param workflowModelName: Name of the model
-        :param workflowOptions: Options for the Workflow
+        :param model: Name of the model
+        :param options: Options for the Workflow
         :param url: Use to override the default URL
         :return: The Workflow object
         """
+
         body = {
-            'workflowModelName': workflowModelName,
+            'workflowModelName': model,
             'entity-type': 'workflow'
         }
         if url is None:
             url = 'workflow'
-        if "attachedDocumentIds" in workflowOptions:
-            body['attachedDocumentIds'] = workflowOptions["attachedDocumentIds"]
-        if "variables" in workflowOptions:
-            body['variables'] = workflowOptions["variables"]
-        return Workflow(self._service.request(url, body=body, method="POST"), service=self)
+        options = options or {}
+        if 'attachedDocumentIds' in options:
+            body['attachedDocumentIds'] = options['attachedDocumentIds']
+        if 'variables' in options:
+            body['variables'] = options['variables']
+
+        req = self._service.request(url, body=body, method='POST')
+        return Workflow(req, service=self)
 
     def fetch_started_workflows(self, name):
         """
-        Get the started workflow for a specific model
+        Get the started workflow for a specific model.
 
         :param name: Model name
         :return: Workflow launched with this model
         """
-        return self._map(self._service.request('workflow?workflowModelName=' + name, method="GET"), Workflow)
+        req = self._service.request('workflow?workflowModelName=' + name)
+        return self._map(req, Workflow)
 
-    def _map(self, result, clazz):
-        tasks = []
-        for task in result['entries']:
-            tasks.append(clazz(task, self))
-        return tasks
+    def _map(self, result, cls):
+        return [cls(task, self) for task in result['entries']]
 
     def fetch_graph(self, id):
         return self._service.request('workflow/' + id + '/graph')
 
-    def fetch_tasks(self, options=dict()):
+    def fetch_tasks(self, options=None):
         """
-        Fetch the tasks from specific workflows
+        Fetch the tasks from specific workflows.
 
         :param options:
         :return: an Array of Task from the specified Workflows
         """
-        return self._map(self._service.request('task', method="GET", query_params=options), Task)
-
+        req = self._service.request('task', query_params=options or {})
+        return self._map(req, Task)
