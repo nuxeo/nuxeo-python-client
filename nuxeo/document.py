@@ -1,11 +1,12 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 from .common import NuxeoAutosetObject
 
 
 class Document(NuxeoAutosetObject):
-    """
-    Represent a Document on the Nuxeo Server
-    """
+    """ Represent a Document on the Nuxeo Server. """
+
     def __init__(self, obj=None, service=None):
         super(Document, self).__init__(obj=obj, service=service)
         self._read(obj)
@@ -16,10 +17,7 @@ class Document(NuxeoAutosetObject):
         self.facets = obj['facets']
         self.repository = obj['repository']
         self.title = obj['title']
-        try:
-            self.lastModified = obj['lastModified']
-        except KeyError:
-            self.lastModified = None
+        self.lastModified = obj.get('lastModified')
         self.state = obj['state']
         self.isCheckedOut = obj['isCheckedOut']
         self.parentRef = obj['parentRef']
@@ -28,143 +26,117 @@ class Document(NuxeoAutosetObject):
 
     def fetch_renditions(self):
         """
-
         :return: Available renditions for this document
         """
-        return self._service.fetch_renditions(self.get_id())
+        return self._service.fetch_renditions(self.uid)
 
     def fetch_rendition(self, name):
         """
-
         :param name: Rendition name to use
         :return: The rendition content
         """
-        return self._service.fetch_rendition(self.get_id(), name)
+        return self._service.fetch_rendition(self.uid, name)
 
     def get_id(self):
         return self.uid
 
     def delete(self):
-        """
-        Delete the current Document
-        """
-        self._service.delete(self.get_id())
+        """ Delete the current Document. """
+        self._service.delete(self.uid)
 
     def refresh(self):
-        """
-        Refresh the Document with last informations from the server
-        """
-        self._read(self._service.get(self.get_id()))
+        """ Refresh the Document with last informations from the server. """
+        self._read(self._service.get(self.uid))
 
     def convert(self, params):
         """
-        Convert the document to another format
+        Convert the document to another format.
 
         :param params: Converter permission
         :return: the converter result
         """
-        return self._service.convert(self.get_id(), params)
+        return self._service.convert(self.uid, params)
 
     def is_locked(self):
-        """
-        Get lock status
-        """
+        """ Get lock status. """
         return not not self.fetch_lock_status()
 
     def lock(self):
-        """
-        Lock the document
-        """
-        return self._service.lock(self.get_id())
+        """ Lock the document. """
+        return self._service.lock(self.uid)
 
     def unlock(self):
-        """
-        Unlock the document
-        """
-        return self._service.unlock(self.get_id())
+        """ Unlock the document. """
+        return self._service.unlock(self.uid)
 
     def fetch_lock_status(self):
-        """
-        Get lock informations
-        """
-        return self._service.fetch_lock_status(self.get_id())
+        """ Get lock informations. """
+        return self._service.fetch_lock_status(self.uid)
 
     def fetch_acls(self):
-        """
-        Fetch document ACLs
-        """
-        return self._service.fetch_acls(self.get_id())
+        """ Fetch document ACLs. """
+        return self._service.fetch_acls(self.uid)
 
     def add_permission(self, params):
-        """
-        Add a permission to a document
+        """ Add a permission to a document.
 
         :param params: permission to add
         """
-        return self._service.add_permission(self.get_id(), params)
+        return self._service.add_permission(self.uid, params)
 
     def remove_permission(self, params):
-        """
-        Remove a permission to a document
-        """
-        return self._service.remove_permission(self.get_id(), params)
+        """ Remove a permission to a document. """
+        return self._service.remove_permission(self.uid, params)
 
     def has_permission(self, params):
-        """
-        Verify if a document has the permission
-        """
-        return self._service.has_permission(self.get_id(), params)
+        """ Verify if a document has the permission. """
+        return self._service.has_permission(self.uid, params)
 
     def fetch_blob(self, xpath='blobholder:0'):
         """
-        Get Document blob content
+        Get Document blob content.
 
-        :param xpath: by default first blob attached you can set the xpath to blobholder:1 for second blob and so on
+        :param xpath: by default first blob attached.  You can set the xpath
+                      to blobholder:1 for second blob, and so on.
         """
-        return self._service.fetch_blob(self.get_id(), xpath)
+        return self._service.fetch_blob(self.uid, xpath)
 
     def set(self, properties):
-        for key in properties:
-            self.properties[key] = properties[key]
+        self.properties.update(properties)
 
-    def move(self, dst, name = None):
+    def move(self, dst, name=None):
         """
-        Move a document into another parent
+        Move a document into another parent.
 
         :param dst: The new parent path
         :param name: New name if specified, normal move otherwise
         """
-        self._service.move(self.get_id(), dst, name)
+        self._service.move(self.uid, dst, name)
         self.refresh()
 
     def follow_transition(self, name):
         """
-        Follow a lifecycle transition on this document
+        Follow a lifecycle transition on this document.
 
         :param name: transition name
         """
-        self._service.follow_transition(self.get_id(), name)
+        self._service.follow_transition(self.uid, name)
         self.refresh()
 
     def fetch_audit(self):
-        """
-        Fetch audit for current document
-
-        """
-        return self._service.fetch_audit(self.get_id())
+        """ Fetch audit for current document. """
+        return self._service.fetch_audit(self.uid)
 
     def fetch_workflows(self):
-        """
-        Fetch the workflows running on this document
-        """
-        return self._service.fetch_workflows(self.get_id())
+        """ Fetch the workflows running on this document. """
+        return self._service.fetch_workflows(self.uid)
 
-    def start_workflow(self, name, options=dict()):
+    def start_workflow(self, name, options=None):
         """
-        Start a workflow on a document
+        Start a workflow on a document.
 
         :param name: Workflow name
         :param options: Workflow options
         :return: the Workflow object
         """
-        return self._service.start_workflow(name, self.get_id(), options)
+        return self._service.start_workflow(name, self.uid, options or {})
