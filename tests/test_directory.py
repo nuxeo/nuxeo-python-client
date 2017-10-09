@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 from urllib2 import HTTPError
 
 from .common import NuxeoTest
@@ -10,16 +12,15 @@ class DirectoryTest(NuxeoTest):
         super(DirectoryTest, self).setUp()
         self._directory = self.nuxeo.directory('nature')
         try:
-            entry = self._directory.fetch('foo')
-            entry.delete()
-        except Exception:
+            self._directory.fetch('foo').delete()
+        except:
             pass
 
     def test_fetch_all(self):
         entries = self._directory.fetchAll()
         self.assertIsNotNone(entries)
-        self.assertTrue(isinstance(entries, list))
-        self.assertTrue(len(entries) > 0)
+        self.assertIsInstance(entries, list)
+        self.assertGreater(len(entries), 0)
 
     def test_fetch(self):
         entry = self._directory.fetch('article')
@@ -27,16 +28,17 @@ class DirectoryTest(NuxeoTest):
         self.assertEqual(entry.directoryName, 'nature')
         self.assertEqual(entry.properties['id'], 'article')
         self.assertEqual(entry.get_id(), 'article')
-        self.assertEqual(entry.properties['label'], 'label.directories.nature.article')
+        self.assertEqual(entry.properties['label'],
+                         'label.directories.nature.article')
 
     def test_fetch_unknown(self):
         with self.assertRaises(HTTPError) as ex:
-            entry = self._directory.fetch('Abitbol')
+            self._directory.fetch('Abitbol')
         self.assertEqual(ex.exception.code, 404)
 
     def test_crud(self):
-        newEntry = {'id': 'foo', 'label': 'Foo'}
-        entry = self._directory.create(newEntry)
+        new_entry = {'id': 'foo', 'label': 'Foo'}
+        entry = self._directory.create(new_entry)
         self.assertEqual(entry.entity_type, 'directoryEntry')
         self.assertEqual(entry.directoryName, 'nature')
         self.assertEqual(entry.properties['id'], 'foo')
