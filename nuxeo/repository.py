@@ -54,16 +54,16 @@ class Repository(object):
             extra_headers=self._get_extra_headers())
 
     def fetch_renditions(self, path):
-        ret = self._service.request(
+        req = self._service.request(
             self._get_path(path),
             extra_headers={'enrichers-document': 'renditions'})
-        return [rend['name'] for rend in ret['contextParameters']['renditions']]
+        return [rend['name'] for rend in req['contextParameters']['renditions']]
 
     def fetch_acls(self, path):
-        ret = self._service.request(
+        req = self._service.request(
             self._get_path(path),
             extra_headers={'enrichers-document': 'acls'})
-        return ret['contextParameters']['acls']
+        return req['contextParameters']['acls']
 
     def add_permission(self, uid, params):
         operation = self._service.operation('Document.AddPermission')
@@ -78,18 +78,18 @@ class Repository(object):
         operation.execute()
 
     def has_permission(self, path, permission):
-        ret = self._service.request(
+        req = self._service.request(
             self._get_path(path),
             extra_headers={'enrichers-document': 'permissions'})
-        return permission in ret['contextParameters']['permissions']
+        return permission in req['contextParameters']['permissions']
 
     def fetch_lock_status(self, path):
         ret = dict()
-        res = self._service.request(
+        req = self._service.request(
             self._get_path(path), extra_headers={'fetch-document': 'lock'})
-        if 'lockOwner' in res:
-            ret['lockCreated'] = res['lockOwner']
-            ret['lockOwner'] = res['lockOwner']
+        if 'lockOwner' in req:
+            ret['lockCreated'] = req['lockOwner']
+            ret['lockOwner'] = req['lockOwner']
         return ret
 
     def unlock(self, uid):
@@ -107,8 +107,11 @@ class Repository(object):
         path = self._get_path(path) + '/@blob/' + xpath + '/@convert'
         if 'xpath' in options:
             del options['xpath']
-        if 'converter' not in options and 'type' not in options and 'format' not in options:
-            raise ValueError('One of converter, type, format is mandatory in options')
+        if ('converter' not in options
+                and 'type' not in options
+                and 'format' not in options):
+            raise ValueError(
+                'One of (converter, type, format) is mandatory in options')
 
         path += '?' + urlencode(options, True)
         return self._service.request(path)
@@ -120,19 +123,18 @@ class Repository(object):
         elif isinstance(obj, dict):
             properties = obj
         else:
-            raise ValueError('Argument should be either a dict or a Document object')
+            raise ValueError(
+                'Argument should be either a dict or a Document object')
 
         body = {
             'entity-type': 'document',
             'uid': uid,
             'properties': properties
         }
-        return Document(
-            self._service.request(self._get_path(uid),
-                                  body=body,
-                                  method='PUT',
-                                  extra_headers=self._get_extra_headers()),
-            self)
+        req = self._service.request(
+            self._get_path(uid), body=body, method='PUT',
+            extra_headers=self._get_extra_headers())
+        return Document(req, self)
 
     def _get_extra_headers(self, extras=None):
         extras_header = dict()
@@ -158,13 +160,10 @@ class Repository(object):
             'name': obj['name'],
             'properties': obj['properties'],
         }
-
-        return Document(
-            self._service.request(self._get_path(path),
-                                  body=body,
-                                  method='POST',
-                                  extra_headers=self._get_extra_headers()),
-            self)
+        req = self._service.request(
+            self._get_path(path), body=body, method='POST',
+            extra_headers=self._get_extra_headers())
+        return Document(req, self)
 
     def delete(self, path):
         """
@@ -185,17 +184,18 @@ class Repository(object):
             raise ValueError('Need either a pageProvider or a query')
 
         path += '?' + urlencode(opts, True)
-        result = self._service.request(
+        req = self._service.request(
             path, extra_headers=self._get_extra_headers())
 
         # Mapping entries to Document
-        docs = [Document(doc, self) for doc in result['entries']]
-        result['entries'] = docs
+        docs = [Document(doc, self) for doc in req['entries']]
+        req['entries'] = docs
 
-        return result
+        return req
 
     def follow_transition(self, uid, name):
-        operation = self._service.operation('Document.FollowLifecycleTransition')
+        operation = self._service.operation(
+            'Document.FollowLifecycleTransition')
         operation.input(uid)
         operation.params({'value': name})
         operation.execute()
@@ -214,5 +214,5 @@ class Repository(object):
             name, options, url=self._get_path(path) + '/@workflow')
 
     def fetch_workflows(self, path):
-        return self._service.workflows()._map(
-            self._service.request(self._get_path(path)+'/@workflow'), Workflow)
+        req = self._service.request(self._get_path(path)+'/@workflow')
+        return self._service.workflows()._map(req, Workflow)
