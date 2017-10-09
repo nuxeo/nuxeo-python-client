@@ -20,7 +20,7 @@ class BatchUploadTest(NuxeoTest):
         blob = self.batch.blobs[0]
         self.assertEqual(blob.fileIdx, 0)
         self.assertEqual(blob.uploadType, 'normal')
-        self.assertEqual(blob.uploaded, True)
+        self.assertIs(blob.uploaded, True)
         self.assertEqual(blob.uploadedSize, 4)
 
     def test_cancel(self):
@@ -45,15 +45,15 @@ class BatchUploadTest(NuxeoTest):
             }
         }
         doc = self.nuxeo.repository(schemas=['dublincore', 'file']).create(
-            '/default-domain/workspaces', new_doc)
+            NuxeoTest.WS_ROOT_PATH, new_doc)
         try:
             self.assertIsNone(doc.properties['file:content'])
             operation = self.nuxeo.operation('Blob.AttachOnDocument')
-            operation.params({'document': '/default-domain/workspaces/Document'})
+            operation.params({'document': NuxeoTest.WS_ROOT_PATH + '/Document'})
             operation.input(self.upload)
             operation.execute()
             doc = self.nuxeo.repository(schemas=['dublincore', 'file']).fetch(
-                '/default-domain/workspaces/Document')
+                NuxeoTest.WS_ROOT_PATH + '/Document')
             self.assertIsNotNone(doc.properties['file:content'])
             self.assertEqual(doc.fetch_blob(), 'data')
         finally:
