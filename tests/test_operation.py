@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 from urllib2 import HTTPError
 
 from .common import NuxeoTest
@@ -10,26 +12,28 @@ class OperationTest(NuxeoTest):
         super(OperationTest, self).setUp()
         try:
             doc = self.nuxeo.repository().fetch('/default-domain/workspaces')
-            docs = self.nuxeo.repository().query({'pageProvider': 'CURRENT_DOC_CHILDREN', 'queryParams': [doc.uid]})
+            params = {'pageProvider': 'CURRENT_DOC_CHILDREN',
+                      'queryParams': [doc.uid]}
+            docs = self.nuxeo.repository().query(params)
             for doc in docs['entries']:
                 doc.delete()
-        except Exception:
+        except:
             pass
 
     def test_params_setter(self):
         operation = self.nuxeo.operation('Noop')
         operation.params({'param1': 'foo', 'param2': 'bar'})
-        self.assertEqual(operation._params['param1'],'foo')
-        self.assertEqual(operation._params['param2'],'bar')
+        self.assertEqual(operation._params['param1'], 'foo')
+        self.assertEqual(operation._params['param2'], 'bar')
         operation.params({'param3': 'plop'})
         operation.params({'param1': 'bar'})
-        self.assertEqual(operation._params['param1'],'bar')
-        self.assertEqual(operation._params['param2'],'bar')
-        self.assertEqual(operation._params['param3'],'plop')
+        self.assertEqual(operation._params['param1'], 'bar')
+        self.assertEqual(operation._params['param2'], 'bar')
+        self.assertEqual(operation._params['param3'], 'plop')
 
     def test_document_fetch_by_property_params_validation(self):
+        """ Missing mandatory params. """
         operation = self.nuxeo.operation('Document.FetchByProperty')
-        # Missing mandatory params
         operation.params({'property': 'dc:title'})
         with self.assertRaises(ValueError):
             operation.execute()
@@ -40,7 +44,8 @@ class OperationTest(NuxeoTest):
         res = operation.execute()
         self.assertEquals(res['entity-type'], 'documents')
         self.assertEquals(len(res['entries']), 1)
-        self.assertEquals(res['entries'][0]['properties']['dc:title'], 'Workspaces')
+        self.assertEquals(res['entries'][0]['properties']['dc:title'],
+                          'Workspaces')
 
     def test_document_get_child(self):
         operation = self.nuxeo.operation('Document.GetChild')
@@ -60,36 +65,32 @@ class OperationTest(NuxeoTest):
 
     def test_document_list_update(self):
         # TODO Waiting for the repository object
-        WS_ROOT_PATH = '/default-domain/workspaces';
-        WS_JS_TEST_1_NAME = 'ws-js-tests1';
-        WS_JS_TEST_2_NAME = 'ws-js-tests2';
-        WS_JS_TESTS_1_PATH = WS_ROOT_PATH + '/' + WS_JS_TEST_1_NAME;
-        WS_JS_TESTS_2_PATH = WS_ROOT_PATH + '/' + WS_JS_TEST_2_NAME;
-        newDoc1 = {
-          'name': WS_JS_TEST_1_NAME,
-          'type': 'Workspace',
-          'properties': {
-            'dc:title': WS_JS_TEST_1_NAME,
-          },
+        new_doc1 = {
+            'name': 'ws-js-tests1',
+            'type': 'Workspace',
+            'properties': {
+                'dc:title': 'ws-js-tests1',
+            },
         }
-        newDoc2 = {
-          'name': WS_JS_TEST_2_NAME,
-          'type': 'Workspace',
-          'properties': {
-            'dc:title': WS_JS_TEST_2_NAME,
-          },
+        new_doc2 = {
+            'name': 'ws-js-tests2',
+            'type': 'Workspace',
+            'properties': {
+                'dc:title': 'ws-js-tests2',
+            },
         }
-        doc1 = self.nuxeo.repository().create(WS_ROOT_PATH, newDoc1)
-        doc2 = self.nuxeo.repository().create(WS_ROOT_PATH, newDoc2)
+        doc1 = self.nuxeo.repository().create(NuxeoTest.WS_ROOT_PATH, new_doc1)
+        doc2 = self.nuxeo.repository().create(NuxeoTest.WS_ROOT_PATH, new_doc2)
+        desc = 'sample description'
         operation = self.nuxeo.operation('Document.Update')
-        operation.params({'properties': {'dc:description':'sample description'}})
+        operation.params({'properties': {'dc:description': desc}})
         operation.input([doc1.path, doc2.path])
         res = operation.execute()
         self.assertEquals(res['entity-type'], 'documents')
         self.assertEquals(len(res['entries']), 2)
         self.assertEquals(res['entries'][0]['path'], doc1.path)
-        self.assertEquals(res['entries'][0]['properties']['dc:description'], 'sample description')
+        self.assertEquals(res['entries'][0]['properties']['dc:description'], desc)
         self.assertEquals(res['entries'][1]['path'], doc2.path)
-        self.assertEquals(res['entries'][1]['properties']['dc:description'], 'sample description')
+        self.assertEquals(res['entries'][1]['properties']['dc:description'], desc)
         doc1.delete()
         doc2.delete()
