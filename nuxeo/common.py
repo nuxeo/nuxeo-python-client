@@ -68,7 +68,8 @@ class NuxeoAutosetObject(NuxeoObject):
         if hasattr(self, item):
             return super(NuxeoObject, self).__getattribute__(item)
         if self._lazy:
-            raise Exception('Lazy loading is not yet implemented - use load()')
+            raise RuntimeError(
+                'Lazy loading is not yet implemented - use load()')
             try:
                 self._lazy = False
                 self.load()
