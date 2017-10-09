@@ -1,6 +1,6 @@
 # coding: utf-8
 """ Nuxeo REST API Client. """
-from __future__ import  unicode_literals
+from __future__ import unicode_literals
 
 import base64
 import json
@@ -64,11 +64,13 @@ def get_proxies_for_handler(proxy_settings):
                 proxy_settings.server,
                 proxy_settings.port)
         else:
-            proxy_string = '%s:%s' % (proxy_settings.server, proxy_settings.port)
+            proxy_string = '%s:%s' % (
+                proxy_settings.server, proxy_settings.port)
         if proxy_settings.proxy_type is None:
             proxies = {'http': proxy_string, 'https': proxy_string}
         else:
-            proxies = {proxy_settings.proxy_type: '%s://%s' % (proxy_settings.proxy_type, proxy_string)}
+            proxies = {proxy_settings.proxy_type: '%s://%s' % (
+                proxy_settings.proxy_type, proxy_string)}
         if proxy_settings.exceptions and proxy_settings.exceptions.strip():
             proxy_exceptions = [e.strip() for e in
                                 proxy_settings.exceptions.split(',')]
@@ -454,7 +456,7 @@ class Nuxeo(object):
         url=None,
         op_input=None,
         timeout=-1,
-        check_params=True, 
+        check_params=True,
         void_op=False,
         extra_headers=None,
         file_out=None,
@@ -463,15 +465,16 @@ class Nuxeo(object):
         """
         Execute an Automation operation.
 
-        :param command: operation to execute
-        :param url: overrides the default url resolver
-        :param op_input: operation input
-        :param timeout: operation timeout
-        :param check_params: verify that the params are valid on the client side
+        :param command: Operation to execute
+        :param url: Overrides the default url resolver
+        :param op_input: Operation input
+        :param timeout: Operation timeout
+        :param check_params: Verify that the params are valid on the
+                             client side
         :param void_op: If operation is a void operation
         :param extra_headers: Headers to add to the request
         :param file_out: Output result inside this file
-        :param params: any additional param to add to the request
+        :param params: Any additional param to add to the request
         """
 
         if 'params' in params:
@@ -506,7 +509,7 @@ class Nuxeo(object):
                 json_struct['params'][k] = s.strip()
             else:
                 json_struct['params'][k] = v
-        
+
         if op_input:
             if isinstance(op_input, list):
                 json_struct['input'] = "docs:" + ",".join(op_input)
@@ -516,7 +519,7 @@ class Nuxeo(object):
 
         req = urllib2.Request(url, data, headers)
         timeout = self.timeout if timeout == -1 else timeout
-        
+
         try:
             resp = self.opener.open(req, timeout=timeout)
         except Exception as e:
@@ -640,7 +643,7 @@ class Nuxeo(object):
         timeout=-1,
         method='GET',
         content_type='application/json',
-        extra_headers=None, 
+        extra_headers=None,
         raw_body=False,
         query_params=None,
     ):
@@ -650,7 +653,8 @@ class Nuxeo(object):
         :param relative_url: URL to call relative to the rest_url provide in
                              constructor.
         :param body: Body of the request
-        :param adapter: If specified will add the @adapter at the end of the URL
+        :param adapter: If specified will add the @adapter at the end of
+                        the URL.
         :param timeout: Timeout
         :param method: HTTP method to use
         :param content_type: For the request
@@ -702,7 +706,7 @@ class Nuxeo(object):
                 if message:
                     self.debug('Remote exception message: %s', message)
                 if stack:
-                    self.debug('Remote exception stack: %r', 
+                    self.debug('Remote exception stack: %r',
                                exc['stack'], exc_info=True)
                 else:
                     self.debug('Remote exception details: %r', detail)

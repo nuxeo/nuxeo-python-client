@@ -57,7 +57,8 @@ class Repository(object):
         req = self._service.request(
             self._get_path(path),
             extra_headers={'enrichers-document': 'renditions'})
-        return [rend['name'] for rend in req['contextParameters']['renditions']]
+        return [rend['name']
+                for rend in req['contextParameters']['renditions']]
 
     def fetch_acls(self, path):
         req = self._service.request(
