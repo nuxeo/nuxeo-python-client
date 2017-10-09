@@ -19,18 +19,18 @@ class RepositoryTest(NuxeoTest):
 
     def test_fetch_non_existing(self):
         with self.assertRaises(urllib2.HTTPError) as ex:
-            root = self.repository.fetch('/zone51')
+            self.repository.fetch('/zone51')
         self.assertEqual(ex.exception.code, 404)
 
     def test_create_doc_and_delete(self):
-        newDoc = {
+        new_doc = {
             'name': NuxeoTest.WS_PYTHON_TEST_NAME,
             'type': 'Workspace',
             'properties': {
               'dc:title': 'foo',
             }
         }
-        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
+        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, new_doc)
         self.assertIsNotNone(doc)
         self.assertTrue(isinstance(doc, Document))
         self.assertEqual(doc.path, NuxeoTest.WS_PYTHON_TESTS_PATH)
@@ -38,18 +38,33 @@ class RepositoryTest(NuxeoTest):
         self.assertEqual(doc.properties['dc:title'], 'foo')
         doc.delete()
         with self.assertRaises(urllib2.HTTPError) as ex:
-            root = self.repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
+            self.repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(ex.exception.code, 404)
 
+    def test_create_doc_with_space_and_delete(self):
+        name = 'my domain'
+        new_doc = {
+            'name': name,
+            'type': 'Workspace',
+            'properties': {
+                'dc:title': name.title(),
+            }
+        }
+        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, new_doc)
+        self.assertTrue(isinstance(doc, Document))
+        # NXPY-14: URL should be quoted
+        _ = self.repository.fetch(NuxeoTest.WS_ROOT_PATH + '/' + name)
+        doc.delete()
+
     def test_update_doc_and_delete(self):
-        newDoc = {
+        new_doc = {
             'name': NuxeoTest.WS_PYTHON_TEST_NAME,
             'type': 'Workspace',
             'properties': {
-              'dc:title': 'foo',
+                'dc:title': 'foo',
             }
         }
-        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, newDoc)
+        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, new_doc)
         uid = doc.uid
         path = doc.path
         self.assertIsNotNone(doc)

@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib import urlencode
+from urllib import quote, urlencode
 
 from .document import Document
 from .workflow import Workflow
@@ -22,6 +22,7 @@ class Repository(object):
         self._schemas = schemas or []
 
     def _get_path(self, path):
+        path = quote(path)
         if path.startswith('/'):
             return 'repo/' + self._name + '/path' + path
         return 'repo/' + self._name + '/id/' + path

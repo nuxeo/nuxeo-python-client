@@ -34,7 +34,7 @@ class NuxeoTest(unittest.TestCase):
             'name': self.WS_PYTHON_TEST_NAME,
             'type': 'File',
             'properties': {
-              'dc:title': 'bar.txt',
+                'dc:title': 'bar.txt',
             },
         }
         doc = self.repository.create(self.WS_ROOT_PATH, doc)
