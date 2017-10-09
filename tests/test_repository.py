@@ -41,6 +41,21 @@ class RepositoryTest(NuxeoTest):
             root = self.repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(ex.exception.code, 404)
 
+    def test_create_doc_with_space_and_delete(self):
+        name = 'my domain'
+        new_doc = {
+            'name': name,
+            'type': 'Workspace',
+            'properties': {
+                'dc:title': name.title(),
+            }
+        }
+        doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, new_doc)
+        self.assertTrue(isinstance(doc, Document))
+        # NXPY-14: URL should be quoted
+        _ = self.repository.fetch(NuxeoTest.WS_ROOT_PATH + '/' + name)
+        doc.delete()
+
     def test_update_doc_and_delete(self):
         newDoc = {
             'name': NuxeoTest.WS_PYTHON_TEST_NAME,
