@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import  unicode_literals
 
 
 class NuxeoObject(object):
@@ -22,7 +23,7 @@ class NuxeoObject(object):
         self._dirty = False
 
     def __repr__(self):
-        ret = ', '.join('{}={}'.format(*item) for item in vars(self).items()
+        ret = ', '.join('{}={:!r}'.format(*item) for item in vars(self).items()
                         if not item[0].startswith('_'))
         return u'<{}({})>'.format(type(self).__name__, ret)
 
@@ -48,10 +49,9 @@ class NuxeoObject(object):
 
 class NuxeoAutosetObject(NuxeoObject):
 
-    def __init__(self, obj=None, service=None, id=None):
+    def __init__(self, **kwargs):
         self._autoset = False
-        super(NuxeoAutosetObject, self).__init__(obj=obj, service=service, id=id)
-
+        super(NuxeoAutosetObject, self).__init__(**kwargs)
 
     def __setattr__(self, name, value):
         if name.startswith('_'):
@@ -85,25 +85,30 @@ class NuxeoAutosetObject(NuxeoObject):
 
 
 class NuxeoService(object):
-    """
-    Default service
-    """
+    """ Default service. """
+
     def __init__(self, nuxeo, path, object_class):
         self._nuxeo = nuxeo
         self._path = path
         self._object_class = object_class
 
-    def get(self, id):
-        return self._nuxeo.request(self._path + '/' + id)
+    def get(self, uid):
+        return self._nuxeo.request(self._path + '/' + uid)
 
-    def fetch(self, id):
-        return self._object_class(obj=self.get(id), service=self)
+    def fetch(self, uid):
+        return self._object_class(obj=self.get(uid), service=self)
 
-    def delete(self, id):
-        self._nuxeo.request(self._path + '/' + id, method='DELETE')
+    def delete(self, uid):
+        self._nuxeo.request(self._path + '/' + uid, method='DELETE')
 
     def update(self, obj):
-        self._nuxeo.request(self._path + '/' + obj.get_id(), body={'entity-type': self._object_class.entity_type, 'properties': obj.properties, 'id': obj.get_id()}, method='PUT')
+        body = {
+            'entity-type': self._object_class.entity_type,
+            'properties': obj.properties,
+            'id': obj.get_id(),
+        }
+        self._nuxeo.request(
+            self._path + '/' + obj.get_id(), body=body, method='PUT')
 
     def create(self, obj):
         if isinstance(obj, self._object_class):
@@ -111,5 +116,12 @@ class NuxeoService(object):
         elif isinstance(obj, dict):
             properties = obj
         else:
-            raise Exception("Need a dictionary of properties or a " + self._object_class + " object")
-        return self._object_class(self._nuxeo.request(self._path, method='POST', body={'entity-type': self._object_class.entity_type, 'properties': properties}), self)
+            err = 'Need a dictionary of properties or a {} object'
+            raise ValueError(err.format(self._object_class))
+
+        body = {
+            'entity-type': self._object_class.entity_type,
+            'properties': properties,
+        }
+        req = self._nuxeo.request(self._path, method='POST', body=body)
+        return self._object_class(req, self)
