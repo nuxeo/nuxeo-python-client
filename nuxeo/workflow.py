@@ -62,9 +62,9 @@ class Task(NuxeoObject):
         params.update(self.variables)
         if comment:
             params['comment'] = comment
-        variables = variables or {}
-        params.update(variables)
-        body['variables'] = variables
+        if variables:
+            params.update(variables)
+        body['variables'] = variables or {}
 
         # To get Nuxeo service
         req = self._service._service.request(
@@ -154,8 +154,8 @@ class Workflows(object):
     def _map(self, result, cls):
         return [cls(task, self) for task in result['entries']]
 
-    def fetch_graph(self, id):
-        return self._service.request('workflow/' + id + '/graph')
+    def fetch_graph(self, uid):
+        return self._service.request('workflow/' + uid + '/graph')
 
     def fetch_tasks(self, options=None):
         """

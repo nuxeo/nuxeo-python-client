@@ -215,5 +215,5 @@ class Repository(object):
             name, options, url=self._get_path(path) + '/@workflow')
 
     def fetch_workflows(self, path):
-        req = self._service.request(self._get_path(path)+'/@workflow')
+        req = self._service.request(self._get_path(path) + '/@workflow')
         return self._service.workflows()._map(req, Workflow)

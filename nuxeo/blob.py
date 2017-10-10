@@ -85,7 +85,7 @@ class BatchBlob(Blob):
         self._name = obj['name']
         self._size = int(obj.get('size', 0))
         self.uploadedSize = int(obj.get('uploadedSize', self._size))
-        self.fileIdx = int(obj.get('fileIdx', 0))
+        self.fileIdx = int(obj['fileIdx'])
 
     def to_json(self):
         return {

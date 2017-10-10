@@ -23,7 +23,7 @@ class NuxeoObject(object):
         self._dirty = False
 
     def __repr__(self):
-        ret = ', '.join('{}={:!r}'.format(*item) for item in vars(self).items()
+        ret = ', '.join('{}={!r}'.format(*item) for item in vars(self).items()
                         if not item[0].startswith('_'))
         return u'<{}({})>'.format(type(self).__name__, ret)
 
