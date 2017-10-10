@@ -19,9 +19,8 @@ class Operation(object):
         :return: The Operation parameters.
         """
 
-        if params is not None:
-            for key in params:
-                self._params[key] = params[key]
+        if params:
+            self._params.update(params)
         return self._params
 
     def input(self, input_):

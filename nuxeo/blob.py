@@ -34,21 +34,15 @@ WIN32_PATCHED_MIME_TYPES = {
 }
 
 
-def _patch_win32_mime_type(mime_type):
-    patched_mime_type = WIN32_PATCHED_MIME_TYPES.get(mime_type)
-    return patched_mime_type if patched_mime_type else mime_type
-
-
 def guess_mime_type(filename):
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type:
         if sys.platform == 'win32':
             # Patch bad Windows MIME types
-            # See https://jira.nuxeo.com/browse/NXP-11660
-            # and http://bugs.python.org/issue15207
-            mime_type = _patch_win32_mime_type(mime_type)
+            # See http://bugs.python.org/issue15207 and NXP-11660
+            mime_type = WIN32_PATCHED_MIME_TYPES.get(mime_type, mime_type)
         return mime_type
-    
+
     return 'application/octet-stream'
 
 
@@ -86,20 +80,11 @@ class BatchBlob(Blob):
 
     def __init__(self, service, obj):
         self._service = service
-        if 'uploaded' in obj:
-            self.uploaded = obj['uploaded'] == "true"
-        else:
-            self.uploaded = True
+        self.uploaded = obj.get('uploaded', 'true') == 'true'
         self.uploadType = obj['uploadType']
         self._name = obj['name']
-        if 'size' in obj:
-            self._size = int(obj['size'])
-        else:
-            self._size = 0
-        if 'uploadedSize' in obj:
-            self.uploadedSize = int(obj['uploadedSize'])
-        else:
-            self.uploadedSize = self._size
+        self._size = int(obj.get('size', 0))
+        self.uploadedSize = int(obj.get('uploadedSize', self._size))
         self.fileIdx = int(obj['fileIdx'])
 
     def to_json(self):

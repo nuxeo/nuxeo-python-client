@@ -1,11 +1,12 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 from .common import NuxeoAutosetObject, NuxeoService
 
 
 class User(NuxeoAutosetObject):
-    """
-    Represent a User on the server
-    """
+    """ Represent a User on the server. """
+
     entity_type = 'user'
 
     def __init__(self, obj=None, service=None, id=None):
@@ -18,7 +19,7 @@ class User(NuxeoAutosetObject):
 
     def change_password(self, password):
         """
-        Change user password
+        Change user password.
 
         :param password: New password to set
         """
@@ -27,8 +28,7 @@ class User(NuxeoAutosetObject):
 
 
 class Users(NuxeoService):
-    """
-    Users management
-    """
+    """ Users management. """
+
     def __init__(self, nuxeo):
         super(Users, self).__init__(nuxeo, 'user', User)

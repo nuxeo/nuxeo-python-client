@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 import operator
 import urllib2
 
@@ -15,7 +17,7 @@ class RepositoryTest(NuxeoTest):
     def test_fetch_root(self):
         root = self.repository.fetch('/')
         self.assertIsNotNone(root)
-        self.assertTrue(isinstance(root, Document))
+        self.assertIsInstance(root, Document)
 
     def test_fetch_non_existing(self):
         with self.assertRaises(urllib2.HTTPError) as ex:
@@ -32,7 +34,7 @@ class RepositoryTest(NuxeoTest):
         }
         doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, new_doc)
         self.assertIsNotNone(doc)
-        self.assertTrue(isinstance(doc, Document))
+        self.assertIsInstance(doc, Document)
         self.assertEqual(doc.path, NuxeoTest.WS_PYTHON_TESTS_PATH)
         self.assertEqual(doc.type, 'Workspace')
         self.assertEqual(doc.properties['dc:title'], 'foo')
@@ -42,6 +44,8 @@ class RepositoryTest(NuxeoTest):
         self.assertEqual(ex.exception.code, 404)
 
     def test_create_doc_with_space_and_delete(self):
+        """ NXPY-14: URLs should be quoted. """
+
         name = 'my domain'
         new_doc = {
             'name': name,
@@ -51,9 +55,8 @@ class RepositoryTest(NuxeoTest):
             }
         }
         doc = self.repository.create(NuxeoTest.WS_ROOT_PATH, new_doc)
-        self.assertTrue(isinstance(doc, Document))
-        # NXPY-14: URL should be quoted
-        _ = self.repository.fetch(NuxeoTest.WS_ROOT_PATH + '/' + name)
+        self.assertIsInstance(doc, Document)
+        self.repository.fetch(NuxeoTest.WS_ROOT_PATH + '/' + name)
         doc.delete()
 
     def test_update_doc_and_delete(self):
@@ -71,7 +74,7 @@ class RepositoryTest(NuxeoTest):
         doc.set({'dc:title': 'bar'})
         doc.save()
         doc = self.repository.fetch(NuxeoTest.WS_PYTHON_TESTS_PATH)
-        self.assertTrue(isinstance(doc, Document))
+        self.assertIsInstance(doc, Document)
         self.assertEqual(doc.uid, uid)
         self.assertEqual(doc.path, path)
         self.assertEqual(doc.properties['dc:title'], 'bar')
@@ -84,11 +87,12 @@ class RepositoryTest(NuxeoTest):
         self.assertEqual(docs['currentPageSize'], 1)
         self.assertEqual(docs['currentPageIndex'], 0)
         self.assertEqual(len(docs['entries']), 1)
-        self.assertTrue(isinstance(docs['entries'][0], Document))
+        self.assertIsInstance(docs['entries'][0], Document)
 
     def test_page_provider(self):
         doc = self.repository.fetch('/default-domain')
-        docs = self.repository.query({'pageProvider': 'CURRENT_DOC_CHILDREN', 'queryParams': [doc.uid]})
+        docs = self.repository.query({'pageProvider': 'CURRENT_DOC_CHILDREN',
+                                      'queryParams': [doc.uid]})
         self.assertEqual(docs['numberOfPages'], 1)
         self.assertEqual(docs['resultsCount'], 3)
         self.assertEqual(docs['currentPageSize'], 3)
@@ -97,59 +101,75 @@ class RepositoryTest(NuxeoTest):
 
     def test_page_provider_pagination(self):
         doc = self.repository.fetch('/default-domain')
-        docs = self.repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 0, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
+        docs = self.repository.query({'pageProvider': 'document_content',
+                                      'queryParams': [doc.uid],
+                                      'pageSize': 1,
+                                      'currentPageIndex': 0,
+                                      'sortBy': 'dc:title',
+                                      'sortOrder': 'asc'})
         self.assertEqual(docs['currentPageSize'], 1)
         self.assertEqual(docs['currentPageIndex'], 0)
-        self.assertEqual(docs['isNextPageAvailable'], True)
+        self.assertIs(docs['isNextPageAvailable'], True)
         self.assertEqual(len(docs['entries']), 1)
-        self.assertTrue(isinstance(docs['entries'][0], Document))
+        self.assertIsInstance(docs['entries'][0], Document)
         self.assertTrue(docs['entries'][0].title, 'Section')
-        docs = self.repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 1, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
+        docs = self.repository.query({'pageProvider': 'document_content',
+                                      'queryParams': [doc.uid],
+                                      'pageSize': 1,
+                                      'currentPageIndex': 1,
+                                      'sortBy': 'dc:title',
+                                      'sortOrder': 'asc'})
         self.assertEqual(docs['currentPageSize'], 1)
         self.assertEqual(docs['currentPageIndex'], 1)
-        self.assertEqual(docs['isNextPageAvailable'], True)
+        self.assertIs(docs['isNextPageAvailable'], True)
         self.assertEqual(len(docs['entries']), 1)
-        self.assertTrue(isinstance(docs['entries'][0], Document))
+        self.assertIsInstance(docs['entries'][0], Document)
         self.assertTrue(docs['entries'][0].title, 'Templates')
-        docs = self.repository.query({'pageProvider': 'document_content', 'queryParams': [doc.uid], 'pageSize': 1, 'currentPageIndex': 2, 'sortBy': 'dc:title', 'sortOrder': 'asc'})
+        docs = self.repository.query({'pageProvider': 'document_content',
+                                      'queryParams': [doc.uid],
+                                      'pageSize': 1,
+                                      'currentPageIndex': 2,
+                                      'sortBy': 'dc:title',
+                                      'sortOrder': 'asc'})
         self.assertEqual(docs['currentPageSize'], 1)
         self.assertEqual(docs['currentPageIndex'], 2)
-        self.assertEqual(docs['isNextPageAvailable'], False)
+        self.assertIs(docs['isNextPageAvailable'], False)
         self.assertEqual(len(docs['entries']), 1)
-        self.assertTrue(isinstance(docs['entries'][0], Document))
+        self.assertIsInstance(docs['entries'][0], Document)
         self.assertTrue(docs['entries'][0].title, 'Workspaces')
 
     def test_convert(self):
         doc = self._create_blob_file()
         res = doc.convert({'format': 'html'})
-        self.assertTrue('<html>' in res)
-        self.assertTrue('foo' in res)
+        self.assertIn('<html>', res)
+        self.assertIn('foo', res)
         doc.delete()
 
     def test_convert_given_converter(self):
         doc = self._create_blob_file()
         res = doc.convert({'converter': 'office2html'})
-        self.assertTrue('<html>' in res)
-        self.assertTrue('foo' in res)
+        self.assertIn('<html>', res)
+        self.assertIn('foo', res)
 
     def test_convert_xpath(self):
         doc = self._create_blob_file()
-        res = doc.convert({ 'xpath': 'file:content', 'type': 'text/html' })
+        res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
         self.assertTrue('<html>' in res)
         self.assertTrue('foo' in res)
 
     def test_fetch_renditions(self):
         doc = self._create_blob_file()
         res = doc.fetch_renditions()
-        self.assertTrue('thumbnail' in res)
-        self.assertTrue('xmlExport' in res)
-        self.assertTrue('zipExport' in res)
+        self.assertIn('thumbnail', res)
+        self.assertIn('xmlExport', res)
+        self.assertIn('zipExport', res)
 
     def test_fetch_rendition(self):
         doc = self._create_blob_file()
         res = doc.fetch_rendition('xmlExport')
-        self.assertTrue('<?xml version="1.0" encoding="UTF-8"?>' in res)
-        self.assertTrue(('<path>'+NuxeoTest.WS_PYTHON_TESTS_PATH[1:]+'</path>') in res)
+        self.assertIn('<?xml version="1.0" encoding="UTF-8"?>', res)
+        path = '<path>' + NuxeoTest.WS_PYTHON_TESTS_PATH[1:] + '</path>'
+        self.assertIn(path, res)
 
     def test_fetch_blob(self):
         doc = self._create_blob_file()
@@ -171,7 +191,8 @@ class RepositoryTest(NuxeoTest):
         acls = doc.fetch_acls()
         self.assertEqual(len(acls), 2)
         self.assertEqual(acls[0]['name'], 'local')
-        self.assertEqual(acls[0]['aces'][0]["id"], 'members:Write:true:Administrator::')
+        self.assertEqual(acls[0]['aces'][0]['id'],
+                         'members:Write:true:Administrator::')
         doc.remove_permission({'id': 'members:Write:true:Administrator::'})
         acls = doc.fetch_acls()
         self.assertEqual(len(acls), 1)

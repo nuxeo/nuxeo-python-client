@@ -1,8 +1,10 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 import os
 import socket
 import unittest
-import urllib2
+from urllib2 import HTTPError
 
 from nuxeo.blob import BufferBlob
 from nuxeo.document import Document
@@ -24,22 +26,21 @@ class NuxeoTest(unittest.TestCase):
 
     def _clean_root(self):
         try:
-            root = self.repository.fetch(self.WS_PYTHON_TESTS_PATH)
-            root.delete()
-        except (urllib2.HTTPError, socket.timeout):
+            self.repository.fetch(self.WS_PYTHON_TESTS_PATH).delete()
+        except (HTTPError, socket.timeout):
             pass
 
     def _create_blob_file(self):
-        doc = {
+        new_doc = {
             'name': self.WS_PYTHON_TEST_NAME,
             'type': 'File',
             'properties': {
                 'dc:title': 'bar.txt',
             },
         }
-        doc = self.repository.create(self.WS_ROOT_PATH, doc)
+        doc = self.repository.create(self.WS_ROOT_PATH, new_doc)
         self.assertIsNotNone(doc)
-        self.assertTrue(isinstance(doc, Document))
+        self.assertIsInstance(doc, Document)
         self.assertEqual(doc.path, self.WS_PYTHON_TESTS_PATH)
         self.assertEqual(doc.type, 'File')
         self.assertEqual(doc.properties['dc:title'], 'bar.txt')

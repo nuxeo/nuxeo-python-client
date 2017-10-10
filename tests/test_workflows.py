@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 from .common import NuxeoTest
 
 
@@ -9,6 +11,9 @@ class WorkflowTest(NuxeoTest):
         self._clean_root()
         try:
             self.repository.delete('/task-root')
+        except:
+            pass
+        try:
             self.repository.delete('/document-route-instances-root')
         except:
             pass
@@ -21,15 +26,21 @@ class WorkflowTest(NuxeoTest):
         self.assertEqual(len(wfs), 1)
         tasks = self._workflows.fetch_tasks()
         self.assertEqual(len(tasks), 1)
-        tasks = self._workflows.fetch_tasks({'workflowInstanceId': wfs[0].get_id()})
+        tasks = self._workflows.fetch_tasks(
+            {'workflowInstanceId': wfs[0].get_id()})
         self.assertEqual(len(tasks), 1)
         tasks = self._workflows.fetch_tasks({'workflowInstanceId': 'unknown'})
         self.assertEqual(len(tasks), 0)
-        tasks = self._workflows.fetch_tasks({'workflowInstanceId': wfs[0].get_id(), 'userId': 'Administrator'})
+        tasks = self._workflows.fetch_tasks(
+            {'workflowInstanceId': wfs[0].get_id(), 'userId': 'Administrator'})
         self.assertEqual(len(tasks), 1)
-        tasks = self._workflows.fetch_tasks({'workflowInstanceId': wfs[0].get_id(), 'userId': 'Georges Abitbol'})
+        tasks = self._workflows.fetch_tasks(
+            {'workflowInstanceId': wfs[0].get_id(),
+             'userId': 'Georges Abitbol'})
         self.assertEqual(len(tasks), 0)
-        tasks = self._workflows.fetch_tasks({'workflowInstanceId': wfs[0].get_id(), 'workflowModelName': 'SerialDocumentReview'})
+        tasks = self._workflows.fetch_tasks(
+            {'workflowInstanceId': wfs[0].get_id(),
+             'workflowModelName': 'SerialDocumentReview'})
         self.assertEqual(len(tasks), 1)
         tasks = self._workflows.fetch_tasks({'workflowModelName': 'foo'})
         self.assertEqual(len(tasks), 0)
@@ -52,8 +63,11 @@ class WorkflowTest(NuxeoTest):
         tasks = self._workflows.fetch_tasks()
         self.assertEqual(len(tasks), 1)
         task = tasks[0]
-        vars = {'participants':['user:Administrator'], 'assignees':['user:Administrator'], 'end_date': '2011-10-23T12:00:00.00Z'};
-        task.complete('start_review', vars, comment='a comment')
+        infos = {
+            'participants': ['user:Administrator'],
+            'assignees': ['user:Administrator'],
+            'end_date': '2011-10-23T12:00:00.00Z'}
+        task.complete('start_review', infos, comment='a comment')
         workflows = doc.fetch_workflows()
         self.assertEqual(len(workflows), 1)
         self.assertEqual(task.state, 'ended')
