@@ -499,13 +499,16 @@ class Nuxeo(object):
         headers.update(self._get_common_headers())
 
         json_struct = {'params': {}}
-        for k, v in params.items():
+        for k, v in params.iteritems():
             if v is None:
                 continue
             if k == 'properties':
-                s = ''
-                for propname, propvalue in v.iteritems():
-                    s += '%s=%s\n' % (propname, propvalue)
+                if isinstance(v, dict):
+                    s = ''
+                    for propname, propvalue in v.iteritems():
+                        s += '%s=%s\n' % (propname, propvalue)
+                else:
+                    s = v
                 json_struct['params'][k] = s.strip()
             else:
                 json_struct['params'][k] = v
@@ -629,9 +632,8 @@ class Nuxeo(object):
                            param, command)
         for param in required_params:
             if param not in params:
-                raise ValueError(
-                    'Missing required param {} for operation {}'.format(
-                        param, command))
+                err = 'Missing required param {!r} for operation {!r}.'
+                raise ValueError(err.format(param, command))
 
         # TODO: add typechecking
 
