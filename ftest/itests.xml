@@ -18,9 +18,12 @@
       <property name="env.SERVER_URL" value="" />
       <echo level="info">PATH detected by Ant = ${env.PATH}</echo>
       <echo level="info">SERVER_URL environment variable = ${env.SERVER_URL}</echo>
-      <exec executable="python -m pytest" failonerror="true">
+      <exec executable="python" failonerror="true">
+        <arg value="-m" />
+        <arg value="pytest" />
         <arg value="--showlocals" />
         <arg value="--exitfirst" />
+        <arg value="../tests" />
       </exec>
       <echo level="info">################### Ended Nuxeo Python Client functional tests ###################</echo>
     </target>
