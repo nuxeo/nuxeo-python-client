@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from .common import NuxeoAutosetObject
 
+__all__ = ('Document',)
+
 
 class Document(NuxeoAutosetObject):
     """ Represent a Document on the Nuxeo Server. """

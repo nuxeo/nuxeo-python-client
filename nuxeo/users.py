@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from .common import NuxeoAutosetObject, NuxeoService
 
+__all__ = ('User', 'Users')
+
 
 class User(NuxeoAutosetObject):
     """ Represent a User on the server. """

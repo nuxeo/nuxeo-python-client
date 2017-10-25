@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from .common import NuxeoObject, NuxeoService
 
+__all__ = ('Directory', 'DirectoryEntry')
+
 
 class DirectoryEntry(NuxeoObject):
     """ Representation of an entry in a directory. """

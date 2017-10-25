@@ -2,13 +2,13 @@
 from __future__ import unicode_literals
 
 from nuxeo.blob import BufferBlob
-from test_nuxeo import NuxeoTest
+from . import NuxeoTest
 
 
-class BatchUploadTest(NuxeoTest):
+class TestBatchUpload(NuxeoTest):
 
     def setUp(self):
-        super(BatchUploadTest, self).setUp()
+        super(TestBatchUpload, self).setUp()
         self.batch = self.nuxeo.batch_upload()
         self.assertIsNotNone(self.batch)
         self.assertIsNone(self.batch._batchid)
@@ -45,15 +45,15 @@ class BatchUploadTest(NuxeoTest):
             }
         }
         doc = self.nuxeo.repository(schemas=['dublincore', 'file']).create(
-            NuxeoTest.WS_ROOT_PATH, new_doc)
+            self.WS_ROOT_PATH, new_doc)
         try:
             self.assertIsNone(doc.properties['file:content'])
             operation = self.nuxeo.operation('Blob.AttachOnDocument')
-            operation.params({'document': NuxeoTest.WS_ROOT_PATH + '/Document'})
+            operation.params({'document': self.WS_ROOT_PATH + '/Document'})
             operation.input(self.upload)
             operation.execute()
             doc = self.nuxeo.repository(schemas=['dublincore', 'file']).fetch(
-                NuxeoTest.WS_ROOT_PATH + '/Document')
+                self.WS_ROOT_PATH + '/Document')
             self.assertIsNotNone(doc.properties['file:content'])
             self.assertEqual(doc.fetch_blob(), 'data')
         finally:

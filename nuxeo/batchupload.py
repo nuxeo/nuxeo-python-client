@@ -7,7 +7,7 @@ import urllib2
 
 from .blob import BatchBlob
 
-__all__ = ['BatchUpload']
+__all__ = ('BatchUpload',)
 
 
 def safe_filename(name, replacement='-'):

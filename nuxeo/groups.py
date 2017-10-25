@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from .common import NuxeoObject, NuxeoService
 
+__all__ = ('Group', 'Groups')
+
 
 class Group(NuxeoObject):
     """ Represent a Group on the server. """

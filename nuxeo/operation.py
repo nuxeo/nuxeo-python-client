@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from .blob import BatchBlob
 
+__all__ = ('Operation',)
+
 
 class Operation(object):
     def __init__(self, nature, service):
@@ -27,10 +29,11 @@ class Operation(object):
         """ Set the input for this operation. """
         self._input = input_
 
-    def execute(self):
+    def execute(self, **kwargs):
         """
         Execute the operation on the server.
 
+        :param kwargs: Additional args forwarded to :meth:`Nuxeo.execute()`.
         :return: Raw result from the server.
         """
 
@@ -47,4 +50,4 @@ class Operation(object):
                    + self._type)
             input_ = None
         return self._service.execute(
-            self._type, url=url, params=params, op_input=input_)
+            self._type, url=url, params=params, op_input=input_, **kwargs)

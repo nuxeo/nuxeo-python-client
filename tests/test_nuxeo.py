@@ -1,14 +1,13 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from .common import NuxeoTest
+from . import NuxeoTest
 
 
-class LoginTest(NuxeoTest):
+class TestNuxeo(NuxeoTest):
 
-    def test_login(self):
-        user = self.nuxeo.login()
-        self.assertIsNotNone(user)
+    def test_get_operations(self):
+        self.assertGreater(len(self.nuxeo.operations), 0)
 
     def test_headers(self):
         self.nuxeo.header('Add1', 'Value1')
@@ -21,3 +20,16 @@ class LoginTest(NuxeoTest):
         headers = self.nuxeo.headers(extras)
         self.assertEquals(headers['Add2'], 'Value2')
         self.assertEquals(headers['Add1'], 'Value3')
+
+    def test_login(self):
+        user = self.nuxeo.login()
+        self.assertIsNotNone(user)
+
+    def test_server_reachable(self):
+        self.assertTrue(self.nuxeo.server_reachable())
+        base_url = self.nuxeo.base_url
+        self.nuxeo.base_url = 'http://example.org/'
+        try:
+            self.assertFalse(self.nuxeo.server_reachable())
+        finally:
+            self.nuxeo.base_url = base_url

@@ -6,6 +6,8 @@ from urllib import quote, urlencode
 from .document import Document
 from .workflow import Workflow
 
+__all__ = ('Repository',)
+
 
 class Repository(object):
     """

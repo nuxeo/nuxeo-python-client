@@ -21,7 +21,7 @@ from .repository import Repository
 from .users import Users
 from .workflow import Workflows
 
-__all__ = ['Nuxeo']
+__all__ = ('Nuxeo',)
 
 
 def json_helper(o):
@@ -168,6 +168,9 @@ class Nuxeo(object):
                            can interrupt the download thread
     :param api_path: Default API Path
     """
+
+    __operations = None
+
     def __init__(
         self,
         base_url='http://localhost:8080/nuxeo',
@@ -200,7 +203,7 @@ class Nuxeo(object):
 
         if not base_url.endswith('/'):
             base_url += '/'
-        self._base_url = base_url
+        self.base_url = base_url
         if not api_path.endswith('/'):
             api_path += '/'
 
@@ -214,7 +217,7 @@ class Nuxeo(object):
 
         # Get proxy handler
         proxy_handler = get_proxy_handler(
-            proxies, proxy_exceptions=proxy_exceptions, url=self._base_url)
+            proxies, proxy_exceptions=proxy_exceptions, url=self.base_url)
 
         # Build URL openers
         # self.opener = urllib2.build_opener(cookie_processor, proxy_handler)
@@ -236,7 +239,19 @@ class Nuxeo(object):
         self.new_upload_api_available = True
         self._rest_url = base_url + api_path
         self.batch_upload_path = 'upload'
-        self.operations = None
+
+    @property
+    def operations(self):
+        """
+        A dict of all operations and their parameters.
+        Fetched on demand as it is a heavy work for the server and the network.
+
+        :rtype: dict
+        """
+
+        if not self.__operations:
+            self.__operations = self._fetch_api()
+        return self.__operations
 
     def login(self):
         """
@@ -244,7 +259,7 @@ class Nuxeo(object):
 
         :return: Current user
         """
-        self.execute('login', check_params=False)
+        self.execute('login')
         return self.users().fetch(self.user_id)
 
     def repository(self, name='default', schemas=None):
@@ -308,7 +323,7 @@ class Nuxeo(object):
         """
 
         err = ('Failed to connect to Nuxeo server {} with user {}'
-               ' to acquire a token').format(self._base_url, self.user_id)
+               ' to acquire a token').format(self.base_url, self.user_id)
         parameters = {
             'deviceId': device_id,
             'applicationName': application_name,
@@ -317,7 +332,7 @@ class Nuxeo(object):
         }
         if device_description:
             parameters['deviceDescription'] = device_description
-        url = self._base_url + 'authentication/token?'
+        url = self.base_url + 'authentication/token?'
         url += urlencode(parameters)
 
         headers = self._get_common_headers()
@@ -329,7 +344,7 @@ class Nuxeo(object):
             token = self.opener.open(req, timeout=self.timeout).read()
         except urllib2.HTTPError as e:
             if e.code == 401 or e.code == 403:
-                raise Unauthorized(self._base_url, self.user_id, e.code)
+                raise Unauthorized(self.base_url, self.user_id, e.code)
             elif e.code == 404:
                 # Token based auth is not supported by this server
                 return None
@@ -389,8 +404,10 @@ class Nuxeo(object):
         headers.update(self._headers)
         return headers
 
-    def fetch_api(self):
-        err = 'Failed to connect to Nuxeo server {}'.format(self._base_url)
+    def _fetch_api(self):
+        """ Used to populate :attr:`operations`, do not call directly. """
+
+        err = 'Failed to connect to Nuxeo server {}'.format(self.base_url)
         url = self.automation_url
         headers = self._get_common_headers()
         cookies = self._get_cookies()
@@ -401,8 +418,8 @@ class Nuxeo(object):
             response = json.loads(
                 self.opener.open(req, timeout=self.timeout).read())
         except urllib2.HTTPError as e:
-            if e.code == 401 or e.code == 403:
-                raise Unauthorized(self._base_url, self.user_id, e.code)
+            if e.code in (401, 403):
+                raise Unauthorized(self.base_url, self.user_id, e.code)
 
             msg = err + '\nHTTP error %d' % e.code
             if hasattr(e, 'msg'):
@@ -442,13 +459,12 @@ class Nuxeo(object):
             e.msg = msg
             raise e
 
-        self.operations = {}
+        operations = {}
         for operation in response['operations']:
-            self.operations[operation['id']] = operation
-            op_aliases = operation.get('aliases')
-            if op_aliases:
-                for op_alias in op_aliases:
-                    self.operations[op_alias] = operation
+            operations[operation['id']] = operation
+            for alias in operation.get('aliases', []):
+                operations[alias] = operation
+        return operations
 
     def execute(
         self,
@@ -456,7 +472,7 @@ class Nuxeo(object):
         url=None,
         op_input=None,
         timeout=-1,
-        check_params=True,
+        check_params=False,
         void_op=False,
         extra_headers=None,
         file_out=None,
@@ -696,6 +712,25 @@ class Nuxeo(object):
             raise e
 
         return self._read_response(resp, url)
+
+    def server_reachable(self):
+        """
+        Simple call to the server status page to check if it is reachable.
+        """
+
+        url = self.base_url + 'runningstatus'
+        headers = self._get_common_headers()
+        self.trace('Checking server availability at %r with headers=%r',
+                   url, headers)
+        req = urllib2.Request(url, headers=headers)
+        try:
+            ret = self.opener.open(req, timeout=self.timeout)
+        except:
+            pass
+        else:
+            if ret.code == 200:
+                return True
+        return False
 
     def _log_details(self, e):
         if hasattr(e, 'fp'):
