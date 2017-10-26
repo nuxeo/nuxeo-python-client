@@ -3,13 +3,13 @@ from __future__ import unicode_literals
 
 from urllib2 import HTTPError
 
-from .common import NuxeoTest
+from . import NuxeoTest
 
 
-class DirectoryTest(NuxeoTest):
+class TestDirectory(NuxeoTest):
 
     def setUp(self):
-        super(DirectoryTest, self).setUp()
+        super(TestDirectory, self).setUp()
         self._directory = self.nuxeo.directory('nature')
         try:
             self._directory.fetch('foo').delete()

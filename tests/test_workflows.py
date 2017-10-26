@@ -1,13 +1,13 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from .common import NuxeoTest
+from . import NuxeoTest
 
 
-class WorkflowTest(NuxeoTest):
+class TestWorkflow(NuxeoTest):
 
     def setUp(self):
-        super(WorkflowTest, self).setUp()
+        super(TestWorkflow, self).setUp()
         self._clean_root()
         try:
             self.repository.delete('/task-root')

@@ -5,13 +5,13 @@ import operator
 import urllib2
 
 from nuxeo.document import Document
-from .common import NuxeoTest
+from . import NuxeoTest
 
 
-class RepositoryTest(NuxeoTest):
+class TestRepository(NuxeoTest):
 
     def setUp(self):
-        super(RepositoryTest, self).setUp()
+        super(TestRepository, self).setUp()
         self._clean_root()
 
     def test_fetch_root(self):

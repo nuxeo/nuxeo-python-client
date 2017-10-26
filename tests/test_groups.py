@@ -4,10 +4,10 @@ from __future__ import unicode_literals
 import time
 from urllib2 import HTTPError
 
-from .common import NuxeoTest
+from . import NuxeoTest
 
 
-class GroupsTest(NuxeoTest):
+class TestGroups(NuxeoTest):
 
     def tearDown(self):
         try:

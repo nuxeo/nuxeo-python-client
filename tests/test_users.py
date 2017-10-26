@@ -6,10 +6,10 @@ from urllib2 import HTTPError
 
 from nuxeo.nuxeo import Nuxeo
 from nuxeo.users import User
-from .common import NuxeoTest
+from . import NuxeoTest
 
 
-class UsersTest(NuxeoTest):
+class TestUsers(NuxeoTest):
 
     def tearDown(self):
         try:

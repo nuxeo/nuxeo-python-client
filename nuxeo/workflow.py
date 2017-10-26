@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from .common import NuxeoObject
 
+__all__ = ('Task', 'Workflow', 'Workflows')
+
 
 class Workflow(NuxeoObject):
     """ Represent a Workflow on the server. """

@@ -3,13 +3,13 @@ from __future__ import unicode_literals
 
 from urllib2 import HTTPError
 
-from .common import NuxeoTest
+from . import NuxeoTest
 
 
-class OperationTest(NuxeoTest):
+class TestOperation(NuxeoTest):
 
     def setUp(self):
-        super(OperationTest, self).setUp()
+        super(TestOperation, self).setUp()
         try:
             doc = self.nuxeo.repository().fetch('/default-domain/workspaces')
             params = {'pageProvider': 'CURRENT_DOC_CHILDREN',
@@ -36,7 +36,7 @@ class OperationTest(NuxeoTest):
         operation = self.nuxeo.operation('Document.FetchByProperty')
         operation.params({'property': 'dc:title'})
         with self.assertRaises(ValueError):
-            operation.execute()
+            operation.execute(check_params=True)
 
     def test_document_fetch_by_property(self):
         operation = self.nuxeo.operation('Document.FetchByProperty')

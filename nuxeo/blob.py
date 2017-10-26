@@ -10,12 +10,7 @@ try:
 except ImportError:
     from io import StringIO
 
-__all__ = [
-    'Blob',
-    'BatchBlob',
-    'BufferBlob',
-    'FileBlob',
-]
+__all__ = ('BatchBlob', 'Blob', 'BufferBlob', 'FileBlob')
 
 
 FILE_BUFFER_SIZE = 1024 ** 2
