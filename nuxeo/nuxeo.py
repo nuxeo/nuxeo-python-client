@@ -734,7 +734,7 @@ class Nuxeo(object):
 
     def _log_details(self, e):
         if hasattr(e, 'fp'):
-            detail = e.fp.read()
+            detail = e.fp.read().decode('utf-8')
             try:
                 exc = json.loads(detail)
                 message = exc.get('message')
