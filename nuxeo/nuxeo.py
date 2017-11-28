@@ -713,6 +713,23 @@ class Nuxeo(object):
 
         return self._read_response(resp, url)
 
+    def drive_config(self):
+        """
+        Fetch the Drive configuration file at $NUXEO_URL/api/v1/drive/configuration.
+        """
+
+        url = self._rest_url + 'drive/configuration'
+        headers = self._get_common_headers()
+        self.trace('Fetching the Drive configuration at %r with headers=%r',
+                   url, headers)
+        req = Request(url, headers=headers)
+        try:
+            ret = self.opener.open(req, timeout=self.timeout)
+            return json.loads(ret.read())
+        except (urllib2.URLError, ValueError):
+            pass
+        return {}
+
     def server_reachable(self):
         """
         Simple call to the server status page to check if it is reachable.
@@ -725,7 +742,7 @@ class Nuxeo(object):
         req = urllib2.Request(url, headers=headers)
         try:
             ret = self.opener.open(req, timeout=self.timeout)
-        except:
+        except urllib2.URLError:
             pass
         else:
             if ret.code == 200:

@@ -1,7 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib2 import HTTPError
+from io import BufferedIOBase
+from urllib2 import HTTPError, URLError
 
 import pytest
 
@@ -10,7 +11,6 @@ from . import NuxeoTest
 
 
 class TestNuxeo(NuxeoTest):
-
     def test_get_operations(self):
         self.assertGreater(len(self.nuxeo.operations), 0)
 
@@ -52,3 +52,35 @@ def test_encoding_404_error():
         nuxeo.repository().fetch('/')
 
     assert e.value.code == 404
+
+
+def test_drive_config(monkeypatch):
+    nuxeo = Nuxeo(
+        base_url='http://localhost:8080/nuxeo',
+        auth={
+            'username': 'Administrator',
+            'password': 'Administrator'
+        })
+
+    def mock_server_error(*args, **kwargs):
+        raise URLError('Mock error')
+
+    def mock_invalid_response(*args, **kwargs):
+        return BufferedIOBase()
+
+    config = nuxeo.drive_config()
+    assert isinstance(config, dict)
+    assert 'beta_channel' in config
+    assert 'delay' in config
+    assert 'handshake_timeout' in config
+    assert 'log_level_file' in config
+    assert 'timeout' in config
+    assert 'update_check_delay' in config
+    assert 'ui' in config
+
+    monkeypatch.setattr(nuxeo.opener, 'open', mock_server_error)
+    assert not nuxeo.drive_config()
+    monkeypatch.undo()
+    monkeypatch.setattr(nuxeo.opener, 'open', mock_invalid_response)
+    assert not nuxeo.drive_config()
+    monkeypatch.undo()
