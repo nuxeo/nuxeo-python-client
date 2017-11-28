@@ -2,7 +2,10 @@
 from __future__ import unicode_literals
 
 import operator
+import sys
 import urllib2
+
+import pytest
 
 from nuxeo.document import Document
 from . import NuxeoTest
@@ -138,6 +141,8 @@ class TestRepository(NuxeoTest):
         self.assertIsInstance(docs['entries'][0], Document)
         self.assertTrue(docs['entries'][0].title, 'Workspaces')
 
+    @pytest.mark.skipif(sys.platform == 'darwin',
+                        reason='office2html is not on macOS')
     def test_convert(self):
         doc = self._create_blob_file()
         res = doc.convert({'format': 'html'})
@@ -145,12 +150,16 @@ class TestRepository(NuxeoTest):
         self.assertIn('foo', res)
         doc.delete()
 
+    @pytest.mark.skipif(sys.platform == 'darwin',
+                        reason='office2html is not on macOS')
     def test_convert_given_converter(self):
         doc = self._create_blob_file()
         res = doc.convert({'converter': 'office2html'})
         self.assertIn('<html>', res)
         self.assertIn('foo', res)
 
+    @pytest.mark.skipif(sys.platform == 'darwin',
+                        reason='office2html is not on macOS')
     def test_convert_xpath(self):
         doc = self._create_blob_file()
         res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
