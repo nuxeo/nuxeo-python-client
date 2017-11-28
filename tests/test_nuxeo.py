@@ -1,6 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from urllib2 import HTTPError
+
+import pytest
+
+from nuxeo import Nuxeo
 from . import NuxeoTest
 
 
@@ -33,3 +38,17 @@ class TestNuxeo(NuxeoTest):
             self.assertFalse(self.nuxeo.server_reachable())
         finally:
             self.nuxeo.base_url = base_url
+
+
+def test_encoding_404_error():
+    nuxeo = Nuxeo(
+        base_url='http://localhost:8080/',
+        auth={
+            'username': 'Administrator',
+            'password': 'Administrator'
+        })
+
+    with pytest.raises(HTTPError) as e:
+        nuxeo.repository().fetch('/')
+
+    assert e.value.code == 404
