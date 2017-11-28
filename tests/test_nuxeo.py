@@ -70,13 +70,14 @@ def test_drive_config(monkeypatch):
 
     config = nuxeo.drive_config()
     assert isinstance(config, dict)
-    assert 'beta_channel' in config
-    assert 'delay' in config
-    assert 'handshake_timeout' in config
-    assert 'log_level_file' in config
-    assert 'timeout' in config
-    assert 'update_check_delay' in config
-    assert 'ui' in config
+    if config:
+        assert 'beta_channel' in config
+        assert 'delay' in config
+        assert 'handshake_timeout' in config
+        assert 'log_level_file' in config
+        assert 'timeout' in config
+        assert 'update_check_delay' in config
+        assert 'ui' in config
 
     monkeypatch.setattr(nuxeo.opener, 'open', mock_server_error)
     assert not nuxeo.drive_config()

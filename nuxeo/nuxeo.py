@@ -715,7 +715,8 @@ class Nuxeo(object):
 
     def drive_config(self):
         """
-        Fetch the Drive configuration file at $NUXEO_URL/api/v1/drive/configuration.
+        Fetch the Drive JSON configuration from
+        the $NUXEO_URL/api/v1/drive/configuration endpoint.
         """
 
         url = self._rest_url + 'drive/configuration'
