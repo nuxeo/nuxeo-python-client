@@ -8,7 +8,7 @@ import socket
 
 
 @pytest.fixture(scope='function')
-def workflows(server, clean_root):
+def workflows(server):
     try:
         server.repository().delete('/task-root')
     except (HTTPError, socket.timeout):
@@ -20,8 +20,7 @@ def workflows(server, clean_root):
     return server.workflows()
 
 
-def test_basic_workflow(workflows, blob_file):
-    doc = blob_file
+def test_basic_workflow(workflows, doc):
     workflow = doc.start_workflow('SerialDocumentReview')
     assert workflow is not None
     wfs = workflows.fetch_started_workflows('SerialDocumentReview')

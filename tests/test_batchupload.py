@@ -40,15 +40,15 @@ def test_operation(server, batch):
         }
     }
     doc = server.repository(schemas=['dublincore', 'file']).create(
-        '/default-domain/workspaces', new_doc)
+        pytest.ws_root_path, new_doc)
     try:
         assert doc.properties['file:content'] is None
         operation = server.operation('Blob.AttachOnDocument')
-        operation.params({'document': '/default-domain/workspaces/Document'})
+        operation.params({'document': pytest.ws_root_path + '/Document'})
         operation.input(batch.fetch(0))
         operation.execute()
         doc = server.repository(schemas=['dublincore', 'file']).fetch(
-            '/default-domain/workspaces/Document')
+            pytest.ws_root_path + '/Document')
         assert doc.properties['file:content'] is not None
         assert doc.fetch_blob() == 'data'
     finally:

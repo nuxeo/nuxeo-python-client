@@ -6,7 +6,7 @@ from urllib2 import HTTPError
 import pytest
 
 
-def test_document_fetch_by_property(server, clean_root):
+def test_document_fetch_by_property(server):
     operation = server.operation('Document.FetchByProperty')
     operation.params({'property': 'dc:title', 'values': 'Workspaces'})
     res = operation.execute()
@@ -15,7 +15,7 @@ def test_document_fetch_by_property(server, clean_root):
     assert res['entries'][0]['properties']['dc:title'] == 'Workspaces'
 
 
-def test_document_fetch_by_property_params_validation(server, clean_root):
+def test_document_fetch_by_property_params_validation(server):
     """ Missing mandatory params. """
     operation = server.operation('Document.FetchByProperty')
     operation.params({'property': 'dc:title'})
@@ -23,7 +23,7 @@ def test_document_fetch_by_property_params_validation(server, clean_root):
         operation.execute(check_params=True)
 
 
-def test_document_get_child(server, clean_root):
+def test_document_get_child(server):
     operation = server.operation('Document.GetChild')
     operation.params({'name': 'workspaces'})
     operation.input('/default-domain')
@@ -32,7 +32,7 @@ def test_document_get_child(server, clean_root):
     assert res['properties']['dc:title'] == 'Workspaces'
 
 
-def test_document_get_child_unknown(server, clean_root):
+def test_document_get_child_unknown(server):
     operation = server.operation('Document.GetChild')
     operation.params({'name': 'Workspaces'})
     operation.input('/default-domain')
@@ -41,7 +41,7 @@ def test_document_get_child_unknown(server, clean_root):
     assert e.value.code == 404
 
 
-def test_params_setter(server, clean_root):
+def test_params_setter(server):
     operation = server.operation('Noop')
     operation.params({'param1': 'foo', 'param2': 'bar'})
     params = operation.params()

@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import pytest
+
 
 def test_document_create(server, repository):
     operation = server.operation('Document.Create')
@@ -55,8 +57,8 @@ def test_document_list_update(server):
             'dc:title': 'ws-js-tests2',
         },
     }
-    doc1 = server.repository().create('/default-domain/workspaces', new_doc1)
-    doc2 = server.repository().create('/default-domain/workspaces', new_doc2)
+    doc1 = server.repository().create(pytest.ws_root_path, new_doc1)
+    doc2 = server.repository().create(pytest.ws_root_path, new_doc2)
     desc = 'sample description'
     operation = server.operation('Document.Update')
     operation.params({'properties': {'dc:description': desc}})

@@ -12,18 +12,26 @@ from nuxeo.blob import BufferBlob
 from nuxeo.document import Document
 from nuxeo.nuxeo import Nuxeo
 
-WS_ROOT_PATH = '/default-domain/workspaces'
-WS_PYTHON_TEST_NAME = 'ws-python-tests'
-WS_PYTHON_TESTS_PATH = WS_ROOT_PATH + '/' + WS_PYTHON_TEST_NAME
+
+def pytest_namespace():
+    """
+    This namespace is used to store global variables for tests.
+    They can be accessed with `pytest.<variable_name>` e.g. `pytest.<ws_root_path>`
+    """
+    return {'ws_root_path': '/default-domain/workspaces',
+            'ws_python_test_name': 'ws-python-tests',
+            'ws_python_tests_path': '/default-domain/workspaces/ws-python-tests',
+            }
+
 
 base_url = os.environ.get('NXDRIVE_TEST_NUXEO_URL', 'http://localhost:8080/nuxeo')
 auth = {'username': 'Administrator', 'password': 'Administrator'}
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='function', autouse=True)
 def clean_root(repository):
     try:
-        doc = repository.fetch('/default-domain/workspaces')
+        doc = repository.fetch(pytest.ws_root_path)
         params = {'pageProvider': 'CURRENT_DOC_CHILDREN',
                   'queryParams': [doc.uid]}
         docs = repository.query(params)
@@ -34,18 +42,18 @@ def clean_root(repository):
 
 
 @pytest.fixture(scope='function')
-def blob_file(server, repository):
+def doc(server, repository):
     new_doc = {
-        'name': WS_PYTHON_TEST_NAME,
+        'name': pytest.ws_python_test_name,
         'type': 'File',
         'properties': {
             'dc:title': 'bar.txt',
         },
     }
-    doc = repository.create(WS_ROOT_PATH, new_doc)
+    doc = repository.create(pytest.ws_root_path, new_doc)
     assert doc is not None
     assert isinstance(doc, Document)
-    assert doc.path == WS_PYTHON_TESTS_PATH
+    assert doc.path == pytest.ws_python_tests_path
     assert doc.type == 'File'
     assert doc.properties['dc:title'] == 'bar.txt'
 
