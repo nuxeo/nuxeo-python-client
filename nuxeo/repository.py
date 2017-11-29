@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from urllib import quote, urlencode
+from urllib2 import HTTPError
 
 from .document import Document
 from .workflow import Workflow
@@ -67,6 +68,15 @@ class Repository(object):
             self._get_path(path),
             extra_headers={'enrichers-document': 'acls'})
         return req['contextParameters']['acls']
+
+    def exists(self, path):
+        try:
+            self.fetch(path)
+            return True
+        except HTTPError as e:
+            if e.code != 404:
+                raise e
+        return False
 
     def add_permission(self, uid, params):
         operation = self._service.operation('Document.AddPermission')
