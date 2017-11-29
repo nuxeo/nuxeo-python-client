@@ -47,7 +47,7 @@ def test_encoding_404_error(server):
 
 
 def test_get_operations(server):
-    assert len(server.operations) > 0
+    assert server.operations
 
 
 def test_headers(server):
