@@ -42,7 +42,7 @@ def test_basic_workflow(workflows, doc):
     task.complete('validate', {'comment': 'a comment'})
     assert task.state == 'ended'
     workflows = doc.fetch_workflows()
-    assert len(workflows) == 0
+    assert not len(workflows)
 
 
 def test_get_workflows(workflows):
@@ -63,13 +63,13 @@ def test_get_workflows(workflows):
     tasks = workflows.fetch_tasks(
         {'workflowInstanceId': wfs[0].get_id(),
          'userId': 'Georges Abitbol'})
-    assert len(tasks) == 0
+    assert not len(tasks)
     tasks = workflows.fetch_tasks(
         {'workflowInstanceId': wfs[0].get_id(),
          'workflowModelName': 'SerialDocumentReview'})
     assert len(tasks) == 1
     tasks = workflows.fetch_tasks({'workflowModelName': 'foo'})
-    assert len(tasks) == 0
+    assert not len(tasks)
 
 
 def test_fetch_graph(workflows):

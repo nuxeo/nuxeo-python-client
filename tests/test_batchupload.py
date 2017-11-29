@@ -25,10 +25,16 @@ def test_cancel(batch):
 
 def test_fetch(batch):
     blob = batch.fetch(0)
-    assert blob.fileIdx == 0
+    assert not blob.fileIdx
     assert blob.uploadType == 'normal'
     assert blob.get_name() == 'Test.txt'
     assert blob.get_size() == 4
+
+    blob = batch.blobs[0]
+    assert not blob.fileIdx
+    assert blob.uploadType == 'normal'
+    assert blob.uploaded
+    assert blob.uploadedSize == 4
 
 
 def test_operation(server, batch):
@@ -53,11 +59,3 @@ def test_operation(server, batch):
         assert doc.fetch_blob() == 'data'
     finally:
         doc.delete()
-
-
-def test_upload(batch):
-    blob = batch.blobs[0]
-    assert blob.fileIdx == 0
-    assert blob.uploadType == 'normal'
-    assert blob.uploaded
-    assert blob.uploadedSize == 4

@@ -35,7 +35,7 @@ def test_fetch_all(directory):
     entries = directory.fetchAll()
     assert entries is not None
     assert isinstance(entries, list)
-    assert len(entries)> 0
+    assert len(entries) > 0
 
 
 def test_fetch_unknown(directory):

@@ -127,7 +127,7 @@ def test_has_permission(doc):
 
 def test_locking(doc):
     status = doc.fetch_lock_status()
-    assert status == {}
+    assert not status
     assert not doc.is_locked()
     doc.lock()
     status = doc.fetch_lock_status()
@@ -143,34 +143,34 @@ def test_locking(doc):
 def test_page_provider(repository):
     doc = repository.fetch('/default-domain')
     docs = repository.query({'pageProvider': 'CURRENT_DOC_CHILDREN',
-                                  'queryParams': [doc.uid]})
+                             'queryParams': [doc.uid]})
     assert docs['numberOfPages'] == 1
     assert docs['resultsCount'] == 3
     assert docs['currentPageSize'] == 3
-    assert docs['currentPageIndex'] == 0
+    assert not docs['currentPageIndex']
     assert len(docs['entries']) == 3
 
 
 def test_page_provider_pagination(repository):
     doc = repository.fetch('/default-domain')
     docs = repository.query({'pageProvider': 'document_content',
-                                  'queryParams': [doc.uid],
-                                  'pageSize': 1,
-                                  'currentPageIndex': 0,
-                                  'sortBy': 'dc:title',
-                                  'sortOrder': 'asc'})
+                             'queryParams': [doc.uid],
+                             'pageSize': 1,
+                             'currentPageIndex': 0,
+                             'sortBy': 'dc:title',
+                             'sortOrder': 'asc'})
     assert docs['currentPageSize'] == 1
-    assert docs['currentPageIndex'] == 0
+    assert not docs['currentPageIndex']
     assert docs['isNextPageAvailable']
     assert len(docs['entries']) == 1
     assert isinstance(docs['entries'][0], Document)
     assert docs['entries'][0].title
     docs = repository.query({'pageProvider': 'document_content',
-                                  'queryParams': [doc.uid],
-                                  'pageSize': 1,
-                                  'currentPageIndex': 1,
-                                  'sortBy': 'dc:title',
-                                  'sortOrder': 'asc'})
+                             'queryParams': [doc.uid],
+                             'pageSize': 1,
+                             'currentPageIndex': 1,
+                             'sortBy': 'dc:title',
+                             'sortOrder': 'asc'})
     assert docs['currentPageSize'] == 1
     assert docs['currentPageIndex'] == 1
     assert docs['isNextPageAvailable']
@@ -178,11 +178,11 @@ def test_page_provider_pagination(repository):
     assert isinstance(docs['entries'][0], Document)
     assert docs['entries'][0].title == 'Templates'
     docs = repository.query({'pageProvider': 'document_content',
-                                  'queryParams': [doc.uid],
-                                  'pageSize': 1,
-                                  'currentPageIndex': 2,
-                                  'sortBy': 'dc:title',
-                                  'sortOrder': 'asc'})
+                             'queryParams': [doc.uid],
+                             'pageSize': 1,
+                             'currentPageIndex': 2,
+                             'sortBy': 'dc:title',
+                             'sortOrder': 'asc'})
     assert docs['currentPageSize'] == 1
     assert docs['currentPageIndex'] == 2
     assert not docs['isNextPageAvailable']
@@ -196,7 +196,7 @@ def test_query(repository):
     assert docs['numberOfPages'] == 1
     assert docs['resultsCount'] == 1
     assert docs['currentPageSize'] == 1
-    assert docs['currentPageIndex'] == 0
+    assert not docs['currentPageIndex']
     assert len(docs['entries']) == 1
     assert isinstance(docs['entries'][0], Document)
 
