@@ -20,16 +20,6 @@ base_url = os.environ.get('NXDRIVE_TEST_NUXEO_URL', 'http://localhost:8080/nuxeo
 auth = {'username': 'Administrator', 'password': 'Administrator'}
 
 
-@pytest.fixture(scope='module')
-def server(request):
-    return Nuxeo(base_url=base_url, auth=auth)
-
-
-@pytest.fixture(scope='module')
-def repository(server):
-    return server.repository(schemas=['dublincore'])
-
-
 @pytest.fixture(scope='function')
 def clean_root(repository):
     try:
@@ -59,3 +49,23 @@ def create_blob_file(server, repository):
     doc.properties['file:content'] = blob
     doc.save()
     return doc
+
+
+@pytest.fixture(scope='module')
+def directory(server):
+    directory = server.directory('nature')
+    try:
+        directory.fetch('foo').delete()
+    except HTTPError:
+        pass
+    return directory
+
+
+@pytest.fixture(scope='module')
+def repository(server):
+    return server.repository(schemas=['dublincore'])
+
+
+@pytest.fixture(scope='module')
+def server(request):
+    return Nuxeo(base_url=base_url, auth=auth)
