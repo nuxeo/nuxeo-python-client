@@ -1,10 +1,6 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib2 import HTTPError
-
-import pytest
-
 
 def test_crud(directory):
     new_entry = {'id': 'foo', 'label': 'Foo'}
@@ -33,12 +29,9 @@ def test_fetch(directory):
 
 def test_fetch_all(directory):
     entries = directory.fetchAll()
-    assert entries is not None
     assert isinstance(entries, list)
     assert entries
 
 
 def test_fetch_unknown(directory):
-    with pytest.raises(HTTPError) as e:
-        directory.fetch('Abitbol')
-    assert e.value.code == 404
+    assert not directory.exists('Abitbol')

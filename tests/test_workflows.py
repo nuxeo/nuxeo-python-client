@@ -22,7 +22,7 @@ def workflows(server):
 
 def test_basic_workflow(workflows, doc):
     workflow = doc.start_workflow('SerialDocumentReview')
-    assert workflow is not None
+    assert workflow
     wfs = workflows.fetch_started_workflows('SerialDocumentReview')
     assert len(wfs) == 1
     tasks = workflows.fetch_tasks()
@@ -33,50 +33,43 @@ def test_basic_workflow(workflows, doc):
         'assignees': ['user:Administrator'],
         'end_date': '2011-10-23T12:00:00.00Z'}
     task.complete('start_review', infos, comment='a comment')
-    workflows = doc.fetch_workflows()
-    assert len(workflows) == 1
+    assert len(doc.fetch_workflows()) == 1
     assert task.state == 'ended'
     tasks = workflow.fetch_tasks()
     assert len(tasks) == 1
     task = tasks[0]
     task.complete('validate', {'comment': 'a comment'})
     assert task.state == 'ended'
-    workflows = doc.fetch_workflows()
-    assert not len(workflows)
+    assert not doc.fetch_workflows()
 
 
 def test_get_workflows(workflows):
-    workflow = workflows.start('SerialDocumentReview')
-    assert workflow is not None
+    assert workflows.start('SerialDocumentReview')
     wfs = workflows.fetch_started_workflows('SerialDocumentReview')
     assert len(wfs) == 1
-    tasks = workflows.fetch_tasks()
-    assert len(tasks) == 1
+    assert len(workflows.fetch_tasks()) == 1
     tasks = workflows.fetch_tasks(
         {'workflowInstanceId': wfs[0].get_id()})
     assert len(tasks) == 1
     tasks = workflows.fetch_tasks({'workflowInstanceId': 'unknown'})
-    assert len(tasks) == 0
+    assert not tasks
     tasks = workflows.fetch_tasks(
         {'workflowInstanceId': wfs[0].get_id(), 'userId': 'Administrator'})
     assert len(tasks) == 1
     tasks = workflows.fetch_tasks(
         {'workflowInstanceId': wfs[0].get_id(),
          'userId': 'Georges Abitbol'})
-    assert not len(tasks)
+    assert not tasks
     tasks = workflows.fetch_tasks(
         {'workflowInstanceId': wfs[0].get_id(),
          'workflowModelName': 'SerialDocumentReview'})
     assert len(tasks) == 1
     tasks = workflows.fetch_tasks({'workflowModelName': 'foo'})
-    assert not len(tasks)
+    assert not tasks
 
 
 def test_fetch_graph(workflows):
-    workflow = workflows.start('SerialDocumentReview')
-    assert workflow is not None
+    assert workflows.start('SerialDocumentReview')
     wfs = workflows.fetch_started_workflows('SerialDocumentReview')
     assert len(wfs) == 1
-    workflow = wfs[0]
-    graph = workflow.fetch_graph()
-    assert graph is not None
+    assert wfs[0].fetch_graph()

@@ -9,16 +9,16 @@ from nuxeo.blob import BufferBlob
 @pytest.fixture(scope='function')
 def batch(server):
     batch = server.batch_upload()
-    assert batch is not None
+    assert batch
     assert batch.get_batch_id() is None
     batch.upload(BufferBlob('data', 'Test.txt', 'text/plain'))
-    assert batch.get_batch_id() is not None
+    assert batch.get_batch_id()
     return batch
 
 
 def test_cancel(batch):
     batch.upload(BufferBlob('data', 'Test.txt', 'text/plain'))
-    assert batch.get_batch_id() is not None
+    assert batch.get_batch_id()
     batch.cancel()
     assert batch.get_batch_id() is None
 

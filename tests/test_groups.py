@@ -23,8 +23,7 @@ def test_create_delete_group_dict(server):
 
 
 def test_fetch(server):
-    group = server.groups().fetch('administrators')
-    assert group is not None
+    assert server.groups().fetch('administrators')
 
 
 def test_fetch_unknown_group(server):

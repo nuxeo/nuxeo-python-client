@@ -35,7 +35,7 @@ def test_create_delete_user_dict(server):
 
 def test_fetch(server):
     user = server.users().fetch('Administrator')
-    assert user is not None
+    assert user
     assert 'administrators' in user.properties['groups']
 
 
@@ -65,8 +65,7 @@ def test_update_user(server):
     assert user.properties['company'] == company
     auth = {'username': 'georges', 'password': 'Test'}
     nuxeo = Nuxeo(server.base_url, auth=auth)
-    georges = nuxeo.login()
-    assert georges is not None
+    assert nuxeo.login()
     user.delete()
 
 
@@ -77,8 +76,7 @@ def test_update_user_autoset_change_password(server):
     server.users().fetch('georges')
     auth = {'username': 'georges', 'password': 'Test2'}
     nuxeo = Nuxeo(server.base_url, auth=auth)
-    georges = nuxeo.login()
-    assert georges is not None
+    assert nuxeo.login()
     user.delete()
 
 
@@ -87,6 +85,5 @@ def test_update_user_autoset_change_password_2(server):
     user.change_password('Test3')
     auth = {'username': 'georges', 'password': 'Test3'}
     nuxeo = Nuxeo(server.base_url, auth=auth)
-    georges = nuxeo.login()
-    assert georges is not None
+    assert nuxeo.login()
     user.delete()

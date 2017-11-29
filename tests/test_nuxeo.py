@@ -64,8 +64,7 @@ def test_headers(server):
 
 
 def test_login(server):
-    user = server.login()
-    assert user is not None
+    assert server.login()
 
 
 def test_server_reachable(server):

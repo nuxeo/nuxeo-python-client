@@ -56,7 +56,6 @@ def test_create_doc_and_delete(repository):
         }
     }
     doc = repository.create(pytest.ws_root_path, new_doc)
-    assert doc is not None
     assert isinstance(doc, Document)
     assert doc.path == pytest.ws_python_tests_path
     assert doc.type == 'Workspace'
@@ -92,8 +91,7 @@ def test_fetch_acls(doc):
 
 
 def test_fetch_blob(doc):
-    res = doc.fetch_blob()
-    assert res == 'foo'
+    assert doc.fetch_blob() == 'foo'
 
 
 def test_fetch_non_existing(repository):
@@ -116,7 +114,6 @@ def test_fetch_renditions(doc):
 
 def test_fetch_root(repository):
     root = repository.fetch('/')
-    assert root is not None
     assert isinstance(root, Document)
 
 
@@ -126,8 +123,7 @@ def test_has_permission(doc):
 
 
 def test_locking(doc):
-    status = doc.fetch_lock_status()
-    assert not status
+    assert not doc.fetch_lock_status()
     assert not doc.is_locked()
     doc.lock()
     status = doc.fetch_lock_status()
@@ -210,9 +206,9 @@ def test_update_doc_and_delete(repository):
         }
     }
     doc = repository.create(pytest.ws_root_path, new_doc)
+    assert doc
     uid = doc.uid
     path = doc.path
-    assert doc is not None
     doc.set({'dc:title': 'bar'})
     doc.save()
     doc = repository.fetch(pytest.ws_python_tests_path)

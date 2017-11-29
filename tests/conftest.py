@@ -16,7 +16,7 @@ from nuxeo.nuxeo import Nuxeo
 def pytest_namespace():
     """
     This namespace is used to store global variables for tests.
-    They can be accessed with `pytest.<variable_name>` e.g. `pytest.<ws_root_path>`
+    They can be accessed with `pytest.<variable_name>` e.g. `pytest.ws_root_path`
     """
     return {'ws_root_path': '/default-domain/workspaces',
             'ws_python_test_name': 'ws-python-tests',
