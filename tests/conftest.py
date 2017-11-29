@@ -24,10 +24,6 @@ def pytest_namespace():
             }
 
 
-base_url = os.environ.get('NXDRIVE_TEST_NUXEO_URL', 'http://localhost:8080/nuxeo')
-auth = {'username': 'Administrator', 'password': 'Administrator'}
-
-
 @pytest.fixture(scope='function', autouse=True)
 def clean_root(repository):
     try:
@@ -80,5 +76,7 @@ def repository(server):
 
 
 @pytest.fixture(scope='module')
-def server(request):
-    return Nuxeo(base_url=base_url, auth=auth)
+def server():
+    return Nuxeo(base_url=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
+                                         'http://localhost:8080/nuxeo'),
+                 auth={'username': 'Administrator', 'password': 'Administrator'})
