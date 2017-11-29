@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from urllib2 import HTTPError
+
 __all__ = ('NuxeoAutosetObject', 'NuxeoObject', 'NuxeoService')
 
 
@@ -99,6 +101,15 @@ class NuxeoService(object):
 
     def fetch(self, uid):
         return self._object_class(obj=self.get(uid), service=self)
+
+    def exists(self, uid):
+        try:
+            self.fetch(uid)
+            return True
+        except HTTPError as e:
+            if e.code != 404:
+                raise e
+        return False
 
     def delete(self, uid):
         self._nuxeo.request(self._path + '/' + uid, method='DELETE')

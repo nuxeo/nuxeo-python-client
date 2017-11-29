@@ -1,60 +1,61 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import pytest
+
 from nuxeo.blob import BufferBlob
-from . import NuxeoTest
 
 
-class TestBatchUpload(NuxeoTest):
+@pytest.fixture(scope='function')
+def batch(server):
+    batch = server.batch_upload()
+    assert batch
+    assert batch.get_batch_id() is None
+    batch.upload(BufferBlob('data', 'Test.txt', 'text/plain'))
+    assert batch.get_batch_id()
+    return batch
 
-    def setUp(self):
-        super(TestBatchUpload, self).setUp()
-        self.batch = self.nuxeo.batch_upload()
-        self.assertIsNotNone(self.batch)
-        self.assertIsNone(self.batch._batchid)
-        self.upload = self.batch.upload(
-            BufferBlob('data', 'Test.txt', 'text/plain'))
-        self.assertIsNotNone(self.batch._batchid)
 
-    def test_upload(self):
-        blob = self.batch.blobs[0]
-        self.assertEqual(blob.fileIdx, 0)
-        self.assertEqual(blob.uploadType, 'normal')
-        self.assertIs(blob.uploaded, True)
-        self.assertEqual(blob.uploadedSize, 4)
+def test_cancel(batch):
+    batch.upload(BufferBlob('data', 'Test.txt', 'text/plain'))
+    assert batch.get_batch_id()
+    batch.cancel()
+    assert batch.get_batch_id() is None
 
-    def test_cancel(self):
-        self.batch.upload(BufferBlob('data', 'Test.txt', 'text/plain'))
-        self.assertIsNotNone(self.batch._batchid)
-        self.batch.cancel()
-        self.assertIsNone(self.batch._batchid)
 
-    def test_fetch(self):
-        blob = self.batch.fetch(0)
-        self.assertEqual(blob.fileIdx, 0)
-        self.assertEqual(blob.uploadType, 'normal')
-        self.assertEqual(blob.get_name(), 'Test.txt')
-        self.assertEqual(blob.get_size(), 4)
+def test_fetch(batch):
+    blob = batch.fetch(0)
+    assert not blob.fileIdx
+    assert blob.uploadType == 'normal'
+    assert blob.get_name() == 'Test.txt'
+    assert blob.get_size() == 4
 
-    def test_operation(self):
-        new_doc = {
-            'name': 'Document',
-            'type': 'File',
-            'properties': {
-                'dc:title': 'foo',
-            }
+    blob = batch.blobs[0]
+    assert not blob.fileIdx
+    assert blob.uploadType == 'normal'
+    assert blob.uploaded
+    assert blob.uploadedSize == 4
+
+
+def test_operation(server, batch):
+    new_doc = {
+        'name': 'Document',
+        'type': 'File',
+        'properties': {
+            'dc:title': 'foo',
         }
-        doc = self.nuxeo.repository(schemas=['dublincore', 'file']).create(
-            self.WS_ROOT_PATH, new_doc)
-        try:
-            self.assertIsNone(doc.properties['file:content'])
-            operation = self.nuxeo.operation('Blob.AttachOnDocument')
-            operation.params({'document': self.WS_ROOT_PATH + '/Document'})
-            operation.input(self.upload)
-            operation.execute()
-            doc = self.nuxeo.repository(schemas=['dublincore', 'file']).fetch(
-                self.WS_ROOT_PATH + '/Document')
-            self.assertIsNotNone(doc.properties['file:content'])
-            self.assertEqual(doc.fetch_blob(), 'data')
-        finally:
-            doc.delete()
+    }
+    doc = server.repository(schemas=['dublincore', 'file']).create(
+        pytest.ws_root_path, new_doc)
+    try:
+        assert doc.properties['file:content'] is None
+        operation = server.operation('Blob.AttachOnDocument')
+        operation.params({'document': pytest.ws_root_path + '/Document'})
+        operation.input(batch.fetch(0))
+        operation.execute()
+        doc = server.repository(schemas=['dublincore', 'file']).fetch(
+            pytest.ws_root_path + '/Document')
+        assert doc.properties['file:content'] is not None
+        assert doc.fetch_blob() == 'data'
+    finally:
+        doc.delete()

@@ -1,51 +1,37 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib2 import HTTPError
 
-from . import NuxeoTest
+def test_crud(directory):
+    new_entry = {'id': 'foo', 'label': 'Foo'}
+    entry = directory.create(new_entry)
+    assert entry.entity_type == 'directoryEntry'
+    assert entry.directoryName == 'nature'
+    assert entry.properties['id'] == 'foo'
+    assert entry.get_id() == 'foo'
+    assert entry.properties['label'] == 'Foo'
+
+    entry.properties['label'] = 'Test'
+    entry.save()
+    entry = directory.fetch('foo')
+    assert entry.properties['label'] == 'Test'
+    entry.delete()
 
 
-class TestDirectory(NuxeoTest):
+def test_fetch(directory):
+    entry = directory.fetch('article')
+    assert entry.entity_type == 'directoryEntry'
+    assert entry.directoryName == 'nature'
+    assert entry.properties['id'] == 'article'
+    assert entry.get_id() == 'article'
+    assert entry.properties['label'] == 'label.directories.nature.article'
 
-    def setUp(self):
-        super(TestDirectory, self).setUp()
-        self._directory = self.nuxeo.directory('nature')
-        try:
-            self._directory.fetch('foo').delete()
-        except:
-            pass
 
-    def test_fetch_all(self):
-        entries = self._directory.fetchAll()
-        self.assertIsNotNone(entries)
-        self.assertIsInstance(entries, list)
-        self.assertGreater(len(entries), 0)
+def test_fetch_all(directory):
+    entries = directory.fetchAll()
+    assert isinstance(entries, list)
+    assert entries
 
-    def test_fetch(self):
-        entry = self._directory.fetch('article')
-        self.assertEqual(entry.entity_type, 'directoryEntry')
-        self.assertEqual(entry.directoryName, 'nature')
-        self.assertEqual(entry.properties['id'], 'article')
-        self.assertEqual(entry.get_id(), 'article')
-        self.assertEqual(entry.properties['label'],
-                         'label.directories.nature.article')
 
-    def test_fetch_unknown(self):
-        with self.assertRaises(HTTPError) as ex:
-            self._directory.fetch('Abitbol')
-        self.assertEqual(ex.exception.code, 404)
-
-    def test_crud(self):
-        new_entry = {'id': 'foo', 'label': 'Foo'}
-        entry = self._directory.create(new_entry)
-        self.assertEqual(entry.entity_type, 'directoryEntry')
-        self.assertEqual(entry.directoryName, 'nature')
-        self.assertEqual(entry.properties['id'], 'foo')
-        self.assertEqual(entry.get_id(), 'foo')
-        self.assertEqual(entry.properties['label'], 'Foo')
-        entry.properties['label'] = 'Test'
-        entry.save()
-        entry = self._directory.fetch('foo')
-        self.assertEqual(entry.properties['label'], 'Test')
-        entry.delete()
+def test_fetch_unknown(directory):
+    assert not directory.exists('Abitbol')

@@ -11,6 +11,7 @@ Contributors:
     Antoine Taillefer <ataillefer@nuxeo.com>
     Rémi Cattiau <rcattiau@nuxeo.com>
     Mickaël Schoentgen <mschoentgen@nuxeo.com>
+    Léa Klein <lklein@nuxeo.com>
     https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
 from __future__ import unicode_literals
