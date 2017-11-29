@@ -34,7 +34,7 @@ def clean_root(repository):
 
 
 @pytest.fixture(scope='function')
-def create_blob_file(server, repository):
+def blob_file(server, repository):
     new_doc = {
         'name': WS_PYTHON_TEST_NAME,
         'type': 'File',
