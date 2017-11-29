@@ -23,7 +23,12 @@ auth = {'username': 'Administrator', 'password': 'Administrator'}
 @pytest.fixture(scope='function')
 def clean_root(repository):
     try:
-        repository.fetch(WS_PYTHON_TESTS_PATH).delete()
+        doc = repository.fetch('/default-domain/workspaces')
+        params = {'pageProvider': 'CURRENT_DOC_CHILDREN',
+                  'queryParams': [doc.uid]}
+        docs = repository.query(params)
+        for doc in docs['entries']:
+            doc.delete()
     except (HTTPError, socket.timeout):
         pass
 
