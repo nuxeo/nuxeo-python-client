@@ -6,12 +6,12 @@ import base64
 import json
 import socket
 import tempfile
-from urllib import urlencode
-
 import urllib2
-from poster.streaminghttp import get_handlers
+from urllib import urlencode
 from urllib2 import ProxyHandler
 from urlparse import urlparse
+
+from poster.streaminghttp import get_handlers
 
 from .batchupload import BatchUpload
 from .directory import Directory
@@ -24,25 +24,22 @@ from .workflow import Workflows
 __all__ = ('Nuxeo',)
 
 
-def json_helper(o):
-    if hasattr(o, 'to_json'):
-        return o.to_json()
-    raise TypeError(repr(o) + 'is not JSON serializable (no to_json() found)')
-
-
 def force_decode(string, codecs=('utf-8', 'cp1252')):
     if isinstance(string, unicode):
         string = string.encode('utf-8')
     for codec in codecs:
         try:
             return string.decode(codec)
-        except:
+        except UnicodeError:
             pass
     return None
 
 
-class InvalidBatchException(Exception):
-    pass
+def get_opener_proxies(opener):
+    for handler in opener.handlers:
+        if isinstance(handler, ProxyHandler):
+            return handler.proxies
+    return None
 
 
 def get_proxies_for_handler(proxy_settings):
@@ -102,34 +99,14 @@ def get_proxy_handler(proxies, proxy_exceptions=None, url=None):
         return urllib2.ProxyHandler(proxies)
 
 
-def get_opener_proxies(opener):
-    for handler in opener.handlers:
-        if isinstance(handler, ProxyHandler):
-            return handler.proxies
-    return None
+def json_helper(o):
+    if hasattr(o, 'to_json'):
+        return o.to_json()
+    raise TypeError(repr(o) + 'is not JSON serializable (no to_json() found)')
 
 
-class Unauthorized(Exception):
-
-    def __init__(self, server_url, user_id, code=403):
-        self.server_url = server_url
-        self.user_id = user_id
-        self.code = code
-
-    def __str__(self):
-        return ('%r is not authorized to access %r with '
-                ' the provided credentials' % (self.user_id, self.server_url))
-
-
-class Request(urllib2.Request):
-    """ Need to override urllib2 request to add the HTTP method. """
-
-    def __init__(self, *args, **kwargs):
-        self._method = kwargs.pop('method', 'GET')
-        urllib2.Request.__init__(self, *args, **kwargs)
-
-    def get_method(self):
-        return self._method
+class InvalidBatchException(Exception):
+    pass
 
 
 class Nuxeo(object):
@@ -227,8 +204,7 @@ class Nuxeo(object):
 
         # Set Proxy flag
         self.is_proxy = False
-        opener_proxies = get_opener_proxies(self.opener)
-        if opener_proxies:
+        if get_opener_proxies(self.opener):
             self.is_proxy = True
 
         self.automation_url = base_url + 'site/automation/'
@@ -237,68 +213,8 @@ class Nuxeo(object):
 
         # New batch upload API
         self.new_upload_api_available = True
-        self._rest_url = base_url + api_path
+        self.rest_url = base_url + api_path
         self.batch_upload_path = 'upload'
-
-    @property
-    def operations(self):
-        """
-        A dict of all operations and their parameters.
-        Fetched on demand as it is a heavy work for the server and the network.
-
-        :rtype: dict
-        """
-
-        if not self.__operations:
-            self.__operations = self._fetch_api()
-        return self.__operations
-
-    def login(self):
-        """
-        Try to login and return the user.
-
-        :return: Current user
-        """
-        self.execute('login')
-        return self.users().fetch(self.user_id)
-
-    def repository(self, name='default', schemas=None):
-        """
-        :return: A repository object
-        """
-        return Repository(name, self, schemas=schemas or [])
-
-    def directory(self, name):
-        """
-        :return: An Operation object
-        """
-        return Directory(name, self)
-
-    def operation(self, name):
-        """
-        https://doc.nuxeo.com/display/NXDOC/Automation
-
-        :return: An Operation object to perform on Automation
-        """
-        return Operation(name, self)
-
-    def workflows(self):
-        """
-        :return: The Workflows service
-        """
-        return Workflows(self)
-
-    def users(self):
-        """
-        :return: The Users service
-        """
-        return Users(self)
-
-    def groups(self):
-        """
-        :return: The Groups service
-        """
-        return Groups(self)
 
     def batch_upload(self):
         """
@@ -306,165 +222,35 @@ class Nuxeo(object):
         """
         return BatchUpload(self)
 
-    def request_authentication_token(
-        self,
-        application_name,
-        device_id,
-        device_description,
-        permission,
-        revoke=False,
-    ):
+    def debug(self, *args, **kwargs):
+        pass
+
+    def directory(self, name):
         """
-        Request and return a new token for the user.
+        :return: An Operation object
+        """
+        return Directory(name, self)
 
-        Token requires to have an application name and device id and permission
-        the description is optional.  Once the token received you can use it
-        for future login
+    def drive_config(self):
+        """
+        Fetch the Drive JSON configuration from
+        the $NUXEO_URL/api/v1/drive/configuration endpoint.
         """
 
-        err = ('Failed to connect to Nuxeo server {} with user {}'
-               ' to acquire a token').format(self.base_url, self.user_id)
-        parameters = {
-            'deviceId': device_id,
-            'applicationName': application_name,
-            'permission': permission,
-            'revoke': str(revoke).lower(),
-        }
-        if device_description:
-            parameters['deviceDescription'] = device_description
-        url = self.base_url + 'authentication/token?'
-        url += urlencode(parameters)
-
+        url = self.rest_url + 'drive/configuration'
         headers = self._get_common_headers()
-        cookies = self._get_cookies()
-        self.trace('Calling %s with headers %r and cookies %r',
-                   url, headers, cookies)
-        req = urllib2.Request(url, headers=headers)
+        self.trace('Fetching the Drive configuration at %r with headers=%r',
+                   url, headers)
+        req = Request(url, headers=headers)
         try:
-            token = self.opener.open(req, timeout=self.timeout).read()
-        except urllib2.HTTPError as e:
-            if e.code == 401 or e.code == 403:
-                raise Unauthorized(self.base_url, self.user_id, e.code)
-            elif e.code == 404:
-                # Token based auth is not supported by this server
-                return None
-            else:
-                e.msg = err + ': HTTP error %d' % e.code
-                raise e
-        except Exception as e:
-            if hasattr(e, 'msg'):
-                e.msg = err + ': ' + e.msg
-            raise
-        cookies = self._get_cookies()
-        self.trace('Got token %r with cookies %r', token, cookies)
-        # Use the (potentially re-newed) token from now on
-        if not revoke:
-            self._update_auth(token=token)
-        return token
+            ret = self.opener.open(req, timeout=self.timeout)
+            return json.loads(ret.read())
+        except (urllib2.URLError, ValueError):
+            pass
+        return {}
 
-    def header(self, name, value):
-        """
-        Define a header.
-
-        :param name: -- Header name
-        :param value: -- Header value
-        """
-        self._headers[name] = value
-
-    def headers(self, extras=None):
-        """
-        Return the headers that will be sent to the server
-        You can set additional headers with extras argument.
-
-        :param extras: -- a dictionary or object of additional headers to set
-        """
-        headers = self._get_common_headers()
-        if extras:
-            self._headers.update(extras)
-        headers.update(self._headers)
-        return headers
-
-    def _get_common_headers(self):
-        """
-        Headers to include in every HTTP requests.
-
-        Includes the authentication heads (token based or basic auth if no
-        token).
-
-        Also include an application name header to make it possible for the
-        server to compute access statistics for various client types (e.g.
-        browser vs devices).
-        """
-
-        headers = {
-            'Cache-Control': 'no-cache',
-        }
-        if self._auth is not None:
-            headers.update([self._auth])
-        headers.update(self._headers)
-        return headers
-
-    def _fetch_api(self):
-        """ Used to populate :attr:`operations`, do not call directly. """
-
-        err = 'Failed to connect to Nuxeo server {}'.format(self.base_url)
-        url = self.automation_url
-        headers = self._get_common_headers()
-        cookies = self._get_cookies()
-        self.trace('Calling %s with headers %r and cookies %r',
-                   url, headers, cookies)
-        req = urllib2.Request(url, headers=headers)
-        try:
-            response = json.loads(
-                self.opener.open(req, timeout=self.timeout).read())
-        except urllib2.HTTPError as e:
-            if e.code in (401, 403):
-                raise Unauthorized(self.base_url, self.user_id, e.code)
-
-            msg = err + '\nHTTP error %d' % e.code
-            if hasattr(e, 'msg'):
-                msg = msg + ': ' + e.msg
-            e.msg = msg
-            raise e
-        except urllib2.URLError as e:
-            msg = err
-            if hasattr(e, 'message') and e.message:
-                e_msg = force_decode(': ' + e.message)
-                if e_msg is not None:
-                    msg += e_msg
-            elif hasattr(e, 'reason') and e.reason:
-                if (hasattr(e.reason, 'message')
-                        and e.reason.message):
-                    e_msg = force_decode(': ' + e.reason.message)
-                    if e_msg is not None:
-                        msg += e_msg
-                elif (hasattr(e.reason, 'strerror')
-                        and e.reason.strerror):
-                    e_msg = force_decode(': ' + e.reason.strerror)
-                    if e_msg is not None:
-                        msg += e_msg
-            if self.is_proxy:
-                msg += ('\nPlease check your Internet connection,'
-                        + ' make sure the Nuxeo server URL is valid'
-                        + '" and check the proxy settings.')
-            else:
-                msg += ('\nPlease check your Internet connection'
-                        + ' and make sure the Nuxeo server URL is valid.')
-            e.msg = msg
-            raise e
-        except Exception as e:
-            msg = err
-            if hasattr(e, 'msg'):
-                msg += ': ' + e.msg
-            e.msg = msg
-            raise e
-
-        operations = {}
-        for operation in response['operations']:
-            operations[operation['id']] = operation
-            for alias in operation.get('aliases', []):
-                operations[alias] = operation
-        return operations
+    def error(self, *args, **kwargs):
+        pass
 
     def execute(
         self,
@@ -574,84 +360,69 @@ class Nuxeo(object):
         else:
             return self._read_response(resp, url)
 
-    def trace(self, *args, **kwargs):
-        pass
-
-    def debug(self, *args, **kwargs):
-        pass
-
-    def error(self, *args, **kwargs):
-        pass
-
-    def _create_action(self, type, path, name):
-        return {}
-
-    def _get_action(self):
-        return None
-
-    def _end_action(self):
-        pass
-
-    def _update_auth(self, auth=None, password=None, token=None):
+    def groups(self):
         """
-        When username retrieved from database, check for unicode and convert
-        to string.
-        Note: base64Encoding for unicode type will fail, hence converting
-        to string.
+        :return: The Groups service
+        """
+        return Groups(self)
+
+    def header(self, name, value):
+        """
+        Define a header.
+
+        :param name: -- Header name
+        :param value: -- Header value
+        """
+        self._headers[name] = value
+
+    def headers(self, extras=None):
+        """
+        Return the headers that will be sent to the server
+        You can set additional headers with extras argument.
+
+        :param extras: -- a dictionary or object of additional headers to set
+        """
+        headers = self._get_common_headers()
+        if extras:
+            self._headers.update(extras)
+        headers.update(self._headers)
+        return headers
+
+    def login(self):
+        """
+        Try to login and return the user.
+
+        :return: Current user
+        """
+        self.execute('login')
+        return self.users().fetch(self.user_id)
+
+    def operation(self, name):
+        """
+        https://doc.nuxeo.com/display/NXDOC/Automation
+
+        :return: An Operation object to perform on Automation
+        """
+        return Operation(name, self)
+
+    @property
+    def operations(self):
+        """
+        A dict of all operations and their parameters.
+        Fetched on demand as it is a heavy work for the server and the network.
+
+        :rtype: dict
         """
 
-        if auth is not None:
-            if 'username' in auth:
-                self.user_id = auth['username']
-            if 'token' in auth:
-                token = auth['token']
-            if 'password' in auth:
-                password = auth['password']
+        if not self.__operations:
+            self.__operations = self._fetch_api()
+        return self.__operations
 
-        if self.user_id and isinstance(self.user_id, unicode):
-            self.user_id = unicode(self.user_id).encode('utf-8')
-
-        # Select the most appropriate auth headers based on credentials
-        if token is not None:
-            self._auth = ('X-Authentication-Token', token)
-        elif password is not None:
-            basic_auth = 'Basic %s' % base64.b64encode(
-                    self.user_id + ":" + password).strip()
-            self._auth = 'Authorization', basic_auth
-        else:
-            raise ValueError('Either password or token must be provided')
-
-    def _get_cookies(self):
-        return list(self.cookie_jar) if self.cookie_jar is not None else []
-
-    def _check_operation(self, command):
-        if self.operations is None:
-            self.fetch_api()
-        if command not in self.operations:
-            raise ValueError('%r is not a registered operation' % command)
-        return self.operations[command]
-
-    def _check_params(self, command, params):
-        method = self._check_operation(command)
-
-        required_params = []
-        other_params = []
-        for param in method['params']:
-            if param['required']:
-                required_params.append(param['name'])
-            else:
-                other_params.append(param['name'])
-
-        for param in params.keys():
-            if param not in required_params and param not in other_params:
-                self.trace('Unexpected param %r for operation %r',
-                           param, command)
-        for param in required_params:
-            if param not in params:
-                err = 'Missing required param {!r} for operation {!r}.'
-                raise ValueError(err.format(param, command))
-
-        # TODO: add typechecking
+    def repository(self, name='default', schemas=None):
+        """
+        :return: A repository object
+        """
+        return Repository(name, self, schemas=schemas or [])
 
     def request(
         self,
@@ -683,7 +454,7 @@ class Nuxeo(object):
                              request ?param1=value1&param2=value2
         """
 
-        url = self._rest_url + relative_url
+        url = self.rest_url + relative_url
         if adapter is not None:
             url += '/@' + adapter
 
@@ -713,23 +484,61 @@ class Nuxeo(object):
 
         return self._read_response(resp, url)
 
-    def drive_config(self):
+    def request_authentication_token(
+        self,
+        application_name,
+        device_id,
+        device_description,
+        permission,
+        revoke=False,
+    ):
         """
-        Fetch the Drive JSON configuration from
-        the $NUXEO_URL/api/v1/drive/configuration endpoint.
+        Request and return a new token for the user.
+
+        Token requires to have an application name and device id and permission
+        the description is optional.  Once the token received you can use it
+        for future login
         """
 
-        url = self._rest_url + 'drive/configuration'
+        err = ('Failed to connect to Nuxeo server {} with user {}'
+               ' to acquire a token').format(self.base_url, self.user_id)
+        parameters = {
+            'deviceId': device_id,
+            'applicationName': application_name,
+            'permission': permission,
+            'revoke': str(revoke).lower(),
+        }
+        if device_description:
+            parameters['deviceDescription'] = device_description
+        url = self.base_url + 'authentication/token?'
+        url += urlencode(parameters)
+
         headers = self._get_common_headers()
-        self.trace('Fetching the Drive configuration at %r with headers=%r',
-                   url, headers)
-        req = Request(url, headers=headers)
+        cookies = self._get_cookies()
+        self.trace('Calling %s with headers %r and cookies %r',
+                   url, headers, cookies)
+        req = urllib2.Request(url, headers=headers)
         try:
-            ret = self.opener.open(req, timeout=self.timeout)
-            return json.loads(ret.read())
-        except (urllib2.URLError, ValueError):
-            pass
-        return {}
+            token = self.opener.open(req, timeout=self.timeout).read()
+        except urllib2.HTTPError as e:
+            if e.code == 401 or e.code == 403:
+                raise Unauthorized(self.base_url, self.user_id, e.code)
+            elif e.code == 404:
+                # Token based auth is not supported by this server
+                return None
+            else:
+                e.msg = err + ': HTTP error %d' % e.code
+                raise e
+        except Exception as e:
+            if hasattr(e, 'msg'):
+                e.msg = err + ': ' + e.msg
+            raise
+        cookies = self._get_cookies()
+        self.trace('Got token %r with cookies %r', token, cookies)
+        # Use the (potentially re-newed) token from now on
+        if not revoke:
+            self._update_auth(token=token)
+        return token
 
     def server_reachable(self):
         """
@@ -750,6 +559,144 @@ class Nuxeo(object):
                 return True
         return False
 
+    def trace(self, *args, **kwargs):
+        pass
+
+    def users(self):
+        """
+        :return: The Users service
+        """
+        return Users(self)
+
+    def workflows(self):
+        """
+        :return: The Workflows service
+        """
+        return Workflows(self)
+
+    def _check_params(self, command, params):
+        method = self._check_operation(command)
+
+        required_params = []
+        other_params = []
+        for param in method['params']:
+            if param['required']:
+                required_params.append(param['name'])
+            else:
+                other_params.append(param['name'])
+
+        for param in params.keys():
+            if param not in required_params and param not in other_params:
+                self.trace('Unexpected param %r for operation %r',
+                           param, command)
+        for param in required_params:
+            if param not in params:
+                err = 'Missing required param {!r} for operation {!r}.'
+                raise ValueError(err.format(param, command))
+
+        # TODO: add typechecking
+
+    def _check_operation(self, command):
+        if self.operations is None:
+            self.fetch_api()
+        if command not in self.operations:
+            raise ValueError('%r is not a registered operation' % command)
+        return self.operations[command]
+
+    def _create_action(self, type, path, name):
+        return {}
+
+    def _end_action(self):
+        pass
+
+    def _fetch_api(self):
+        """ Used to populate :attr:`operations`, do not call directly. """
+
+        err = 'Failed to connect to Nuxeo server {}'.format(self.base_url)
+        url = self.automation_url
+        headers = self._get_common_headers()
+        cookies = self._get_cookies()
+        self.trace('Calling %s with headers %r and cookies %r',
+                   url, headers, cookies)
+        req = urllib2.Request(url, headers=headers)
+        try:
+            response = json.loads(
+                self.opener.open(req, timeout=self.timeout).read())
+        except urllib2.HTTPError as e:
+            if e.code in (401, 403):
+                raise Unauthorized(self.base_url, self.user_id, e.code)
+
+            msg = err + '\nHTTP error %d' % e.code
+            if hasattr(e, 'msg'):
+                msg = msg + ': ' + e.msg
+            e.msg = msg
+            raise e
+        except urllib2.URLError as e:
+            msg = err
+            if hasattr(e, 'message') and e.message:
+                e_msg = force_decode(': ' + e.message)
+                if e_msg is not None:
+                    msg += e_msg
+            elif hasattr(e, 'reason') and e.reason:
+                if (hasattr(e.reason, 'message')
+                        and e.reason.message):
+                    e_msg = force_decode(': ' + e.reason.message)
+                    if e_msg is not None:
+                        msg += e_msg
+                elif (hasattr(e.reason, 'strerror')
+                        and e.reason.strerror):
+                    e_msg = force_decode(': ' + e.reason.strerror)
+                    if e_msg is not None:
+                        msg += e_msg
+            if self.is_proxy:
+                msg += ('\nPlease check your Internet connection,'
+                        + ' make sure the Nuxeo server URL is valid'
+                        + '" and check the proxy settings.')
+            else:
+                msg += ('\nPlease check your Internet connection'
+                        + ' and make sure the Nuxeo server URL is valid.')
+            e.msg = msg
+            raise e
+        except Exception as e:
+            msg = err
+            if hasattr(e, 'msg'):
+                msg += ': ' + e.msg
+            e.msg = msg
+            raise e
+
+        operations = {}
+        for operation in response['operations']:
+            operations[operation['id']] = operation
+            for alias in operation.get('aliases', []):
+                operations[alias] = operation
+        return operations
+
+    def _get_action(self):
+        return None
+
+    def _get_common_headers(self):
+        """
+        Headers to include in every HTTP requests.
+
+        Includes the authentication heads (token based or basic auth if no
+        token).
+
+        Also include an application name header to make it possible for the
+        server to compute access statistics for various client types (e.g.
+        browser vs devices).
+        """
+
+        headers = {
+            'Cache-Control': 'no-cache',
+        }
+        if self._auth is not None:
+            headers.update([self._auth])
+        headers.update(self._headers)
+        return headers
+
+    def _get_cookies(self):
+        return list(self.cookie_jar) if self.cookie_jar is not None else []
+
     def _log_details(self, e):
         if hasattr(e, 'fp'):
             detail = e.fp.read().decode('utf-8')
@@ -766,7 +713,7 @@ class Nuxeo(object):
                 else:
                     self.debug('Remote exception details: %r', detail)
                 return exc.get('status'), exc.get('code'), message, error
-            except:
+            except ValueError:
                 # Error message should always be a JSON message,
                 # but sometimes it's not
                 if '<html>' in detail:
@@ -791,3 +738,55 @@ class Nuxeo(object):
             self.trace('Response for %r with cookies %r has content-type %r',
                        url, cookies, content_type)
             return s
+
+    def _update_auth(self, auth=None, password=None, token=None):
+        """
+        When username retrieved from database, check for unicode and convert
+        to string.
+        Note: base64Encoding for unicode type will fail, hence converting
+        to string.
+        """
+
+        if auth is not None:
+            if 'username' in auth:
+                self.user_id = auth['username']
+            if 'token' in auth:
+                token = auth['token']
+            if 'password' in auth:
+                password = auth['password']
+
+        if self.user_id and isinstance(self.user_id, unicode):
+            self.user_id = unicode(self.user_id).encode('utf-8')
+
+        # Select the most appropriate auth headers based on credentials
+        if token is not None:
+            self._auth = ('X-Authentication-Token', token)
+        elif password is not None:
+            basic_auth = 'Basic %s' % base64.b64encode(
+                    self.user_id + ":" + password).strip()
+            self._auth = 'Authorization', basic_auth
+        else:
+            raise ValueError('Either password or token must be provided')
+
+
+class Request(urllib2.Request):
+    """ Need to override urllib2 request to add the HTTP method. """
+
+    def __init__(self, *args, **kwargs):
+        self._method = kwargs.pop('method', 'GET')
+        urllib2.Request.__init__(self, *args, **kwargs)
+
+    def get_method(self):
+        return self._method
+
+
+class Unauthorized(Exception):
+
+    def __init__(self, server_url, user_id, code=403):
+        self.server_url = server_url
+        self.user_id = user_id
+        self.code = code
+
+    def __str__(self):
+        return ('%r is not authorized to access %r with '
+                ' the provided credentials' % (self.user_id, self.server_url))

@@ -354,7 +354,7 @@ See the [Directory](http://nuxeo.github.io/nuxeo-python-client/latest/#module-nu
 __Fetch all entries of a directory__
 
 ```python
-entries = nuxeo.directory('nature').fetchAll()
+entries = nuxeo.directory('nature').fetch_all()
 ```
 
 __Fetch a given directory entry__

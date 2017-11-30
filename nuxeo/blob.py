@@ -29,6 +29,13 @@ WIN32_PATCHED_MIME_TYPES = {
 }
 
 
+def get_upload_buffer(input_file):
+    if sys.platform != 'win32':
+        return os.fstatvfs(input_file.fileno()).f_bsize
+
+    return FILE_BUFFER_SIZE
+
+
 def guess_mime_type(filename):
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type:
@@ -39,6 +46,15 @@ def guess_mime_type(filename):
         return mime_type
 
     return 'application/octet-stream'
+
+
+def _read_data(file_object, buffer_size):
+    while 'processing data':
+        # Check if synchronization thread was suspended
+        r = file_object.read(buffer_size)
+        if not r:
+            break
+        yield r
 
 
 class Blob(object):
@@ -53,6 +69,14 @@ class Blob(object):
         self._data = ''
         self._mimetype = 'application/octet-stream'
 
+    def get_data(self):
+        """ Data. """
+        return self._data
+
+    def get_mimetype(self):
+        """ Mimetype for the content. """
+        return self._mimetype
+
     def get_name(self):
         """ Return the name to use. """
         return self._name
@@ -61,20 +85,12 @@ class Blob(object):
         """ Size in bytes. """
         return self._size
 
-    def get_mimetype(self):
-        """ Mimetype for the content. """
-        return self._mimetype
-
-    def get_data(self):
-        """ Data. """
-        return self._data
-
 
 class BatchBlob(Blob):
     """ Representation of an already uploaded Blob. """
 
     def __init__(self, service, obj):
-        self._service = service
+        self.service = service
         self.uploaded = obj.get('uploaded', 'true') == 'true'
         self.uploadType = obj['uploadType']
         self._name = obj['name']
@@ -82,14 +98,14 @@ class BatchBlob(Blob):
         self.uploadedSize = int(obj.get('uploadedSize', self._size))
         self.fileIdx = int(obj['fileIdx'])
 
+    def get_batch_id(self):
+        return self.service.get_batch_id()
+
     def to_json(self):
         return {
             'upload-batch': self.get_batch_id(),
             'upload-fileId': str(self.fileIdx),
         }
-
-    def get_batch_id(self):
-        return self._service.get_batch_id()
 
 
 class BufferBlob(Blob):
@@ -132,24 +148,10 @@ class FileBlob(Blob):
         else:
             self._mimetype = mimetype
 
-    def get_upload_buffer(self, input_file):
-        if sys.platform != 'win32':
-            return os.fstatvfs(input_file.fileno()).f_bsize
-
-        return FILE_BUFFER_SIZE
-
-    def _read_data(self, file_object, buffer_size):
-        while 'processing data':
-            # Check if synchronization thread was suspended
-            r = file_object.read(buffer_size)
-            if not r:
-                break
-            yield r
-
     def get_data(self):
         """ Request data. """
 
         input_file = open(self._path, 'rb')
         # Use file system block size if available for streaming buffer
-        fs_block_size = self.get_upload_buffer(input_file)
-        return self._read_data(input_file, fs_block_size)
+        fs_block_size = get_upload_buffer(input_file)
+        return _read_data(input_file, fs_block_size)

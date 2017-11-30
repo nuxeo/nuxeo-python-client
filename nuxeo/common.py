@@ -11,7 +11,7 @@ class NuxeoObject(object):
     def __init__(self, obj=None, service=None, id=None):
         self._dirty = True
         self._lazy = False
-        self._service = service
+        self.service = service
         if obj is None:
             self.id = id
             self.properties = dict()
@@ -31,24 +31,24 @@ class NuxeoObject(object):
                         if not item[0].startswith('_'))
         return u'<{}({})>'.format(type(self).__name__, ret)
 
-    def is_lazy(self):
-        return self._lazy
+    def delete(self):
+        self.service.delete(self.get_id())
 
     def get_id(self):
         return self.id
 
+    def is_lazy(self):
+        return self._lazy
+
     def load(self):
         self._lazy = False
-        self._duplicate(self._service.get(self.get_id()))
+        self._duplicate(self.service.get(self.get_id()))
+
+    def save(self):
+        self.service.update(self)
 
     def _duplicate(self, obj):
         self.properties = obj['properties']
-
-    def save(self):
-        self._service.update(self)
-
-    def delete(self):
-        self._service.delete(self.get_id())
 
 
 class NuxeoAutosetObject(NuxeoObject):
@@ -56,17 +56,6 @@ class NuxeoAutosetObject(NuxeoObject):
     def __init__(self, **kwargs):
         self._autoset = False
         super(NuxeoAutosetObject, self).__init__(**kwargs)
-
-    def __setattr__(self, name, value):
-        if name.startswith('_'):
-            super(NuxeoObject, self).__setattr__(name, value)
-            return
-        if not self._dirty:
-            self._dirty = True
-        if self._autoset and not hasattr(self, name):
-            self.properties[name] = value
-        else:
-            super(NuxeoObject, self).__setattr__(name, value)
 
     def __getattr__(self, item):
         if hasattr(self, item):
@@ -87,6 +76,17 @@ class NuxeoAutosetObject(NuxeoObject):
             return self.properties[item]
         raise AttributeError
 
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            super(NuxeoObject, self).__setattr__(name, value)
+            return
+        if not self._dirty:
+            self._dirty = True
+        if self._autoset and not hasattr(self, name):
+            self.properties[name] = value
+        else:
+            super(NuxeoObject, self).__setattr__(name, value)
+
 
 class NuxeoService(object):
     """ Default service. """
@@ -95,33 +95,6 @@ class NuxeoService(object):
         self._nuxeo = nuxeo
         self._path = path
         self._object_class = object_class
-
-    def get(self, uid):
-        return self._nuxeo.request(self._path + '/' + uid)
-
-    def fetch(self, uid):
-        return self._object_class(obj=self.get(uid), service=self)
-
-    def exists(self, uid):
-        try:
-            self.fetch(uid)
-            return True
-        except HTTPError as e:
-            if e.code != 404:
-                raise e
-        return False
-
-    def delete(self, uid):
-        self._nuxeo.request(self._path + '/' + uid, method='DELETE')
-
-    def update(self, obj):
-        body = {
-            'entity-type': self._object_class.entity_type,
-            'properties': obj.properties,
-            'id': obj.get_id(),
-        }
-        self._nuxeo.request(
-            self._path + '/' + obj.get_id(), body=body, method='PUT')
 
     def create(self, obj):
         if isinstance(obj, self._object_class):
@@ -138,3 +111,30 @@ class NuxeoService(object):
         }
         req = self._nuxeo.request(self._path, method='POST', body=body)
         return self._object_class(req, self)
+
+    def delete(self, uid):
+        self._nuxeo.request(self._path + '/' + uid, method='DELETE')
+
+    def exists(self, uid):
+        try:
+            self.fetch(uid)
+            return True
+        except HTTPError as e:
+            if e.code != 404:
+                raise e
+        return False
+
+    def fetch(self, uid):
+        return self._object_class(obj=self.get(uid), service=self)
+
+    def get(self, uid):
+        return self._nuxeo.request(self._path + '/' + uid)
+
+    def update(self, obj):
+        body = {
+            'entity-type': self._object_class.entity_type,
+            'properties': obj.properties,
+            'id': obj.get_id(),
+        }
+        self._nuxeo.request(
+            self._path + '/' + obj.get_id(), body=body, method='PUT')

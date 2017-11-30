@@ -8,26 +8,10 @@ __all__ = ('Operation',)
 
 class Operation(object):
     def __init__(self, nature, service):
-        self._service = service
+        self.service = service
         self._type = nature
         self._params = dict()
         self._input = None
-
-    def params(self, params=None):
-        """
-        Get or add parameters to the operation.
-
-        :param params: To add if None this method behave as a getter.
-        :return: The Operation parameters.
-        """
-
-        if params:
-            self._params.update(params)
-        return self._params
-
-    def input(self, input_):
-        """ Set the input for this operation. """
-        self._input = input_
 
     def execute(self, **kwargs):
         """
@@ -41,13 +25,29 @@ class Operation(object):
         input_ = self._input
         params = self._params
         if isinstance(input_, BatchBlob):
-            url = (self._service._rest_url
+            url = (self.service.rest_url
                    + 'upload/'
-                   + input_._service._batchid
+                   + input_.service.batchid
                    + '/'
                    + str(input_.fileIdx)
                    + '/execute/'
                    + self._type)
             input_ = None
-        return self._service.execute(
+        return self.service.execute(
             self._type, url=url, params=params, op_input=input_, **kwargs)
+
+    def input(self, input_):
+        """ Set the input for this operation. """
+        self._input = input_
+
+    def params(self, params=None):
+        """
+        Get or add parameters to the operation.
+
+        :param params: To add if None this method behave as a getter.
+        :return: The Operation parameters.
+        """
+
+        if params:
+            self._params.update(params)
+        return self._params

@@ -30,19 +30,17 @@ class Groups(NuxeoService):
         super(Groups, self).__init__(nuxeo, 'group', Group)
         self._query = '?fetch.group=memberUsers&fetch.group=memberGroups'
 
-    def _get_args(self, obj):
-        args = {'entity-type': self._object_class.entity_type}
-        if isinstance(obj, self._object_class):
-            args['groupname'] = obj.groupname
-            args['grouplabel'] = obj.grouplabel
-            args['memberUsers'] = obj.memberUsers
-            args['memberGroups'] = obj.memberGroups
-        elif isinstance(obj, dict):
-            args.update(obj)
-        else:
-            err = 'Need a dictionary of properties or a {} object'
-            raise ValueError(err.format(self._object_class))
-        return args
+    def create(self, obj):
+        """
+        Create a new group.
+
+        :param obj:
+        :return: Group created
+        """
+        args = self._get_args(obj)
+        req = self._nuxeo.request(
+            self._path + self._query, method='POST', body=args)
+        return self._object_class(req, self)
 
     def get(self, uid):
         """
@@ -63,14 +61,16 @@ class Groups(NuxeoService):
         self._nuxeo.request(self._path + '/' + obj.get_id() + self._query,
                             body=args, method='PUT')
 
-    def create(self, obj):
-        """
-        Create a new group.
-
-        :param obj:
-        :return: Group created
-        """
-        args = self._get_args(obj)
-        req = self._nuxeo.request(
-            self._path + self._query, method='POST', body=args)
-        return self._object_class(req, self)
+    def _get_args(self, obj):
+        args = {'entity-type': self._object_class.entity_type}
+        if isinstance(obj, self._object_class):
+            args['groupname'] = obj.groupname
+            args['grouplabel'] = obj.grouplabel
+            args['memberUsers'] = obj.memberUsers
+            args['memberGroups'] = obj.memberGroups
+        elif isinstance(obj, dict):
+            args.update(obj)
+        else:
+            err = 'Need a dictionary of properties or a {} object'
+            raise ValueError(err.format(self._object_class))
+        return args

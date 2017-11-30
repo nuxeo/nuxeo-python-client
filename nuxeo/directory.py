@@ -28,13 +28,6 @@ class Directory(NuxeoService):
         self._name = name
         self._path = 'directory/' + name
 
-    def fetchAll(self):
-        """
-        :return: all entries from the Directory
-        """
-        result = self._nuxeo.request(self._path)
-        return [DirectoryEntry(entry, self) for entry in result['entries']]
-
     def create(self, obj):
         """
         Create a new entry in the directory.
@@ -58,6 +51,13 @@ class Directory(NuxeoService):
         }
         req = self._nuxeo.request(self._path, method='POST', body=body)
         return self._object_class(req, self)
+
+    def fetch_all(self):
+        """
+        :return: all entries from the Directory
+        """
+        result = self._nuxeo.request(self._path)
+        return [DirectoryEntry(entry, self) for entry in result['entries']]
 
     def update(self, obj):
         """ Update an entry in the directory. """

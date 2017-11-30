@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 import re
-
 import urllib2
 
 from .blob import BatchBlob
@@ -24,9 +23,18 @@ class BatchUpload(object):
     def __init__(self, nuxeo):
         self._nuxeo = nuxeo
         self._path = 'upload/'
-        self._batchid = None
+        self.batchid = None
         self._upload_index = 0
         self.blobs = []
+
+    def cancel(self):
+        """ Cancel a BatchUpload, cleaning the bucket on the server side. """
+
+        if self.batchid is None:
+            return
+
+        self._nuxeo.request(self._get_path(), method='DELETE')
+        self.batchid = None
 
     def fetch(self, index):
         """
@@ -40,6 +48,9 @@ class BatchUpload(object):
         res['fileIdx'] = index
         return BatchBlob(self, res)
 
+    def get_batch_id(self):
+        return self.batchid
+
     def upload(self, blob):
         """
         Upload a new blob to the bucket.
@@ -48,8 +59,8 @@ class BatchUpload(object):
         :param blob: The blob to upload to this BatchUpload.
         """
 
-        if self._batchid is None:
-            self._batchid = self._create_batchid()
+        if self.batchid is None:
+            self.batchid = self._create_batchid()
         filename = safe_filename(blob.get_name())
         quoted_filename = urllib2.quote(filename.encode('utf-8'))
         path = self._get_path() + '/' + str(self._upload_index)
@@ -74,20 +85,8 @@ class BatchUpload(object):
         self._upload_index += 1
         return blob
 
-    def get_batch_id(self):
-        return self._batchid
-
-    def _get_path(self):
-        return self._path + self._batchid
-
-    def cancel(self):
-        """ Cancel a BatchUpload, cleaning the bucket on the server side. """
-
-        if self._batchid is None:
-            return
-
-        self._nuxeo.request(self._get_path(), method='DELETE')
-        self._batchid = None
-
     def _create_batchid(self):
         return self._nuxeo.request(self._path, method='POST')['batchId']
+
+    def _get_path(self):
+        return self._path + self.batchid
