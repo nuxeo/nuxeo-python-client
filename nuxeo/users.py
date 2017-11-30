@@ -26,7 +26,7 @@ class User(NuxeoAutosetObject):
         :param password: New password to set
         """
         self.properties['password'] = password
-        self._service.update(self)
+        self.service.update(self)
 
 
 class Users(NuxeoService):

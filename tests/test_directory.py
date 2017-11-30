@@ -28,7 +28,7 @@ def test_fetch(directory):
 
 
 def test_fetch_all(directory):
-    entries = directory.fetchAll()
+    entries = directory.fetch_all()
     assert isinstance(entries, list)
     assert entries
 

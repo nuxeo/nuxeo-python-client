@@ -35,15 +35,15 @@ def test_drive_config(monkeypatch, server):
 
 
 def test_encoding_404_error(server):
-    rest_url = server._rest_url
-    server._rest_url = 'http://localhost:8080/'
+    rest_url = server.rest_url
+    server.rest_url = 'http://localhost:8080/'
 
     try:
         with pytest.raises(HTTPError) as e:
             server.repository().fetch('/')
         assert e.value.code == 404
     finally:
-        server._rest_url = rest_url
+        server.rest_url = rest_url
 
 
 def test_get_operations(server):
