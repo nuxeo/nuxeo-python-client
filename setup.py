@@ -23,7 +23,7 @@ setup(
     packages=['nuxeo'],
     version=version,
     description='Nuxeo REST API Python client',
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     author='Nuxeo',
     author_email='mschoentgen@nuxeo.com',  # Current maintainer
     url=url,
