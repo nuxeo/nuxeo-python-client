@@ -17,9 +17,13 @@ Contributors:
 from __future__ import unicode_literals
 
 from .nuxeo import Nuxeo
+from os import path
+from setuptools.config import read_configuration
 
-__author__ = 'Nuxeo'
-__version__ = '2.0.0'
+_conf = read_configuration(path.join(path.dirname(path.dirname(__file__)), 'setup.cfg'))
+
+__author__ = _conf['metadata']['author']
+__version__ = _conf['metadata']['version']
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 
