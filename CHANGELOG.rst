@@ -6,6 +6,7 @@ Release date: ``2017-??-??``
 -  `NXPY-14 <https://jira.nuxeo.com/browse/NXPY-14>`__: Quote Repository URLs
 -  `NXPY-22 <https://jira.nuxeo.com/browse/NXPY-22>`__: Sanitize relative URLs
 -  `NXPY-25 <https://jira.nuxeo.com/browse/NXPY-25>`__: Allow strings as properties
+-  `NXPY-27 <https://jira.nuxeo.com/browse/NXPY-27>`__: Use of setup.cfg
 -  `NXPY-29 <https://jira.nuxeo.com/browse/NXPY-29>`__: Fix an encoding error in ``Nuxeo._log_details()``
 -  A lot of code clean-up and improvement
 

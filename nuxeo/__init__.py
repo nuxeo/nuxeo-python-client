@@ -9,21 +9,32 @@ If that URL should fail, try contacting the author.
 
 Contributors:
     Antoine Taillefer <ataillefer@nuxeo.com>
-    Rémi Cattiau <rcattiau@nuxeo.com>
+    Rémi Cattiau
     Mickaël Schoentgen <mschoentgen@nuxeo.com>
     Léa Klein <lklein@nuxeo.com>
-    https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
+    and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
 from __future__ import unicode_literals
 
-from .nuxeo import Nuxeo
 from os import path
+
+import pkg_resources
 from setuptools.config import read_configuration
 
-_conf = read_configuration(path.join(path.dirname(path.dirname(__file__)), 'setup.cfg'))
+from .nuxeo import Nuxeo
 
-__author__ = _conf['metadata']['author']
-__version__ = _conf['metadata']['version']
+
+def _extract_version():
+    try:
+        return pkg_resources.get_distribution('nuxeo').version
+    except pkg_resources.DistributionNotFound:
+        _conf = read_configuration(path.join(
+            path.dirname(path.dirname(__file__)), 'setup.cfg'))
+        return _conf['metadata']['version']
+
+
+__author__ = 'Nuxeo'
+__version__ = _extract_version()
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 

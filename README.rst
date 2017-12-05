@@ -11,12 +11,11 @@ This is an on-going project, supported by Nuxeo.
 Getting Started
 ---------------
 
-After installing `Python <https://www.python.org/downloads/>`__, use
-``pip`` to install the ``nuxeo-python-client`` package:
+The installation is as simple as:
 
 ::
 
-    $ pip install --upgrade nuxeo-python-client
+    $ pip install --upgrade nuxeo
 
 Then, use the following ``import`` statement to have access to the Nuxeo
 API:
@@ -28,8 +27,7 @@ API:
 Documentation
 -------------
 
-Check out the `API
-documentation <https://nuxeo.github.io/nuxeo-python-client/latest/>`__.
+Check out the `API documentation <https://nuxeo.github.io/nuxeo-python-client/latest/>`__.
 
 Requirements
 ------------
@@ -453,28 +451,23 @@ Requirements
 Setup
 ~~~~~
 
-Install `Python <https://www.python.org/downloads/>`__ and then use
-``pip`` to install all the required libraries:
-
 ::
 
     $ git clone https://github.com/nuxeo/nuxeo-python-client
     $ cd nuxeo-python-client
-    $ pip install -r requirements.txt
+    $ python setup.py develop
 
 Test
 ~~~~
 
 A Nuxeo Platform instance needs to be running on
-``http://localhost:8080/nuxeo`` for the tests to be run.
-
-Tests can be launched on Python Nosetests with:
+``http://localhost:8080/nuxeo`` for the tests to be run, and then:
 
 ::
 
-    $ nosetests -v
+    $ python setup.py test
 
-Tests can be launched without a server with Maven and Nosetests:
+Tests can be launched without a server with Maven and pytest:
 
 ::
 
