@@ -57,16 +57,16 @@ def color_print(text, color):
 
 def print_duplicates(path, uids):
     print('{}\'{}\'{} appears {} times with following uids:\n{}'.format(
-        BColors.OKBLUE, path.encode('utf-8'), BColors.ENDC, len(uids), '\n'.join(uids)))
+        BColors.OKBLUE, path, BColors.ENDC, len(uids), unicode_join(uids, '\n')))
 
 
-def unicode_join(array):
-    return ''.join([x.encode('utf-8') for x in array])
+def unicode_join(array, spacer=''):
+    return spacer.join([x.encode('utf-8') for x in array])
 
 
 def compute_uid_line(item):
     if item['state'] == 'deleted':
-        return ' '.join([item['uid'], '(deleted)'])
+        return unicode_join([item['uid'], ' (deleted)'])
     else:
         return item['uid']
 
@@ -99,7 +99,7 @@ def find_duplicates_of_uid(uid):
             request = 'query?query=' + urllib.quote(query.encode('utf-8'), safe='!=:')
             entries = nuxeo.request(request).get('entries')
             if len(entries) > 1:
-                print_duplicates('/'.join([doc.path.rsplit('/', 1)[0], doc.title]),
+                print_duplicates(unicode_join([doc.path.rsplit('/', 1)[0], doc.title], '/'),
                                  [compute_uid_line(x) for x in entries])
             else:
                 color_print('No duplicate for the document with uid={}.'.format(uid), BColors.OKGREEN)
