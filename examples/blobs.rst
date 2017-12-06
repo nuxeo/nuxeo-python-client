@@ -20,7 +20,6 @@ Work with blobs
 
     # Create and upload a blob
     blob = FileBlob('/path/to/file')
-    nuxeo.batch_upload().upload(blob)
     uploaded = nuxeo.batch_upload().upload(blob)
 
     # Attach it to the file

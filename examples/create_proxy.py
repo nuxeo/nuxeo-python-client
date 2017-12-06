@@ -1,11 +1,14 @@
 # coding: utf-8
-""" Tests with the Nuxeo Python client.
-        pip install nuxeo-python-client
 """
+Full example on how to create a live proxy with the Nuxeo Python Client module.
+To install it:
+    pip install nuxeo
+"""
+
+from nuxeo.nuxeo import Nuxeo
 
 
 def main():
-    from nuxeo.nuxeo import Nuxeo
 
     # Connection
     base_url = 'http://127.0.0.1:8080/nuxeo/'

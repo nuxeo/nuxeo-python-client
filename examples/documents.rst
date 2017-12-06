@@ -87,7 +87,7 @@ Manipulate documents
 
 .. code:: python
 
-    doc.fetch_acls()~
+    doc.fetch_acls()
 
 Use workflows and tasks
 ~~~~~~~~~~~~~~~~~~~~~~~
