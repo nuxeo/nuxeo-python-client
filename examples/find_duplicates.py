@@ -55,9 +55,13 @@ def color_print(text, color):
     print('{}{}{}'.format(color, text, BColors.ENDC))
 
 
-def print_duplicates(path, length, uids):
+def print_duplicates(path, uids):
     print('{}\'{}\'{} appears {} times with following uids:\n{}'.format(
-        BColors.OKBLUE, path.encode('utf-8'), BColors.ENDC, length, '\n'.join(uids)))
+        BColors.OKBLUE, path.encode('utf-8'), BColors.ENDC, len(uids), '\n'.join(uids)))
+
+
+def unicode_join(array):
+    return ''.join([x.encode('utf-8') for x in array])
 
 
 def compute_uid_line(item):
@@ -68,21 +72,20 @@ def compute_uid_line(item):
 
 
 def find_duplicates_in_folder(folder):
-    folder = folder.decode('utf-8')
     operation = nuxeo.operation('Document.GetChildren')
     operation.input(folder)
     children = operation.execute()
     doc_names = defaultdict(list)
 
-    for item in children['entries']:
-        if 'Folderish' in item['facets']:
-            find_duplicates_in_folder(item['path'])
+    for doc in children['entries']:
+        if 'Folderish' in doc['facets']:
+            find_duplicates_in_folder(doc['path'])
         else:
-            doc_names[item['title']].append(compute_uid_line(item))
+            doc_names[doc['title']].append(compute_uid_line(doc))
 
-    for item in doc_names:
-        if len(doc_names[item]) > 1:
-            print_duplicates('/'.join([folder, item]), str(len(doc_names[item])), doc_names[item])
+    for name, uids in doc_names.iteritems():
+        if len(uids) > 1:
+            print_duplicates(unicode_join([folder, name]), uids)
 
 
 def find_duplicates_of_uid(uid):
@@ -94,11 +97,10 @@ def find_duplicates_of_uid(uid):
             query = "SELECT * FROM Document WHERE ecm:parentId = '" + doc.parentRef + "'"
             query += " AND dc:title = '" + doc.title + "'"
             request = 'query?query=' + urllib.quote(query.encode('utf-8'), safe='!=:')
-            search = nuxeo.request(request)
-            entries = search.get('entries')
+            entries = nuxeo.request(request).get('entries')
             if len(entries) > 1:
                 print_duplicates('/'.join([doc.path.rsplit('/', 1)[0], doc.title]),
-                                 len(entries), [compute_uid_line(x) for x in entries])
+                                 [compute_uid_line(x) for x in entries])
             else:
                 color_print('No duplicate for the document with uid={}.'.format(uid), BColors.OKGREEN)
         except HTTPError as e:
@@ -107,19 +109,18 @@ def find_duplicates_of_uid(uid):
 
 
 def find_duplicates_with_name(name):
-    name = name.decode('utf-8')
     operation = nuxeo.operation('Document.FetchByProperty')
     operation.params({'property': 'dc:title', 'values': name})
     docs = operation.execute()
     doc_paths = defaultdict(list)
-    for item in docs['entries']:
-        doc_paths[item['path'].rsplit('/', 1)[0]].append(compute_uid_line(item))
+    for doc in docs['entries']:
+        doc_paths[doc['path'].rsplit('/', 1)[0]].append(compute_uid_line(doc))
 
     no_duplicates = True
-    for item in doc_paths:
-        if len(doc_paths[item]) > 1:
+    for path, uids in doc_paths.iteritems():
+        if len(uids) > 1:
             no_duplicates = False
-            print_duplicates('/'.join([item, name]), str(len(doc_paths[item])), doc_paths[item])
+            print_duplicates(unicode_join([path, name]), uids)
     if no_duplicates:
         color_print('No duplicate for {}.'.format(name.encode('utf-8')), BColors.OKGREEN)
 
