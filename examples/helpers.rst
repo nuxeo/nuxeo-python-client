@@ -117,3 +117,19 @@ With an output like this:
         "id": "Log",
         "aliases": ["LogOperation"]
     }
+
+**Check operation parameters**
+
+When you execute an operation, the name of the operation and
+the parameters you chose will be checked by the ``nuxeo.check_params()``
+method. If you want to check the parameters of your operation by
+yourself before running it, you can use the following:
+
+.. code:: python
+
+    try:
+        nuxeo.check_params('Log', {'level': 'info'
+                                   'message': 'I am logging something'})
+        # The parameters are valid
+    except ValueError as e:
+        print(e)  # Indicates what is wrong

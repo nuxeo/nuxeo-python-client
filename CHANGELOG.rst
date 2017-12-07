@@ -22,6 +22,7 @@ Technical changes
    nuxeo/blob.py::\ ``get_upload_buffer()``
 -  Moved ``FileBlob._read_data()`` to nuxeo/blob.py::\ ``_read_data()``
 -  Added ``Nuxeo.drive_config()``
+-  Changed ``Nuxeo._check_params()`` to ``Nuxeo.check_params()``
 -  Changed ``Nuxeo._rest_url`` to ``Nuxeo.rest_url``
 -  Changed ``NuxeoObject._service`` to ``NuxeoObject.service``
 -  Added ``NuxeoService.exists()``

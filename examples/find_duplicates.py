@@ -25,6 +25,7 @@ Example output:
 """
 
 import argparse
+import os
 import re
 import urllib
 from collections import defaultdict
@@ -44,11 +45,14 @@ class BColors(object):
     UNDERLINE = '\033[4m'
 
 
-nuxeo = Nuxeo(
-    auth={
-        'username': 'Administrator',
-        'password': 'Administrator'
-    })
+base_url = os.environ.get('NXDRIVE_TEST_SERVER_URL',
+                          'http://localhost:8080/nuxeo'),
+auth = {
+    'username': os.environ.get('NXDRIVE_TEST_USER', 'Administrator'),
+    'password': os.environ.get('NXDRIVE_TEST_PASSWORD', 'Administrator'),
+}
+
+nuxeo = Nuxeo(base_url=base_url, auth=auth)
 
 
 def color_print(text, color):
