@@ -282,7 +282,7 @@ class Nuxeo(object):
         if 'params' in params:
             params = params['params']
         if check_params:
-            self._check_params(command, params)
+            self.check_params(command, params)
 
         if url is None:
             url = self.automation_url + command
@@ -574,7 +574,7 @@ class Nuxeo(object):
         """
         return Workflows(self)
 
-    def _check_params(self, command, params):
+    def check_params(self, command, params):
         method = self._check_operation(command)
 
         required_params = []

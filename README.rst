@@ -6,7 +6,7 @@ Client Library for Nuxeo API
 The Nuxeo Python Client is a Python client library for the Nuxeo
 Automation and REST API.
 
-This is an on-going project, supported by Nuxeo.
+This is an ongoing project, supported by Nuxeo.
 
 Getting Started
 ---------------
@@ -32,7 +32,10 @@ Check out the `API documentation <https://nuxeo.github.io/nuxeo-python-client/la
 Requirements
 ------------
 
-The Nuxeo Python client works only with Nuxeo Platform >= LTS 2015.
+The Nuxeo Python client works only with:
+
+-  The Nuxeo Platform >= LTS 2015
+-  `Python >= 2.7 <https://www.python.org/downloads/>`__
 
 Quick Start
 -----------
@@ -40,413 +43,80 @@ Quick Start
 This quick start guide will show how to do basics operations using the
 client.
 
-Creating a Client
-~~~~~~~~~~~~~~~~~
+Connect to the Nuxeo Platform
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The easiest way to connect to the Nuxeo Platform is the following:
+
+.. code:: python
+
+    from nuxeo import Nuxeo
+
+    nuxeo = Nuxeo(
+        auth={
+            'username': 'Administrator',
+            'password': 'Administrator'
+        })
+
+You can then use the ``nuxeo`` object to interact with the Platform. If you want
+to use a specific instance, you can specify the ``base_url`` like so:
 
 .. code:: python
 
     nuxeo = Nuxeo(
-      auth={
-        'username': 'Administrator',
-        'password': 'Administrator'
+        base_url='http://demo.nuxeo.com/nuxeo/',
+        auth={
+            'username': 'Administrator',
+            'password': 'Administrator'
       })
 
-To connect to a different Nuxeo Platform Instance, you can use the
-following:
+Run NXQL queries
+~~~~~~~~~~~~~~~~
+
+With ``nuxeo.request(...)`` you can run queries in NXQL (NXQL is a subset of SQL,
+you can check how to use it `in the documentation <https://doc.nuxeo.com/nxdoc/nxql/>`__).
+Here, we are first `fetching a workspace <documents.rst>`__, and then using its
+``uid`` to build a query which will find all its children that have a ``File``
+or ``Picture`` type, and are not deleted.
 
 .. code:: python
 
-    nuxeo = Nuxeo(
-      base_url='http://demo.nuxeo.com/nuxeo/',
-      auth={
-        'username': 'Administrator',
-        'password': 'Administrator'
-      })
-
-Operation
-~~~~~~~~~
-
-``Operation`` object allows you to execute an operation (or operation
-chain).
-
-See the
-`Operation <http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.operation>`__
-documentation.
-
-Samples
-^^^^^^^
-
-**Call an operation to create a new folder in the Root document**
-
-.. code:: python
-
-    operation = nuxeo.operation('Document.Create')
-    operation.params({
-        'type': 'Folder',
-        'name': 'My Folder',
-        'properties': 'dc:title=My Folder \ndc:description=A Simple Folder'
-      })
-    operation.input('/')
-    doc = operation.execute()
-
-Request
-~~~~~~~
-
-The ``Request`` object allows you to call the Nuxeo REST API.
-
-See the `Request <http://nuxeo.github.io/nuxeo-python-client/latest/>`__
-documentation.
-
-.. samples-1:
-
-Samples
-^^^^^^^
-
-**Fetch the Administrator user**
-
-.. code:: python
-
-    user = nuxeo.request('user/Administrator')
-
-**Fetch the whole list of Natures**
-
-.. code:: python
-
-    natures = nuxeo.request('directory/nature')
-
-Repository
-~~~~~~~~~~
-
-The ``Repository`` object allows you to work with document.
-
-See the
-`Repository <http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.repository>`__
-documentation.
-
-.. samples-2:
-
-Samples
-^^^^^^^
-
-**Create a ``Repository`` object**
-
-.. code:: python
-
-    defaultRepository = nuxeo.repository(); // 'default' repository
-    ...
-    testRepository = nuxeo.repository('test'); // 'test' repository
-    ...
-
-**Fetch the Root document**
-
-.. code:: python
-
-    nuxeo.repository().fetch('/')
-
-**Create a new folder**
-
-.. code:: python
-
-    newFolder = {
-      'entity-type': 'document',
-      'name': 'a-folder',
-      'type': 'Folder',
-      'properties': {
-        'dc:title': 'foo',
-      }
-    }
-    folder = nuxeo.repository().create('/', newFolder)
-
-**Delete a document**
-
-.. code:: javascript
-
-    nuxeo.repository().delete('/a-folder')
-
-Document
-~~~~~~~~
-
-``Repository`` object returns and works with ``Document`` objects.
-``Document`` objects exposes a simpler API to work with a document.
-
-See the
-`Document <http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.document>`__
-documentation.
-
-.. samples-3:
-
-Samples
-^^^^^^^
-
-**Retrieve a ``Document`` object**
-
-.. code:: python
-
-    doc = nuxeo.repository().fetch('/')
-
-**Set a document property**
-
-.. code:: python
-
-    doc.set({ 'dc:title': 'foo' })
-
-**Get a document property**
-
-.. code:: python
-
-    doc.get('dc:title')
-
-**Save an updated document**
-
-.. code:: python
-
-    doc = nuxeo.repository().fetch('/')
-    doc.set({ 'dc:title': 'foo' })
-    doc.save()
-
-**Fetch the main Blob of a document**
-
-.. code:: python
-
-    doc.fetch_blob()
-
-**Convert a document main Blob to PDF**
-
-.. code:: python
-
-    doc.convert({ 'format': 'pdf' })
-
-**Fetch the ‘thumbnail’ rendition**
-
-.. code:: python
-
-    doc.fetch_rendition('thumbnail')
-
-**Fetch the ACLs**
-
-.. code:: python
-
-    doc.fetch_acls()
-
-**Add permission**
-
-.. code:: python
-
-    doc.add_permission({'username': 'test', 'permission': 'Write'})
-
-**Remove permission**
-
-.. code:: python
-
-    doc.remove_permission({'id': 'members:Write:true:Administrator::'})
-
-**Has permission**
-
-.. code:: python
-
-    doc.has_permission('Write')
-
-**Lock document**
-
-.. code:: python
-
-    doc.lock()
-
-**Unlock document**
-
-.. code:: python
-
-    doc.unlock()
-
-**Fetch Lock Status**
-
-.. code:: python
-
-    doc.fetch_lock_status()
-
-**Start a workflow**
-
-.. code:: python
-
-    doc.start_workflow('SerialDocumentReview')
-
-**Complete a workflow task**
-
-.. code:: javascript
-
-    task = workflow.fetch_tasks()
-    variables = {'participants':['user:Administrator'],'assignees':['user:Administrator'], 'end_date':'2011-10-23T12:00:00.00Z'};
-    task.complete('start_review', variables, comment='a comment');
-
-BatchUpload
-~~~~~~~~~~~
-
-The ``BatchUpload`` object allows you to upload blobs to a Nuxeo
-Platform instance, and use them as operation input or as document
-property value.
-
-See the
-`BatchUpload <http://nuxeo.github.io/nuxeo-python-client/latest/#batchupload>`__
-documentation.
-
-.. samples-4:
-
-Samples
-^^^^^^^
-
-**Create a Nuxeo.Blob to be uploaded**
-
-.. code:: python
-
-    from nuxeo.blob import FileBlob
-    from nuxeo.blob import BufferBlob
-    BufferBlob('Content of this text', 'Test.txt', 'text/plain')
-    ...
-    FileBlob('/path/to/file)
-
-**Upload a blob**
-
-.. code:: python
-
-    nuxeo.batch_upload().upload(blob)
-
-**Attach an uploaded blob to a document**
-
-.. code:: python
-
-    uploaded = nuxeo.batch_upload().upload(blob)
-    operation = nuxeo.operation('Blob.AttachOnDocument')
-    operation.params({'document':'/a-file'})
-    operation.input(uploaded)
-    operation.execute()
-
-Users
+    # Fetch a workspace
+    ws = nuxeo.repository().fetch('/default-domain/workspaces/ws')
+    # Build a query using its uid
+    query = "SELECT * FROM Document WHERE ecm:ancestorId = '" + ws.uid + "'"
+    query += " AND ecm:primaryType IN ('File', 'Picture')"
+    query += " AND ecm:currentLifeCycleState != 'deleted'"
+    request = 'query?query=' + urllib.quote(query, safe='!=:')
+    search = nuxeo.request(request, extra_headers=get_extra_headers())
+    entries = search.get('entries')
+
+``entries`` will be a ``list`` containing a ``dict`` for each
+element returned by the query.
+
+Usage
 ~~~~~
 
-The ``Users`` object allows you to work with users.
+Now that your client is set up, here are pages to help you with the
+main functions available:
 
-See the
-`Users <http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.users>`__
-documentation.
+-  `Manage users and groups <examples/users_and_groups.rst>`__
+-  `Work with documents <examples/documents.rst>`__
+-  `Work with directories <examples/directories.rst>`__
+-  `Work with blobs <examples/blobs.rst>`__
+-  `Run requests <examples/requests.rst>`__
+-  `Helpers <examples/helpers.rst>`__
+-  `Useful snippets <examples/snippets.rst>`__
+-  `Script: Find duplicates <examples/find_duplicates.py>`__
+-  `Script: Create a live proxy <examples/create_proxy.py>`__
 
-.. samples-5:
-
-Samples
-^^^^^^^
-
-**Fetch an user**
-
-.. code:: pyton
-
-    nuxeo.users().fetch('Administrator')
-
-**Create a new user**
-
-.. code:: python
-
-    newUser = {
-        'username': 'leela',
-        'firstName': 'Leela',
-        'company': 'Futurama',
-        'email': 'leela@futurama.com',
-      }
-    user = nuxeo.users().create(newUser)
-
-**Delete an user**
-
-.. code:: python
-
-    nuxeo.users().delete('leela')
-
-Groups
-~~~~~~
-
-The ``Groups`` object allows you to work with groups.
-
-See the
-`Groups <http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.groups>`__
-documentation.
-
-.. samples-6:
-
-Samples
-^^^^^^^
-
-**Fetch a group**
-
-.. code:: python
-
-    nuxeo.groups().fetch('administrators')
-
-**Create a new group**
-
-.. code:: python
-
-    newGroup = {
-      'groupname': 'foo',
-      'grouplabel': 'Foo',
-    }
-    group = nuxeo.groups().create(newGroup)
-
-**Delete a group**
-
-.. code:: python
-
-    nuxeo.groups().delete('foo')
-
-Directory
-~~~~~~~~~
-
-The ``Directory`` object allows you to work with directories.
-
-See the
-`Directory <http://nuxeo.github.io/nuxeo-python-client/latest/#module-nuxeo.directory>`__
-documentation.
-
-.. samples-7:
-
-Samples
-^^^^^^^
-
-**Fetch all entries of a directory**
-
-.. code:: python
-
-    entries = nuxeo.directory('nature').fetch_all()
-
-**Fetch a given directory entry**
-
-.. code:: python
-
-    entry = nuxeo.directory('nature').fetch('article')
-
-**Create a new directory entry**
-
-.. code:: python
-
-    newEntry = {
-      'id': 'foo',
-      'label': 'Foo',
-    }
-    entry = nuxeo.directory('nature').create(newEntry)
-
-**Delete a directory entry**
-
-.. code:: python
-
-    nuxeo.directory('nature').delete('foo')
+You can also check `the  API documentation <http://nuxeo.github.io/nuxeo-python-client/latest/>`__
+of this Python client for further options.
 
 Contributing
 ------------
 
 See our `contribution documentation <https://doc.nuxeo.com/x/VIZH>`__.
-
-.. requirements-1:
-
-Requirements
-~~~~~~~~~~~~
-
--  `Python >= 2.7 <https://www.python.org/downloads/>`__
 
 Setup
 ~~~~~
