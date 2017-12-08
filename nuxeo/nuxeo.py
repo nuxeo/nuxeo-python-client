@@ -14,6 +14,7 @@ from urlparse import urlparse
 from poster.streaminghttp import get_handlers
 
 from .batchupload import BatchUpload
+from .blob import Blob
 from .directory import Directory
 from .groups import Groups
 from .operation import Operation
@@ -22,6 +23,13 @@ from .users import Users
 from .workflow import Workflows
 
 __all__ = ('Nuxeo',)
+
+param_types = {
+    'blob': [str, unicode, Blob], 'boolean': [bool], 'date': [str, unicode], 'document': [str, unicode],
+    'documents': [list], 'int': [int], 'integer': [int], 'long': [int, long], 'map': [dict], 'object': [object],
+    'properties': [dict], 'resource': [str, unicode], 'serializable': [str, unicode, list, tuple, buffer, xrange],
+    'string': [str, unicode], 'stringlist': [str, unicode, list], 'validationmethod': [str, unicode]
+}
 
 
 def force_decode(string, codecs=('utf-8', 'cp1252')):
@@ -594,7 +602,12 @@ class Nuxeo(object):
                 err = 'Missing required param {!r} for operation {!r}.'
                 raise ValueError(err.format(param, command))
 
-        # TODO: add typechecking
+        for param in method['params']:
+            name, _type = param['name'], param_types[param['type']]
+            if name in params.keys():
+                value = params[name]
+                if not type(value) in _type:
+                    raise TypeError('{} should be of type {}.'.format(name, _type))
 
     def _check_operation(self, command):
         if self.operations is None:
