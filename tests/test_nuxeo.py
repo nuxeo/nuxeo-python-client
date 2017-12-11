@@ -9,7 +9,7 @@ from nuxeo.blob import Blob
 
 
 @pytest.mark.parametrize('method, params, is_valid', [
-    ('Document.SetBlob', {'file': Blob()}, True),  # 'file' type in [Blob, str]
+    ('Document.SetBlob', {'file': Blob()}, True),  # 'file' type in (Blob, str)
     ('Document.SetBlob', {'file': 'test.txt'}, True),
     ('Document.SetBlob', {'file': 0}, False),
     ('Document.AddPermission', {'permission': 'Read',
@@ -43,7 +43,7 @@ from nuxeo.blob import Blob
     ('Document.Query', {'query': 'test', 'queryParams': 'test'}, True),
     ('Document.Query', {'query': 'test', 'queryParams': 0}, False),
     ('User.Invite', {'validationMethod': 'test'}, True),  # 'validationMethod' type == str
-    ('User.Invite', {'validationMethod': 0}, False)
+    ('User.Invite', {'validationMethod': 0}, False),
 ])
 def test_check_params(method, params, is_valid, server):
     if is_valid:
@@ -51,6 +51,11 @@ def test_check_params(method, params, is_valid, server):
     else:
         with pytest.raises(TypeError):
             server.check_params(method, params)
+
+
+def test_check_params_unknown_operation(server):
+    with pytest.raises(ValueError):
+        server.check_params('alien', {})
 
 
 def test_drive_config(monkeypatch, server):
