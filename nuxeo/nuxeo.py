@@ -9,10 +9,6 @@ import tempfile
 import urllib2
 from collections import Sequence
 from urllib import urlencode
-from urllib2 import ProxyHandler
-from urlparse import urlparse
-
-from poster.streaminghttp import get_handlers
 
 from .batchupload import BatchUpload
 from .blob import Blob
@@ -56,70 +52,6 @@ def force_decode(string, codecs=('utf-8', 'cp1252')):
     return None
 
 
-def get_opener_proxies(opener):
-    for handler in opener.handlers:
-        if isinstance(handler, ProxyHandler):
-            return handler.proxies
-    return None
-
-
-def get_proxies_for_handler(proxy_settings):
-    """ Return a pair containing proxy string and exceptions list. """
-
-    if proxy_settings.config == 'None':
-        # No proxy, return an empty dictionary to disable
-        # default proxy detection
-        return {}, None
-    elif proxy_settings.config == 'System':
-        # System proxy, return None to use default proxy detection
-        return None, None
-    else:
-        # Manual proxy settings, build proxy string and exceptions list
-        if proxy_settings.authenticated:
-            proxy_string = '%s:%s@%s:%s' % (
-                proxy_settings.username,
-                proxy_settings.password,
-                proxy_settings.server,
-                proxy_settings.port)
-        else:
-            proxy_string = '%s:%s' % (
-                proxy_settings.server, proxy_settings.port)
-        if proxy_settings.proxy_type is None:
-            proxies = {'http': proxy_string, 'https': proxy_string}
-        else:
-            proxies = {proxy_settings.proxy_type: '%s://%s' % (
-                proxy_settings.proxy_type, proxy_string)}
-        if proxy_settings.exceptions and proxy_settings.exceptions.strip():
-            proxy_exceptions = [e.strip() for e in
-                                proxy_settings.exceptions.split(',')]
-        else:
-            proxy_exceptions = None
-        return proxies, proxy_exceptions
-
-
-def get_proxy_config(proxies):
-    if proxies is None:
-        return 'System'
-    elif proxies == {}:
-        return 'None'
-    return 'Manual'
-
-
-def get_proxy_handler(proxies, proxy_exceptions=None, url=None):
-    if proxies is None:
-        # No proxies specified, use default proxy detection
-        return urllib2.ProxyHandler()
-
-    # Use specified proxies (can be empty to disable default detection)
-    if proxies and proxy_exceptions is not None and url is not None:
-        hostname = urlparse(url).hostname
-        for exception in proxy_exceptions:
-            if exception == hostname:
-                # Server URL is in proxy exceptions, don't use any proxy
-                proxies = {}
-        return urllib2.ProxyHandler(proxies)
-
-
 def json_helper(o):
     if hasattr(o, 'to_json'):
         return o.to_json()
@@ -140,23 +72,12 @@ class Nuxeo(object):
     blob_timeout is long (or infinite) timeout dedicated to long HTTP
     requests involving a blob transfer.
 
-    Supports HTTP proxies.  If proxies is given, it must be a dictionary
-    mapping protocol names to URLs of proxies.
-    If proxies is None, uses default proxy detection:
-    read the list of proxies from the environment variables <PROTOCOL>_PROXY;
-    if no proxy environment variables are set, then in a Windows environment
-    proxy settings are obtained from the registry's Internet Settings section,
-    and in a Mac OS X environment proxy information is retrieved from the
-    OS X System Configuration Framework.
-    To disable autodetected proxy pass an empty dictionary.
-
-    TODO: handle system proxy detection under Linux, see NXP-12068
+    TODO: Switch to Requests to handle proxy
 
     :param base_url: Nuxeo server URL
     :param auth: Authentication parameter {'user': 'Administrator',
                                            'password': 'Administrator'}
     :param proxies: Proxy definition
-    :param proxy_exceptions: Exception rules for proxy
     :param repository: Repository to use by default
     :param timeout: Client timeout
     :param blob_timeout: Binary download timeout
@@ -174,7 +95,6 @@ class Nuxeo(object):
         base_url='http://localhost:8080/nuxeo',
         auth=None,
         proxies=None,
-        proxy_exceptions=None,
         repository='default',
         timeout=20,
         blob_timeout=60,
@@ -213,20 +133,9 @@ class Nuxeo(object):
         cookie_processor = urllib2.HTTPCookieProcessor(
             cookiejar=cookie_jar)
 
-        # Get proxy handler
-        proxy_handler = get_proxy_handler(
-            proxies, proxy_exceptions=proxy_exceptions, url=self.base_url)
-
         # Build URL openers
-        # self.opener = urllib2.build_opener(cookie_processor, proxy_handler)
-        self.streaming_opener = urllib2.build_opener(
-            cookie_processor, proxy_handler, *get_handlers())
+        self.streaming_opener = urllib2.build_opener(cookie_processor)
         self.opener = self.streaming_opener
-
-        # Set Proxy flag
-        self.is_proxy = False
-        if get_opener_proxies(self.opener):
-            self.is_proxy = True
 
         self.automation_url = base_url + 'site/automation/'
         self.batch_upload_url = 'batch/upload'
@@ -681,13 +590,9 @@ class Nuxeo(object):
                     e_msg = force_decode(': ' + e.reason.strerror)
                     if e_msg is not None:
                         msg += e_msg
-            if self.is_proxy:
-                msg += ('\nPlease check your Internet connection,'
-                        + ' make sure the Nuxeo server URL is valid'
-                        + '" and check the proxy settings.')
-            else:
-                msg += ('\nPlease check your Internet connection'
-                        + ' and make sure the Nuxeo server URL is valid.')
+            msg += ('\nPlease check your Internet connection,'
+                    + ' make sure the Nuxeo server URL is valid'
+                    + '" and check your proxy settings.')
             e.msg = msg
             raise e
         except Exception as e:
