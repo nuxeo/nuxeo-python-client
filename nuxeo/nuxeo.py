@@ -592,7 +592,7 @@ class Nuxeo(object):
                         msg += e_msg
             msg += ('\nPlease check your Internet connection,'
                     + ' make sure the Nuxeo server URL is valid'
-                    + '" and check your proxy settings.')
+                    + ' and check your proxy settings.')
             e.msg = msg
             raise e
         except Exception as e:
