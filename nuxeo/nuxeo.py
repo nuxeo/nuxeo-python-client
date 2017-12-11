@@ -7,6 +7,7 @@ import json
 import socket
 import tempfile
 import urllib2
+from collections import Sequence
 from urllib import urlencode
 from urllib2 import ProxyHandler
 from urlparse import urlparse
@@ -14,6 +15,7 @@ from urlparse import urlparse
 from poster.streaminghttp import get_handlers
 
 from .batchupload import BatchUpload
+from .blob import Blob
 from .directory import Directory
 from .groups import Groups
 from .operation import Operation
@@ -22,6 +24,25 @@ from .users import Users
 from .workflow import Workflows
 
 __all__ = ('Nuxeo',)
+
+PARAM_TYPES = {
+    'blob': (unicode, Blob),
+    'boolean': (bool,),
+    'date': (unicode,),
+    'document': (unicode,),
+    'documents': (list,),
+    'int': (int,),
+    'integer': (int,),
+    'long': (int, long),
+    'map': (dict,),
+    'object': (object,),
+    'properties': (dict,),
+    'resource': (unicode,),
+    'serializable': (Sequence,),
+    'string': (unicode,),
+    'stringlist': (Sequence,),
+    'validationmethod': (unicode,),
+}  # type: Dict[unicode, Tuple[type, ...]])
 
 
 def force_decode(string, codecs=('utf-8', 'cp1252')):
@@ -575,33 +596,45 @@ class Nuxeo(object):
         return Workflows(self)
 
     def check_params(self, command, params):
-        method = self._check_operation(command)
+        # type: (unicode, Dict[unicode, Tuple[type, ...]]) -> None
+        """
+        Check given paramaters of the `command` operation.  It will also
+        check for types whenever possible.
 
-        required_params = []
-        other_params = []
-        for param in method['params']:
-            if param['required']:
-                required_params.append(param['name'])
-            else:
-                other_params.append(param['name'])
+        :raises ValueError: When the `command` is not valid.
+        :raises ValueError: On unexpected parameter.
+        :raises ValueError: On missing required parameter.
+        :raises TypeError: When a parameter has not the required type.
+        """
 
-        for param in params.keys():
-            if param not in required_params and param not in other_params:
-                self.trace('Unexpected param %r for operation %r',
-                           param, command)
-        for param in required_params:
-            if param not in params:
-                err = 'Missing required param {!r} for operation {!r}.'
-                raise ValueError(err.format(param, command))
-
-        # TODO: add typechecking
-
-    def _check_operation(self, command):
-        if self.operations is None:
-            self.fetch_api()
-        if command not in self.operations:
+        operation = self.operations.get(command)
+        if not operation:
             raise ValueError('%r is not a registered operation' % command)
-        return self.operations[command]
+
+        parameters = {param['name']: param for param in operation['params']}
+
+        for name, value in params.iteritems():
+            # Check for unexpected paramaters.  We use `dict.pop()` to
+            # get and delete the parameter from the dict.
+            try:
+                type_needed = parameters.pop(name)['type']
+            except KeyError:
+                err = 'unexpected parameter %r for operation %r'
+                raise ValueError(err, name, command)
+
+            # Check types
+            types_accepted = PARAM_TYPES.get(type_needed, tuple())
+            if not isinstance(value, types_accepted):
+                err = 'parameter {!r} should be of type {!r} (current %s)'
+                raise TypeError(err.format(
+                    name, types_accepted, type(name).__name__))
+
+        # Check for required parameters.  As of now, `parameters` may contain
+        # unclaimed parameters and we just need to check for required ones.
+        for name, parameter in parameters.iteritems():
+            if parameter['required']:
+                err = 'missing required parameter {!r} for operation {!r}'
+                raise ValueError(err.format(name, command))
 
     def _create_action(self, type, path, name):
         return {}

@@ -5,6 +5,57 @@ from io import BufferedIOBase
 from urllib2 import HTTPError, URLError
 
 import pytest
+from nuxeo.blob import Blob
+
+
+@pytest.mark.parametrize('method, params, is_valid', [
+    ('Document.SetBlob', {'file': Blob()}, True),  # 'file' type in (Blob, str)
+    ('Document.SetBlob', {'file': 'test.txt'}, True),
+    ('Document.SetBlob', {'file': 0}, False),
+    ('Document.AddPermission', {'permission': 'Read',
+                                'blockInheritance': False}, True),  # 'blockInheritance' type == boolean
+    ('Document.AddPermission', {'permission': 'Read',
+                                'blockInheritance': 'false'}, False),
+    ('Document.AddPermission', {'permission': 'Read', 'end': '01-01-2018'}, True),  # 'end' type == str
+    ('Document.AddPermission', {'permission': 'Read', 'end': True}, False),
+    ('Document.Fetch', {'value': 'test.txt'}, True),  # 'value' type == str
+    ('Document.Fetch', {'value': True}, False),
+    ('Document.MultiPublish', {'target': ['test1.txt', 'test2.txt']}, True),  # 'target' type == list
+    ('Document.MultiPublish', {'target': 0}, False),
+    ('Picture.Resize', {'maxHeight': 100, 'maxWidth': 100}, True),  # 'maxHeight', 'maxWidth' type == int
+    ('Picture.Resize', {'maxHeight': 'test', 'maxWidth': 'test'}, False),
+    ('Document.Query', {'query': 'test', 'pageSize': 10}, True),  # 'pageSize' type == int
+    ('Document.Query', {'query': 'test', 'pageSize': 'test'}, False),
+    ('PDF.ExtractPages', {'startPage': 1, 'endPage': 2}, True),  # 'startPage', 'endPage' type == long
+    ('PDF.ExtractPages', {'startPage': 'test', 'endPage': 'test'}, False),
+    ('User.Invite', {'info': {'username': 'test'}}, True),  # 'info' type == dict
+    ('User.Invite', {'info': 0}, False),
+    ('Document.Create', {'type': 'Document', 'properties': {'dc:title': 'test'}}, True),  # 'properties' type == dict
+    ('Document.Create', {'type': 'Document', 'properties': 0}, False),
+    ('Blob.Create', {'file': 'test.txt'}, True),  # 'file' type == str
+    ('Blob.Create', {'file': 0}, False),
+    ('Document.SetProperty', {'xpath': 'test', 'value': 'test'}, True),  # 'value' type == Sequence
+    ('Document.SetProperty', {'xpath': 'test', 'value': [0, 1, 2]}, True),
+    ('Document.SetProperty', {'xpath': 'test', 'value': 0}, False),
+    ('Document.Query', {'query': 'test'}, True),  # 'query' type == str
+    ('Document.Query', {'query': 0}, False),
+    ('Document.Query', {'query': 'test', 'queryParams': ['a', 'b', 'c']}, True),  # 'queryParams' type in [list, str]
+    ('Document.Query', {'query': 'test', 'queryParams': 'test'}, True),
+    ('Document.Query', {'query': 'test', 'queryParams': 0}, False),
+    ('User.Invite', {'validationMethod': 'test'}, True),  # 'validationMethod' type == str
+    ('User.Invite', {'validationMethod': 0}, False),
+])
+def test_check_params(method, params, is_valid, server):
+    if is_valid:
+        server.check_params(method, params)
+    else:
+        with pytest.raises(TypeError):
+            server.check_params(method, params)
+
+
+def test_check_params_unknown_operation(server):
+    with pytest.raises(ValueError):
+        server.check_params('alien', {})
 
 
 def test_drive_config(monkeypatch, server):
