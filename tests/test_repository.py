@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 
 import operator
 import sys
-import urllib2
 
 import pytest
+from requests import HTTPError
 
 from nuxeo.document import Document
 
@@ -130,7 +130,7 @@ def test_locking(doc):
     assert status['lockOwner'] == 'Administrator'
     assert 'lockCreated' in status
     assert doc.is_locked()
-    with pytest.raises(urllib2.HTTPError):
+    with pytest.raises(HTTPError):
         doc.lock()
     doc.unlock()
     assert not doc.is_locked()

@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 
 from io import BufferedIOBase
-from urllib2 import HTTPError, URLError
 
 import pytest
+import requests
+from requests import HTTPError
+
 from nuxeo.blob import Blob
 
 
@@ -61,7 +63,7 @@ def test_check_params_unknown_operation(server):
 def test_drive_config(monkeypatch, server):
 
     def mock_server_error(*args, **kwargs):
-        raise URLError('Mock error')
+        raise HTTPError('Mock error')
 
     def mock_invalid_response(*args, **kwargs):
         return BufferedIOBase()
@@ -77,10 +79,10 @@ def test_drive_config(monkeypatch, server):
         assert 'update_check_delay' in config
         assert 'ui' in config
 
-    monkeypatch.setattr(server.opener, 'open', mock_server_error)
+    monkeypatch.setattr(requests.Session, 'get', mock_server_error)
     assert not server.drive_config()
     monkeypatch.undo()
-    monkeypatch.setattr(server.opener, 'open', mock_invalid_response)
+    monkeypatch.setattr(requests.Session, 'get', mock_invalid_response)
     assert not server.drive_config()
     monkeypatch.undo()
 
@@ -92,7 +94,7 @@ def test_encoding_404_error(server):
     try:
         with pytest.raises(HTTPError) as e:
             server.repository().fetch('/')
-        assert e.value.code == 404
+        assert e.value.response.status_code == 404
     finally:
         server.rest_url = rest_url
 

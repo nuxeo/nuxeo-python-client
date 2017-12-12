@@ -4,11 +4,13 @@ from __future__ import unicode_literals
 
 import base64
 import json
+import logging
 import socket
 import tempfile
-import urllib2
 from collections import Sequence
 from urllib import urlencode
+
+import requests
 
 from .batchupload import BatchUpload
 from .blob import Blob
@@ -20,6 +22,10 @@ from .users import Users
 from .workflow import Workflows
 
 __all__ = ('Nuxeo',)
+
+logging.basicConfig(format='%(asctime)s %(message)s')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 PARAM_TYPES = {
     'blob': (unicode, Blob),
@@ -96,6 +102,7 @@ class Nuxeo(object):
         auth=None,
         proxies=None,
         repository='default',
+        download_buffer_size=128,
         timeout=20,
         blob_timeout=60,
         cookie_jar=None,
@@ -103,7 +110,8 @@ class Nuxeo(object):
         check_suspended=None,
         api_path='api/v1/',
     ):
-        self._headers = {}
+        self._session = requests.session()
+        self._session.stream = True
 
         # Function to check during long-running processing like upload /
         # download if the synchronization thread needs to be suspended
@@ -116,8 +124,10 @@ class Nuxeo(object):
         self.blob_timeout = (60 if blob_timeout is None or blob_timeout < 0
                              else blob_timeout)
 
-        self.upload_tmp_dir = (upload_tmp_dir if upload_tmp_dir is not None
+        self.upload_tmp_dir = (upload_tmp_dir if upload_tmp_dir
                                else tempfile.gettempdir())
+
+        self.download_buffer_size = download_buffer_size
 
         if not base_url.endswith('/'):
             base_url += '/'
@@ -127,15 +137,13 @@ class Nuxeo(object):
 
         self._repository = repository
         self.user_id = None
-        self._auth = ['', '']
-        self._update_auth(auth=auth)
-        self.cookie_jar = cookie_jar
-        cookie_processor = urllib2.HTTPCookieProcessor(
-            cookiejar=cookie_jar)
 
-        # Build URL openers
-        self.streaming_opener = urllib2.build_opener(cookie_processor)
-        self.opener = self.streaming_opener
+        self._auth = {}
+        self._update_auth(auth=auth)
+        self._headers = {'Cache-Control': 'no-cache'}
+
+        if cookie_jar:
+            self._session.cookies = cookie_jar
 
         self.automation_url = base_url + 'site/automation/'
         self.batch_upload_url = 'batch/upload'
@@ -152,8 +160,46 @@ class Nuxeo(object):
         """
         return BatchUpload(self)
 
-    def debug(self, *args, **kwargs):
-        pass
+    def check_params(self, command, params):
+        # type: (unicode, Dict[unicode, Tuple[type, ...]]) -> None
+        """
+        Check given paramaters of the `command` operation.  It will also
+        check for types whenever possible.
+
+        :raises ValueError: When the `command` is not valid.
+        :raises ValueError: On unexpected parameter.
+        :raises ValueError: On missing required parameter.
+        :raises TypeError: When a parameter has not the required type.
+        """
+
+        operation = self.operations.get(command)
+        if not operation:
+            raise ValueError('{} is not a registered operation'.format(command))
+
+        parameters = {param['name']: param for param in operation['params']}
+
+        for name, value in params.iteritems():
+            # Check for unexpected paramaters.  We use `dict.pop()` to
+            # get and delete the parameter from the dict.
+            try:
+                type_needed = parameters.pop(name)['type']
+            except KeyError:
+                err = 'unexpected parameter {!r} for operation {!r}'
+                raise ValueError(err.format(name, command))
+
+            # Check types
+            types_accepted = PARAM_TYPES.get(type_needed, tuple())
+            if not isinstance(value, types_accepted):
+                err = 'parameter {!r} should be of type {!r} (current {})'
+                raise TypeError(err.format(
+                    name, types_accepted, type(name).__name__))
+
+        # Check for required parameters.  As of now, `parameters` may contain
+        # unclaimed parameters and we just need to check for required ones.
+        for name, parameter in parameters.iteritems():
+            if parameter['required']:
+                err = 'missing required parameter {!r} for operation {!r}'
+                raise ValueError(err.format(name, command))
 
     def directory(self, name):
         """
@@ -168,14 +214,14 @@ class Nuxeo(object):
         """
 
         url = self.rest_url + 'drive/configuration'
-        headers = self._get_common_headers()
-        self.trace('Fetching the Drive configuration at %r with headers=%r',
-                   url, headers)
-        req = Request(url, headers=headers)
+        headers = self.headers()
+        logger.debug('Fetching the Drive configuration at {} with headers={}'.format(
+                   url, headers))
         try:
-            ret = self.opener.open(req, timeout=self.timeout)
-            return json.loads(ret.read())
-        except (urllib2.URLError, ValueError):
+            resp = self._session.get(url, headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+            return resp.json()
+        except (requests.HTTPError, AttributeError, ValueError):
             pass
         return {}
 
@@ -222,13 +268,11 @@ class Nuxeo(object):
             'X-NXproperties': '*',
             # Keep compatibility with old header name
             'X-NXDocumentProperties': '*',
+            'X-NXRepository': self._repository,
         }
         if void_op:
-            headers.update({'X-NXVoidOperation': 'true'})
-        headers.update({'X-NXRepository': self._repository})
-        if extra_headers:
-            headers.update(extra_headers)
-        headers.update(self._get_common_headers())
+            headers['X-NXVoidOperation'] = 'true'
+        headers.update(self.headers(extra_headers))
 
         json_struct = {'params': {}}
         for k, v in params.iteritems():
@@ -238,7 +282,7 @@ class Nuxeo(object):
                 if isinstance(v, dict):
                     s = ''
                     for propname, propvalue in v.iteritems():
-                        s += '%s=%s\n' % (propname, propvalue)
+                        s += '{}={}\n'.format(propname, propvalue)
                 else:
                     s = v
                 json_struct['params'][k] = s.strip()
@@ -252,11 +296,11 @@ class Nuxeo(object):
                 json_struct['input'] = op_input
         data = json.dumps(json_struct, default=json_helper)
 
-        req = urllib2.Request(url, data, headers)
         timeout = self.timeout if timeout == -1 else timeout
 
         try:
-            resp = self.opener.open(req, timeout=timeout)
+            resp = self._session.post(url, headers=headers, data=data, timeout=timeout)
+            resp.raise_for_status()
         except Exception as e:
             log_details = self._log_details(e)
             if isinstance(log_details, tuple):
@@ -269,26 +313,28 @@ class Nuxeo(object):
         if action and action.progress is None:
             action.progress = 0
 
-        if file_out is not None:
+        if file_out:
             locker = self.unlock_path(file_out)
             try:
-                with open(file_out, 'wb') as f:
-                    while 'downloading':
+                with open(file_out, str('wb')) as f:
+                    chunk_size = self.download_buffer_size
+                    for chunk in resp.iter_content(chunk_size=chunk_size):
                         # Check if synchronization thread was suspended
-                        if self.check_suspended is not None:
-                            self.check_suspended('File download: %s'
-                                                 % file_out)
-                        buffer_ = resp.read(self.get_download_buffer())
-                        if buffer_ == '':
+                        if self.check_suspended:
+                            self.check_suspended('File download: {}'.format(file_out))
+                        if chunk == '':
                             break
                         if action:
-                            action.progress += self.get_download_buffer()
-                        f.write(buffer_)
+                            action.progress += chunk_size
+                        file_out.write(chunk)
                 return None, file_out
             finally:
                 self.lock_path(file_out, locker)
         else:
-            return self._read_response(resp, url)
+            try:
+                return resp.json()
+            except ValueError:
+                return resp.content
 
     def groups(self):
         """
@@ -307,16 +353,30 @@ class Nuxeo(object):
 
     def headers(self, extras=None):
         """
-        Return the headers that will be sent to the server
-        You can set additional headers with extras argument.
+        Headers to include in every HTTP requests.
+
+        Includes the authentication heads (token based or basic auth if no
+        token).
+
+        Also include an application name header to make it possible for the
+        server to compute access statistics for various client types (e.g.
+        browser vs devices).
+
+        You can set additional headers with the extras argument.
 
         :param extras: -- a dictionary or object of additional headers to set
         """
-        headers = self._get_common_headers()
+        headers = self._headers.copy()
+
         if extras:
-            self._headers.update(extras)
-        headers.update(self._headers)
+            headers.update(extras)
+        if self._auth:
+            headers.update(self._auth)
+
         return headers
+
+    def lock_path(self, file_out, locker):
+        pass
 
     def login(self):
         """
@@ -385,34 +445,41 @@ class Nuxeo(object):
         """
 
         url = self.rest_url + relative_url
-        if adapter is not None:
+        if adapter:
             url += '/@' + adapter
 
         if query_params:
             url += '?' + urlencode(query_params)
 
-        if body is not None and not isinstance(body, str) and not raw_body:
+        if method not in ('GET', 'HEAD', 'POST', 'PUT',
+                          'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'):
+            raise ValueError('method parameter is not a valid HTTP method.')
+
+        if body and not isinstance(body, str) and not raw_body:
             body = json.dumps(body, default=json_helper)
 
         headers = {
             'Content-Type': content_type,
             'Accept': 'application/json+nxentity, */*',
         }
-        headers.update(self._get_common_headers())
-        if extra_headers is not None:
-            headers.update(extra_headers)
+
+        headers.update(self.headers(extra_headers))
+
         cookies = self._get_cookies()
-        self.trace('Calling REST API %s with headers %r and cookies %r',
-                   url, headers, cookies)
-        req = Request(url, headers=headers, method=method, data=body)
+        logger.debug('Calling REST API {} with headers {} and cookies {}'.format(
+                   url, headers, cookies))
         timeout = self.timeout if timeout == -1 else timeout
         try:
-            resp = self.opener.open(req, timeout=timeout)
-        except Exception as e:
+            resp = self._session.request(method=method, headers=headers, url=url, data=body, timeout=timeout)
+            resp.raise_for_status()
+        except requests.HTTPError as e:
             self._log_details(e)
             raise e
 
-        return self._read_response(resp, url)
+        try:
+            return resp.json()
+        except ValueError:
+            return resp.content
 
     def request_authentication_token(
         self,
@@ -443,28 +510,30 @@ class Nuxeo(object):
         url = self.base_url + 'authentication/token?'
         url += urlencode(parameters)
 
-        headers = self._get_common_headers()
+        headers = self._headers
         cookies = self._get_cookies()
-        self.trace('Calling %s with headers %r and cookies %r',
-                   url, headers, cookies)
-        req = urllib2.Request(url, headers=headers)
+        logger.debug('Calling {} with headers {} and cookies {}'.format(
+                   url, headers, cookies))
         try:
-            token = self.opener.open(req, timeout=self.timeout).read()
-        except urllib2.HTTPError as e:
-            if e.code == 401 or e.code == 403:
-                raise Unauthorized(self.base_url, self.user_id, e.code)
-            elif e.code == 404:
+            resp = self._session.get(url, headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+            token = resp.text
+        except requests.HTTPError as e:
+            code = e.response.status_code
+            if code in (401, 403):
+                raise Unauthorized(self.base_url, self.user_id, code)
+            elif code == 404:
                 # Token based auth is not supported by this server
                 return None
             else:
-                e.msg = err + ': HTTP error %d' % e.code
+                e.msg = '{}: HTTP error {}'.format(err, code)
                 raise e
         except Exception as e:
             if hasattr(e, 'msg'):
                 e.msg = err + ': ' + e.msg
             raise
         cookies = self._get_cookies()
-        self.trace('Got token %r with cookies %r', token, cookies)
+        logger.debug('Got token {} with cookies {}'.format(token, cookies))
         # Use the (potentially re-newed) token from now on
         if not revoke:
             self._update_auth(token=token)
@@ -476,21 +545,20 @@ class Nuxeo(object):
         """
 
         url = self.base_url + 'runningstatus'
-        headers = self._get_common_headers()
-        self.trace('Checking server availability at %r with headers=%r',
-                   url, headers)
-        req = urllib2.Request(url, headers=headers)
+        headers = self._headers
+        logger.debug('Checking server availability at {} with headers={}'.format(
+                   url, headers))
         try:
-            ret = self.opener.open(req, timeout=self.timeout)
-        except urllib2.URLError:
+            resp = self._session.get(url, headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+        except requests.HTTPError:
             pass
         else:
-            if ret.code == 200:
-                return True
+            return resp.ok
         return False
 
-    def trace(self, *args, **kwargs):
-        pass
+    def unlock_path(self, file_out):
+        return None
 
     def users(self):
         """
@@ -504,47 +572,6 @@ class Nuxeo(object):
         """
         return Workflows(self)
 
-    def check_params(self, command, params):
-        # type: (unicode, Dict[unicode, Tuple[type, ...]]) -> None
-        """
-        Check given paramaters of the `command` operation.  It will also
-        check for types whenever possible.
-
-        :raises ValueError: When the `command` is not valid.
-        :raises ValueError: On unexpected parameter.
-        :raises ValueError: On missing required parameter.
-        :raises TypeError: When a parameter has not the required type.
-        """
-
-        operation = self.operations.get(command)
-        if not operation:
-            raise ValueError('%r is not a registered operation' % command)
-
-        parameters = {param['name']: param for param in operation['params']}
-
-        for name, value in params.iteritems():
-            # Check for unexpected paramaters.  We use `dict.pop()` to
-            # get and delete the parameter from the dict.
-            try:
-                type_needed = parameters.pop(name)['type']
-            except KeyError:
-                err = 'unexpected parameter %r for operation %r'
-                raise ValueError(err, name, command)
-
-            # Check types
-            types_accepted = PARAM_TYPES.get(type_needed, tuple())
-            if not isinstance(value, types_accepted):
-                err = 'parameter {!r} should be of type {!r} (current %s)'
-                raise TypeError(err.format(
-                    name, types_accepted, type(name).__name__))
-
-        # Check for required parameters.  As of now, `parameters` may contain
-        # unclaimed parameters and we just need to check for required ones.
-        for name, parameter in parameters.iteritems():
-            if parameter['required']:
-                err = 'missing required parameter {!r} for operation {!r}'
-                raise ValueError(err.format(name, command))
-
     def _create_action(self, type, path, name):
         return {}
 
@@ -556,40 +583,38 @@ class Nuxeo(object):
 
         err = 'Failed to connect to Nuxeo server {}'.format(self.base_url)
         url = self.automation_url
-        headers = self._get_common_headers()
+        headers = self.headers()
         cookies = self._get_cookies()
-        self.trace('Calling %s with headers %r and cookies %r',
-                   url, headers, cookies)
-        req = urllib2.Request(url, headers=headers)
+        logger.debug('Calling {} with headers {} and cookies {}'.format(
+                   url, headers, cookies))
         try:
-            response = json.loads(
-                self.opener.open(req, timeout=self.timeout).read())
-        except urllib2.HTTPError as e:
-            if e.code in (401, 403):
-                raise Unauthorized(self.base_url, self.user_id, e.code)
+            resp = self._session.get(url, headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+            resp = resp.json()
+        except requests.HTTPError as e:
+            code = e.response.status_code
+            if code in (401, 403):
+                raise Unauthorized(self.base_url, self.user_id, code)
 
-            msg = err + '\nHTTP error %d' % e.code
+            msg = '{}: HTTP error {}'.format(err, code)
             if hasattr(e, 'msg'):
                 msg = msg + ': ' + e.msg
             e.msg = msg
             raise e
-        except urllib2.URLError as e:
+        except requests.RequestException as e:
             msg = err
+            e_msg = None
             if hasattr(e, 'message') and e.message:
                 e_msg = force_decode(': ' + e.message)
-                if e_msg is not None:
-                    msg += e_msg
             elif hasattr(e, 'reason') and e.reason:
                 if (hasattr(e.reason, 'message')
                         and e.reason.message):
                     e_msg = force_decode(': ' + e.reason.message)
-                    if e_msg is not None:
-                        msg += e_msg
                 elif (hasattr(e.reason, 'strerror')
                         and e.reason.strerror):
                     e_msg = force_decode(': ' + e.reason.strerror)
-                    if e_msg is not None:
-                        msg += e_msg
+            if e_msg:
+                msg += e_msg
             msg += ('\nPlease check your Internet connection,'
                     + ' make sure the Nuxeo server URL is valid'
                     + ' and check your proxy settings.')
@@ -603,7 +628,7 @@ class Nuxeo(object):
             raise e
 
         operations = {}
-        for operation in response['operations']:
+        for operation in resp['operations']:
             operations[operation['id']] = operation
             for alias in operation.get('aliases', []):
                 operations[alias] = operation
@@ -612,28 +637,8 @@ class Nuxeo(object):
     def _get_action(self):
         return None
 
-    def _get_common_headers(self):
-        """
-        Headers to include in every HTTP requests.
-
-        Includes the authentication heads (token based or basic auth if no
-        token).
-
-        Also include an application name header to make it possible for the
-        server to compute access statistics for various client types (e.g.
-        browser vs devices).
-        """
-
-        headers = {
-            'Cache-Control': 'no-cache',
-        }
-        if self._auth is not None:
-            headers.update([self._auth])
-        headers.update(self._headers)
-        return headers
-
     def _get_cookies(self):
-        return list(self.cookie_jar) if self.cookie_jar is not None else []
+        return list(self._session.cookies) if self._session.cookies else []
 
     def _log_details(self, e):
         if hasattr(e, 'fp'):
@@ -644,12 +649,12 @@ class Nuxeo(object):
                 stack = exc.get('stack')
                 error = exc.get('error')
                 if message:
-                    self.debug('Remote exception message: %s', message)
+                    logger.debug('Remote exception message: {}'.format(message))
                 if stack:
-                    self.debug('Remote exception stack: %r',
-                               exc['stack'], exc_info=True)
+                    logger.debug('Remote exception stack: {}'.format(exc['stack']),
+                               exc_info=True)
                 else:
-                    self.debug('Remote exception details: %r', detail)
+                    logger.debug('Remote exception details: {}'.format(detail))
                 return exc.get('status'), exc.get('code'), message, error
             except ValueError:
                 # Error message should always be a JSON message,
@@ -659,23 +664,21 @@ class Nuxeo(object):
                 else:
                     message = detail
                 self.error(message)
-                if isinstance(e, urllib2.HTTPError):
-                    return e.code, None, message, None
+                if isinstance(e, requests.HTTPError):
+                    return e.response.status_code, None, message, None
         return None
 
     def _read_response(self, response, url):
-        info = response.info()
-        s = response.read()
-        content_type = info.get('content-type', '')
+        content_type = response.headers.get('content-type', '')
         cookies = self._get_cookies()
         if content_type.startswith('application/json'):
-            self.trace('Response for %r with cookies %r: %r',
-                       url, cookies, s)
-            return json.loads(s) if s else None
+            logger.debug('Response for {} with cookies {}: {}'.format(
+                       url, cookies, response.text))
+            return response.json()
         else:
-            self.trace('Response for %r with cookies %r has content-type %r',
-                       url, cookies, content_type)
-            return s
+            logger.debug('Response for {} with cookies {} has content-type {}'.format(
+                       url, cookies, content_type))
+            return response.text
 
     def _update_auth(self, auth=None, password=None, token=None):
         """
@@ -685,7 +688,7 @@ class Nuxeo(object):
         to string.
         """
 
-        if auth is not None:
+        if auth:
             if 'username' in auth:
                 self.user_id = auth['username']
             if 'token' in auth:
@@ -697,25 +700,13 @@ class Nuxeo(object):
             self.user_id = unicode(self.user_id).encode('utf-8')
 
         # Select the most appropriate auth headers based on credentials
-        if token is not None:
-            self._auth = ('X-Authentication-Token', token)
-        elif password is not None:
-            basic_auth = 'Basic %s' % base64.b64encode(
-                    self.user_id + ":" + password).strip()
-            self._auth = 'Authorization', basic_auth
+        if token:
+            self._auth = {'X-Authentication-Token': token}
+        elif password:
+            self._auth = {'Authorization': 'Basic {}'.format(
+                base64.b64encode(self.user_id + ":" + password).strip())}
         else:
             raise ValueError('Either password or token must be provided')
-
-
-class Request(urllib2.Request):
-    """ Need to override urllib2 request to add the HTTP method. """
-
-    def __init__(self, *args, **kwargs):
-        self._method = kwargs.pop('method', 'GET')
-        urllib2.Request.__init__(self, *args, **kwargs)
-
-    def get_method(self):
-        return self._method
 
 
 class Unauthorized(Exception):
@@ -726,5 +717,5 @@ class Unauthorized(Exception):
         self.code = code
 
     def __str__(self):
-        return ('%r is not authorized to access %r with '
-                ' the provided credentials' % (self.user_id, self.server_url))
+        return '{} is not authorized to access {} with the provided credentials'.format(
+            self.user_id, self.server_url)

@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import os
 import socket
-from urllib2 import HTTPError
+from requests import HTTPError
 
 import pytest
 

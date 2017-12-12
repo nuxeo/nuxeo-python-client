@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib2 import HTTPError
+from requests import HTTPError
 
 __all__ = ('NuxeoAutosetObject', 'NuxeoObject', 'NuxeoService')
 
@@ -120,7 +120,7 @@ class NuxeoService(object):
             self.fetch(uid)
             return True
         except HTTPError as e:
-            if e.code != 404:
+            if e.response.status_code != 404:
                 raise e
         return False
 

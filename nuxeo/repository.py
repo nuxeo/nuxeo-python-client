@@ -2,7 +2,8 @@
 from __future__ import unicode_literals
 
 from urllib import quote, urlencode
-from urllib2 import HTTPError
+
+from requests import HTTPError
 
 from .document import Document
 from .workflow import Workflow
@@ -77,7 +78,7 @@ class Repository(object):
             self.fetch(path)
             return True
         except HTTPError as e:
-            if e.code != 404:
+            if e.response.status_code != 404:
                 raise e
         return False
 
@@ -216,10 +217,9 @@ class Repository(object):
         return Document(req, self)
 
     def _get_extra_headers(self, extras=None):
-        extras_header = dict()
+        extras_header = {'X-NXRepository': self._name}
         if self._schemas:
             extras_header['X-NXDocumentProperties'] = ','.join(self._schemas)
-        extras_header['X-NXRepository'] = self._name
         if extras:
             extras_header.update(extras)
         return extras_header

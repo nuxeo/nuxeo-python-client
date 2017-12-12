@@ -67,9 +67,9 @@ class BatchUpload(object):
         headers = {
             'Cache-Control': 'no-cache',
             'X-File-Name': quoted_filename,
-            'X-File-Size': blob.get_size(),
+            'X-File-Size': str(blob.get_size()),
             'X-File-Type': blob.get_mimetype(),
-            'Content-Length': blob.get_size(),
+            'Content-Length': str(blob.get_size()),
         }
         res = self._nuxeo.request(
             path,
