@@ -1,10 +1,22 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import hashlib
+import os
+
 import pytest
+from nuxeo.batchupload import BatchUpload
+from nuxeo.blob import BufferBlob, FileBlob
+from nuxeo.exceptions import InvalidBatchException
+from requests import HTTPError
 
-from nuxeo.blob import BufferBlob
-
+new_doc = {
+    'name': 'Document',
+    'type': 'File',
+    'properties': {
+        'dc:title': 'foo',
+    }
+}
 
 @pytest.fixture(scope='function')
 def batch(server):
@@ -21,6 +33,8 @@ def test_cancel(batch):
     assert batch.get_batch_id()
     batch.cancel()
     assert batch.get_batch_id() is None
+    with pytest.raises(InvalidBatchException):
+        batch.fetch(0)
 
 
 def test_fetch(batch):
@@ -38,13 +52,6 @@ def test_fetch(batch):
 
 
 def test_operation(server, batch):
-    new_doc = {
-        'name': 'Document',
-        'type': 'File',
-        'properties': {
-            'dc:title': 'foo',
-        }
-    }
     doc = server.repository(schemas=['dublincore', 'file']).create(
         pytest.ws_root_path, new_doc)
     try:
@@ -59,3 +66,37 @@ def test_operation(server, batch):
         assert doc.fetch_blob() == 'data'
     finally:
         doc.delete()
+
+
+def test_iter_content(server, batch):
+    file_in, file_out = 'test_in', 'test_out'
+    with open(file_in, 'wb') as f:
+        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+
+    doc = server.repository().create(pytest.ws_root_path, new_doc)
+    try:
+        batch.upload(FileBlob(file_in))
+        operation = server.operation('Blob.AttachOnDocument')
+        operation.params({'document': pytest.ws_root_path + '/Document'})
+        operation.input(batch.fetch(1))
+        operation.execute(void_op=True)
+
+        operation = server.operation('Blob.Get')
+        operation.input(pytest.ws_root_path + '/Document')
+        file_out = operation.execute(file_out=file_out)
+        with open(file_in, 'rb') as f:
+            md5_in = hashlib.md5(f.read()).hexdigest()
+        with open(file_out, 'rb') as f:
+            md5_out = hashlib.md5(f.read()).hexdigest()
+        assert md5_in == md5_out
+    finally:
+        doc.delete()
+        os.remove(file_in)
+        os.remove(file_out)
+
+
+def test_wrong_batch_id(server):
+    batch = BatchUpload(server)
+    batch.batchid = '1234'
+    with pytest.raises(HTTPError):
+        batch.fetch(0)

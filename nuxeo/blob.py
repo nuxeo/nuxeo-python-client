@@ -111,7 +111,7 @@ class BatchBlob(Blob):
 class BufferBlob(Blob):
     """ InMemory content to upload to Nuxeo. """
 
-    def __init__(self, buf, name, mimetype='application/octect-stream'):
+    def __init__(self, buf, name, mimetype='application/octet-stream'):
         """
         :param buf: Content to upload to Nuxeo.
         :param name: Name to give to the file created on the server.
@@ -151,7 +151,4 @@ class FileBlob(Blob):
     def get_data(self):
         """ Request data. """
 
-        input_file = open(self._path, 'rb')
-        # Use file system block size if available for streaming buffer
-        fs_block_size = get_upload_buffer(input_file)
-        return _read_data(input_file, fs_block_size)
+        return open(self._path, 'rb')

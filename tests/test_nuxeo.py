@@ -1,13 +1,13 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from io import BufferedIOBase
+import json
+import os
 
 import pytest
 import requests
-from requests import HTTPError
-
 from nuxeo.blob import Blob
+from requests import HTTPError
 
 
 @pytest.mark.parametrize('method, params, is_valid', [
@@ -63,10 +63,15 @@ def test_check_params_unknown_operation(server):
 def test_drive_config(monkeypatch, server):
 
     def mock_server_error(*args, **kwargs):
-        raise HTTPError('Mock error')
+        def mock_HTTP():
+            return HTTPError('Mock error')
+        mock_response = requests.Response()
+        mock_response.status_code = 404
+        mock_response.raise_for_status = mock_HTTP
+        return mock_response
 
     def mock_invalid_response(*args, **kwargs):
-        return BufferedIOBase()
+        return requests.Response()
 
     config = server.drive_config()
     assert isinstance(config, dict)
@@ -79,10 +84,10 @@ def test_drive_config(monkeypatch, server):
         assert 'update_check_delay' in config
         assert 'ui' in config
 
-    monkeypatch.setattr(requests.Session, 'get', mock_server_error)
+    monkeypatch.setattr(requests.Session, 'request', mock_server_error)
     assert not server.drive_config()
     monkeypatch.undo()
-    monkeypatch.setattr(requests.Session, 'get', mock_invalid_response)
+    monkeypatch.setattr(requests.Session, 'request', mock_invalid_response)
     assert not server.drive_config()
     monkeypatch.undo()
 
@@ -97,6 +102,18 @@ def test_encoding_404_error(server):
         assert e.value.response.status_code == 404
     finally:
         server.rest_url = rest_url
+
+
+def test_file_out(server):
+    operation = server.operation('Document.GetChild')
+    operation.params({'name': 'workspaces'})
+    operation.input('/default-domain')
+    file_out = operation.execute(file_out='test')
+    with open(file_out, 'rb') as f:
+        file_content = json.loads(f.read())
+        resp_content = operation.execute()
+        assert file_content == resp_content
+    os.remove(file_out)
 
 
 def test_get_operations(server):

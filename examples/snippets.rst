@@ -1,6 +1,22 @@
 Useful snippets
 ---------------
 
+**Prevent an operation from sending back data**
+
+If you want to perform an operation and don't care about
+getting data back (for example, attaching a blob to a document
+returns the blob, you might not want to download that big file),
+you need to set ``void_op`` to True which will add the
+right request header for you, and you'll just get the status back.
+
+.. code:: python
+
+    operation = nuxeo.operation('Blob.AttachOnDocument')
+    operation.params({'document':'/foo'})
+    operation.input(uploaded)
+    res = operation.execute(void_op=True) # res will have no content
+
+
 **Enable Drive synchronization on a folder**
 
 This example enables the synchronization of a folder through
