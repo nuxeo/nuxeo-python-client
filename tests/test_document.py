@@ -8,17 +8,17 @@ def test_document_create(server, repository):
     operation = server.operation('Document.Create')
     operation.params({
         'type': 'File',
-        'name': 'foo.txt',
-        'properties': {'dc:title': 'foo.txt',
-                       'dc:description': 'bar'}
+        'name': '日本.txt',
+        'properties': {'dc:title': '日本.txt',
+                       'dc:description': 'ру́сский'}
     })
     operation.input('/')
     doc = operation.execute()
     assert doc['entity-type'] == 'document'
     assert doc['type'] == 'File'
-    assert doc['title'] == 'foo.txt'
-    assert doc['properties']['dc:title'] == 'foo.txt'
-    assert doc['properties']['dc:description'] == 'bar'
+    assert doc['title'] == '日本.txt'
+    assert doc['properties']['dc:title'] == '日本.txt'
+    assert doc['properties']['dc:description'] == 'ру́сский'
 
     repository.delete('/' + doc['title'])
     assert not repository.exists('/' + doc['title'])
@@ -28,16 +28,16 @@ def test_document_create_properties_as_str(server, repository):
     operation = server.operation('Document.Create')
     operation.params({
         'type': 'File',
-        'name': 'foo.txt',
-        'properties': 'dc:title=foo.txt\ndc:description=bar',
+        'name': 'ру́сский.txt',
+        'properties': 'dc:title=ру́сский.txt\ndc:description=日本',
     })
     operation.input('/')
     doc = operation.execute()
     assert doc['entity-type'] == 'document'
     assert doc['type'] == 'File'
-    assert doc['title'] == 'foo.txt'
-    assert doc['properties']['dc:title'] == 'foo.txt'
-    assert doc['properties']['dc:description'] == 'bar'
+    assert doc['title'] == 'ру́сский.txt'
+    assert doc['properties']['dc:title'] == 'ру́сский.txt'
+    assert doc['properties']['dc:description'] == '日本'
     repository.delete('/' + doc['title'])
     assert not repository.exists('/' + doc['title'])
 

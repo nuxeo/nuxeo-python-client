@@ -14,7 +14,7 @@ right request header for you, and you'll just get the status back.
     operation = nuxeo.operation('Blob.AttachOnDocument')
     operation.params({'document':'/foo'})
     operation.input(uploaded)
-    res = operation.execute(void_op=True) # res will have no content
+    res = operation.execute(void_op=True)  # res will have no content
 
 
 **Enable Drive synchronization on a folder**

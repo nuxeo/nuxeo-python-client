@@ -24,8 +24,8 @@ from requests import HTTPError
     ('Document.Fetch', {'value': True}, False),
     ('Document.MultiPublish', {'target': ['test1.txt', 'test2.txt']}, True),  # 'target' type == list
     ('Document.MultiPublish', {'target': 0}, False),
-    ('Picture.Resize', {'maxHeight': 100, 'maxWidth': 100}, True),  # 'maxHeight', 'maxWidth' type == int
-    ('Picture.Resize', {'maxHeight': 'test', 'maxWidth': 'test'}, False),
+    ('Audit.Query', {'query': 'test', 'pageNo': 100}, True),  # 'pageNo' type == int
+    ('Audit.Query', {'query': 'test', 'pageNo': 'test'}, False),
     ('Document.Query', {'query': 'test', 'pageSize': 10}, True),  # 'pageSize' type == int
     ('Document.Query', {'query': 'test', 'pageSize': 'test'}, False),
     ('PDF.ExtractPages', {'startPage': 1, 'endPage': 2}, True),  # 'startPage', 'endPage' type == long

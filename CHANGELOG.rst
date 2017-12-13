@@ -28,8 +28,11 @@ Technical changes
 -  Moved ``Nuxeo.InvalidBatchException`` to
    nuxeo/exceptions.py::\ ``InvalidBatchException``
 -  Moved ``Nuxeo.Unauthorized`` to nuxeo/exceptions.py::\ ``Unauthorized``
+-  Removed ``Nuxeo.debug()``
+-  Removed ``Nuxeo.error()``
 -  Added ``Nuxeo.drive_config()``
 -  Added ``Nuxeo.send()``
+-  Removed ``Nuxeo.trace()``
 -  Changed ``Nuxeo._check_params()`` to ``Nuxeo.check_params()``
 -  Changed ``Nuxeo._create_action()`` to ``Nuxeo.create_action()``
 -  Changed ``Nuxeo._end_action()`` to ``Nuxeo.end_action()``

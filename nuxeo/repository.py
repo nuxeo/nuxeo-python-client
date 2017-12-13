@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib import quote, urlencode
+from urllib import urlencode
 
 from requests import HTTPError
 
@@ -225,7 +225,6 @@ class Repository(object):
         return extras_header
 
     def _get_path(self, path):
-        path = quote(path)
         if path.startswith('/'):
             return 'repo/' + self._name + '/path' + path
         return 'repo/' + self._name + '/id/' + path

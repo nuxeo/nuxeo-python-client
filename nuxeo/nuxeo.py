@@ -25,9 +25,10 @@ from .workflow import Workflows
 
 __all__ = ('Nuxeo',)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # logger for request calls and exceptions
 
-CHUNK_SIZE = 8192
+CHUNK_SIZE = 8192  # Chunk size to download files
+
 PARAM_TYPES = {
     'blob': (unicode, Blob),
     'boolean': (bool,),
@@ -214,9 +215,6 @@ class Nuxeo(object):
         except (HTTPError, ValueError):
             pass
         return {}
-
-    def error(self, *args, **kwargs):
-        pass
 
     def execute(
         self,
@@ -422,9 +420,6 @@ class Nuxeo(object):
         if adapter:
             url += '/@' + adapter
 
-        if query_params:
-            url += '?' + urlencode(query_params)
-
         if body and not isinstance(body, bytes) and not raw_body:
             body = json.dumps(body, default=json_helper)
 
@@ -435,8 +430,8 @@ class Nuxeo(object):
         if extra_headers:
             headers.update(extra_headers)
 
-        resp = self.send(url, method=method, extra_headers=headers,
-                         data=body, timeout=timeout)
+        resp = self.send(url, method=method, params=query_params,
+                         extra_headers=headers, data=body, timeout=timeout)
         try:
             return resp.json()
         except ValueError:
@@ -476,7 +471,21 @@ class Nuxeo(object):
             self._update_auth(token=token)
         return token
 
-    def send(self, url, method='GET', data=None, extra_headers=None, timeout=None):
+    def send(self, url, method='GET', data=None, params=None, extra_headers=None, timeout=None):
+        """
+        Perform a request to the server.
+
+        This method acts as a wrapper for the request to handle the errors
+        and the logging. All other methods use this one to send their requests.
+
+        :param url: URL for the HTTP request
+        :param method: Method of the HTTP request
+        :param data: Body of the request (text or bytes)
+        :param params: Parameters to encode in the URL
+        :param extra_headers: Headers to add to the common ones
+        :param timeout: Timeout for the request
+        :return: The HTTP request response (Response object)
+        """
         if method not in ('GET', 'HEAD', 'POST', 'PUT',
                           'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'):
             raise ValueError('method parameter is not a valid HTTP method.')
@@ -489,7 +498,7 @@ class Nuxeo(object):
 
         try:
             resp = self._session.request(url=url, method=method, headers=headers,
-                                         data=data, timeout=timeout)
+                                         params=params, data=data, timeout=timeout)
             resp.raise_for_status()
         except HTTPError as e:
             self._log_details(e)
@@ -503,7 +512,7 @@ class Nuxeo(object):
             raise e
 
         if ('content-length' in resp.headers
-            and int(resp.headers['content-length']) < CHUNK_SIZE):
+            and int(resp.headers['content-length']) <= CHUNK_SIZE):
             content = resp.content
         else:
             content = '<Too much data to display>'

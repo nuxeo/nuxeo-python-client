@@ -1,9 +1,14 @@
+# coding: utf-8
+from requests import HTTPError
 
-class InvalidBatchException(Exception):
+__all__ = ('InvalidBatchException', 'Unauthorized')
+
+
+class InvalidBatchException(ValueError):
     pass
 
 
-class Unauthorized(Exception):
+class Unauthorized(HTTPError):
 
     def __init__(self, server_url, user_id, code=403):
         self.server_url = server_url
