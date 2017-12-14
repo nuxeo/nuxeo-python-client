@@ -32,7 +32,7 @@ class Repository(object):
         operation.execute()
 
     def convert(self, path, options):
-        xpath = options['xpath'] if 'xpath' in options else 'blobholder:0'
+        xpath = options.get('xpath', 'blobholder:0')
         path = self._get_path(path) + '/@blob/' + xpath + '/@convert'
         if 'xpath' in options:
             del options['xpath']

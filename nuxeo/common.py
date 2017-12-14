@@ -18,12 +18,8 @@ class NuxeoObject(object):
             self._lazy = True
         elif isinstance(obj, dict):
             self._lazy = False
-            if 'id' in obj:
-                self.id = obj['id']
-            if 'properties' in obj:
-                self.properties = obj['properties']
-            else:
-                self.properties = dict()
+            self.id = obj.get('id', id)
+            self.properties = obj.get('properties', dict())
         self._dirty = False
 
     def __repr__(self):

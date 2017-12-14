@@ -25,11 +25,11 @@ from .workflow import Workflows
 
 __all__ = ('Nuxeo',)
 
-logger = logging.getLogger(__name__)  # logger for request calls and exceptions
+logger = logging.getLogger(__name__)
 
 CHUNK_SIZE = 8192  # Chunk size to download files
 
-PARAM_TYPES = {
+PARAM_TYPES = {  # Types allowed for operations parameters
     'blob': (unicode, Blob),
     'boolean': (bool,),
     'date': (unicode,),
@@ -75,8 +75,6 @@ class Nuxeo(object):
 
     blob_timeout is long (or infinite) timeout dedicated to long HTTP
     requests involving a blob transfer.
-
-    TODO: Switch to Requests to handle proxy
 
     :param base_url: Nuxeo server URL
     :param auth: Authentication parameter {'user': 'Administrator',
@@ -209,11 +207,9 @@ class Nuxeo(object):
         """
 
         try:
-            config = self.send(self.rest_url + 'drive/configuration').json()
-            if isinstance(config, dict):
-                return config
-        except (HTTPError, ValueError):
-            pass
+            return self.send(self.rest_url + 'drive/configuration').json()
+        except (HTTPError, ValueError, TypeError):
+            logger.warning('Drive JSON configuration not found.')
         return {}
 
     def execute(
@@ -511,8 +507,7 @@ class Nuxeo(object):
             self._log_details(e)
             raise e
 
-        if ('content-length' in resp.headers
-            and int(resp.headers['content-length']) <= CHUNK_SIZE):
+        if int(resp.headers.get('content-length', CHUNK_SIZE + 1)) <= CHUNK_SIZE:
             content = resp.content
         else:
             content = '<Too much data to display>'
@@ -578,19 +573,19 @@ class Nuxeo(object):
         try:
             exc = e.response.json()
             message = exc.get('message')
-            stack = exc.get('stack')
+            stack = exc.get('stacktrace')
             error = exc.get('error')
             if message:
-                logger.exception('Remote exception message: {!s}'.format(message))
+                logger.error('Remote exception message: {!s}'.format(message))
             if stack:
-                logger.exception('Remote exception stack: {!s}'.format(stack))
+                logger.error('Remote exception stack: {!s}'.format(stack))
             else:
-                logger.exception('Remote exception details: {!s}'.format(exc))
+                logger.error('Remote exception details: {!s}'.format(exc))
             return exc.get('status'), exc.get('code'), message, error
         except ValueError:
             # Error message should always be a JSON message,
             # but sometimes it's not
-            logger.error(e)
+            logger.exception('Response is no JSON')
 
     def _update_auth(self, auth=None, password=None, token=None):
         """
@@ -601,12 +596,9 @@ class Nuxeo(object):
         """
 
         if auth:
-            if 'username' in auth:
-                self.user_id = auth['username']
-            if 'token' in auth:
-                token = auth['token']
-            if 'password' in auth:
-                password = auth['password']
+            self.user_id = auth.get('username', None)
+            token = auth.get('token', token)
+            password = auth.get('password', password)
 
         if self.user_id and isinstance(self.user_id, unicode):
             self.user_id = unicode(self.user_id).encode('utf-8')
