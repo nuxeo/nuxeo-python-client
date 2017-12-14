@@ -601,14 +601,12 @@ class Nuxeo(object):
             token = auth.get('token', token)
             password = auth.get('password', password)
 
-        #if self.user_id and isinstance(self.user_id, unicode):
-        #    self.user_id = unicode(self.user_id).encode('utf-8')
-
         # Select the most appropriate auth headers based on credentials
         if token:
             self._auth = {'X-Authentication-Token': token}
         elif password:
             self._auth = {'Authorization': 'Basic {}'.format(
-                base64.b64encode('{}:{}'.format(self.user_id, password).encode('utf-8')).strip())}
+                base64.b64encode('{}:{}'.format(
+                    self.user_id, password).encode('utf-8')).strip())}
         else:
             raise ValueError('Either password or token must be provided')

@@ -3,8 +3,6 @@ import json
 
 from requests import HTTPError
 
-__all__ = ('InvalidBatchException', 'Unauthorized')
-
 
 class InvalidBatchException(ValueError):
     """
@@ -45,5 +43,4 @@ class UnavailableConvertor(Exception):
         self.options = options
 
     def __str__(self):
-        return 'Conversion with options {} is not available'.format(
-            json.dumps(self.options))
+        return 'Conversion with options {!r} is not available'.format(self.options)
