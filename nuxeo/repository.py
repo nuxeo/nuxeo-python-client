@@ -1,12 +1,12 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import json
 from urllib import urlencode
 
 from requests import HTTPError
 
 from .document import Document
+from .exceptions import UnavailableConvertor
 from .workflow import Workflow
 
 __all__ = ('Repository',)
@@ -53,11 +53,13 @@ class Repository(object):
         try:
             return self.service.request(path)
         except HTTPError as e:
-            if 'is not available' in e.response.content:
-                raise ValueError(
-                    'Converter with options {} is not available'.format(
-                        json.dumps(options)))
+            resp = e.response.json()
+            if 'is not registered' in resp.get('message'):
+                raise ValueError(resp.get('message'))
+            if 'is not available' in resp.get('message'):
+                raise UnavailableConvertor(options)
             raise e
+
 
     def create(self, path, obj):
         """

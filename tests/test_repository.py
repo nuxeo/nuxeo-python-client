@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 import operator
-import sys
 
 import pytest
 from requests import HTTPError
 
 from nuxeo.document import Document
+from nuxeo.exceptions import UnavailableConvertor
 
 
 def test_add_remove_permission(doc):
@@ -23,9 +23,9 @@ def test_add_remove_permission(doc):
 
 
 def test_bogus_converter(doc):
-    with pytest.raises(HTTPError) as e:
+    with pytest.raises(ValueError) as e:
         doc.convert({'converter': 'converterthatdoesntexist'})
-    assert 'is not registered' in e.value.response.content
+    assert e.value.message == 'Converter converterthatdoesntexist is not registered'
 
 
 def test_convert(doc):
@@ -33,9 +33,8 @@ def test_convert(doc):
         res = doc.convert({'format': 'html'})
         assert '<html>' in res
         assert 'foo' in res
-    except ValueError as e:
-        if 'is not available' not in e.message:
-            raise e
+    except UnavailableConvertor:
+        pass
     finally:
         doc.delete()
 
@@ -45,9 +44,8 @@ def test_convert_given_converter(doc):
         res = doc.convert({'converter': 'office2html'})
         assert '<html>' in res
         assert 'foo' in res
-    except ValueError as e:
-        if 'is not available' not in e.message:
-            raise e
+    except UnavailableConvertor:
+        pass
 
 
 def test_convert_xpath(doc):
@@ -55,9 +53,8 @@ def test_convert_xpath(doc):
         res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
         assert '<html>' in res
         assert 'foo' in res
-    except ValueError as e:
-        if 'is not available' not in e.message:
-            raise e
+    except UnavailableConvertor:
+        pass
 
 
 def test_create_doc_and_delete(repository):

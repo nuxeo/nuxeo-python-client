@@ -1,4 +1,6 @@
 # coding: utf-8
+import json
+
 from requests import HTTPError
 
 __all__ = ('InvalidBatchException', 'Unauthorized')
@@ -30,3 +32,18 @@ class Unauthorized(HTTPError):
     def __str__(self):
         return '\'{!s}\' is not authorized to access {!s} with the provided credentials'.format(
             self.user_id.encode('utf-8'), self.response.url)
+
+
+class UnavailableConvertor(Exception):
+    """
+    Exception for when a converter is registered but not
+    available right now (e.g. not installed on the server).
+
+    :param options: options passed to the conversion request
+    """
+    def __init__(self, options):
+        self.options = options
+
+    def __str__(self):
+        return 'Conversion with options {} is not available'.format(
+            json.dumps(self.options))
