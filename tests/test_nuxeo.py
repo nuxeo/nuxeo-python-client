@@ -6,8 +6,11 @@ import os
 
 import pytest
 import requests
-from nuxeo.blob import Blob
 from requests import HTTPError
+
+from nuxeo.blob import Blob
+from nuxeo.exceptions import Unauthorized
+from nuxeo.nuxeo import Nuxeo
 
 
 @pytest.mark.parametrize('method, params, is_valid', [
@@ -146,3 +149,25 @@ def test_server_reachable(server):
         assert not server.server_reachable()
     finally:
         server.base_url = base_url
+
+
+def test_unauthorized(server):
+    credentials = {
+        'username': 'ミカエル',
+        'password': 'test',
+    }
+    user = server.users().create(credentials)
+
+    try:
+        new_server = Nuxeo(
+            base_url=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
+                                    'http://localhost:8080/nuxeo'),
+            auth=credentials)
+
+        with pytest.raises(Unauthorized):
+            new_server.users().create({
+                'username': 'another_one',
+                'password': 'test'
+            })
+    finally:
+        user.delete()

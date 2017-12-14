@@ -489,21 +489,16 @@ class Nuxeo(object):
         timeout = self.timeout if not timeout or timeout == -1 else timeout
         headers = self.headers(extra_headers)
 
-        logger.debug('Calling {!s} with headers {!r} and cookies {!r}'.format(
+        logger.debug('Calling {!r} with headers {!r} and cookies {!r}'.format(
             url, headers, self._get_cookies()))
 
         try:
             resp = self._session.request(url=url, method=method, headers=headers,
                                          params=params, data=data, timeout=timeout)
             resp.raise_for_status()
-        except HTTPError as e:
-            self._log_details(e)
-            code = e.response.status_code
-            if code in (401, 403):
-                raise Unauthorized(self.base_url, self.user_id, code)
-            else:
-                raise e
         except Exception as e:
+            if isinstance(e, HTTPError) and e.response.status_code in (401, 403):
+                e = Unauthorized(self.user_id, e)
             self._log_details(e)
             raise e
 
@@ -512,7 +507,7 @@ class Nuxeo(object):
         else:
             content = '<Too much data to display>'
 
-        logger.debug('Response from {!s}: {!r} with cookies {!r}'.format(
+        logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
             url, content, self._get_cookies()))
 
         return resp
@@ -570,22 +565,28 @@ class Nuxeo(object):
         return list(self._session.cookies) or []
 
     def _log_details(self, e):
-        try:
-            exc = e.response.json()
-            message = exc.get('message')
-            stack = exc.get('stacktrace')
-            error = exc.get('error')
-            if message:
-                logger.error('Remote exception message: {!s}'.format(message))
-            if stack:
-                logger.error('Remote exception stack: {!s}'.format(stack))
-            else:
-                logger.error('Remote exception details: {!s}'.format(exc))
-            return exc.get('status'), exc.get('code'), message, error
-        except ValueError:
-            # Error message should always be a JSON message,
-            # but sometimes it's not
-            logger.exception('Response is no JSON')
+        if isinstance(e, HTTPError):
+            logger.exception(u'Remote exception: {}'.format(
+                e.message.decode('utf-8')))
+            try:
+                exc = e.response.json()
+                message = exc.get('message')
+                stack = exc.get('stacktrace')
+                error = exc.get('error')
+                if message:
+                    logger.error('Remote exception message: {!s}'.format(message))
+                if stack:
+                    logger.error('Remote exception stack: {!s}'.format(stack))
+                else:
+                    logger.error('Remote exception details: {!s}'.format(exc))
+                return exc.get('status'), exc.get('code'), message, error
+            except ValueError:
+                # Error messages from the server should always be JSON-formatted,
+                # but sometimes they're not
+                logger.error('Response is not JSON')
+        else:
+            # The error was not sent from the server
+            logger.exception('Local exception')
 
     def _update_auth(self, auth=None, password=None, token=None):
         """
@@ -600,14 +601,14 @@ class Nuxeo(object):
             token = auth.get('token', token)
             password = auth.get('password', password)
 
-        if self.user_id and isinstance(self.user_id, unicode):
-            self.user_id = unicode(self.user_id).encode('utf-8')
+        #if self.user_id and isinstance(self.user_id, unicode):
+        #    self.user_id = unicode(self.user_id).encode('utf-8')
 
         # Select the most appropriate auth headers based on credentials
         if token:
             self._auth = {'X-Authentication-Token': token}
         elif password:
             self._auth = {'Authorization': 'Basic {}'.format(
-                base64.b64encode(self.user_id + ":" + password).strip())}
+                base64.b64encode('{}:{}'.format(self.user_id, password).encode('utf-8')).strip())}
         else:
             raise ValueError('Either password or token must be provided')
