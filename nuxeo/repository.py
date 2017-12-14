@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import json
 from urllib import urlencode
 
 from requests import HTTPError
@@ -32,10 +33,16 @@ class Repository(object):
         operation.execute()
 
     def convert(self, path, options):
-        xpath = options.get('xpath', 'blobholder:0')
+        """
+        Convert a blob into another format.
+
+        :param path: the path of the blob to be converted
+        :param options: the target type, target format,
+                        or converter for the blob
+        :return: the response from the server
+        """
+        xpath = options.pop('xpath', 'blobholder:0')
         path = self._get_path(path) + '/@blob/' + xpath + '/@convert'
-        if 'xpath' in options:
-            del options['xpath']
         if ('converter' not in options
                 and 'type' not in options
                 and 'format' not in options):
@@ -43,7 +50,14 @@ class Repository(object):
                 'One of (converter, type, format) is mandatory in options')
 
         path += '?' + urlencode(options, True)
-        return self.service.request(path)
+        try:
+            return self.service.request(path)
+        except HTTPError as e:
+            if 'is not available' in e.response.content:
+                raise ValueError(
+                    'Converter with options {} is not available'.format(
+                        json.dumps(options)))
+            raise e
 
     def create(self, path, obj):
         """

@@ -22,29 +22,42 @@ def test_add_remove_permission(doc):
     assert acls[0]['name'] == 'inherited'
 
 
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason='office2html is not on macOS')
+def test_bogus_converter(doc):
+    with pytest.raises(HTTPError) as e:
+        doc.convert({'converter': 'converterthatdoesntexist'})
+    assert 'is not registered' in e.value.response.content
+
+
 def test_convert(doc):
-    res = doc.convert({'format': 'html'})
-    assert '<html>' in res
-    assert 'foo' in res
-    doc.delete()
+    try:
+        res = doc.convert({'format': 'html'})
+        assert '<html>' in res
+        assert 'foo' in res
+    except ValueError as e:
+        if 'is not available' not in e.message:
+            raise e
+    finally:
+        doc.delete()
 
 
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason='office2html is not on macOS')
 def test_convert_given_converter(doc):
-    res = doc.convert({'converter': 'office2html'})
-    assert '<html>' in res
-    assert 'foo' in res
+    try:
+        res = doc.convert({'converter': 'office2html'})
+        assert '<html>' in res
+        assert 'foo' in res
+    except ValueError as e:
+        if 'is not available' not in e.message:
+            raise e
 
 
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason='office2html is not on macOS')
 def test_convert_xpath(doc):
-    res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
-    assert '<html>' in res
-    assert 'foo' in res
+    try:
+        res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
+        assert '<html>' in res
+        assert 'foo' in res
+    except ValueError as e:
+        if 'is not available' not in e.message:
+            raise e
 
 
 def test_create_doc_and_delete(repository):
