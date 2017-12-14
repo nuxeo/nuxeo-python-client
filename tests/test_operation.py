@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib2 import HTTPError
+from requests import HTTPError
 
 import pytest
 
@@ -38,7 +38,7 @@ def test_document_get_child_unknown(server):
     operation.input('/default-domain')
     with pytest.raises(HTTPError) as e:
         operation.execute()
-    assert e.value.code == 404
+    assert e.value.response.status_code == 404
 
 
 def test_params_setter(server):

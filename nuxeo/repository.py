@@ -1,10 +1,12 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib import quote, urlencode
-from urllib2 import HTTPError
+from urllib import urlencode
+
+from requests import HTTPError
 
 from .document import Document
+from .exceptions import UnavailableConvertor
 from .workflow import Workflow
 
 __all__ = ('Repository',)
@@ -31,10 +33,16 @@ class Repository(object):
         operation.execute()
 
     def convert(self, path, options):
-        xpath = options['xpath'] if 'xpath' in options else 'blobholder:0'
+        """
+        Convert a blob into another format.
+
+        :param path: the path of the blob to be converted
+        :param options: the target type, target format,
+                        or converter for the blob
+        :return: the response from the server
+        """
+        xpath = options.pop('xpath', 'blobholder:0')
         path = self._get_path(path) + '/@blob/' + xpath + '/@convert'
-        if 'xpath' in options:
-            del options['xpath']
         if ('converter' not in options
                 and 'type' not in options
                 and 'format' not in options):
@@ -42,7 +50,16 @@ class Repository(object):
                 'One of (converter, type, format) is mandatory in options')
 
         path += '?' + urlencode(options, True)
-        return self.service.request(path)
+        try:
+            return self.service.request(path)
+        except HTTPError as e:
+            resp = e.response.json()
+            if 'is not registered' in resp.get('message'):
+                raise ValueError(resp.get('message'))
+            if 'is not available' in resp.get('message'):
+                raise UnavailableConvertor(options)
+            raise e
+
 
     def create(self, path, obj):
         """
@@ -77,7 +94,7 @@ class Repository(object):
             self.fetch(path)
             return True
         except HTTPError as e:
-            if e.code != 404:
+            if e.response.status_code != 404:
                 raise e
         return False
 
@@ -216,16 +233,14 @@ class Repository(object):
         return Document(req, self)
 
     def _get_extra_headers(self, extras=None):
-        extras_header = dict()
+        extras_header = {'X-NXRepository': self._name}
         if self._schemas:
             extras_header['X-NXDocumentProperties'] = ','.join(self._schemas)
-        extras_header['X-NXRepository'] = self._name
         if extras:
             extras_header.update(extras)
         return extras_header
 
     def _get_path(self, path):
-        path = quote(path)
         if path.startswith('/'):
             return 'repo/' + self._name + '/path' + path
         return 'repo/' + self._name + '/id/' + path

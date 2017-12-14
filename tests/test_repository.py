@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 import operator
-import sys
-import urllib2
 
 import pytest
+from requests import HTTPError
 
 from nuxeo.document import Document
+from nuxeo.exceptions import UnavailableConvertor
 
 
 def test_add_remove_permission(doc):
@@ -22,29 +22,39 @@ def test_add_remove_permission(doc):
     assert acls[0]['name'] == 'inherited'
 
 
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason='office2html is not on macOS')
+def test_bogus_converter(doc):
+    with pytest.raises(ValueError) as e:
+        doc.convert({'converter': 'converterthatdoesntexist'})
+    assert e.value.message == 'Converter converterthatdoesntexist is not registered'
+
+
 def test_convert(doc):
-    res = doc.convert({'format': 'html'})
-    assert '<html>' in res
-    assert 'foo' in res
-    doc.delete()
+    try:
+        res = doc.convert({'format': 'html'})
+        assert '<html>' in res
+        assert 'foo' in res
+    except UnavailableConvertor:
+        pass
+    finally:
+        doc.delete()
 
 
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason='office2html is not on macOS')
 def test_convert_given_converter(doc):
-    res = doc.convert({'converter': 'office2html'})
-    assert '<html>' in res
-    assert 'foo' in res
+    try:
+        res = doc.convert({'converter': 'office2html'})
+        assert '<html>' in res
+        assert 'foo' in res
+    except UnavailableConvertor:
+        pass
 
 
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason='office2html is not on macOS')
 def test_convert_xpath(doc):
-    res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
-    assert '<html>' in res
-    assert 'foo' in res
+    try:
+        res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
+        assert '<html>' in res
+        assert 'foo' in res
+    except UnavailableConvertor:
+        pass
 
 
 def test_create_doc_and_delete(repository):
@@ -130,7 +140,7 @@ def test_locking(doc):
     assert status['lockOwner'] == 'Administrator'
     assert 'lockCreated' in status
     assert doc.is_locked()
-    with pytest.raises(urllib2.HTTPError):
+    with pytest.raises(HTTPError):
         doc.lock()
     doc.unlock()
     assert not doc.is_locked()

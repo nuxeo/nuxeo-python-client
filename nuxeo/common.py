@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib2 import HTTPError
+from requests import HTTPError
 
 __all__ = ('NuxeoAutosetObject', 'NuxeoObject', 'NuxeoService')
 
@@ -18,12 +18,8 @@ class NuxeoObject(object):
             self._lazy = True
         elif isinstance(obj, dict):
             self._lazy = False
-            if 'id' in obj:
-                self.id = obj['id']
-            if 'properties' in obj:
-                self.properties = obj['properties']
-            else:
-                self.properties = dict()
+            self.id = obj.get('id', id)
+            self.properties = obj.get('properties', dict())
         self._dirty = False
 
     def __repr__(self):
@@ -120,7 +116,7 @@ class NuxeoService(object):
             self.fetch(uid)
             return True
         except HTTPError as e:
-            if e.code != 404:
+            if e.response.status_code != 404:
                 raise e
         return False
 
