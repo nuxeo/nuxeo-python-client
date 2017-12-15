@@ -54,20 +54,11 @@ class NuxeoAutosetObject(NuxeoObject):
         super(NuxeoAutosetObject, self).__init__(**kwargs)
 
     def __getattr__(self, item):
-        if hasattr(self, item):
+        if hasattr(self, item) or item.startswith('_'):
             return super(NuxeoObject, self).__getattribute__(item)
         if self._lazy:
             raise RuntimeError(
                 'Lazy loading is not yet implemented - use load()')
-            try:
-                self._lazy = False
-                self.load()
-                if hasattr(self, item):
-                    return super(NuxeoObject, self).__getattribute__(item)
-            except Exception as e:
-                raise e
-        if item.startswith('_'):
-            return super(NuxeoObject, self).__getattribute__(item)
         if self._autoset and item in self.properties:
             return self.properties[item]
         raise AttributeError

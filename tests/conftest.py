@@ -25,7 +25,7 @@ def pytest_namespace():
 
 
 @pytest.fixture(scope='function', autouse=True)
-def clean_root(repository):
+def cleanup(server, repository):
     try:
         doc = repository.fetch(pytest.ws_root_path)
         params = {'pageProvider': 'CURRENT_DOC_CHILDREN',
@@ -68,6 +68,17 @@ def directory(server):
     except HTTPError:
         pass
     return directory
+
+
+@pytest.fixture(scope='function')
+def georges(server):
+    opts = {
+        'lastName': 'Abitbol',
+        'firstName': 'Georges',
+        'username': 'georges',
+        'company': 'Pom Pom Gali resort',
+        'password': 'Test'}
+    return server.users().create(opts)
 
 
 @pytest.fixture(scope='module')

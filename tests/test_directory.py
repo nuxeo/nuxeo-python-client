@@ -1,6 +1,13 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import pytest
+
+
+def test_create_wrong_arguments(directory):
+    with pytest.raises(ValueError):
+        directory.create(1)
+
 
 def test_crud(directory):
     new_entry = {'id': 'foo', 'label': 'Foo'}

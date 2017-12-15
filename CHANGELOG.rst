@@ -21,9 +21,8 @@ Technical changes
 -  Changed ``BatchBlob._service`` to ``BatchBlob.service``
 -  Changed ``Directory.fetchAll()`` to ``Directory.fetch_all()``
 -  Added ``Document.is_locked()``
--  Moved ``FileBlob.get_upload_buffer()`` to
-   nuxeo/blob.py::\ ``get_upload_buffer()``
--  Moved ``FileBlob._read_data()`` to nuxeo/blob.py::\ ``_read_data()``
+-  Removed ``FileBlob.get_upload_buffer()``
+-  Removed ``FileBlob._read_data()``
 -  Removed ``Nuxeo.Request``
 -  Moved ``Nuxeo.InvalidBatchException`` to
    nuxeo/exceptions.py::\ ``InvalidBatchException``
@@ -31,6 +30,7 @@ Technical changes
 -  Removed ``Nuxeo.debug()``
 -  Removed ``Nuxeo.error()``
 -  Added ``Nuxeo.drive_config()``
+-  Removed ``Nuxeo.force_decode()``
 -  Added ``Nuxeo.send()``
 -  Removed ``Nuxeo.trace()``
 -  Changed ``Nuxeo._check_params()`` to ``Nuxeo.check_params()``
@@ -43,4 +43,6 @@ Technical changes
 -  Added ``NuxeoService.exists()``
 -  Changed ``Operation._service`` to ``Operation.service``
 -  Added ``Repository.exists()``
+-  Added ``Task.refresh()``
+-  Added nuxeo/exceptions.py::\ ``UnavailableConvertor``
 -  Changed ``Workflows._map()`` to ``Workflows.map()``

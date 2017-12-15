@@ -5,10 +5,11 @@ import hashlib
 import os
 
 import pytest
+from requests import HTTPError
+
 from nuxeo.batchupload import BatchUpload
 from nuxeo.blob import BufferBlob, FileBlob
 from nuxeo.exceptions import InvalidBatchException
-from requests import HTTPError
 
 new_doc = {
     'name': 'Document',
@@ -17,6 +18,7 @@ new_doc = {
         'dc:title': 'foo',
     }
 }
+
 
 @pytest.fixture(scope='function')
 def batch(server):
@@ -33,6 +35,7 @@ def test_cancel(batch):
     assert batch.get_batch_id()
     batch.cancel()
     assert batch.get_batch_id() is None
+    batch.cancel()
     with pytest.raises(InvalidBatchException):
         batch.fetch(0)
 

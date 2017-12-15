@@ -60,7 +60,6 @@ class Repository(object):
                 raise UnavailableConvertor(options)
             raise e
 
-
     def create(self, path, obj):
         """
         Create a new Document on the server.

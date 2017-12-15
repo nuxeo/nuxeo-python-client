@@ -20,27 +20,31 @@ def workflows(server):
     return server.workflows()
 
 
-def test_basic_workflow(workflows, doc):
-    workflow = doc.start_workflow('SerialDocumentReview')
-    assert workflow
-    wfs = workflows.fetch_started_workflows('SerialDocumentReview')
-    assert len(wfs) == 1
-    tasks = workflows.fetch_tasks()
-    assert len(tasks) == 1
-    task = tasks[0]
-    infos = {
-        'participants': ['user:Administrator'],
-        'assignees': ['user:Administrator'],
-        'end_date': '2011-10-23T12:00:00.00Z'}
-    task.complete('start_review', infos, comment='a comment')
-    assert len(doc.fetch_workflows()) == 1
-    assert task.state == 'ended'
-    tasks = workflow.fetch_tasks()
-    assert len(tasks) == 1
-    task = tasks[0]
-    task.complete('validate', {'comment': 'a comment'})
-    assert task.state == 'ended'
-    assert not doc.fetch_workflows()
+def test_basic_workflow(workflows, doc, georges):
+    try:
+        workflow = doc.start_workflow('SerialDocumentReview')
+        assert workflow
+        wfs = workflows.fetch_started_workflows('SerialDocumentReview')
+        assert len(wfs) == 1
+        tasks = workflows.fetch_tasks()
+        assert len(tasks) == 1
+        task = tasks[0]
+        infos = {
+            'participants': ['user:Administrator'],
+            'assignees': ['user:Administrator'],
+            'end_date': '2011-10-23T12:00:00.00Z'}
+        task.delegate(georges.id, comment='a comment')
+        task.complete('start_review', infos, comment='a comment')
+        assert len(doc.fetch_workflows()) == 1
+        assert task.state == 'ended'
+        tasks = workflow.fetch_tasks()
+        assert len(tasks) == 1
+        task = tasks[0]
+        task.complete('validate', {'comment': 'a comment'})
+        assert task.state == 'ended'
+        assert not doc.fetch_workflows()
+    finally:
+        georges.delete()
 
 
 def test_get_workflows(workflows):

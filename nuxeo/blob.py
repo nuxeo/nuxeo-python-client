@@ -13,8 +13,6 @@ except ImportError:
 __all__ = ('BatchBlob', 'Blob', 'BufferBlob', 'FileBlob')
 
 
-FILE_BUFFER_SIZE = 1024 ** 2
-
 WIN32_PATCHED_MIME_TYPES = {
     'image/pjpeg': 'image/jpeg',
     'image/x-png': 'image/png',
@@ -29,13 +27,6 @@ WIN32_PATCHED_MIME_TYPES = {
 }
 
 
-def get_upload_buffer(input_file):
-    if sys.platform != 'win32':
-        return os.fstatvfs(input_file.fileno()).f_bsize
-
-    return FILE_BUFFER_SIZE
-
-
 def guess_mime_type(filename):
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type:
@@ -46,15 +37,6 @@ def guess_mime_type(filename):
         return mime_type
 
     return 'application/octet-stream'
-
-
-def _read_data(file_object, buffer_size):
-    while 'processing data':
-        # Check if synchronization thread was suspended
-        r = file_object.read(buffer_size)
-        if not r:
-            break
-        yield r
 
 
 class Blob(object):

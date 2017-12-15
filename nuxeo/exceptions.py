@@ -40,6 +40,7 @@ class UnavailableConvertor(Exception):
     """
     def __init__(self, options):
         self.options = options
+        self.message = str(self)
 
     def __str__(self):
         return 'Conversion with options {!r} is not available'.format(self.options)
