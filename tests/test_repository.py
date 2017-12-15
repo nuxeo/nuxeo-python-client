@@ -48,6 +48,11 @@ def test_convert_given_converter(doc):
         pass
 
 
+def test_convert_missing_args(doc):
+    with pytest.raises(ValueError):
+        doc.convert({})
+
+
 def test_convert_xpath(doc):
     try:
         res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
@@ -70,13 +75,12 @@ def test_create_doc_and_delete(repository):
     assert doc.path == pytest.ws_python_tests_path
     assert doc.type == 'Workspace'
     assert doc.properties['dc:title'] == 'foo'
+    assert repository.exists(pytest.ws_python_tests_path)
     doc.delete()
     assert not repository.exists(pytest.ws_python_tests_path)
 
 
 def test_create_doc_with_space_and_delete(repository):
-    """ NXPY-14: URLs should be quoted. """
-
     name = 'my domain'
     new_doc = {
         'name': name,
@@ -207,6 +211,11 @@ def test_query(repository):
     assert isinstance(docs['entries'][0], Document)
 
 
+def test_query_missing_args(repository):
+    with pytest.raises(ValueError):
+        repository.query({})
+
+
 def test_update_doc_and_delete(repository):
     new_doc = {
         'name': pytest.ws_python_test_name,
@@ -227,3 +236,8 @@ def test_update_doc_and_delete(repository):
     assert doc.path == path
     assert doc.properties['dc:title'] == 'bar'
     doc.delete()
+
+
+def test_update_wrong_args(repository):
+    with pytest.raises(ValueError):
+        repository.query({})

@@ -63,6 +63,12 @@ def test_check_params_unknown_operation(server):
         server.check_params('alien', {})
 
 
+def test_check_params_unknown_param(server):
+    with pytest.raises(ValueError):
+        server.check_params('Document.Query',
+                            {'alien': 'alien'})
+
+
 def test_drive_config(monkeypatch, server):
 
     def mock_server_error(*args, **kwargs):
@@ -140,6 +146,11 @@ def test_login(server):
     assert server.login()
 
 
+def test_send_wrong_method(server):
+    with pytest.raises(ValueError):
+        server.send(u'http://example.org/', method="TEST")
+
+
 def test_server_reachable(server):
     assert server.server_reachable()
     base_url = server.base_url
@@ -153,8 +164,8 @@ def test_server_reachable(server):
 
 def test_unauthorized(server):
     credentials = {
-        'username': 'ミカエル',
-        'password': 'test',
+        u'username': u'ミカエル',
+        u'password': u'test',
     }
     user = server.users().create(credentials)
 
@@ -171,3 +182,8 @@ def test_unauthorized(server):
             })
     finally:
         user.delete()
+
+
+def test_update_auth_missing_arg(server):
+    with pytest.raises(ValueError):
+        server._update_auth()

@@ -19,7 +19,6 @@ def test_document_create(server, repository):
     assert doc['title'] == '日本.txt'
     assert doc['properties']['dc:title'] == '日本.txt'
     assert doc['properties']['dc:description'] == 'ру́сский'
-
     repository.delete('/' + doc['title'])
     assert not repository.exists('/' + doc['title'])
 
@@ -72,3 +71,29 @@ def test_document_list_update(server):
     assert res['entries'][1]['properties']['dc:description'] == desc
     doc1.delete()
     doc2.delete()
+
+
+def test_document_move(server, doc):
+    folder = {
+        'name': 'Test',
+        'type': 'Folder',
+        'properties': {
+            'dc:title': 'Test',
+        },
+    }
+    f = server.repository().create(pytest.ws_root_path, folder)
+    try:
+        doc.move(pytest.ws_root_path + '/Test', 'new name')
+        assert doc.path == pytest.ws_root_path + '/Test/new name'
+    finally:
+        doc.delete()
+        f.delete()
+
+
+def test_follow_transition(doc):
+    assert doc.state == 'project'
+    doc.follow_transition('approve')
+    assert doc.state == 'approved'
+    doc.follow_transition('backToProject')
+    assert doc.state == 'project'
+    doc.delete()

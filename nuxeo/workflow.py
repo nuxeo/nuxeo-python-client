@@ -44,10 +44,10 @@ class Task(NuxeoObject):
         query_params = {'delegatedActors': actors}
         if comment:
             query_params['comment'] = comment
-        req = self.service.service.request(
+        self.service.service.request(
             'task/' + self.get_id() + '/delegate',
             query_params=query_params, method='PUT')
-        self._read(req)
+        self.refresh()
 
     def reassign(self, actors, comment=None):
         """ Reassign the Task to someone else. """
@@ -55,10 +55,15 @@ class Task(NuxeoObject):
         query_params = {'actors': actors}
         if comment:
             query_params['comment'] = comment
-        req = self.service.service.request(
+        self.service.service.request(
             'task/' + self.get_id() + '/reassign',
             query_params=query_params, method='PUT')
-        self._read(req)
+        self.refresh()
+
+    def refresh(self):
+        """ Refresh the Task with latest information from the server. """
+        self._read(self.service.service.request(
+            'task/' + self.get_id(), method='GET'))
 
     def _read(self, obj):
         self.directive = obj['directive']
