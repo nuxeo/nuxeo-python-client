@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from typing import Any, Dict, List, Optional, Text, Type, Union
+
 from .common import NuxeoObject
 
 __all__ = ('Task', 'Workflow', 'Workflows')
@@ -9,11 +11,13 @@ __all__ = ('Task', 'Workflow', 'Workflows')
 class Task(NuxeoObject):
     """ Represent a Task from a Workflow. """
 
-    def __init__(self, obj=None, service=None):
+    def __init__(self, obj, service=None):
+        # type: (Dict[Text, Any], Optional[Workflows]) -> None
         super(Task, self).__init__(obj=obj, service=service)
         self._read(obj)
 
     def complete(self, action, variables=None, comment=None):
+        # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> Task
         """
         Complete the task.
 
@@ -39,6 +43,7 @@ class Task(NuxeoObject):
         return self
 
     def delegate(self, actors, comment=None):
+        # type: (Text, Optional[Text]) -> None
         """ Delegate the Task to someone else. """
 
         query_params = {'delegatedActors': actors}
@@ -50,6 +55,7 @@ class Task(NuxeoObject):
         self.refresh()
 
     def reassign(self, actors, comment=None):
+        # type: (Text, Optional[Text]) -> None
         """ Reassign the Task to someone else. """
 
         query_params = {'actors': actors}
@@ -61,11 +67,13 @@ class Task(NuxeoObject):
         self.refresh()
 
     def refresh(self):
+        # type: () -> None
         """ Refresh the Task with latest information from the server. """
         self._read(self.service.service.request(
             'task/' + self.get_id(), method='GET'))
 
     def _read(self, obj):
+        # type: (Dict[Text, Any]) -> None
         self.directive = obj['directive']
         self.name = obj['name']
         self.created = obj['created']
@@ -84,11 +92,13 @@ class Task(NuxeoObject):
 class Workflow(NuxeoObject):
     """ Represent a Workflow on the server. """
 
-    def __init__(self, obj=None, service=None):
-        super(Workflow, self).__init__(obj=obj, service=service)
+    def __init__(self, obj, service):
+        # type: (Dict[Text, Any], Workflows) -> None
+        super(Workflow, self).__init__(obj, service)
         self._read(obj)
 
     def fetch_graph(self):
+        # type: () -> Dict[Text, Any]
         """
         Get the workflow graph.
 
@@ -98,6 +108,7 @@ class Workflow(NuxeoObject):
         return self.service.fetch_graph(self.id)
 
     def fetch_tasks(self):
+        # type: () -> List[Task]
         """
         :return: Tasks on this Workflow
         """
@@ -106,6 +117,7 @@ class Workflow(NuxeoObject):
              'workflowInstanceId': self.id})
 
     def _read(self, obj):
+        # type: (Dict[Text, Any]) -> None
         self.initiator = obj['initiator']
         self.name = obj['name']
         self.title = obj['title']
@@ -121,12 +133,15 @@ class Workflows(object):
     """ Workflow services. """
 
     def __init__(self, service):
+        # type: (Nuxeo) -> None
         self.service = service
 
     def fetch_graph(self, uid):
+        # type: (Text) -> Dict[Text, Any]
         return self.service.request('workflow/' + uid + '/graph')
 
     def fetch_started_workflows(self, name):
+        # type: (Text) -> List[Workflow]
         """
         Get the started workflow for a specific model.
 
@@ -137,6 +152,7 @@ class Workflows(object):
         return self.map(req, Workflow)
 
     def fetch_tasks(self, options=None):
+        # type: (Optional[Dict[Text, Any]]) -> List[Task]
         """
         Fetch the tasks from specific workflows.
 
@@ -147,9 +163,11 @@ class Workflows(object):
         return self.map(req, Task)
 
     def map(self, result, cls):
-        return [cls(task, self) for task in result['entries']]
+        # type: (Dict[Text, Any], Union[Type[Workflow], Type[Task]]) -> Union[List[Workflow], List[Task]]
+        return [cls(item, self) for item in result['entries']]
 
     def start(self, model, options=None, url=None):
+        # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> Workflow
         """
         Start a workflow.
 

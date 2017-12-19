@@ -1,12 +1,11 @@
 # coding: utf-8
-
 from __future__ import print_function
 
 import os
 import socket
-from requests import HTTPError
 
 import pytest
+from requests import HTTPError
 
 from nuxeo.blob import BufferBlob
 from nuxeo.document import Document

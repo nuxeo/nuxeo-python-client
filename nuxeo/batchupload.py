@@ -4,13 +4,16 @@ from __future__ import unicode_literals
 import re
 import urllib2
 
-from .blob import BatchBlob, FileBlob
+from typing import Text
+
+from .blob import Blob, BlobInfo, FileBlob
 from .exceptions import InvalidBatchException
 
 __all__ = ('BatchUpload',)
 
 
 def safe_filename(name, replacement='-'):
+    # type: (Text, Text) -> Text
     """ Replace invalid character in candidate filename. """
     return re.sub(r'([/\\*:|"<>?])', replacement, name)
 
@@ -22,6 +25,7 @@ class BatchUpload(object):
     """
 
     def __init__(self, nuxeo):
+        # type: (Nuxeo) -> None
         self._nuxeo = nuxeo
         self._path = 'upload/'
         self.batchid = None
@@ -29,6 +33,7 @@ class BatchUpload(object):
         self.blobs = []
 
     def cancel(self):
+        # type: () -> None
         """ Cancel a BatchUpload, cleaning the bucket on the server side. """
 
         if self.batchid is None:
@@ -38,6 +43,7 @@ class BatchUpload(object):
         self.batchid = None
 
     def fetch(self, index):
+        # type: (int) -> BlobInfo
         """
         Fetch a specific blob.
 
@@ -48,12 +54,14 @@ class BatchUpload(object):
         path = self._get_path() + '/' + str(index)
         res = self._nuxeo.request(path)
         res['fileIdx'] = index
-        return BatchBlob(self, res)
+        return BlobInfo(self, res)
 
     def get_batch_id(self):
+        # type: () -> Text
         return self.batchid
 
     def upload(self, blob):
+        # type: (Blob) -> BlobInfo
         """
         Upload a new blob to the bucket.
         See the :class:`BufferBlob` or :class:`FileBlob`.
@@ -87,13 +95,15 @@ class BatchUpload(object):
             if isinstance(blob, FileBlob):
                 data.close()
         res['name'] = filename
-        blob = BatchBlob(self, res)
+        blob = BlobInfo(self, res)
         self.blobs.append(blob)
         self._upload_index += 1
         return blob
 
     def _create_batchid(self):
+        # type: () -> Text
         return self._nuxeo.request(self._path, method='POST')['batchId']
 
     def _get_path(self):
+        # type: () -> Text
         return self._path + self.batchid

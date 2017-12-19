@@ -20,11 +20,13 @@ from os import path
 
 import pkg_resources
 from setuptools.config import read_configuration
+from typing import Text
 
 from .nuxeo import Nuxeo
 
 
 def _extract_version():
+    # type: () -> Text
     try:
         return pkg_resources.get_distribution('nuxeo').version
     except pkg_resources.DistributionNotFound:
