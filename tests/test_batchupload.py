@@ -101,16 +101,13 @@ def test_iter_content(server, batch):
         os.remove(file_out)
 
 
-def test_mimetype(monkeypatch):
+def test_mimetype():
     test = 'test.bmp'
     with open(test, 'wb') as f:
         f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
     try:
         blob = FileBlob(test)
-        assert blob.get_mimetype() == 'image/bmp'
-        monkeypatch.setattr(sys, 'platform', 'win32')
-        blob = FileBlob(test)
-        assert blob.get_mimetype() == 'image/x-ms-bmp'
+        assert blob.get_mimetype() in ['image/bmp', 'image/x-ms-bmp']
     finally:
         os.remove(test)
 
