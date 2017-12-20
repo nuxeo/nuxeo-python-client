@@ -3,6 +3,11 @@ from __future__ import unicode_literals
 
 from .common import NuxeoObject, NuxeoService
 
+try:
+    from typing import Any, Dict, Text, Union
+except ImportError:
+    pass
+
 __all__ = ('Group', 'Groups')
 
 
@@ -11,7 +16,8 @@ class Group(NuxeoObject):
 
     entity_type = 'group'
 
-    def __init__(self, obj=None, service=None):
+    def __init__(self, obj, service):
+        # type: (Dict[Text, Any], Groups) -> None
         super(Group, self).__init__(obj, service)
         self._entity_type = 'group'
         self.groupname = obj['groupname']
@@ -20,6 +26,7 @@ class Group(NuxeoObject):
         self.memberUsers = obj.get('memberUsers', [])
 
     def get_id(self):
+        # type: () -> Text
         return self.groupname
 
 
@@ -27,10 +34,12 @@ class Groups(NuxeoService):
     """ Groups management. """
 
     def __init__(self, nuxeo):
+        # type: (Nuxeo) -> None
         super(Groups, self).__init__(nuxeo, 'group', Group)
         self._query = '?fetch.group=memberUsers&fetch.group=memberGroups'
 
     def create(self, obj):
+        # type: (Union[Dict[Text, Any], Group]) -> Group
         """
         Create a new group.
 
@@ -43,6 +52,7 @@ class Groups(NuxeoService):
         return self._object_class(req, self)
 
     def get(self, uid):
+        # type: (Text) -> Dict[Text, Any]
         """
         Get a group.
 
@@ -52,6 +62,7 @@ class Groups(NuxeoService):
         return self._nuxeo.request(self._path + '/' + uid + self._query)
 
     def update(self, obj):
+        # type: (Union[Dict[Text, Any], Group]) -> None
         """
         Update the group.
 
@@ -62,6 +73,7 @@ class Groups(NuxeoService):
                             body=args, method='PUT')
 
     def _get_args(self, obj):
+        # type: (Union[Dict[Text, Any], Group]) -> Dict[Text, Any]
         args = {'entity-type': self._object_class.entity_type}
         if isinstance(obj, self._object_class):
             args['groupname'] = obj.groupname

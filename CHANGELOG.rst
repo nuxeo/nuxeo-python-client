@@ -17,8 +17,9 @@ Release date: ``2017-??-??``
 Technical changes
 ~~~~~~~~~~~~~~~~~
 
--  Changed ``BatchBlob._batchid`` to ``BatchBlob.batchid``
--  Changed ``BatchBlob._service`` to ``BatchBlob.service``
+-  Changed ``BatchBlob`` to ``BlobInfo``
+-  Changed ``BlobInfo._batchid`` to ``BlobInfo.batchid``
+-  Changed ``BlobInfo._service`` to ``BlobInfo.service``
 -  Changed ``Directory.fetchAll()`` to ``Directory.fetch_all()``
 -  Added ``Document.is_locked()``
 -  Removed ``FileBlob.get_upload_buffer()``
@@ -38,6 +39,7 @@ Technical changes
 -  Changed ``Nuxeo._end_action()`` to ``Nuxeo.end_action()``
 -  Changed ``Nuxeo._get_action()`` to ``Nuxeo.get_action()``
 -  Removed ``Nuxeo._get_common_headers()``
+-  Removed ``Nuxeo._get_cookies()``
 -  Changed ``Nuxeo._rest_url`` to ``Nuxeo.rest_url``
 -  Changed ``NuxeoObject._service`` to ``NuxeoObject.service``
 -  Added ``NuxeoService.exists()``

@@ -23,8 +23,14 @@ from setuptools.config import read_configuration
 
 from .nuxeo import Nuxeo
 
+try:
+    from typing import Text
+except ImportError:
+    pass
+
 
 def _extract_version():
+    # type: () -> Text
     try:
         return pkg_resources.get_distribution('nuxeo').version
     except pkg_resources.DistributionNotFound:

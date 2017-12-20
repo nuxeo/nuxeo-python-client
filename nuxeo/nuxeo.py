@@ -2,16 +2,17 @@
 """ Nuxeo REST API Client. """
 from __future__ import unicode_literals
 
-import base64
 import json
 import logging
 import socket
-import tempfile
-from collections import Sequence
 from urllib import urlencode
 
+import base64
 import requests
+import tempfile
+from collections import Sequence
 from requests import HTTPError
+from requests.cookies import RequestsCookieJar
 
 from .batchupload import BatchUpload
 from .blob import Blob
@@ -22,6 +23,11 @@ from .operation import Operation
 from .repository import Repository
 from .users import Users
 from .workflow import Workflows
+
+try:
+    from typing import Any, Dict, List, Optional, Text, Union
+except ImportError:
+    pass
 
 __all__ = ('Nuxeo',)
 
@@ -50,6 +56,7 @@ PARAM_TYPES = {  # Types allowed for operations parameters
 
 
 def json_helper(o):
+    # type: (Any) -> Dict[Text, Any]
     if hasattr(o, 'to_json'):
         return o.to_json()
     raise TypeError(repr(o) + 'is not JSON serializable (no to_json() found)')
@@ -74,8 +81,6 @@ class Nuxeo(object):
     :param blob_timeout: Binary download timeout
     :param cookie_jar: Cookie storage
     :param upload_tmp_dir: Tmp file to use for buffering
-    :param check_suspended: Method to call while doing network call so you
-                           can interrupt the download thread
     :param api_path: Default API Path
     """
 
@@ -83,24 +88,20 @@ class Nuxeo(object):
 
     def __init__(
         self,
-        base_url='http://localhost:8080/nuxeo',
-        auth=None,
-        proxies=None,
-        repository='default',
-        timeout=20,
-        blob_timeout=60,
-        cookie_jar=None,
-        upload_tmp_dir=None,
-        check_suspended=None,
-        api_path='api/v1/',
+        base_url='http://localhost:8080/nuxeo',  # type: Text
+        auth=None,                               # type: Dict[Text, Any]
+        proxies=None,                            # type: Dict[Text, Any]
+        repository='default',                    # type: Text
+        timeout=20,                              # type: int
+        blob_timeout=60,                         # type: int
+        cookie_jar=None,                         # type: RequestsCookieJar
+        upload_tmp_dir=None,                     # type: Text
+        api_path='api/v1/',                      # type: Text
     ):
+        # type: (...) -> None
         self._session = requests.session()
         self._session.proxies = proxies
         self._session.stream = True
-
-        # Function to check during long-running processing like upload /
-        # download if the synchronization thread needs to be suspended
-        self.check_suspended = check_suspended
 
         self.timeout = 20 if timeout is None or timeout < 0 else timeout
         socket.setdefaulttimeout(self.timeout)
@@ -137,13 +138,14 @@ class Nuxeo(object):
         self.batch_upload_path = 'upload'
 
     def batch_upload(self):
+        # type: () -> BatchUpload
         """
         :return: Return a bucket to upload document to Nuxeo server
         """
         return BatchUpload(self)
 
     def check_params(self, command, params):
-        # type: (unicode, Dict[unicode, Tuple[type, ...]]) -> None
+        # type: (Text, Dict[Text, Any]) -> None
         """
         Check given paramaters of the `command` operation.  It will also
         check for types whenever possible.
@@ -184,12 +186,14 @@ class Nuxeo(object):
                 raise ValueError(err.format(name, command))
 
     def directory(self, name):
+        # type: (Text) -> Directory
         """
         :return: An Operation object
         """
         return Directory(name, self)
 
     def drive_config(self):
+        # type: () -> Dict[Text, Any]
         """
         Fetch the Drive JSON configuration from
         the $NUXEO_URL/api/v1/drive/configuration endpoint.
@@ -203,16 +207,17 @@ class Nuxeo(object):
 
     def execute(
         self,
-        command,
-        url=None,
-        op_input=None,
-        timeout=-1,
-        check_params=False,
-        void_op=False,
-        extra_headers=None,
-        file_out=None,
+        command,             # type: Text
+        url=None,            # type: Text
+        op_input=None,       # type: Union[List[Text], Dict[Text, Any]]
+        timeout=-1,          # type: int
+        check_params=False,  # type: bool
+        void_op=False,       # type: bool
+        extra_headers=None,  # type: Dict[Text, Any]
+        file_out=None,       # type: Text
         **params
     ):
+        # type: (...) -> Union[Dict[Text, Any], Text]
         """
         Execute an Automation operation.
 
@@ -277,7 +282,7 @@ class Nuxeo(object):
             action.progress = 0
 
         if file_out:
-            locker = self.unlock_path(file_out)
+            locker = self.lock_path(file_out)
             try:
                 with open(file_out, 'wb') as f:
                     for chunk in resp.iter_content(chunk_size=CHUNK_SIZE):
@@ -286,7 +291,7 @@ class Nuxeo(object):
                         f.write(chunk)
                 return file_out
             finally:
-                self.lock_path(file_out, locker)
+                self.unlock_path(file_out, locker)
         else:
             try:
                 return resp.json()
@@ -294,12 +299,14 @@ class Nuxeo(object):
                 return resp.content
 
     def groups(self):
+        # type: () -> Groups
         """
         :return: The Groups service
         """
         return Groups(self)
 
     def header(self, name, value):
+        # type: (Text, Text) -> None
         """
         Define a header.
 
@@ -309,6 +316,7 @@ class Nuxeo(object):
         self._headers[name] = value
 
     def headers(self, extras=None):
+        # type: (Optional[Dict[Text, Text]]) -> Dict[Text, Text]
         """
         Headers to include in every HTTP requests.
 
@@ -332,10 +340,12 @@ class Nuxeo(object):
 
         return headers
 
-    def lock_path(self, file_out, locker):
+    def lock_path(self, file_out):
+        # type: (Text) -> None
         pass
 
     def login(self):
+        # type: () -> User
         """
         Try to login and return the user.
 
@@ -345,6 +355,7 @@ class Nuxeo(object):
         return self.users().fetch(self.user_id)
 
     def operation(self, name):
+        # type: (Text) -> Operation
         """
         https://doc.nuxeo.com/display/NXDOC/Automation
 
@@ -354,6 +365,7 @@ class Nuxeo(object):
 
     @property
     def operations(self):
+        # type: () -> Dict[Text, Any]
         """
         A dict of all operations and their parameters.
         Fetched on demand as it is a heavy work for the server and the network.
@@ -366,6 +378,7 @@ class Nuxeo(object):
         return self.__operations
 
     def repository(self, name='default', schemas=None):
+        # type: (Text, Optional[Text]) -> Repository
         """
         :return: A repository object
         """
@@ -373,16 +386,17 @@ class Nuxeo(object):
 
     def request(
         self,
-        relative_url,
-        body=None,
-        adapter=None,
-        timeout=-1,
-        method='GET',
-        content_type='application/json',
-        extra_headers=None,
-        raw_body=False,
-        query_params=None,
+        relative_url,                       # type: Text
+        body=None,                          # type: Optional[Union[Text, Dict[Text, Any], bytes]]
+        adapter=None,                       # type: Optional[Text]
+        timeout=-1,                         # type: int
+        method='GET',                       # type: Text
+        content_type='application/json',    # type: Text
+        extra_headers=None,                 # type: Optional[Dict[Text, Text]]
+        raw_body=False,                     # type: bool
+        query_params=None,                  # type: Optional[Dict[Text, Any]]
     ):
+        # type: (...) -> Union[Dict[Text, Any], Text, bytes]
         """
         Execute a REST API call.
 
@@ -424,12 +438,13 @@ class Nuxeo(object):
 
     def request_authentication_token(
         self,
-        application_name,
-        device_id,
-        device_description,
-        permission,
-        revoke=False,
+        application_name,       # type: Text
+        device_id,              # type: Text
+        device_description,     # type: Text
+        permission,             # type: Text
+        revoke=False,           # type: bool
     ):
+        # type: (...) -> Text
         """
         Request and return a new token for the user.
 
@@ -456,7 +471,16 @@ class Nuxeo(object):
             self._update_auth(token=token)
         return token
 
-    def send(self, url, method='GET', data=None, params=None, extra_headers=None, timeout=None):
+    def send(
+            self,
+            url,                    # type: Text
+            method='GET',           # type: Text
+            data=None,              # type: Optional[Union[Text, Dict[Text, Any], bytes]]
+            params=None,            # type: Optional[Dict[Text, Any]]
+            extra_headers=None,     # type: Optional[Dict[Text, Text]]
+            timeout=None            # type: Optional[int]
+    ):
+        # type: (...) -> requests.Response
         """
         Perform a request to the server.
 
@@ -478,8 +502,8 @@ class Nuxeo(object):
         timeout = self.timeout if not timeout or timeout == -1 else timeout
         headers = self.headers(extra_headers)
 
-        logger.debug('Calling {!r} with headers {!r} and cookies {!r}'.format(
-            url, headers, self._get_cookies()))
+        logger.debug('Calling {!r} with headers={!r}, params={!r} and cookies={!r}'.format(
+            url, headers, params, self._session.cookies))
 
         try:
             resp = self._session.request(url=url, method=method, headers=headers,
@@ -497,11 +521,12 @@ class Nuxeo(object):
             content = '<Too much data to display>'
 
         logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
-            url, content, self._get_cookies()))
+            url, content, self._session.cookies))
 
         return resp
 
     def server_reachable(self):
+        # type: () -> bool
         """
         Simple call to the server status page to check if it is reachable.
         """
@@ -513,28 +538,34 @@ class Nuxeo(object):
             pass
         return False
 
-    def unlock_path(self, file_out):
+    def unlock_path(self, file_out, locker):
+        # type: (Text, None) -> None
         return None
 
     def users(self):
+        # type: () -> Users
         """
         :return: The Users service
         """
         return Users(self)
 
     def workflows(self):
+        # type: () -> Workflows
         """
         :return: The Workflows service
         """
         return Workflows(self)
 
     def create_action(self, type, path, name):
+        # type: (Text, Text, Text) -> Dict[Text, Any]
         return {}
 
     def end_action(self):
+        # type: () -> None
         pass
 
     def _fetch_api(self):
+        # type: () -> Dict[Text, Any]
         """ Used to populate :attr:`operations`, do not call directly. """
 
         resp = self.send(self.automation_url)
@@ -548,12 +579,11 @@ class Nuxeo(object):
         return operations
 
     def get_action(self):
+        # type: () -> None
         return None
 
-    def _get_cookies(self):
-        return list(self._session.cookies) or []
-
     def _log_details(self, e):
+        # type: (Exception) -> None
         if isinstance(e, HTTPError):
             logger.exception(u'Remote exception: {}'.format(
                 e.message.decode('utf-8')))
@@ -561,14 +591,12 @@ class Nuxeo(object):
                 exc = e.response.json()
                 message = exc.get('message')
                 stack = exc.get('stacktrace')
-                error = exc.get('error')
                 if message:
                     logger.error('Remote exception message: {!s}'.format(message))
                 if stack:
                     logger.error('Remote exception stack: {!s}'.format(stack))
                 else:
                     logger.error('Remote exception details: {!s}'.format(exc))
-                return exc.get('status'), exc.get('code'), message, error
             except ValueError:
                 # Error messages from the server should always be JSON-formatted,
                 # but sometimes they're not
@@ -578,6 +606,7 @@ class Nuxeo(object):
             logger.exception('Local exception')
 
     def _update_auth(self, auth=None, password=None, token=None):
+        # type: (Optional[Dict[Text, Any]], Optional[Text], Optional[Text]) -> None
         """
         When username retrieved from database, check for unicode and convert
         to string.

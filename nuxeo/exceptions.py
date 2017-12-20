@@ -2,6 +2,11 @@
 
 from requests import HTTPError
 
+try:
+    from typing import Any, Dict, Optional, Text
+except ImportError:
+    pass
+
 
 class InvalidBatchException(ValueError):
     """
@@ -21,12 +26,14 @@ class Unauthorized(HTTPError):
     :param http_error: The HTTPError raised by the request
     """
     def __init__(self, user_id, http_error=None):
+        # type: (Text, Optional[HTTPError]) -> None
         if http_error:
             self.__dict__.update(http_error.__dict__)
         self.user_id = user_id
         self.message = str(self)
 
     def __str__(self):
+        # type: () -> Text
         return '\'{!s}\' is not authorized to access {!s} with the provided credentials'.format(
             self.user_id.encode('utf-8'), self.response.url)
 
@@ -39,8 +46,10 @@ class UnavailableConvertor(Exception):
     :param options: options passed to the conversion request
     """
     def __init__(self, options):
+        # type: (Dict[Text, Any]) -> None
         self.options = options
         self.message = str(self)
 
     def __str__(self):
+        # type: () -> Text
         return 'Conversion with options {!r} is not available'.format(self.options)

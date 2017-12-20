@@ -3,6 +3,11 @@ from __future__ import unicode_literals
 
 from .common import NuxeoObject, NuxeoService
 
+try:
+    from typing import Any, Dict, List, Optional, Text
+except ImportError:
+    pass
+
 __all__ = ('Directory', 'DirectoryEntry')
 
 
@@ -11,12 +16,14 @@ class DirectoryEntry(NuxeoObject):
 
     entity_type = 'directoryEntry'
 
-    def __init__(self, obj=None, service=None):
+    def __init__(self, obj, service=None):
+        # type: (Dict[Text, Any], Optional[NuxeoService]) -> None
         super(DirectoryEntry, self).__init__(obj, service)
         self._entity_type = 'directoryEntry'
         self.directoryName = obj['directoryName']
 
     def get_id(self):
+        # type: () -> Text
         return self.properties['id']
 
 
@@ -24,11 +31,13 @@ class Directory(NuxeoService):
     """ Directory service allow you to modify a Directory on the server. """
 
     def __init__(self, name, nuxeo):
+        # type: (Text, Nuxeo) -> None
         super(Directory, self).__init__(nuxeo, 'group', DirectoryEntry)
         self._name = name
         self._path = 'directory/' + name
 
     def create(self, obj):
+        # type: (NuxeoObject) -> NuxeoObject
         """
         Create a new entry in the directory.
 
@@ -53,6 +62,7 @@ class Directory(NuxeoService):
         return self._object_class(req, self)
 
     def fetch_all(self):
+        # type: () -> List[DirectoryEntry]
         """
         :return: all entries from the Directory
         """
@@ -60,6 +70,7 @@ class Directory(NuxeoService):
         return [DirectoryEntry(entry, self) for entry in result['entries']]
 
     def update(self, obj):
+        # type: (NuxeoObject) -> None
         """ Update an entry in the directory. """
 
         body = {

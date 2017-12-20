@@ -5,6 +5,7 @@ import hashlib
 import os
 
 import pytest
+import sys
 from requests import HTTPError
 
 from nuxeo.batchupload import BatchUpload
@@ -44,8 +45,8 @@ def test_fetch(batch):
     blob = batch.fetch(0)
     assert not blob.fileIdx
     assert blob.uploadType == 'normal'
-    assert blob.get_name() == 'Test.txt'
-    assert blob.get_size() == 4
+    assert blob.name == 'Test.txt'
+    assert blob.size == 4
 
     blob = batch.blobs[0]
     assert not blob.fileIdx
@@ -78,7 +79,7 @@ def test_iter_content(server, batch):
 
     doc = server.repository().create(pytest.ws_root_path, new_doc)
     try:
-        batch.upload(FileBlob(file_in))
+        batch.upload(FileBlob(file_in, mimetype='application/octet-stream'))
         operation = server.operation('Blob.AttachOnDocument')
         operation.params({'document': pytest.ws_root_path + '/Document'})
         operation.input(batch.fetch(1))

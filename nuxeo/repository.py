@@ -9,6 +9,11 @@ from .document import Document
 from .exceptions import UnavailableConvertor
 from .workflow import Workflow
 
+try:
+    from typing import Any, Dict, List, Optional, Text, Union
+except ImportError:
+    pass
+
 __all__ = ('Repository',)
 
 
@@ -22,17 +27,20 @@ class Repository(object):
     """
 
     def __init__(self, name, service, schemas=None):
+        # type: (Text, Nuxeo, Optional[Text]) -> None
         self._name = name
         self.service = service
         self._schemas = schemas or []
 
     def add_permission(self, uid, params):
+        # type: (Text, Dict[Text, Any]) -> None
         operation = self.service.operation('Document.AddPermission')
         operation.input(uid)
         operation.params(params)
         operation.execute()
 
     def convert(self, path, options):
+        # type: (Text, Dict[Text, Text]) -> Union[Text, Dict[Text, Any]]
         """
         Convert a blob into another format.
 
@@ -61,6 +69,7 @@ class Repository(object):
             raise e
 
     def create(self, path, obj):
+        # type: (Text, Dict[Text, Any]) -> Document
         """
         Create a new Document on the server.
 
@@ -81,6 +90,7 @@ class Repository(object):
         return Document(req, self)
 
     def delete(self, path):
+        # type: (Text) -> None
         """
         Delete a specific Document.
 
@@ -89,6 +99,7 @@ class Repository(object):
         self.service.request(self._get_path(path), method='DELETE')
 
     def exists(self, path):
+        # type: (Text) -> bool
         try:
             self.fetch(path)
             return True
@@ -98,6 +109,7 @@ class Repository(object):
         return False
 
     def fetch(self, path):
+        # type: (Text) -> Document
         """
         Get a Document from Nuxeo.
 
@@ -107,20 +119,24 @@ class Repository(object):
         return Document(self.get(path), self)
 
     def fetch_acls(self, path):
+        # type: (Text) -> Dict[Text, Any]
         req = self.service.request(
             self._get_path(path),
             extra_headers={'enrichers-document': 'acls'})
         return req['contextParameters']['acls']
 
     def fetch_audit(self, path):
+        # type: (Text) -> Dict[Text, Any]
         return self.service.request(self._get_path(path) + '/@audit')
 
     def fetch_blob(self, path, xpath='blobholder:0'):
+        # type: (Text, Text) -> Union[Text, Dict[Text, Any], bytes]
         return self.service.request(
             self._get_path(path) + '/@blob/' + xpath,
             extra_headers=self._get_extra_headers())
 
     def fetch_lock_status(self, path):
+        # type: (Text) -> Dict[Text, Any]
         ret = dict()
         req = self.service.request(
             self._get_path(path), extra_headers={'fetch-document': 'lock'})
@@ -130,11 +146,13 @@ class Repository(object):
         return ret
 
     def fetch_rendition(self, path, name):
+        # type: (Text, Text) -> bytes
         return self.service.request(
             self._get_path(path) + '/@rendition/' + name,
             extra_headers=self._get_extra_headers())
 
     def fetch_renditions(self, path):
+        # type: (Text) -> List[Text]
         req = self.service.request(
             self._get_path(path),
             extra_headers={'enrichers-document': 'renditions'})
@@ -142,10 +160,12 @@ class Repository(object):
                 for rend in req['contextParameters']['renditions']]
 
     def fetch_workflows(self, path):
+        # type: (Text) -> List[Workflow]
         req = self.service.request(self._get_path(path) + '/@workflow')
         return self.service.workflows().map(req, Workflow)
 
     def follow_transition(self, uid, name):
+        # type: (Text, Text) -> None
         operation = self.service.operation(
             'Document.FollowLifecycleTransition')
         operation.input(uid)
@@ -153,21 +173,25 @@ class Repository(object):
         operation.execute()
 
     def get(self, path):
+        # type: (Text) -> Union[Dict[Text, Any], Text, bytes]
         return self.service.request(
             self._get_path(path), extra_headers=self._get_extra_headers())
 
     def has_permission(self, path, permission):
+        # type: (Text, Text) -> bool
         req = self.service.request(
             self._get_path(path),
             extra_headers={'enrichers-document': 'permissions'})
         return permission in req['contextParameters']['permissions']
 
     def lock(self, uid):
+        # type: (Text) -> Dict[Text, Any]
         operation = self.service.operation('Document.Lock')
         operation.input(uid)
         return operation.execute()
 
     def move(self, uid, dst, name=None):
+        # type: (Text, Text, Optional[Text]) -> None
         operation = self.service.operation('Document.Move')
         operation.input(uid)
         params = {'target': dst}
@@ -177,6 +201,7 @@ class Repository(object):
         operation.execute()
 
     def query(self, opts=None):
+        # type: (Optional[Dict[Text, Text]]) -> Dict[Text, Any]
         path = 'query/'
         opts = opts or {}
         if 'query' in opts:
@@ -197,21 +222,25 @@ class Repository(object):
         return req
 
     def remove_permission(self, uid, params):
+        # type: (Text, Dict[Text, Text]) -> None
         operation = self.service.operation('Document.RemovePermission')
         operation.input(uid)
         operation.params(params)
         operation.execute()
 
     def start_workflow(self, name, path, options):
+        # type: (Text, Text, Dict[Text, Text]) -> Workflow
         return self.service.workflows().start(
             name, options, url=self._get_path(path) + '/@workflow')
 
     def unlock(self, uid):
+        # type: (Text) -> Dict[Text, Any]
         operation = self.service.operation('Document.Unlock')
         operation.input(uid)
         return operation.execute()
 
     def update(self, obj, uid=None):
+        # type: (Union[Document, Dict[Text, Any]], Optional[Text]) -> Document
         if isinstance(obj, Document):
             properties = obj.properties
             uid = obj.get_id()
@@ -232,6 +261,7 @@ class Repository(object):
         return Document(req, self)
 
     def _get_extra_headers(self, extras=None):
+        # type: (Optional[Dict[Text, Text]]) -> Dict[Text, Text]
         extras_header = {'X-NXRepository': self._name}
         if self._schemas:
             extras_header['X-NXDocumentProperties'] = ','.join(self._schemas)
@@ -240,6 +270,7 @@ class Repository(object):
         return extras_header
 
     def _get_path(self, path):
+        # type: (Text) -> Text
         if path.startswith('/'):
             return 'repo/' + self._name + '/path' + path
         return 'repo/' + self._name + '/id/' + path

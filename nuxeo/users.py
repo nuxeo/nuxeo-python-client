@@ -3,6 +3,11 @@ from __future__ import unicode_literals
 
 from .common import NuxeoAutosetObject, NuxeoService
 
+try:
+    from typing import Any, Dict, Optional, Text, Union
+except ImportError:
+    pass
+
 __all__ = ('User', 'Users')
 
 
@@ -12,6 +17,7 @@ class User(NuxeoAutosetObject):
     entity_type = 'user'
 
     def __init__(self, obj=None, service=None, id=None):
+        # type: (Union[User, Dict[Text, Any]], Users, Optional[Text]) -> None
         super(User, self).__init__(obj=obj, service=service, id=id)
         self._autoset = True
         self._entity_type = 'user'
@@ -20,6 +26,7 @@ class User(NuxeoAutosetObject):
             del self.properties['password']
 
     def change_password(self, password):
+        # type: (Text) -> None
         """
         Change user password.
 
@@ -33,4 +40,5 @@ class Users(NuxeoService):
     """ Users management. """
 
     def __init__(self, nuxeo):
+        # type: (Nuxeo) -> None
         super(Users, self).__init__(nuxeo, 'user', User)
