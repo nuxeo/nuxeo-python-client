@@ -6,7 +6,6 @@ import json
 import logging
 import socket
 from urllib import urlencode
-from typing import Any, Dict, List, Optional, Text, Union
 
 import base64
 import requests
@@ -24,6 +23,11 @@ from .operation import Operation
 from .repository import Repository
 from .users import Users
 from .workflow import Workflows
+
+try:
+    from typing import Any, Dict, List, Optional, Text, Union
+except ImportError:
+    pass
 
 __all__ = ('Nuxeo',)
 
@@ -77,8 +81,6 @@ class Nuxeo(object):
     :param blob_timeout: Binary download timeout
     :param cookie_jar: Cookie storage
     :param upload_tmp_dir: Tmp file to use for buffering
-    :param check_suspended: Method to call while doing network call so you
-                           can interrupt the download thread
     :param api_path: Default API Path
     """
 
@@ -100,10 +102,6 @@ class Nuxeo(object):
         self._session = requests.session()
         self._session.proxies = proxies
         self._session.stream = True
-
-        # Function to check during long-running processing like upload /
-        # download if the synchronization thread needs to be suspended
-        self.check_suspended = check_suspended
 
         self.timeout = 20 if timeout is None or timeout < 0 else timeout
         socket.setdefaulttimeout(self.timeout)

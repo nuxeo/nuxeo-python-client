@@ -1,9 +1,12 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from typing import Any, Dict, Text, Union
-
 from .common import NuxeoObject, NuxeoService
+
+try:
+    from typing import Any, Dict, Text, Union
+except ImportError:
+    pass
 
 __all__ = ('Group', 'Groups')
 

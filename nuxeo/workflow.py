@@ -1,9 +1,12 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from typing import Any, Dict, List, Optional, Text, Type, Union
-
 from .common import NuxeoObject
+
+try:
+    from typing import Any, Dict, List, Optional, Text, Type, Union
+except ImportError:
+    pass
 
 __all__ = ('Task', 'Workflow', 'Workflows')
 

@@ -4,11 +4,15 @@ from __future__ import unicode_literals
 from urllib import urlencode
 
 from requests import HTTPError
-from typing import Any, Dict, List, Optional, Text, Union
 
 from .document import Document
 from .exceptions import UnavailableConvertor
 from .workflow import Workflow
+
+try:
+    from typing import Any, Dict, List, Optional, Text, Union
+except ImportError:
+    pass
 
 __all__ = ('Repository',)
 

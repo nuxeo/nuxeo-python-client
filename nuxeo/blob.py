@@ -6,8 +6,10 @@ import os
 import sys
 from io import StringIO
 
-from typing import Any, BinaryIO, Dict, Optional, Text, Union
-
+try:
+    from typing import Any, Dict, IO, Optional, Text, Union
+except ImportError:
+    pass
 
 __all__ = ('BlobInfo', 'Blob', 'BufferBlob', 'FileBlob')
 
@@ -53,7 +55,7 @@ class Blob(object):
         self._mimetype = 'application/octet-stream'
 
     def get_data(self):
-        # type: () -> Union[BinaryIO, StringIO, Text]
+        # type: () -> Union[IO[bytes], StringIO, Text]
         """ Data. """
         return self._data
 
@@ -140,7 +142,7 @@ class FileBlob(Blob):
         self._mimetype = mimetype or guess_mime_type(path)
 
     def get_data(self):
-        # type: () -> BinaryIO
+        # type: () -> IO[bytes]
         """ Request data. """
 
         return open(self._path, 'rb')

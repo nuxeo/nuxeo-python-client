@@ -1,7 +1,11 @@
 # coding: utf-8
 
 from requests import HTTPError
-from typing import Any, Dict, Optional, Text
+
+try:
+    from typing import Any, Dict, Optional, Text
+except ImportError:
+    pass
 
 
 class InvalidBatchException(ValueError):

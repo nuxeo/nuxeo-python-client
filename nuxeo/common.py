@@ -2,7 +2,11 @@
 from __future__ import unicode_literals
 
 from requests import HTTPError
-from typing import Any, Dict, Optional, Text, Type, Union
+
+try:
+    from typing import Any, Dict, Optional, Text, Type, Union
+except ImportError:
+    pass
 
 __all__ = ('NuxeoAutosetObject', 'NuxeoObject', 'NuxeoService')
 

@@ -4,10 +4,13 @@ from __future__ import unicode_literals
 import re
 import urllib2
 
-from typing import Text
-
 from .blob import Blob, BlobInfo, FileBlob
 from .exceptions import InvalidBatchException
+
+try:
+    from typing import Text
+except ImportError:
+    pass
 
 __all__ = ('BatchUpload',)
 

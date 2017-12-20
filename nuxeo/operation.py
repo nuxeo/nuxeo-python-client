@@ -1,9 +1,12 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from typing import Any, Dict, List, Optional, Text, Union
-
 from .blob import BlobInfo
+
+try:
+    from typing import Any, Dict, List, Optional, Text, Union
+except ImportError:
+    pass
 
 __all__ = ('Operation',)
 
