@@ -75,6 +75,7 @@ def georges(server):
         'lastName': 'Abitbol',
         'firstName': 'Georges',
         'username': 'georges',
+        'email': 'georges@example.com',
         'company': 'Pom Pom Gali resort',
         'password': 'Test'}
     return server.users().create(opts)

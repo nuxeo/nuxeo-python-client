@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import re
 
 from .blob import Blob, BlobInfo, FileBlob
-from .compat import get_bytes, get_text, quote, text
+from .compat import get_text, quote, text
 from .exceptions import InvalidBatchException
 
 try:

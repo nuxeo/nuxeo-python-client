@@ -5,14 +5,13 @@ import json
 import os
 import re
 import sys
-import uuid
 
 import pkg_resources
 import pytest
 import requests
 from requests import HTTPError
 
-from nuxeo.__init__ import _extract_version
+from nuxeo import _extract_version
 from nuxeo.blob import Blob
 from nuxeo.exceptions import Unauthorized
 from nuxeo.nuxeo import Nuxeo

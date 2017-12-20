@@ -24,12 +24,12 @@ Example output:
     54969ca5-0be2-4bbf-938a-3e8b4016e420
 """
 from __future__ import unicode_literals
+
 import argparse
 import os
 import re
 from collections import defaultdict
 
-from future.utils import iteritems
 from requests import HTTPError
 
 from nuxeo.compat import quote, get_bytes
@@ -85,7 +85,7 @@ def find_duplicates_in_folder(folder):
         else:
             doc_names[doc['title']].append(compute_uid_line(doc))
 
-    for (name, uids) in iteritems(doc_names):
+    for (name, uids) in doc_names.items():
         if len(uids) > 1:
             print_duplicates('/'.join([folder, name]), uids)
 
@@ -119,7 +119,7 @@ def find_duplicates_with_name(name):
         doc_paths[doc['path'].rsplit('/', 1)[0]].append(compute_uid_line(doc))
 
     no_duplicates = True
-    for (path, uids) in iteritems(doc_paths):
+    for (path, uids) in doc_paths.items():
         if len(uids) > 1:
             no_duplicates = False
             print_duplicates('/'.join([path, name]), uids)

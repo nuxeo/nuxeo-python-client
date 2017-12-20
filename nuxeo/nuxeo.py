@@ -10,7 +10,6 @@ import tempfile
 from collections import Sequence
 
 import requests
-from future.utils import iteritems
 from requests import HTTPError
 from requests.cookies import RequestsCookieJar
 
@@ -164,7 +163,7 @@ class Nuxeo(object):
 
         parameters = {param['name']: param for param in operation['params']}
 
-        for (name, value) in iteritems(params):
+        for (name, value) in params.items():
             # Check for unexpected parameters.  We use `dict.pop()` to
             # get and delete the parameter from the dict.
             try:
@@ -182,7 +181,7 @@ class Nuxeo(object):
 
         # Check for required parameters.  As of now, `parameters` may contain
         # unclaimed parameters and we just need to check for required ones.
-        for (name, parameter) in iteritems(parameters):
+        for (name, parameter) in parameters.items():
             if parameter['required']:
                 err = 'missing required parameter {!r} for operation {!r}'
                 raise ValueError(err.format(name, command))
@@ -257,12 +256,12 @@ class Nuxeo(object):
             headers.update(extra_headers)
 
         json_struct = {'params': {}}
-        for (k, v) in iteritems(params):
+        for (k, v) in params.items():
             if v is None:
                 continue
             if k == 'properties':
                 if isinstance(v, dict):
-                    s = '\n'.join(['{}={}'.format(name, value) for (name, value) in iteritems(v)])
+                    s = '\n'.join(['{}={}'.format(name, value) for (name, value) in v.items()])
                 else:
                     s = v
                 json_struct['params'][k] = s.strip()
@@ -589,7 +588,7 @@ class Nuxeo(object):
         if isinstance(e, HTTPError):
             msg = get_error_message(e)
 
-            logger.exception(u'Remote exception: {}'.format(msg))
+            logger.exception('Remote exception: {}'.format(msg))
             try:
                 exc = e.response.json()
                 message = exc.get('message')

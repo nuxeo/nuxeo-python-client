@@ -6,7 +6,6 @@ import os
 import sys
 
 import pytest
-import sys
 from requests import HTTPError
 
 from nuxeo.batchupload import BatchUpload
