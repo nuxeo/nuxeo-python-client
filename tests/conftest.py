@@ -1,5 +1,4 @@
 # coding: utf-8
-from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
@@ -76,6 +75,7 @@ def georges(server):
         'lastName': 'Abitbol',
         'firstName': 'Georges',
         'username': 'georges',
+        'email': 'georges@example.com',
         'company': 'Pom Pom Gali resort',
         'password': 'Test'}
     return server.users().create(opts)

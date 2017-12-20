@@ -2,20 +2,20 @@
 """ Nuxeo REST API Client. """
 from __future__ import unicode_literals
 
+import base64
 import json
 import logging
 import socket
-from urllib import urlencode
-
-import base64
-import requests
 import tempfile
 from collections import Sequence
+
+import requests
 from requests import HTTPError
 from requests.cookies import RequestsCookieJar
 
 from .batchupload import BatchUpload
 from .blob import Blob
+from .compat import text, urlencode, get_bytes, get_text, get_error_message
 from .directory import Directory
 from .exceptions import Unauthorized
 from .groups import Groups
@@ -33,26 +33,27 @@ __all__ = ('Nuxeo',)
 
 logger = logging.getLogger(__name__)
 
+
 CHUNK_SIZE = 8192  # Chunk size to download files
 
 PARAM_TYPES = {  # Types allowed for operations parameters
-    'blob': (unicode, Blob),
+    'blob': (text, Blob),
     'boolean': (bool,),
-    'date': (unicode,),
-    'document': (unicode,),
+    'date': (text,),
+    'document': (text,),
     'documents': (list,),
     'int': (int,),
     'integer': (int,),
-    'long': (int, long),
+    'long': (int,),
     'map': (dict,),
     'object': (object,),
     'properties': (dict,),
-    'resource': (unicode,),
+    'resource': (text,),
     'serializable': (Sequence,),
-    'string': (unicode,),
+    'string': (text,),
     'stringlist': (Sequence,),
-    'validationmethod': (unicode,),
-}  # type: Dict[unicode, Tuple[type, ...]])
+    'validationmethod': (text,),
+}  # type = Dict[Text, Tuple[type, ...]])
 
 
 def json_helper(o):
@@ -162,7 +163,7 @@ class Nuxeo(object):
 
         parameters = {param['name']: param for param in operation['params']}
 
-        for name, value in params.iteritems():
+        for (name, value) in params.items():
             # Check for unexpected parameters.  We use `dict.pop()` to
             # get and delete the parameter from the dict.
             try:
@@ -180,7 +181,7 @@ class Nuxeo(object):
 
         # Check for required parameters.  As of now, `parameters` may contain
         # unclaimed parameters and we just need to check for required ones.
-        for name, parameter in parameters.iteritems():
+        for (name, parameter) in parameters.items():
             if parameter['required']:
                 err = 'missing required parameter {!r} for operation {!r}'
                 raise ValueError(err.format(name, command))
@@ -255,12 +256,12 @@ class Nuxeo(object):
             headers.update(extra_headers)
 
         json_struct = {'params': {}}
-        for k, v in params.iteritems():
+        for (k, v) in params.items():
             if v is None:
                 continue
             if k == 'properties':
                 if isinstance(v, dict):
-                    s = '\n'.join(['{}={}'.format(name, value) for name, value in v.iteritems()])
+                    s = '\n'.join(['{}={}'.format(name, value) for (name, value) in v.items()])
                 else:
                     s = v
                 json_struct['params'][k] = s.strip()
@@ -457,7 +458,7 @@ class Nuxeo(object):
             'deviceId': device_id,
             'applicationName': application_name,
             'permission': permission,
-            'revoke': str(revoke).lower(),
+            'revoke': text(revoke).lower(),
         }
         if device_description:
             parameters['deviceDescription'] = device_description
@@ -585,8 +586,9 @@ class Nuxeo(object):
     def _log_details(self, e):
         # type: (Exception) -> None
         if isinstance(e, HTTPError):
-            logger.exception(u'Remote exception: {}'.format(
-                e.message.decode('utf-8')))
+            msg = get_error_message(e)
+
+            logger.exception('Remote exception: {}'.format(msg))
             try:
                 exc = e.response.json()
                 message = exc.get('message')
@@ -623,8 +625,12 @@ class Nuxeo(object):
         if token:
             self._auth = {'X-Authentication-Token': token}
         elif password:
-            self._auth = {'Authorization': 'Basic {}'.format(
-                base64.b64encode('{}:{}'.format(
-                    self.user_id, password).encode('utf-8')).strip())}
+            credentials = '{}:{}'.format(self.user_id, password)
+            if isinstance(credentials, text):
+                credentials = get_bytes(credentials)
+
+            b64 = get_text(base64.b64encode(credentials))
+
+            self._auth = {'Authorization': 'Basic {}'.format(b64)}
         else:
             raise ValueError('Either password or token must be provided')

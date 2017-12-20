@@ -6,6 +6,7 @@ import operator
 import pytest
 from requests import HTTPError
 
+from nuxeo.compat import get_bytes, get_error_message
 from nuxeo.document import Document
 from nuxeo.exceptions import UnavailableConvertor
 
@@ -25,7 +26,8 @@ def test_add_remove_permission(doc):
 def test_bogus_converter(doc):
     with pytest.raises(ValueError) as e:
         doc.convert({'converter': 'converterthatdoesntexist'})
-    assert e.value.message == 'Converter converterthatdoesntexist is not registered'
+    msg = get_error_message(e.value)
+    assert msg == 'Converter converterthatdoesntexist is not registered'
 
 
 def test_convert(doc):
@@ -105,7 +107,7 @@ def test_fetch_acls(doc):
 
 
 def test_fetch_blob(doc):
-    assert doc.fetch_blob() == 'foo'
+    assert doc.fetch_blob() == b'foo'
 
 
 def test_fetch_non_existing(repository):
@@ -114,9 +116,9 @@ def test_fetch_non_existing(repository):
 
 def test_fetch_rendition(doc):
     res = doc.fetch_rendition('xmlExport')
-    assert '<?xml version="1.0" encoding="UTF-8"?>' in res
+    assert b'<?xml version="1.0" encoding="UTF-8"?>' in res
     path = '<path>' + pytest.ws_python_tests_path[1:] + '</path>'
-    assert path in res
+    assert get_bytes(path) in res
 
 
 def test_fetch_renditions(doc):

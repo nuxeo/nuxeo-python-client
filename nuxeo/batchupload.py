@@ -2,9 +2,9 @@
 from __future__ import unicode_literals
 
 import re
-import urllib2
 
 from .blob import Blob, BlobInfo, FileBlob
+from .compat import get_text, quote, text
 from .exceptions import InvalidBatchException
 
 try:
@@ -54,7 +54,7 @@ class BatchUpload(object):
         """
         if self.batchid is None:
             raise InvalidBatchException('Cannot fetch blob for inexistant/deleted batch.')
-        path = self._get_path() + '/' + str(index)
+        path = self._get_path() + '/' + text(index)
         res = self._nuxeo.request(path)
         res['fileIdx'] = index
         return BlobInfo(self, res)
@@ -75,14 +75,14 @@ class BatchUpload(object):
         if self.batchid is None:
             self.batchid = self._create_batchid()
         filename = safe_filename(blob.get_name())
-        quoted_filename = urllib2.quote(filename.encode('utf-8'))
-        path = self._get_path() + '/' + str(self._upload_index)
+        quoted_filename = quote(get_text(filename))
+        path = self._get_path() + '/' + text(self._upload_index)
         headers = {
             'Cache-Control': 'no-cache',
             'X-File-Name': quoted_filename,
-            'X-File-Size': str(blob.get_size()),
+            'X-File-Size': text(blob.get_size()),
             'X-File-Type': blob.get_mimetype(),
-            'Content-Length': str(blob.get_size()),
+            'Content-Length': text(blob.get_size()),
         }
         data = blob.get_data()
         try:

@@ -23,15 +23,17 @@ Example output:
     707e6ea7-a7c1-49aa-b3bd-764d27e6f3ef
     54969ca5-0be2-4bbf-938a-3e8b4016e420
 """
+from __future__ import unicode_literals
 
 import argparse
 import os
 import re
-import urllib
 from collections import defaultdict
-from urllib2 import HTTPError
 
-from nuxeo import Nuxeo
+from requests import HTTPError
+
+from nuxeo.compat import quote, get_bytes
+from nuxeo.nuxeo import Nuxeo
 
 
 class BColors(object):
@@ -46,7 +48,7 @@ class BColors(object):
 
 
 base_url = os.environ.get('NXDRIVE_TEST_SERVER_URL',
-                          'http://localhost:8080/nuxeo'),
+                          'http://localhost:8080/nuxeo')
 auth = {
     'username': os.environ.get('NXDRIVE_TEST_USER', 'Administrator'),
     'password': os.environ.get('NXDRIVE_TEST_PASSWORD', 'Administrator'),
@@ -61,16 +63,12 @@ def color_print(text, color):
 
 def print_duplicates(path, uids):
     print('{}\'{}\'{} appears {} times with following uids:\n{}'.format(
-        BColors.OKBLUE, path, BColors.ENDC, len(uids), unicode_join(uids, '\n')))
-
-
-def unicode_join(array, spacer=''):
-    return spacer.join([x.encode('utf-8') for x in array])
+        BColors.OKBLUE, path, BColors.ENDC, len(uids), '\n'.join(uids)))
 
 
 def compute_uid_line(item):
     if item['state'] == 'deleted':
-        return unicode_join([item['uid'], ' (deleted)'])
+        return ''.join([item['uid'], ' (deleted)'])
     else:
         return item['uid']
 
@@ -87,9 +85,9 @@ def find_duplicates_in_folder(folder):
         else:
             doc_names[doc['title']].append(compute_uid_line(doc))
 
-    for name, uids in doc_names.iteritems():
+    for (name, uids) in doc_names.items():
         if len(uids) > 1:
-            print_duplicates(unicode_join([folder, name]), uids)
+            print_duplicates('/'.join([folder, name]), uids)
 
 
 def find_duplicates_of_uid(uid):
@@ -100,15 +98,15 @@ def find_duplicates_of_uid(uid):
             doc = nuxeo.repository().fetch(uid)
             query = "SELECT * FROM Document WHERE ecm:parentId = '" + doc.parentRef + "'"
             query += " AND dc:title = '" + doc.title + "'"
-            request = 'query?query=' + urllib.quote(query.encode('utf-8'), safe='!=:')
+            request = 'query?query=' + quote(get_bytes(query), safe='!=:')
             entries = nuxeo.request(request).get('entries')
             if len(entries) > 1:
-                print_duplicates(unicode_join([doc.path.rsplit('/', 1)[0], doc.title], '/'),
+                print_duplicates('/'.join([doc.path.rsplit('/', 1)[0], doc.title]),
                                  [compute_uid_line(x) for x in entries])
             else:
                 color_print('No duplicate for the document with uid={}.'.format(uid), BColors.OKGREEN)
         except HTTPError as e:
-            if e.code == 404:
+            if e.response.status_code == 404:
                 color_print('No document with uid={}.'.format(uid), BColors.FAIL)
 
 
@@ -121,12 +119,12 @@ def find_duplicates_with_name(name):
         doc_paths[doc['path'].rsplit('/', 1)[0]].append(compute_uid_line(doc))
 
     no_duplicates = True
-    for path, uids in doc_paths.iteritems():
+    for (path, uids) in doc_paths.items():
         if len(uids) > 1:
             no_duplicates = False
-            print_duplicates(unicode_join([path, name]), uids)
+            print_duplicates('/'.join([path, name]), uids)
     if no_duplicates:
-        color_print('No duplicate for {}.'.format(name.encode('utf-8')), BColors.OKGREEN)
+        color_print('No duplicate for {}.'.format(get_bytes(name)), BColors.OKGREEN)
 
 
 def main():

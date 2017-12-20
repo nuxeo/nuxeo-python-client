@@ -1,10 +1,9 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from urllib import urlencode
-
 from requests import HTTPError
 
+from .compat import urlencode
 from .document import Document
 from .exceptions import UnavailableConvertor
 from .workflow import Workflow
@@ -127,7 +126,7 @@ class Repository(object):
 
     def fetch_audit(self, path):
         # type: (Text) -> Dict[Text, Any]
-        return self.service.request(self._get_path(path) + '/@audit')
+        return self.service.request(self._get_path(path), adapter='audit')
 
     def fetch_blob(self, path, xpath='blobholder:0'):
         # type: (Text, Text) -> Union[Text, Dict[Text, Any], bytes]
@@ -161,7 +160,7 @@ class Repository(object):
 
     def fetch_workflows(self, path):
         # type: (Text) -> List[Workflow]
-        req = self.service.request(self._get_path(path) + '/@workflow')
+        req = self.service.request(self._get_path(path), adapter='workflow')
         return self.service.workflows().map(req, Workflow)
 
     def follow_transition(self, uid, name):

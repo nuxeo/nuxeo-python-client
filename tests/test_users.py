@@ -5,6 +5,7 @@ import time
 
 import pytest
 
+from nuxeo.compat import text
 from nuxeo.nuxeo import Nuxeo
 from nuxeo.users import User
 
@@ -46,7 +47,7 @@ def test_lazy_loading(server, georges):
 
 
 def test_update_user(server, georges):
-    company = str(int(round(time.time() * 1000)))
+    company = text(int(round(time.time() * 1000)))
     georges.properties['company'] = company
     georges.save()
     user = server.users().fetch('georges')

@@ -6,6 +6,8 @@ import os
 import sys
 from io import StringIO
 
+from .compat import text
+
 try:
     from typing import Any, Dict, IO, Optional, Text, Union
 except ImportError:
@@ -96,7 +98,7 @@ class BlobInfo(object):
         # type: () -> Dict[Text, Text]
         return {
             'upload-batch': self.get_batch_id(),
-            'upload-fileId': str(self.fileIdx).decode('utf-8'),
+            'upload-fileId': text(self.fileIdx),
         }
 
 

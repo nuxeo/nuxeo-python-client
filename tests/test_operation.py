@@ -1,9 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from requests import HTTPError
-
 import pytest
+from requests import HTTPError
 
 
 def test_document_fetch_by_property(server):

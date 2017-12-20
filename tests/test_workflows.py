@@ -33,13 +33,15 @@ def test_basic_workflow(workflows, doc, georges):
             'participants': ['user:Administrator'],
             'assignees': ['user:Administrator'],
             'end_date': '2011-10-23T12:00:00.00Z'}
-        task.delegate(georges.id, comment='a comment')
+        task.delegate(['user:{}'.format(georges.id)], comment='a comment')
         task.complete('start_review', infos, comment='a comment')
         assert len(doc.fetch_workflows()) == 1
         assert task.state == 'ended'
         tasks = workflow.fetch_tasks()
         assert len(tasks) == 1
         task = tasks[0]
+        # NXPY-12: Reassign task give _read() error
+        task.reassign(['user:{}'.format(georges.id)], comment='a comment')
         task.complete('validate', {'comment': 'a comment'})
         assert task.state == 'ended'
         assert not doc.fetch_workflows()
