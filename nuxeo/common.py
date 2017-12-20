@@ -30,9 +30,9 @@ class NuxeoObject(object):
 
     def __repr__(self):
         # type: () -> Text
-        ret = ', '.join('{}={!r}'.format(*item) for item in vars(self).items()
-                        if not item[0].startswith('_'))
-        return u'<{}({})>'.format(type(self).__name__, ret)
+        ret = ', '.join('{}={!r}'.format(key, value) for (key, value) in vars(self).items()
+                        if not key.startswith('_'))
+        return '<{} ({})>'.format(type(self).__name__, ret)
 
     def delete(self):
         # type: () -> None
@@ -69,14 +69,15 @@ class NuxeoAutosetObject(NuxeoObject):
 
     def __getattr__(self, item):
         # type: (str) -> Text
-        if hasattr(self, item) or item.startswith('_'):
-            return super(NuxeoObject, self).__getattribute__(item)
         if self._lazy:
             raise RuntimeError(
                 'Lazy loading is not yet implemented - use load()')
-        if self._autoset and item in self.properties:
-            return self.properties[item]
-        raise AttributeError
+        try:
+            return super(NuxeoObject, self).__getattribute__(item)
+        except AttributeError:
+            if self._autoset and item in self.properties:
+                return self.properties[item]
+            raise
 
     def __setattr__(self, name, value):
         # type: (str, Any) -> None

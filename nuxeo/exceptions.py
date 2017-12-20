@@ -1,6 +1,9 @@
 # coding: utf-8
+from __future__ import unicode_literals
 
 from requests import HTTPError
+
+from .compat import text
 
 try:
     from typing import Any, Dict, Optional, Text
@@ -30,12 +33,12 @@ class Unauthorized(HTTPError):
         if http_error:
             self.__dict__.update(http_error.__dict__)
         self.user_id = user_id
-        self.message = str(self)
+        self.message = text(self)
 
     def __str__(self):
         # type: () -> Text
         return '\'{!s}\' is not authorized to access {!s} with the provided credentials'.format(
-            self.user_id.encode('utf-8'), self.response.url)
+            self.user_id, self.response.url)
 
 
 class UnavailableConvertor(Exception):
@@ -48,7 +51,7 @@ class UnavailableConvertor(Exception):
     def __init__(self, options):
         # type: (Dict[Text, Any]) -> None
         self.options = options
-        self.message = str(self)
+        self.message = text(self)
 
     def __str__(self):
         # type: () -> Text

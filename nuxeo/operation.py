@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from .blob import BlobInfo
+from .compat import text
 
 try:
     from typing import Any, Dict, List, Optional, Text, Union
@@ -36,7 +37,7 @@ class Operation(object):
                    + 'upload/'
                    + input_.service.batchid
                    + '/'
-                   + str(input_.fileIdx)
+                   + text(input_.fileIdx)
                    + '/execute/'
                    + self._type)
             input_ = None

@@ -24,6 +24,9 @@ Technical changes
 -  Added ``Document.is_locked()``
 -  Removed ``FileBlob.get_upload_buffer()``
 -  Removed ``FileBlob._read_data()``
+-  Added nuxeo/compat.py::\ ``get_bytes()``
+-  Added nuxeo/compat.py::\ ``get_error_message()``
+-  Added nuxeo/compat.py::\ ``get_text()``
 -  Removed ``Nuxeo.Request``
 -  Moved ``Nuxeo.InvalidBatchException`` to
    nuxeo/exceptions.py::\ ``InvalidBatchException``

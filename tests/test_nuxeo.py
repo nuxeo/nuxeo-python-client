@@ -3,11 +3,16 @@ from __future__ import unicode_literals
 
 import json
 import os
+import re
+import sys
+import uuid
 
+import pkg_resources
 import pytest
 import requests
 from requests import HTTPError
 
+from nuxeo.__init__ import _extract_version
 from nuxeo.blob import Blob
 from nuxeo.exceptions import Unauthorized
 from nuxeo.nuxeo import Nuxeo
@@ -142,8 +147,36 @@ def test_headers(server):
     assert headers['Add1'] == 'Value3'
 
 
+def test_init(monkeypatch):
+    def missing_dist(dist):
+        raise pkg_resources.DistributionNotFound
+
+    assert re.match('\d+\.\d+\.\d+', _extract_version())
+    monkeypatch.setattr(pkg_resources, 'get_distribution', missing_dist)
+    assert re.match('\d+\.\d+\.\d+', _extract_version())
+
+
 def test_login(server):
     assert server.login()
+
+
+def test_request_token(server):
+    app_name = 'Nuxeo Drive'
+    device_id = '41f0711a-f008-4c11-b3f1-c5bddcb50d77'
+    device_descr = {
+        'cygwin': 'Windows',
+        'darwin': 'macOS',
+        'linux2': 'GNU/Linux',
+        'win32': 'Windows',
+    }.get(sys.platform)
+    permission = 'ReadWrite'
+
+    prev_auth = server._auth
+
+    token = server.request_authentication_token(app_name, device_id, device_descr, permission)
+    assert server._auth['X-Authentication-Token'] == token
+    assert server.server_reachable()
+    server._auth = prev_auth
 
 
 def test_send_wrong_method(server):
@@ -164,8 +197,8 @@ def test_server_reachable(server):
 
 def test_unauthorized(server):
     credentials = {
-        u'username': u'ミカエル',
-        u'password': u'test',
+        'username': 'ミカエル',
+        'password': 'test',
     }
     user = server.users().create(credentials)
 

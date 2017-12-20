@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import hashlib
 import os
+import sys
 
 import pytest
 import sys
@@ -67,7 +68,9 @@ def test_operation(server, batch):
         doc = server.repository(schemas=['dublincore', 'file']).fetch(
             pytest.ws_root_path + '/Document')
         assert doc.properties['file:content'] is not None
-        assert doc.fetch_blob() == 'data'
+        blob = doc.fetch_blob()
+        assert isinstance(blob, bytes)
+        assert blob == b'data'
     finally:
         doc.delete()
 
@@ -97,6 +100,20 @@ def test_iter_content(server, batch):
         doc.delete()
         os.remove(file_in)
         os.remove(file_out)
+
+
+def test_mimetype(monkeypatch):
+    test = 'test.bmp'
+    with open(test, 'wb') as f:
+        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+    try:
+        blob = FileBlob(test)
+        assert blob.get_mimetype() == 'image/bmp'
+        monkeypatch.setattr(sys, 'platform', 'win32')
+        blob = FileBlob(test)
+        assert blob.get_mimetype() == 'image/x-ms-bmp'
+    finally:
+        os.remove(test)
 
 
 def test_wrong_batch_id(server):
