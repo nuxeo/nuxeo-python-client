@@ -33,7 +33,7 @@ from collections import defaultdict
 from requests import HTTPError
 
 from nuxeo.compat import quote, get_bytes
-from nuxeo.nuxeo import Nuxeo
+from nuxeo.client import Nuxeo
 
 
 class BColors(object):
@@ -93,7 +93,7 @@ def find_duplicates_of_uid(uid):
         color_print('Not a valid uid.', BColors.FAIL)
     else:
         try:
-            doc = nuxeo.documents.get(uid)
+            doc = nuxeo.documents.get(uid=uid)
             query = "SELECT * FROM Document WHERE ecm:parentId = '" + doc.parentRef + "'"
             query += " AND dc:title = '" + doc.title + "'"
             request = 'query?query=' + quote(get_bytes(query), safe='!=:')

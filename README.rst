@@ -22,7 +22,7 @@ API:
 
 .. code:: python
 
-    from nuxeo import Nuxeo
+    from nuxeo.client import Nuxeo
 
 Documentation
 -------------
@@ -46,17 +46,16 @@ client.
 Connect to the Nuxeo Platform
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way to connect to the Nuxeo Platform is the following:
+The easiest way to connect to the Nuxeo Platform with a basic authentication
+is passing a tuple containing the ``username`` and the ``password`` to the
+client, like so:
 
 .. code:: python
 
-    from nuxeo import Nuxeo
+    from nuxeo.client import Nuxeo
 
-    nuxeo = Nuxeo(
-        auth={
-            'username': 'Administrator',
-            'password': 'Administrator'
-        })
+    nuxeo = Nuxeo(auth=('Administrator', 'Administrator'))
+
 
 You can then use the ``nuxeo`` object to interact with the Platform. If you want
 to use a specific instance, you can specify the ``base_url`` like so:
@@ -64,11 +63,9 @@ to use a specific instance, you can specify the ``base_url`` like so:
 .. code:: python
 
     nuxeo = Nuxeo(
-        base_url='http://demo.nuxeo.com/nuxeo/',
-        auth={
-            'username': 'Administrator',
-            'password': 'Administrator'
-      })
+        host='http://demo.nuxeo.com/nuxeo/',
+        auth=auth=('Administrator', 'Administrator')
+        )
 
 Run NXQL queries
 ~~~~~~~~~~~~~~~~
@@ -82,13 +79,13 @@ or ``Picture`` type, and are not deleted.
 .. code:: python
 
     # Fetch a workspace
-    ws = nuxeo.repository().fetch('/default-domain/workspaces/ws')
+    ws = nuxeo.documents.get(path='/default-domain/workspaces/ws')
     # Build a query using its uid
     query = "SELECT * FROM Document WHERE ecm:ancestorId = '" + ws.uid + "'"
     query += " AND ecm:primaryType IN ('File', 'Picture')"
     query += " AND ecm:currentLifeCycleState != 'deleted'"
     request = 'query?query=' + urllib.quote(query, safe='!=:')
-    search = nuxeo.request(request, extra_headers=get_extra_headers())
+    search = nuxeo.request('GET', request)
     entries = search.get('entries')
 
 ``entries`` will be a ``list`` containing a ``dict`` for each

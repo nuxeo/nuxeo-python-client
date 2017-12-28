@@ -46,7 +46,7 @@ Manipulate documents
 
 .. code:: python
 
-    doc = nuxeo.documents.get('/a-folder')
+    doc = nuxeo.documents.get(path='/a-folder')
     doc.properties['dc:title'] ='bar'
     doc.save()
 

@@ -8,6 +8,7 @@ To install it:
 from nuxeo.client import Nuxeo
 from nuxeo.models import Document
 
+
 def main():
 
     # Connection
@@ -47,7 +48,7 @@ def main():
     proxy = operation.execute()
     print(proxy)
 
-    entry = nuxeo.documents.get(proxy['uid'])
+    entry = nuxeo.documents.get(uid=proxy['uid'])
     print(entry.type)
 
 
