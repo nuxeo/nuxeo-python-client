@@ -5,51 +5,49 @@ To install it:
     pip install nuxeo
 """
 
-from nuxeo.nuxeo import Nuxeo
-
+from nuxeo.client import Nuxeo
+from nuxeo.models import Document
 
 def main():
 
     # Connection
-    base_url = 'http://127.0.0.1:8080/nuxeo/'
-    auth = {'username': 'Administrator', 'password': 'Administrator'}
-    nuxeo = Nuxeo(base_url=base_url, auth=auth)
+    host = 'http://127.0.0.1:8080/nuxeo/'
+    auth = ('Administrator', 'Administrator')
+    nuxeo = Nuxeo(host=host, auth=auth)
 
     # Create a workspace
-    new_ws = {
-        'entity-type': 'Document',
-        'name': 'Tests',
-        'type': 'Workspace',
-        'properties': {
+    new_ws = Document(
+        name='Tests',
+        type='Workspace',
+        properties={
             'dc:title': 'Tests',
-        }
-    }
-    workspace = nuxeo.repository().create('/default-domain/workspaces', new_ws)
+        })
+    workspace = nuxeo.documents.create(new_ws, parent_path='/default-domain/workspaces')
     print(workspace)
 
     # Create a document
-    operation = nuxeo.operation('Document.Create')
-    operation.params({
+    operation = nuxeo.operations.new('Document.Create')
+    operation.params = {
         'type': 'File',
         'name': 'foo.txt',
         'properties': {'dc:title': 'foo.txt', 'dc:description': 'bar'}
-    })
-    operation.input('/')
+    }
+    operation.input_obj = '/'
     doc = operation.execute()
     print(doc)
 
     # Create a proxy live
-    operation = nuxeo.operation('Document.CreateLiveProxy')
-    operation.params({
+    operation = nuxeo.operations.new('Document.CreateLiveProxy')
+    operation.params = {
         # NOTICE - ATTENTION
         # CREATE A WORKSPACE AS default-domain/workspaces/ws
         'Destination Path': '/default-domain/workspaces/ws',
-    })
-    operation.input('/' + doc['title'])
+    }
+    operation.input_obj = '/{}'.format(doc['title'])
     proxy = operation.execute()
     print(proxy)
 
-    entry = nuxeo.repository().fetch(proxy['uid'])
+    entry = nuxeo.documents.get(proxy['uid'])
     print(entry.type)
 
 

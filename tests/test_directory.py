@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.models import DirectoryEntry
+
 
 def test_create_wrong_arguments(directory):
     with pytest.raises(ValueError):
@@ -10,32 +12,32 @@ def test_create_wrong_arguments(directory):
 
 
 def test_crud(directory):
-    new_entry = {'id': 'foo', 'label': 'Foo'}
+    new_entry = DirectoryEntry(properties={'id': 'foo', 'label': 'Foo'})
     entry = directory.create(new_entry)
     assert entry.entity_type == 'directoryEntry'
     assert entry.directoryName == 'nature'
     assert entry.properties['id'] == 'foo'
-    assert entry.get_id() == 'foo'
+    assert entry.id == 'foo'
     assert entry.properties['label'] == 'Foo'
 
     entry.properties['label'] = 'Test'
     entry.save()
-    entry = directory.fetch('foo')
+    entry = directory.get('foo')
     assert entry.properties['label'] == 'Test'
     entry.delete()
 
 
 def test_fetch(directory):
-    entry = directory.fetch('article')
+    entry = directory.get('article')
     assert entry.entity_type == 'directoryEntry'
     assert entry.directoryName == 'nature'
     assert entry.properties['id'] == 'article'
-    assert entry.get_id() == 'article'
+    assert entry.id == 'article'
     assert entry.properties['label'] == 'label.directories.nature.article'
 
 
 def test_fetch_all(directory):
-    entries = directory.fetch_all()
+    entries = directory.get().entries
     assert isinstance(entries, list)
     assert entries
 

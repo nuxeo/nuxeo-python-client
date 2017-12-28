@@ -1,81 +1,78 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import socket
-
 import pytest
-from requests import HTTPError
 
 
 @pytest.fixture(scope='function')
 def workflows(server):
-    try:
-        server.repository().delete('/task-root')
-    except (HTTPError, socket.timeout):
-        pass
-    try:
-        server.repository().delete('/document-route-instances-root')
-    except (HTTPError, socket.timeout):
-        pass
-    return server.workflows()
+    for wf in server.workflows.started('SerialDocumentReview'):
+        server.workflows.delete(wf.id)
+    return server.workflows
 
 
-def test_basic_workflow(workflows, doc, georges):
+@pytest.fixture(scope='module')
+def tasks(server):
+    return server.tasks
+
+
+def test_basic_workflow(tasks, workflows, doc, georges):
     try:
         workflow = doc.start_workflow('SerialDocumentReview')
         assert workflow
-        wfs = workflows.fetch_started_workflows('SerialDocumentReview')
+        wfs = workflows.started('SerialDocumentReview')
         assert len(wfs) == 1
-        tasks = workflows.fetch_tasks()
-        assert len(tasks) == 1
-        task = tasks[0]
+        tks = tasks.get()
+        assert len(tks) == 1
+        task = tks[0]
         infos = {
             'participants': ['user:Administrator'],
             'assignees': ['user:Administrator'],
             'end_date': '2011-10-23T12:00:00.00Z'}
         task.delegate(['user:{}'.format(georges.id)], comment='a comment')
         task.complete('start_review', infos, comment='a comment')
-        assert len(doc.fetch_workflows()) == 1
+        assert len(workflows.of(doc)) == 1
         assert task.state == 'ended'
-        tasks = workflow.fetch_tasks()
-        assert len(tasks) == 1
-        task = tasks[0]
+        tks = tasks.of(workflow)
+        assert len(tks) == 1
+        task = tks[0]
         # NXPY-12: Reassign task give _read() error
         task.reassign(['user:{}'.format(georges.id)], comment='a comment')
         task.complete('validate', {'comment': 'a comment'})
         assert task.state == 'ended'
-        assert not doc.fetch_workflows()
+        assert not workflows.of(doc)
     finally:
         georges.delete()
 
 
-def test_get_workflows(workflows):
+def test_get_workflows(tasks, workflows):
     assert workflows.start('SerialDocumentReview')
-    wfs = workflows.fetch_started_workflows('SerialDocumentReview')
+    wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
-    assert len(workflows.fetch_tasks()) == 1
-    tasks = workflows.fetch_tasks(
-        {'workflowInstanceId': wfs[0].get_id()})
-    assert len(tasks) == 1
-    tasks = workflows.fetch_tasks({'workflowInstanceId': 'unknown'})
-    assert not tasks
-    tasks = workflows.fetch_tasks(
-        {'workflowInstanceId': wfs[0].get_id(), 'userId': 'Administrator'})
-    assert len(tasks) == 1
-    tasks = workflows.fetch_tasks(
-        {'workflowInstanceId': wfs[0].get_id(),
-         'userId': 'Georges Abitbol'})
-    assert not tasks
-    tasks = workflows.fetch_tasks(
-        {'workflowInstanceId': wfs[0].get_id(),
-         'workflowModelName': 'SerialDocumentReview'})
-    assert len(tasks) == 1
-    tasks = workflows.fetch_tasks({'workflowModelName': 'foo'})
-    assert not tasks
+    assert len(tasks.get()) == 1
+    tks = tasks.get({'workflowInstanceId': wfs[0].id})
+    assert len(tks) == 1
+    tks = tasks.get({'workflowInstanceId': 'unknown'})
+    assert not tks
+    tks = tasks.get(
+        {'workflowInstanceId': wfs[0].id, 'userId': 'Administrator'})
+    assert len(tks) == 1
+    tks = tasks.get({
+        'workflowInstanceId': wfs[0].id,
+        'userId': 'Georges Abitbol'
+    })
+    assert not tks
+    tks = tasks.get({
+        'workflowInstanceId': wfs[0].id,
+        'workflowModelName': 'SerialDocumentReview'
+    })
+    assert len(tks) == 1
+    tks = tasks.get({'workflowModelName': 'foo'})
+    assert not tks
 
 
 def test_fetch_graph(workflows):
     assert workflows.start('SerialDocumentReview')
-    wfs = workflows.fetch_started_workflows('SerialDocumentReview')
+    wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
-    assert wfs[0].fetch_graph()
+    assert wfs[0].graph()

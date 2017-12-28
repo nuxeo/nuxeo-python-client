@@ -1,88 +1,59 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from .common import NuxeoObject, NuxeoService
-
-try:
-    from typing import Any, Dict, Text, Union
-except ImportError:
-    pass
-
-__all__ = ('Group', 'Groups')
+from .endpoint import APIEndpoint
+from .models import Group
 
 
-class Group(NuxeoObject):
-    """ Represent a Group on the server. """
+class API(APIEndpoint):
+    def __init__(self, client, endpoint='group', headers=None):
+        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
+        self.query = '?fetch.group=memberUsers&fetch.group=memberGroups'
+        super(API, self).__init__(
+            client, endpoint=endpoint, cls=Group, headers=headers)
 
-    entity_type = 'group'
-
-    def __init__(self, obj, service):
-        # type: (Dict[Text, Any], Groups) -> None
-        super(Group, self).__init__(obj, service)
-        self._entity_type = 'group'
-        self.groupname = obj['groupname']
-        self.grouplabel = obj['grouplabel']
-        self.memberGroups = obj.get('memberGroups', [])
-        self.memberUsers = obj.get('memberUsers', [])
-
-    def get_id(self):
-        # type: () -> Text
-        return self.groupname
-
-
-class Groups(NuxeoService):
-    """ Groups management. """
-
-    def __init__(self, nuxeo):
-        # type: (Nuxeo) -> None
-        super(Groups, self).__init__(nuxeo, 'group', Group)
-        self._query = '?fetch.group=memberUsers&fetch.group=memberGroups'
-
-    def create(self, obj):
-        # type: (Union[Dict[Text, Any], Group]) -> Group
+    def get(self, group_id=None):
+        # type: (Optional[Text]) -> Group
         """
-        Create a new group.
+        Get the detail of a group.
 
-        :param obj:
-        :return: Group created
+        :param group_id: the id of the group
+        :return: the group
         """
-        args = self._get_args(obj)
-        req = self._nuxeo.request(
-            self._path + self._query, method='POST', body=args)
-        return self._object_class(req, self)
+        request_path = '{}{}'.format(group_id, self.query)
+        return super(API, self).get(request_path=request_path)
 
-    def get(self, uid):
-        # type: (Text) -> Dict[Text, Any]
+    def post(self, group):
+        # type: (Group) -> Group
         """
-        Get a group.
+        Create a group.
 
-        :param uid: Group name
-        :return:
+        :param group: the group to create
+        :return: the created group
         """
-        return self._nuxeo.request(self._path + '/' + uid + self._query)
+        return super(API, self).post(resource=group, request_path=self.query)
 
-    def update(self, obj):
-        # type: (Union[Dict[Text, Any], Group]) -> None
+    def create(self, group):
+        # type: (Group) -> Group
+        """ Alias for post(). """
+        return self.post(group)
+
+    def put(self, group):
+        # type: (Group) -> Group
         """
-        Update the group.
+        Update a group.
 
-        :param obj: Group object
+        :param group: the group to update
+        :return: the updated group
         """
-        args = self._get_args(obj)
-        self._nuxeo.request(self._path + '/' + obj.get_id() + self._query,
-                            body=args, method='PUT')
+        return super(API, self).put(group)
 
-    def _get_args(self, obj):
-        # type: (Union[Dict[Text, Any], Group]) -> Dict[Text, Any]
-        args = {'entity-type': self._object_class.entity_type}
-        if isinstance(obj, self._object_class):
-            args['groupname'] = obj.groupname
-            args['grouplabel'] = obj.grouplabel
-            args['memberUsers'] = obj.memberUsers
-            args['memberGroups'] = obj.memberGroups
-        elif isinstance(obj, dict):
-            args.update(obj)
-        else:
-            err = 'Need a dictionary of properties or a {} object'
-            raise ValueError(err.format(self._object_class))
-        return args
+    def delete(self, group_id):
+        # type: (Text) -> Group
+        """
+        Delete a group.
+
+        :param group_id: the id of the group to delete
+        :return: the deleted group
+        """
+        return super(API, self).delete(group_id)

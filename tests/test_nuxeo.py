@@ -2,19 +2,18 @@
 from __future__ import unicode_literals
 
 import json
-import os
-import re
 import sys
 
+import os
 import pkg_resources
 import pytest
-import requests
-from requests import HTTPError
+import re
 
 from nuxeo import _extract_version
-from nuxeo.blob import Blob
-from nuxeo.exceptions import Unauthorized
-from nuxeo.nuxeo import Nuxeo
+from nuxeo.client import Nuxeo
+from nuxeo.compat import get_bytes
+from nuxeo.exceptions import HTTPError, Unauthorized
+from nuxeo.models import Blob, User
 
 
 @pytest.mark.parametrize('method, params, is_valid', [
@@ -56,71 +55,39 @@ from nuxeo.nuxeo import Nuxeo
 ])
 def test_check_params(method, params, is_valid, server):
     if is_valid:
-        server.check_params(method, params)
+        server.operations.check_params(method, params)
     else:
         with pytest.raises(TypeError):
-            server.check_params(method, params)
+            server.operations.check_params(method, params)
 
 
 def test_check_params_unknown_operation(server):
     with pytest.raises(ValueError):
-        server.check_params('alien', {})
+        server.operations.check_params('alien', {})
 
 
 def test_check_params_unknown_param(server):
     with pytest.raises(ValueError):
-        server.check_params('Document.Query',
-                            {'alien': 'alien'})
-
-
-def test_drive_config(monkeypatch, server):
-
-    def mock_server_error(*args, **kwargs):
-        def mock_HTTP():
-            return HTTPError('Mock error')
-        mock_response = requests.Response()
-        mock_response.status_code = 404
-        mock_response.raise_for_status = mock_HTTP
-        return mock_response
-
-    def mock_invalid_response(*args, **kwargs):
-        return requests.Response()
-
-    config = server.drive_config()
-    assert isinstance(config, dict)
-    if config:
-        assert 'beta_channel' in config
-        assert 'delay' in config
-        assert 'handshake_timeout' in config
-        assert 'log_level_file' in config
-        assert 'timeout' in config
-        assert 'update_check_delay' in config
-        assert 'ui' in config
-
-    monkeypatch.setattr(requests.Session, 'request', mock_server_error)
-    assert not server.drive_config()
-    monkeypatch.undo()
-    monkeypatch.setattr(requests.Session, 'request', mock_invalid_response)
-    assert not server.drive_config()
-    monkeypatch.undo()
+        server.operations.check_params(
+            'Document.Query', {'alien': 'alien'})
 
 
 def test_encoding_404_error(server):
-    rest_url = server.rest_url
-    server.rest_url = 'http://localhost:8080/'
+    url = server.client.host
+    server.client.host = 'http://localhost:8080/'
 
     try:
         with pytest.raises(HTTPError) as e:
-            server.repository().fetch('/')
-        assert e.value.response.status_code == 404
+            server.documents.get(path='/')
+        assert e.value.status == 404
     finally:
-        server.rest_url = rest_url
+        server.client.host = url
 
 
 def test_file_out(server):
-    operation = server.operation('Document.GetChild')
-    operation.params({'name': 'workspaces'})
-    operation.input('/default-domain')
+    operation = server.operations.new('Document.GetChild')
+    operation.params = {'name': 'workspaces'}
+    operation.input_obj = '/default-domain'
     file_out = operation.execute(file_out='test')
     with open(file_out, 'rb') as f:
         file_content = json.loads(f.read())
@@ -133,19 +100,6 @@ def test_get_operations(server):
     assert server.operations
 
 
-def test_headers(server):
-    server.header('Add1', 'Value1')
-    headers = server.headers()
-    assert headers['Add1'] == 'Value1'
-    extras = {
-        'Add2': 'Value2',
-        'Add1': 'Value3',
-    }
-    headers = server.headers(extras)
-    assert headers['Add2'] == 'Value2'
-    assert headers['Add1'] == 'Value3'
-
-
 def test_init(monkeypatch):
     def missing_dist(dist):
         raise pkg_resources.DistributionNotFound
@@ -153,10 +107,6 @@ def test_init(monkeypatch):
     assert re.match('\d+\.\d+\.\d+', _extract_version())
     monkeypatch.setattr(pkg_resources, 'get_distribution', missing_dist)
     assert re.match('\d+\.\d+\.\d+', _extract_version())
-
-
-def test_login(server):
-    assert server.login()
 
 
 def test_request_token(server):
@@ -170,52 +120,50 @@ def test_request_token(server):
     }.get(sys.platform)
     permission = 'ReadWrite'
 
-    prev_auth = server._auth
+    prev_auth = server.client.auth
 
-    token = server.request_authentication_token(app_name, device_id, device_descr, permission)
-    assert server._auth['X-Authentication-Token'] == token
-    assert server.server_reachable()
-    server._auth = prev_auth
+    token = server.client.request_auth_token(device_id, permission, app_name, device_descr)
+    assert server.client.auth.token == token
+    assert server.client.is_reachable()
+    server.client.auth = prev_auth
 
 
 def test_send_wrong_method(server):
     with pytest.raises(ValueError):
-        server.send(u'http://example.org/', method="TEST")
+        server.client.request('TEST', 'example')
 
 
 def test_server_reachable(server):
-    assert server.server_reachable()
-    base_url = server.base_url
-    server.base_url = 'http://example.org/'
+    assert server.client.is_reachable()
+    url = server.client.host
+    server.client.host = 'http://example.org'
 
     try:
-        assert not server.server_reachable()
+        assert not server.client.is_reachable()
     finally:
-        server.base_url = base_url
+        server.client.host = url
 
 
 def test_unauthorized(server):
-    credentials = {
-        'username': 'ミカエル',
-        'password': 'test',
-    }
-    user = server.users().create(credentials)
+    username = 'ミカエル'
+    password = 'test'
+    user = server.users.create(
+        User(properties={
+            'username': username,
+            'password': password
+        }))
 
     try:
         new_server = Nuxeo(
-            base_url=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
-                                    'http://localhost:8080/nuxeo'),
-            auth=credentials)
+            host=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
+                                'http://localhost:8080/nuxeo'),
+            auth=(get_bytes(username), password))
 
         with pytest.raises(Unauthorized):
-            new_server.users().create({
-                'username': 'another_one',
-                'password': 'test'
-            })
+            new_server.users.create(
+                User(properties={
+                    'username': 'another_one',
+                    'password': 'test'
+                }))
     finally:
         user.delete()
-
-
-def test_update_auth_missing_arg(server):
-    with pytest.raises(ValueError):
-        server._update_auth()

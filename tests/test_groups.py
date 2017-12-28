@@ -6,43 +6,50 @@ import time
 import pytest
 
 from nuxeo.compat import text
+from nuxeo.models import Group
 
 
 @pytest.fixture(scope='function')
 def group(server):
-    opts = {'groupname': 'plops',
-            'grouplabel': 'Group Test',
-            'memberUsers': ['Administrator'],
-            'memberGroups': ['Administrators']}
-    return server.groups().create(opts)
+    group = Group(
+        groupname='plops',
+        grouplabel='Group Test',
+        memberUsers=['Administrator'],
+        memberGroups=['Administrators'])
+    return server.groups.create(group)
 
 
 def test_create_delete_group_dict(server, group):
-    assert group.groupname == 'plops'
-    assert group.grouplabel == 'Group Test'
-    assert group.memberUsers == ['Administrator']
-    assert group.memberGroups == ['Administrators']
-    group.delete()
-    assert not server.groups().exists('plops')
+    try:
+        group = server.groups.get('plops')
+        assert group.groupname == 'plops'
+        assert group.grouplabel == 'Group Test'
+        assert group.memberUsers == ['Administrator']
+        assert group.memberGroups == ['Administrators']
+    finally:
+        group.delete()
+        assert not server.groups.exists('plops')
 
 
 def test_create_wrong_arguments(server):
     with pytest.raises(ValueError):
-        server.groups().create(1)
+        server.groups.create(1)
 
 
 def test_fetch(server):
-    assert server.groups().fetch('administrators')
+    assert server.groups.get('administrators')
 
 
 def test_fetch_unknown_group(server):
-    assert not server.groups().exists('admins')
+    assert not server.groups.exists('admins')
 
 
 def test_update_group(server, group):
-    grouplabel = text(int(round(time.time() * 1000)))
-    group.grouplabel = grouplabel
-    group.save()
-    group = server.groups().fetch('plops')
-    assert group.grouplabel == grouplabel
-    group.delete()
+    try:
+        grouplabel = text(int(round(time.time() * 1000)))
+        group.grouplabel = grouplabel
+        group.save()
+        group = server.groups.get('plops')
+        assert group.grouplabel == grouplabel
+    finally:
+        group.delete()

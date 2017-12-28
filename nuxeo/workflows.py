@@ -1,0 +1,109 @@
+# coding: utf-8
+from __future__ import unicode_literals
+
+from .endpoint import APIEndpoint
+from .models import Task, Workflow
+
+
+class API(APIEndpoint):
+    def __init__(self, client, endpoint='workflow', headers=None):
+        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
+        super(API, self).__init__(
+            client, endpoint=endpoint, cls=Workflow, headers=headers)
+
+    def get(self, workflow_id=None):
+        # type: (Optional[Text]) -> Workflow
+        """
+        Get the detail of a workflow.
+
+        :param workflow_id: the id of the workflow
+        :return: the workflow
+        """
+        return super(API, self).get(request_path=workflow_id)
+
+    def of(self, document):
+        # type: (Document) -> Union[Workflow, List[Workflow]]
+        """
+        Get the workflows of a document.
+
+        :param document: the document
+        :return: the corresponding workflows
+        """
+        self.endpoint = self.client.api_path
+        request_path = 'id/{}/@workflow'.format(document.uid)
+        workflows = super(API, self).get(request_path=request_path)
+        self.endpoint = '{}/workflow'.format(self.client.api_path)
+        return workflows
+
+    def post(self, **kwargs):
+        raise NotImplementedError
+
+    def put(self, **kwargs):
+        raise NotImplementedError
+
+    def delete(self, workflow_id):
+        # type: (Text) -> Workflow
+        """
+        Delete a workflow.
+
+        :param workflow_id: the id of the workflow to delete
+        :return: the deleted workflow
+        """
+        return super(API, self).delete(workflow_id)
+
+    def start(self, model, options=None):
+        # type: (Text, Optional[Dict[Text, Any]]) -> Workflow
+        """
+        Start a workflow.
+
+        :param model: the workflow to start
+        :param options: options for the workflow
+        :return: the created workflow
+        """
+        data = {
+            'workflowModelName': model,
+            'entity-type': 'workflow'
+        }
+        options = options or {}
+        if 'attachedDocumentIds' in options:
+            data['attachedDocumentIds'] = options['attachedDocumentIds']
+        if 'variables' in options:
+            data['variables'] = options['variables']
+
+        workflow = super(API, self).post(data)
+        return workflow
+
+    def started(self, model):
+        # type: (Text) -> List[Workflow]
+        """
+        Get started workflows having the specified model.
+
+        :param model: the workflow model
+        :return: the started workflows
+        """
+        return super(API, self).get(params={'workflowModelName': model}, default=[])
+
+    def graph(self, workflow):
+        # type: (Text) -> Dict[Text, Any]
+        """
+        Get the graph of the workflow in JSON format.
+
+        :param workflow: the worklow to get the graph from
+        :return: the graph
+        """
+        request_path = '{}/graph'.format(workflow.id)
+        return super(API, self).get(request_path=request_path)
+
+    def tasks(self, options=None):
+        # type: (Optional[Dict[Text, Text]]) -> List[Task]
+        """
+        Get a list of tasks following the (optional) constraints.
+
+        :param options: the options
+        :return: the corresponding list of tasks
+        """
+
+        self.endpoint = '{}/task'.format(self.client.api_path)
+        tasks = super(API, self).get(resource_cls=Task, params=options)
+        self.endpoint = '{}/workflow'.format(self.client.api_path)
+        return tasks

@@ -1,15 +1,14 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import os
 import socket
 
+import os
 import pytest
-from requests import HTTPError
 
-from nuxeo.blob import BufferBlob
-from nuxeo.document import Document
-from nuxeo.nuxeo import Nuxeo
+from nuxeo.client import Nuxeo
+from nuxeo.exceptions import HTTPError
+from nuxeo.models import Document, BufferBlob, User
 
 
 def pytest_namespace():
@@ -24,36 +23,35 @@ def pytest_namespace():
 
 
 @pytest.fixture(scope='function', autouse=True)
-def cleanup(server, repository):
+def cleanup(server):
     try:
-        doc = repository.fetch(pytest.ws_root_path)
-        params = {'pageProvider': 'CURRENT_DOC_CHILDREN',
-                  'queryParams': [doc.uid]}
-        docs = repository.query(params)
-        for doc in docs['entries']:
+        docs = server.documents.get_children(path=pytest.ws_root_path)
+        for doc in docs:
             doc.delete()
     except (HTTPError, socket.timeout):
         pass
 
 
 @pytest.fixture(scope='function')
-def doc(server, repository):
-    new_doc = {
+def doc(server):
+    new_doc = Document.parse({
         'name': pytest.ws_python_test_name,
         'type': 'File',
         'properties': {
             'dc:title': 'bar.txt',
         },
-    }
-    doc = repository.create(pytest.ws_root_path, new_doc)
+    })
+    doc = server.documents.create(
+        new_doc, parent_path=pytest.ws_root_path)
     assert doc is not None
     assert isinstance(doc, Document)
     assert doc.path == pytest.ws_python_tests_path
     assert doc.type == 'File'
     assert doc.properties['dc:title'] == 'bar.txt'
 
-    blob = BufferBlob('foo', 'foo.txt', 'text/plain')
-    blob = server.batch_upload().upload(blob)
+    blob = BufferBlob(data='foo', name='foo.txt', mimetype='text/plain')
+    batch = server.uploads.batch()
+    blob = batch.upload(blob)
     doc.properties['file:content'] = blob
     doc.save()
     return doc
@@ -61,9 +59,9 @@ def doc(server, repository):
 
 @pytest.fixture(scope='module')
 def directory(server):
-    directory = server.directory('nature')
+    directory = server.directories.get('nature')
     try:
-        directory.fetch('foo').delete()
+        directory.delete('foo')
     except HTTPError:
         pass
     return directory
@@ -71,23 +69,28 @@ def directory(server):
 
 @pytest.fixture(scope='function')
 def georges(server):
-    opts = {
-        'lastName': 'Abitbol',
-        'firstName': 'Georges',
-        'username': 'georges',
-        'email': 'georges@example.com',
-        'company': 'Pom Pom Gali resort',
-        'password': 'Test'}
-    return server.users().create(opts)
+    georges = User(
+        properties={
+            'lastName': 'Abitbol',
+            'firstName': 'Georges',
+            'username': 'georges',
+            'email': 'georges@example.com',
+            'company': 'Pom Pom Gali resort',
+            'password': 'Test'
+        })
+    return server.users.create(georges)
 
 
 @pytest.fixture(scope='module')
 def repository(server):
-    return server.repository(schemas=['dublincore'])
+    return server.documents
 
 
 @pytest.fixture(scope='module')
 def server():
-    return Nuxeo(base_url=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
-                                         'http://localhost:8080/nuxeo'),
-                 auth={'username': 'Administrator', 'password': 'Administrator'})
+    server = Nuxeo(host=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
+                                       'http://localhost:8080/nuxeo'),
+                   auth=('Administrator', 'Administrator'))
+    server.client.set(schemas=['dublincore'])
+    return server
+

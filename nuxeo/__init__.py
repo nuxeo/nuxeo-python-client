@@ -16,12 +16,9 @@ Contributors:
 """
 from __future__ import unicode_literals
 
-from os import path
-
 import pkg_resources
+from os import path
 from setuptools.config import read_configuration
-
-from .nuxeo import Nuxeo
 
 try:
     from typing import Text

@@ -11,9 +11,9 @@ right request header for you, and you'll just get the status back.
 
 .. code:: python
 
-    operation = nuxeo.operation('Blob.AttachOnDocument')
-    operation.params({'document':'/foo'})
-    operation.input(uploaded)
+    operation = nuxeo.operations.new('Blob.AttachOnDocument')
+    operation.params = {'document':'/foo'}
+    operation.input_obj = uploaded
     res = operation.execute(void_op=True)  # res will have no content
 
 
@@ -24,22 +24,22 @@ Nuxeo Drive, but you can also run it on an entire Workspace.
 
 .. code:: python
 
-    operation = nuxeo.operation('NuxeoDrive.SetSynchronization')
-    operation.params({
+    operation = nuxeo.operations.new('NuxeoDrive.SetSynchronization')
+    operation.params = {
         'enable': True
-    })
-    operation.input('/My Folder')
+    }
+    operation.input_obj = '/My Folder'
     operation.execute()
 
 **Log something on the server**
 
 .. code:: python
 
-    operation = nuxeo.operation('Log')
-    operation.params({
+    operation = nuxeo.operations.new('Log')
+    operation.params = {
         'level': 'info',
         'message': 'This is a log message'
-    })
+    }
     operation.execute()
 
 **Query the audit log**
@@ -53,8 +53,8 @@ If you want to retrieve the audit logs starting from a specific
     query += lowerBound
     query += ' order by log.eventDate DESC'
 
-    operation = nuxeo.operation('Audit.Query')
-    operation.params({
+    operation = nuxeo.operations.new('Audit.Query')
+    operation.params = {
         'query': query
-    })
+    }
     results = operation.execute()

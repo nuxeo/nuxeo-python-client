@@ -5,8 +5,9 @@ Work with documents
 
 .. code:: python
 
-    default_repository = nuxeo.repository()  # 'default' repository
-    test_repository = nuxeo.repository('test')  # 'test' repository
+    default_repository = nuxeo.documents  # 'default' repository
+    nuxeo.client.set(repository='test')
+    test_repository = nuxeo.documents  # 'test' repository
 
 Manipulate documents
 ~~~~~~~~~~~~~~~~~~~~
@@ -15,49 +16,45 @@ Manipulate documents
 
 .. code:: python
 
-    nuxeo.repository().fetch('/')
+    nuxeo.documents.get('/')
 
 **Create a new workspace**
 
 .. code:: python
 
-    new_ws = {
-        'entity-type': 'document',
-        'name': 'ws',
-        'type': 'Workspace',
-        'properties': {
+    new_ws = Document(
+        name='ws',
+        type='Workspace',
+        properties={
             'dc:title': 'ws',
-        }
-    }
-    ws = nuxeo.repository().create('/', new_ws)
+        })
+    ws = nuxeo.documents.create(new_ws, parent_path='/')
 
 **Create a new folder**
 
 .. code:: python
 
-    new_folder = {
-        'entity-type': 'document',
-        'name': 'a-folder',
-        'type': 'Folder',
-        'properties': {
+    new_folder = Document(
+        name='a-folder',
+        type='Folder',
+        properties={
             'dc:title': 'foo',
-        }
-    }
-    folder = nuxeo.repository().create('/ws', new_folder)
+        })
+    folder = nuxeo.documents.create(new_folder, parent_path='/ws')
 
 **Modify a document**
 
 .. code:: python
 
-    doc = nuxeo.repository().fetch('/a-folder')
-    doc.set({'dc:title': 'bar'})
+    doc = nuxeo.documents.get('/a-folder')
+    doc.properties['dc:title'] ='bar'
     doc.save()
 
 **Delete a document**
 
 .. code:: python
 
-    nuxeo.repository().delete('/a-folder')
+    nuxeo.documents.delete('/a-folder')
 
 **Get a document property**
 
@@ -102,7 +99,7 @@ Use workflows and tasks
 
 .. code:: python
 
-    task = workflow.fetch_tasks()
+    task = nuxeo.tasks.of(workflow)
     variables = {
         'participants': ['user:Administrator'],
         'assignees': ['user:Administrator'],
