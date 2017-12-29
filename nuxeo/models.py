@@ -17,20 +17,20 @@ class Model(object):
 
     def as_dict(self):
         """ Returns a dict representation of the resource. """
+        types = (int, float, str, list, dict, bytes, text)
         result = {}
         for key in self._valid_properties:
             val = getattr(self, key.replace('-', '_'))
+            if not val:
+                continue
             # Parse custom classes
-            if val and not isinstance(val, (int, float, str, list, dict, bytes, text)):
+            if not isinstance(val, types):
                 val = val.as_dict()
             # Parse lists of objects
-            elif val and isinstance(val, list) and \
-                    not isinstance(val[0], (int, float, str, list, dict, bytes, text)):
-                val = [e.as_dict() for e in val]
+            elif isinstance(val, list) and not isinstance(val[0], types):
+                val = [item.as_dict() for item in val]
 
-            # Add it if it's not None
-            if val is not None:
-                result[key] = val
+            result[key] = val
         return result
 
     @classmethod
@@ -58,7 +58,7 @@ class Refreshable(object):
 
     def load(self, model=None):
         # type: (Optional[Model]) -> None
-        if model is None:
+        if not model:
             model = self.service.get(self.id)
         for key in self._valid_properties:
             key = key.replace('-', '_')
@@ -84,7 +84,7 @@ class Document(Model, Refreshable):
         'properties': {},
         'facets': [],
         'changeToken': None,
-        'contextParameters': {}
+        'contextParameters': {},
     }
 
     def __init__(self, **kwargs):
@@ -118,7 +118,7 @@ class Document(Model, Refreshable):
     def delete(self):
         # type: () -> None
         """ Delete the document. """
-        self.service.delete(self.id)
+        self.service.delete(self.uid)
 
     def fetch_acls(self):
         # type: () -> Dict[Text, Any]
@@ -138,7 +138,7 @@ class Document(Model, Refreshable):
         :param xpath: the xpath to the blob
         :return: the blob
         """
-        return self.service.fetch_blob(uid=self.id, xpath=xpath)
+        return self.service.fetch_blob(uid=self.uid, xpath=xpath)
 
     def fetch_lock_status(self):
         # type: () -> Dict[Text, Any]
@@ -172,7 +172,7 @@ class Document(Model, Refreshable):
 
         :param name: transition name
         """
-        self.service.follow_transition(self.id, name)
+        self.service.follow_transition(self.uid, name)
         self.load()
 
     def get(self, prop):
@@ -202,7 +202,7 @@ class Document(Model, Refreshable):
         :param dst: The new parent path
         :param name: Rename the document if specified
         """
-        self.service.move(self.id, dst, name)
+        self.service.move(self.uid, dst, name)
         self.load()
 
     def remove_permission(self, params):
@@ -216,7 +216,7 @@ class Document(Model, Refreshable):
 
     def start_workflow(self, model, options=None):
         # type: (Text, Optional[Dict[Text, Any]]) -> Workflow
-        return self.service.start_workflow(self.id, model, options=options)
+        return self.service.start_workflow(self.uid, model, options=options)
 
     def unlock(self):
         # type: () -> Dict[Text, Any]
@@ -266,7 +266,7 @@ class DirectoryEntry(Model):
     _valid_properties = {
         'entity-type': 'directoryEntry',
         'directoryName': None,
-        'properties': {}
+        'properties': {},
     }
 
     def __init__(self, **kwargs):
@@ -294,7 +294,7 @@ class Group(Model):
         'groupname': None,
         'grouplabel': None,
         'memberUsers': [],
-        'memberGroups': []
+        'memberGroups': [],
     }
 
     def __init__(self, **kwargs):
@@ -319,7 +319,7 @@ class User(Model, Refreshable):
         'properties': {},
         'extendedGroups': [],
         'isAdministrator': False,
-        'isAnonymous': False
+        'isAnonymous': False,
     }
 
     def __init__(self, **kwargs):
@@ -342,30 +342,18 @@ class User(Model, Refreshable):
         self.service.delete(self.id)
 
 
-class Acl(Model):
-    _valid_properties = {
-        'name': None,
-        'ace': []
-    }
-
-    def __init__(self, **kwargs):
-        super(Acl, self).__init__(**kwargs)
-        for key, default in Acl._valid_properties.items():
-            setattr(self, key, kwargs.get(key, default))
-
-
 class Workflow(Model):
     _valid_properties = {
-      'entity-type': 'workflow',
-      'id': None,
-      'name': None,
-      'title': None,
-      'state': None,
-      'workflowModelName': None,
-      'initiator': None,
-      'attachedDocumentIds': [],
-      'variables': {},
-      'graphResource': None
+        'entity-type': 'workflow',
+        'id': None,
+        'name': None,
+        'title': None,
+        'state': None,
+        'workflowModelName': None,
+        'initiator': None,
+        'attachedDocumentIds': [],
+        'variables': {},
+        'graphResource': None,
     }
 
     def __init__(self, **kwargs):
@@ -386,21 +374,21 @@ class Workflow(Model):
 
 class Task(Model, Refreshable):
     _valid_properties = {
-      'entity-type': 'task',
-      'id': None,
-      'name': None,
-      'workflowInstanceId': None,
-      'workflowModelName': None,
-      'state': None,
-      'directive': None,
-      'created': None,
-      'dueDate': None,
-      'nodeName': None,
-      'targetDocumentIds': [],
-      'actors': [],
-      'comments': [],
-      'variables': {},
-      'taskInfo': {}
+        'entity-type': 'task',
+        'id': None,
+        'name': None,
+        'workflowInstanceId': None,
+        'workflowModelName': None,
+        'state': None,
+        'directive': None,
+        'created': None,
+        'dueDate': None,
+        'nodeName': None,
+        'targetDocumentIds': [],
+        'actors': [],
+        'comments': [],
+        'variables': {},
+        'taskInfo': {},
     }
 
     def __init__(self, **kwargs):
@@ -431,7 +419,7 @@ class Task(Model, Refreshable):
 class Batch(Model):
     _valid_properties = {
         'batchId': None,
-        'dropped': None
+        'dropped': None,
     }
 
     def __init__(self, **kwargs):
@@ -459,7 +447,7 @@ class Batch(Model):
         return blob
 
     def cancel(self):
-        # type: () -> Batch
+        # type: () -> None
         if not self.batchId:
             return
         self.service.delete(self.id)
@@ -472,13 +460,13 @@ class Batch(Model):
 
 class Blob(Model):
     _valid_properties = {
-      'uploaded': 'true',
-      'name': None,
-      'uploadType': None,
-      'size': 0,
-      'uploadedSize': None,
-      'fileIdx': None,
-      'mimetype': None
+        'uploaded': 'true',
+        'name': None,
+        'uploadType': None,
+        'size': 0,
+        'uploadedSize': None,
+        'fileIdx': None,
+        'mimetype': None,
     }
 
     def __init__(self, **kwargs):
@@ -565,7 +553,8 @@ class Operation(Model):
     _valid_properties = {
         'command': None,
         'input_obj': None,
-        'params': {}
+        'params': {},
+        'progress': 0,
     }
 
     def __init__(self, **kwargs):
@@ -574,6 +563,5 @@ class Operation(Model):
             setattr(self, key, kwargs.get(key, default))
 
     def execute(self, **kwargs):
-        return self.service.execute(self.command, input_obj=self.input_obj,
-                                    params=self.params, **kwargs)
+        return self.service.execute(self, **kwargs)
 

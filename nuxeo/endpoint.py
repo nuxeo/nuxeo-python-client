@@ -31,30 +31,30 @@ class APIEndpoint(object):
         self._cls = cls
 
     def get(self,
-            request_path=None,      # type: Optional[Text]
-            resource_cls=None,      # type: Optional[Type]
-            raw=False,              # type: bool
-            single_resource=False,  # type: bool
-            **kwargs                # type: **Any
+            path=None,      # type: Optional[Text]
+            cls=None,       # type: Optional[Type]
+            raw=False,      # type: bool
+            single=False,   # type: bool
+            **kwargs        # type: **Any
             ):
         # type: (...) -> Any
         """
         Gets the details for one or more resources
 
-         :param request_path: the endpoint (URL path) for the request
-         :param resource_cls: a class to use for parsing, if different than the base resource
-         :param raw: if True, directly return the content of the response
-         :param single_resource: if True, do not parse as list
-         :return one or more instances of cls parsed from the returned JSON
+        :param path: the endpoint (URL path) for the request
+        :param cls: a class to use for parsing, if different than the base resource
+        :param raw: if True, directly return the content of the response
+        :param single: if True, do not parse as list
+        :return one or more instances of cls parsed from the returned JSON
         """
 
         endpoint = self.endpoint
 
-        if not resource_cls:
-            resource_cls = self._cls
+        if not cls:
+            cls = self._cls
 
-        if request_path:
-            endpoint = '{}/{}'.format(endpoint, request_path)
+        if path:
+            endpoint = '{}/{}'.format(endpoint, path)
 
         response = self.client.request('GET', endpoint, **kwargs)
 
@@ -65,24 +65,24 @@ class APIEndpoint(object):
         else:
             json = response
 
-        if resource_cls == dict:
+        if cls == dict:
             return json
 
-        if not single_resource and isinstance(json, dict) and 'entries' in json:
+        if not single and isinstance(json, dict) and 'entries' in json:
             json = json['entries']
 
         if isinstance(json, list):
-            return [resource_cls.parse(resource, service=self) for resource in json]
+            return [cls.parse(resource, service=self) for resource in json]
 
-        return resource_cls.parse(response.json(), service=self)
+        return cls.parse(response.json(), service=self)
 
-    def post(self, resource=None, request_path=None, raw=False, **kwargs):
+    def post(self, resource=None, path=None, raw=False, **kwargs):
         # type: (Optional[Any], Optional[Text], Optional[Text], **Any) -> Any
         """
         Creates a new instance of the resource.
 
         :param resource: the data to post
-        :param request_path: the endpoint (URL path) for the request
+        :param path: the endpoint (URL path) for the request
         :param raw: if False, parse the outgoing data to JSON
         :return the created resource
         """
@@ -94,30 +94,27 @@ class APIEndpoint(object):
 
         endpoint = self.endpoint
 
-        if request_path:
-            endpoint = '{}/{}'.format(endpoint, request_path)
+        if path:
+            endpoint = '{}/{}'.format(endpoint, path)
 
         response = self.client.request(
             'POST', endpoint, data=resource, raw=raw, **kwargs)
 
         return self._cls.parse(response.json(), service=self)
 
-    def put(self, resource=None, request_path=None, **kwargs):
+    create = post  # Alias for clarity
+
+    def put(self, resource=None, path=None, **kwargs):
         # type: (Optional[Model], Optional[Text], **Any) -> Any
         """
         Edits an existing resource.
 
         :param resource: the resource instance
-        :param request_path: the endpoint (URL path) for the request
+        :param path: the endpoint (URL path) for the request
         :return the modified resource
         """
 
-        endpoint = self.endpoint
-
-        if request_path:
-            endpoint = '{}/{}'.format(endpoint, request_path)
-        else:
-            endpoint = '{}/{}'.format(endpoint, resource.id)
+        endpoint = '{}/{}'.format(self.endpoint, path or resource.id)
 
         if resource:
             resource = resource.as_dict()
@@ -143,15 +140,15 @@ class APIEndpoint(object):
         if response.content:
             return self._cls.parse(response.json(), service=self)
 
-    def exists(self, request_path):
+    def exists(self, path):
         # type: (Text) -> bool
         """
         Checks if a resource exists.
 
-        :param request_path: the endpoint (URL path) for the request
+        :param path: the endpoint (URL path) for the request
         :return: True if it exists, else False
         """
-        endpoint = '{}/{}'.format(self.endpoint, request_path)
+        endpoint = '{}/{}'.format(self.endpoint, path)
 
         try:
             self.client.request('GET', endpoint)

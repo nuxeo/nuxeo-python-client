@@ -16,8 +16,9 @@ Contributors:
 """
 from __future__ import unicode_literals
 
-import pkg_resources
 from os import path
+
+import pkg_resources
 from setuptools.config import read_configuration
 
 try:
@@ -53,4 +54,3 @@ __copyright__ = """
     See the License for the specific language governing permissions and
     limitations under the License.
 """
-__all__ = ('Nuxeo',)

@@ -72,7 +72,7 @@ class NuxeoClient(object):
 
         return self
 
-    def request(self, method, path, headers=None, data=None, raw=False, default=None, **kwargs):
+    def request(self, method, path, headers=None, data=None, raw=False, **kwargs):
         # type: (Text, Text, Optional[Dict[Text, Text]], **Any) -> requests.Response
         """
         Send a request to the Nuxeo server.
@@ -83,8 +83,6 @@ class NuxeoClient(object):
         :param data: data to put in the body
         :param raw: if True, don't parse the data to JSON
         :param kwargs: other parameters accepted by requests
-        :param default: return value in case of error. If None,
-            the error raises.
         :return: the HTTP response
         """
         url = '{}/{}'.format(self.host, path)
@@ -108,12 +106,28 @@ class NuxeoClient(object):
         if data and not isinstance(data, bytes) and not raw:
             data = json.dumps(data, default=json_helper)
 
+        default = kwargs.pop('default', None)
+
+        logger.debug('Calling {!r} with headers={!r}, params={!r} and cookies={!r}'.format(
+            url, headers, kwargs.get('params', {}), self._session.cookies))
         try:
             response = self._session.request(
                 method, url, headers=headers, auth=self.auth, data=data, **kwargs)
             response.raise_for_status()
-        except Exception as e:
-            return self._handle_error(e, default=default)
+
+            content_size = response.headers.get('content-length', self.chunk_size + 1)
+            if int(content_size) <= self.chunk_size:
+                content = response.content
+            else:
+                content = '<Too much data to display>'
+            logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
+                url, content, self._session.cookies))
+
+        except Exception as exc:
+            if default is None:
+                raise self._handle_error(exc)
+            response = default
+
         return response
 
     def request_auth_token(self,
@@ -159,14 +173,12 @@ class NuxeoClient(object):
             return response
 
     @staticmethod
-    def _handle_error(error, default=None):
-        # type: (Exception) -> Any
+    def _handle_error(error):
+        # type: (Exception) -> Exception
         """
         Log error and handle raise.
 
         :param error: the error to handle
-        :param default: if None we raise, else return default
-        :return: default or None
         """
         if isinstance(error, requests.HTTPError):
             try:
@@ -175,16 +187,12 @@ class NuxeoClient(object):
                 error_data = {'status': error.response.status_code,
                               'message': error.response.content}
 
-            error_class = Unauthorized if error_data.get('status') == 403 else HTTPError
+            error_class = Unauthorized if error_data.get('status') in (401, 403) else HTTPError
             error = error_class.parse(error_data)
             logger.exception('Remote exception: {}'.format(error))
         else:
             logger.exception(error)
-
-        if default is None:
-            raise error
-
-        return default
+        return error
 
 
 class Nuxeo(object):

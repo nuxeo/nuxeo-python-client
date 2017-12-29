@@ -18,7 +18,7 @@ def tasks(server):
 
 def test_basic_workflow(tasks, workflows, doc, georges):
     try:
-        workflow = doc.start_workflow('SerialDocumentReview')
+        workflow = workflows.start('SerialDocumentReview', doc)
         assert workflow
         wfs = workflows.started('SerialDocumentReview')
         assert len(wfs) == 1

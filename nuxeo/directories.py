@@ -22,14 +22,14 @@ class API(APIEndpoint):
         :param dir_entry: the name of an entry
         :return: the directory entries
         """
-        request_path = dir_name
+        path = dir_name
         if dir_entry:
-            request_path = '{}/{}'.format(request_path, dir_entry)
+            path = '{}/{}'.format(path, dir_entry)
 
-        entries = super(API, self).get(request_path=request_path)
-        if not dir_entry:
-            return Directory(directoryName=dir_name, entries=entries, service=self)
-        return entries
+        entries = super(API, self).get(path=path)
+        if dir_entry:
+            return entries
+        return Directory(directoryName=dir_name, entries=entries, service=self)
 
     def post(self,
              resource=None,     # type: Union[Directory, DirectoryEntry]
@@ -48,16 +48,9 @@ class API(APIEndpoint):
             if not isinstance(resource, DirectoryEntry):
                 raise ValueError('The resource should be a directory entry.')
             resource.directoryName = dir_name
-        return super(API, self).post(resource=resource, request_path=dir_name)
+        return super(API, self).post(resource=resource, path=dir_name)
 
-    def create(self,
-               resource,        # type: Union[Directory, DirectoryEntry]
-               dir_name,        # type: Text
-               dir_entry=None   # type: Optional[Text]
-               ):
-        # type: (Text) -> resource
-        """ Alias for post(). """
-        return self.post(resource, dir_name, dir_entry=dir_entry)
+    create = post  # Alias for clarity
 
     def put(self,
             resource,  # type: Union[Directory, DirectoryEntry]
@@ -73,8 +66,8 @@ class API(APIEndpoint):
         :param dir_entry: the name of the entry
         :return: the updated entry
         """
-        request_path = '{}/{}'.format(dir_name, dir_entry)
-        return super(API, self).put(resource, request_path=request_path)
+        path = '{}/{}'.format(dir_name, dir_entry)
+        return super(API, self).put(resource, path=path)
 
     def delete(self, dir_name, dir_entry=None):
         # type: (Text, Optional[Text]) -> Union[Directory, DirectoryEntry]
@@ -85,10 +78,10 @@ class API(APIEndpoint):
         :param dir_entry: the name of the entry
         :return: the deleted directory/entry
         """
-        request_path = dir_name
+        path = dir_name
         if dir_entry:
-            request_path = '{}/{}'.format(request_path, dir_entry)
-        return super(API, self).delete(request_path)
+            path = '{}/{}'.format(path, dir_entry)
+        return super(API, self).delete(path)
 
     def exists(self, dir_name, dir_entry=None):
         # type: (Text, Optional[Text]) -> bool
@@ -99,7 +92,7 @@ class API(APIEndpoint):
         :param dir_entry: the name of the entry
         :return: True if it exists, else False
         """
-        request_path = dir_name
+        path = dir_name
         if dir_entry:
-            request_path = '{}/{}'.format(request_path, dir_entry)
-        return super(API, self).exists(request_path)
+            path = '{}/{}'.format(path, dir_entry)
+        return super(API, self).exists(path)

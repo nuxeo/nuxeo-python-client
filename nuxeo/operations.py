@@ -43,105 +43,11 @@ class API(APIEndpoint):
     def get(self, **kwargs):
         return super(API, self).get()
 
-    def new(self, command, **kwargs):
-        # type: (Text, **Any) -> Operation
-        return Operation(command=command, service=self, **kwargs)
-
-    def execute(self,
-                command,                # type: Text
-                input_obj=None,         # type: Optional[Any]
-                check_params=False,     # type: bool
-                void_op=False,          # type: bool
-                headers=None,           # type: Optional[Dict[Text, Text]]
-                timeout=20,             # type: int
-                file_out=None,          # type: Optional[Text]
-                **params                # type: **Any
-                ):
-        # type: (...) -> Any
-        """
-        Execute an operation.
-
-        :param command: the name of the operation
-        :param input_obj: the input of the operation
-        :param check_params: if True, parameters will
-        be checked client-side
-        :param void_op: if True, the body of the response
-        from the server will be empty
-        :param headers: extra HTTP headers
-        :param timeout: the operation timeout
-        :param file_out: if not None, path of the file
-        where the response will be saved
-        :param params: any other parameter
-        :return: the result of the execution
-        """
-
-        if isinstance(input_obj, Blob):
-            url = '{}/upload/{}/{}/execute/{}'.format(
-                self.client.api_path, input_obj.batch_id,
-                input_obj.fileIdx, command)
-            input_obj = None
-        else:
-            url = 'site/automation/{}'.format(command)
-
-        if 'params' in params:
-            params = params['params']
-
-        if check_params:
-            self.check_params(command, params)
-
-        headers = headers or {}
-        if self.headers:
-            headers.update(self.headers)
-        if void_op:
-            headers['X-NXVoidOperation'] = 'true'
-
-        data = {'params': {}}
-        for (k, v) in params.items():
-            if v is None:
-                continue
-            if k == 'properties':
-                if isinstance(v, dict):
-                    s = '\n'.join(['{}={}'.format(name, value) for (name, value) in v.items()])
-                else:
-                    s = v
-                data['params'][k] = s.strip()
-            else:
-                data['params'][k] = v
-
-        if input_obj:
-            if isinstance(input_obj, list):
-                data['input'] = "docs:" + ",".join(input_obj)
-            else:
-                data['input'] = input_obj
-
-        resp = self.client.request('POST', url, data=data, headers=headers, timeout=timeout)
-
-        action = self.get_action()
-        if action and action.progress is None:
-            action.progress = 0
-
-        if file_out:
-            locker = self.lock_path(file_out)
-            try:
-                with open(file_out, 'wb') as f:
-                    for chunk in resp.iter_content(chunk_size=self.client.chunk_size):
-                        if action:
-                            action.progress += self.client.chunk_size
-                        f.write(chunk)
-                return file_out
-            finally:
-                self.unlock_path(file_out, locker)
-        else:
-            try:
-                return resp.json()
-            except ValueError:
-                return resp.content
-
     def put(self, resource, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def delete(self, resource_id):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def dict(self):
@@ -202,11 +108,96 @@ class API(APIEndpoint):
                 err = 'missing required parameter {!r} for operation {!r}'
                 raise ValueError(err.format(name, command))
 
-    def get_action(self):
-        pass
+    def execute(self,
+                operation=None,         # type: Optional[Operation]
+                command=None,           # type: Optional[Text]
+                input_obj=None,         # type: Optional[Any]
+                check_params=False,     # type: bool
+                void_op=False,          # type: bool
+                headers=None,           # type: Optional[Dict[Text, Text]]
+                timeout=20,             # type: int
+                file_out=None,          # type: Optional[Text]
+                **params                # type: **Any
+                ):
+        # type: (...) -> Any
+        """
+        Execute an operation.
 
-    def lock_path(self, file_path):
-        pass
+        :param operation: the operation
+        :param command: the name of the operation
+        :param input_obj: the input of the operation
+        :param check_params: if True, parameters will
+        be checked client-side
+        :param void_op: if True, the body of the response
+        from the server will be empty
+        :param headers: extra HTTP headers
+        :param timeout: the operation timeout
+        :param file_out: if not None, path of the file
+        where the response will be saved
+        :param params: any other parameter
+        :return: the result of the execution
+        """
 
-    def unlock_path(self, file_path, locker):
-        pass
+        if operation:
+            command = operation.command
+            input_obj = operation.input_obj
+            params = operation.params
+        elif 'params' in params:
+            params = params['params']
+
+        if isinstance(input_obj, Blob):
+            url = '{}/upload/{}/{}/execute/{}'.format(
+                self.client.api_path, input_obj.batch_id,
+                input_obj.fileIdx, command)
+            input_obj = None
+        else:
+            url = 'site/automation/{}'.format(command)
+
+        if check_params:
+            self.check_params(command, params)
+
+        headers = headers or {}
+        if self.headers:
+            headers.update(self.headers)
+        if void_op:
+            headers['X-NXVoidOperation'] = 'true'
+
+        data = {'params': {}}
+        for k, v in params.items():
+            if v is None:
+                continue
+            if k == 'properties':
+                if isinstance(v, dict):
+                    s = '\n'.join(['{}={}'.format(name, value) for name, value in v.items()])
+                else:
+                    s = v
+                data['params'][k] = s.strip()
+            else:
+                data['params'][k] = v
+
+        if input_obj:
+            if isinstance(input_obj, list):
+                data['input'] = "docs:" + ",".join(input_obj)
+            else:
+                data['input'] = input_obj
+
+        resp = self.client.request('POST', url, data=data, headers=headers, timeout=timeout)
+
+        if file_out:
+            with open(file_out, 'wb') as f:
+                for chunk in resp.iter_content(chunk_size=self.client.chunk_size):
+                    if operation:
+                        operation.progress += self.client.chunk_size
+                    f.write(chunk)
+            return file_out
+        else:
+            if operation:
+                operation.progress = resp.headers.get('content-length', 0)
+            try:
+                return resp.json()
+            except ValueError:
+                return resp.content
+
+    def new(self, command, **kwargs):
+        # type: (Text, **Any) -> Operation
+        return Operation(command=command, service=self, **kwargs)

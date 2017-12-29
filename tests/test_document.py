@@ -59,7 +59,7 @@ def test_document_list_update(server):
     doc2 = server.documents.create(new_doc2, parent_path=pytest.ws_root_path)
     desc = 'sample description'
     res = server.operations.execute(
-        'Document.Update',
+        command='Document.Update',
         params={'properties': {'dc:description': desc}},
         input_obj=[doc1.path, doc2.path])
 

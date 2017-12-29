@@ -19,24 +19,40 @@ class API(APIEndpoint):
         :param workflow_id: the id of the workflow
         :return: the workflow
         """
-        return super(API, self).get(request_path=workflow_id)
+        return super(API, self).get(path=workflow_id)
 
-    def of(self, document):
-        # type: (Document) -> Union[Workflow, List[Workflow]]
+    def post(self, model, document=None, options=None):
+        # type: (Text, Document, Optional[Dict[Text, Any]]) -> Workflow
         """
-        Get the workflows of a document.
+        Start a workflow.
 
-        :param document: the document
-        :return: the corresponding workflows
+        :param model: the workflow to start
+        :param document: the document to start the workflow on
+        :param options: options for the workflow
+        :return: the created workflow
         """
-        self.endpoint = self.client.api_path
-        request_path = 'id/{}/@workflow'.format(document.uid)
-        workflows = super(API, self).get(request_path=request_path)
-        self.endpoint = '{}/workflow'.format(self.client.api_path)
-        return workflows
+        data = {
+            'workflowModelName': model,
+            'entity-type': 'workflow'
+        }
+        options = options or {}
+        if 'attachedDocumentIds' in options:
+            data['attachedDocumentIds'] = options['attachedDocumentIds']
+        if 'variables' in options:
+            data['variables'] = options['variables']
 
-    def post(self, **kwargs):
-        raise NotImplementedError
+        if document:
+            self.endpoint = self.client.api_path
+            path = 'id/{}/@workflow'.format(document.uid)
+        else:
+            path = None
+
+        workflow = super(API, self).post(data, path=path)
+        if document:
+            self.endpoint = '{}/workflow'.format(self.client.api_path)
+        return workflow
+
+    start = post  # Alias for clarity
 
     def put(self, **kwargs):
         raise NotImplementedError
@@ -51,38 +67,6 @@ class API(APIEndpoint):
         """
         return super(API, self).delete(workflow_id)
 
-    def start(self, model, options=None):
-        # type: (Text, Optional[Dict[Text, Any]]) -> Workflow
-        """
-        Start a workflow.
-
-        :param model: the workflow to start
-        :param options: options for the workflow
-        :return: the created workflow
-        """
-        data = {
-            'workflowModelName': model,
-            'entity-type': 'workflow'
-        }
-        options = options or {}
-        if 'attachedDocumentIds' in options:
-            data['attachedDocumentIds'] = options['attachedDocumentIds']
-        if 'variables' in options:
-            data['variables'] = options['variables']
-
-        workflow = super(API, self).post(data)
-        return workflow
-
-    def started(self, model):
-        # type: (Text) -> List[Workflow]
-        """
-        Get started workflows having the specified model.
-
-        :param model: the workflow model
-        :return: the started workflows
-        """
-        return super(API, self).get(params={'workflowModelName': model}, default=[])
-
     def graph(self, workflow):
         # type: (Text) -> Dict[Text, Any]
         """
@@ -92,7 +76,32 @@ class API(APIEndpoint):
         :return: the graph
         """
         request_path = '{}/graph'.format(workflow.id)
-        return super(API, self).get(request_path=request_path)
+        return super(API, self).get(path=request_path)
+
+    def of(self, document):
+        # type: (Document) -> Union[Workflow, List[Workflow]]
+        """
+        Get the workflows of a document.
+
+        :param document: the document
+        :return: the corresponding workflows
+        """
+        self.endpoint = self.client.api_path
+        path = 'id/{}/@workflow'.format(document.uid)
+        workflows = super(API, self).get(path=path)
+        self.endpoint = '{}/workflow'.format(self.client.api_path)
+        return workflows
+
+    def started(self, model):
+        # type: (Text) -> List[Workflow]
+        """
+        Get started workflows having the specified model.
+
+        :param model: the workflow model
+        :return: the started workflows
+        """
+        return super(API, self).get(
+            params={'workflowModelName': model}, default=[])
 
     def tasks(self, options=None):
         # type: (Optional[Dict[Text, Text]]) -> List[Task]
@@ -104,6 +113,6 @@ class API(APIEndpoint):
         """
 
         self.endpoint = '{}/task'.format(self.client.api_path)
-        tasks = super(API, self).get(resource_cls=Task, params=options)
+        tasks = super(API, self).get(cls=Task, params=options)
         self.endpoint = '{}/workflow'.format(self.client.api_path)
         return tasks

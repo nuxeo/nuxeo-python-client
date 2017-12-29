@@ -28,7 +28,7 @@ class API(APIEndpoint):
         if file_idx is not None:
             request_path = '{}/{}'.format(request_path, file_idx)
 
-        resource = super(API, self).get(request_path=request_path)
+        resource = super(API, self).get(path=request_path)
 
         if file_idx is not None:
             resource.batch_id = batch_id
@@ -47,10 +47,7 @@ class API(APIEndpoint):
         self._cls = Blob
         return batch
 
-    def batch(self):
-        # type: () -> Batch
-        """ Alias for post(). """
-        return self.post()
+    batch = post  # Alias for clarity
 
     def put(self, batch):
         raise NotImplementedError
@@ -98,7 +95,7 @@ class API(APIEndpoint):
         try:
             response = super(API, self).post(
                 resource=blob.data,
-                request_path=request_path,
+                path=request_path,
                 raw=True,
                 headers=headers
             )

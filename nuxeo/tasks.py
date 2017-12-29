@@ -27,20 +27,10 @@ class API(APIEndpoint):
         elif isinstance(options, text):
             request_path = options
 
-        return super(API, self).get(request_path=request_path, params=params)
-
-    def of(self, workflow):
-        # type: (Workflow) -> Union[Task, List[Task]]
-        """
-        Get the tasks of a workflow.
-
-        :param workflow: the workflow
-        :return: the corresponding tasks
-        """
-        return self.get(workflow.as_dict())
+        return super(API, self).get(path=request_path, params=params)
 
     def post(self, task):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def put(self, task):
         # type: (Task) -> Task
@@ -53,7 +43,7 @@ class API(APIEndpoint):
         return super(API, self).put(task)
 
     def delete(self, task_id):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def complete(self, task, action, variables=None, comment=None):
         # type: (Task, Text, Optional[Dict[Text, Any]], Optional[Text]) -> Task
@@ -71,7 +61,17 @@ class API(APIEndpoint):
             task.variables.update(variables)
 
         request_path = '{}/{}'.format(task.id, action)
-        return super(API, self).put(task, request_path=request_path)
+        return super(API, self).put(task, path=request_path)
+
+    def of(self, workflow):
+        # type: (Workflow) -> Union[Task, List[Task]]
+        """
+        Get the tasks of a workflow.
+
+        :param workflow: the workflow
+        :return: the corresponding tasks
+        """
+        return self.get(workflow.as_dict())
 
     def transfer(self, task, transfer, actors, comment=None):
         # type: (Text, Text, Text, Optional[Text]) -> None
@@ -96,4 +96,4 @@ class API(APIEndpoint):
             params['comment'] = comment
 
         request_path = '{}/{}'.format(task.id, transfer)
-        super(API, self).put(None, request_path=request_path, params=params)
+        super(API, self).put(None, path=request_path, params=params)

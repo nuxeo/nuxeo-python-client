@@ -19,7 +19,7 @@ class API(APIEndpoint):
         :param user_id: the id of the user
         :return: the user
         """
-        return super(API, self).get(request_path=user_id)
+        return super(API, self).get(path=user_id)
 
     def post(self, user):
         # type: (User) -> User
@@ -31,10 +31,7 @@ class API(APIEndpoint):
         """
         return super(API, self).post(user)
 
-    def create(self, user):
-        # type: (User) -> User
-        """ Alias for post(). """
-        return self.post(user)
+    create = post  # Alias for clarity
 
     def put(self, user):
         # type: (User) -> User

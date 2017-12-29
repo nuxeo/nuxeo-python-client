@@ -21,7 +21,7 @@ class API(APIEndpoint):
         :return: the group
         """
         request_path = '{}{}'.format(group_id, self.query)
-        return super(API, self).get(request_path=request_path)
+        return super(API, self).get(path=request_path)
 
     def post(self, group):
         # type: (Group) -> Group
@@ -31,12 +31,9 @@ class API(APIEndpoint):
         :param group: the group to create
         :return: the created group
         """
-        return super(API, self).post(resource=group, request_path=self.query)
+        return super(API, self).post(resource=group, path=self.query)
 
-    def create(self, group):
-        # type: (Group) -> Group
-        """ Alias for post(). """
-        return self.post(group)
+    create = post  # Alias for clarity
 
     def put(self, group):
         # type: (Group) -> Group

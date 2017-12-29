@@ -22,7 +22,7 @@ class API(APIEndpoint):
         :param path: the path of the document
         :return: the document
         """
-        return super(API, self).get(request_path=self._path(uid=uid, path=path))
+        return super(API, self).get(path=self._path(uid=uid, path=path))
 
     def post(self, document, parent_id=None, parent_path=None):
         # type: (Document, Optional[Text], Optional[Text]) -> Document
@@ -35,7 +35,9 @@ class API(APIEndpoint):
         :return: the created document
         """
         return super(API, self).post(
-            document, request_path=self._path(uid=parent_id, path=parent_path))
+            document, path=self._path(uid=parent_id, path=parent_path))
+
+    create = post  # Alias for clarity
 
     def put(self, document):
         # type: (Document) -> Document
@@ -45,7 +47,7 @@ class API(APIEndpoint):
         :param document: the document to update
         :return: the updated document
         """
-        return super(API, self).put(document, request_path=self._path(uid=document.uid))
+        return super(API, self).put(document, path=self._path(uid=document.uid))
 
     def delete(self, document_id):
         # type: (Text) -> Document
@@ -74,21 +76,17 @@ class API(APIEndpoint):
                 raise e
         return False
 
-    def create(self, document, parent_id=None, parent_path=None):
-        # type: (Document, Optional[Text], Optional[Text]) -> Document
-        """ Alias for self.post(...) """
-        return self.post(document, parent_id=parent_id, parent_path=parent_path)
-
     def add_permission(self, uid, params):
         # type: (Text, Dict[Text, Any]) -> None
-        self.operations.execute('Document.AddPermission', input_obj=uid, params=params)
+        self.operations.execute(
+            command='Document.AddPermission', input_obj=uid, params=params)
 
     def convert(self, uid, options):
         # type: (Text, Dict[Text, Text]) -> Union[Text, Dict[Text, Any]]
         """
         Convert a blob into another format.
 
-        :param path: the path of the blob to be converted
+        :param uid: the uid of the blob to be converted
         :param options: the target type, target format,
                         or converter for the blob
         :return: the response from the server
@@ -103,7 +101,7 @@ class API(APIEndpoint):
 
         try:
             return super(API, self).get(
-                request_path=self._path(uid=uid), params=options, adapter=adapter)
+                path=self._path(uid=uid), params=options, adapter=adapter)
         except HTTPError as e:
             if 'is not registered' in e.message:
                 raise ValueError(e.message)
@@ -117,30 +115,32 @@ class API(APIEndpoint):
         headers.update({'enrichers-document': 'acls'})
 
         req = super(API, self).get(
-            request_path=self._path(uid=uid), resource_cls=dict, headers=headers)
+            path=self._path(uid=uid), cls=dict, headers=headers)
         return req['contextParameters']['acls']
 
     def fetch_audit(self, uid):
         # type: (Text) -> Dict[Text, Any]
-        return super(API, self).get(self._path(uid=uid), adapter='audit', resource_cls=dict)
+        return super(API, self).get(self._path(uid=uid), adapter='audit', cls=dict)
 
     def fetch_lock_status(self, uid):
         # type: (Text) -> Dict[Text, Any]
         headers = self.headers or {}
         headers.update({'fetch-document': 'lock'})
         req = super(API, self).get(
-            request_path=self._path(uid=uid), resource_cls=dict, headers=headers)
+            path=self._path(uid=uid), cls=dict, headers=headers)
         if 'lockOwner' in req:
             return {
                 'lockCreated': req['lockOwner'],
                 'lockOwner': req['lockOwner']
             }
+        else:
+            return {}
 
     def fetch_rendition(self, uid, name):
         # type: (Text, Text) -> bytes
         adapter = 'rendition/{}'.format(name)
         return super(API, self).get(
-            request_path=self._path(uid=uid), raw=True, adapter=adapter)
+            path=self._path(uid=uid), raw=True, adapter=adapter)
 
     def fetch_renditions(self, uid):
         # type: (Text) -> List[Text]
@@ -148,7 +148,7 @@ class API(APIEndpoint):
         headers.update({'enrichers-document': 'renditions'})
 
         req = super(API, self).get(
-            request_path=self._path(uid=uid), resource_cls=dict, headers=headers)
+            path=self._path(uid=uid), cls=dict, headers=headers)
         return [rend['name'] for rend in req['contextParameters']['renditions']]
 
     def follow_transition(self, uid, name):
@@ -161,7 +161,7 @@ class API(APIEndpoint):
         """
         params = {'value': name}
         self.operations.execute(
-            'Document.FollowLifecycleTransition', input_obj=uid, params=params)
+            command='Document.FollowLifecycleTransition', input_obj=uid, params=params)
 
     def fetch_blob(self, uid=None, path=None, xpath='blobholder:0'):
         # type: (Optional[Text], Optional[Text], Text) -> Blob
@@ -175,7 +175,7 @@ class API(APIEndpoint):
         """
         adapter = 'blob/{}'.format(xpath)
         return super(API, self).get(
-            request_path=self._path(uid=uid, path=path), raw=True, adapter=adapter)
+            path=self._path(uid=uid, path=path), raw=True, adapter=adapter)
 
     def get_children(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> List[Document]
@@ -187,7 +187,7 @@ class API(APIEndpoint):
         :return: the document children
         """
         return super(API, self).get(
-            request_path=self._path(uid=uid, path=path), adapter='children')
+            path=self._path(uid=uid, path=path), adapter='children')
 
     def has_permission(self, uid, permission):
         # type: (Text, Text) -> bool
@@ -195,12 +195,13 @@ class API(APIEndpoint):
         headers.update({'enrichers-document': 'permissions'})
 
         req = super(API, self).get(
-            request_path=self._path(uid=uid), resource_cls=dict, headers=headers)
+            path=self._path(uid=uid), cls=dict, headers=headers)
         return permission in req['contextParameters']['permissions']
 
     def lock(self, uid):
         # type: (Text) -> Dict[Text, Any]
-        return self.operations.execute('Document.Lock', input_obj=uid)
+        return self.operations.execute(
+            command='Document.Lock', input_obj=uid)
 
     def move(self, uid, dst, name=None):
         # type: (Text, Text, Optional[Text]) -> None
@@ -214,7 +215,8 @@ class API(APIEndpoint):
         params = {'target': dst}
         if name:
             params['name'] = name
-        self.operations.execute('Document.Move', input_obj=uid, params=params)
+        self.operations.execute(
+            command='Document.Move', input_obj=uid, params=params)
 
     def query(self, opts=None):
         # type: (Optional[Dict[Text, Text]]) -> Dict[Text, Any]
@@ -227,43 +229,18 @@ class API(APIEndpoint):
             raise ValueError('Need either a pageProvider or a query')
 
         path = 'query/{}'.format(query)
-        res = super(API, self).get(request_path=path, params=opts, resource_cls=dict)
+        res = super(API, self).get(path=path, params=opts, cls=dict)
         res['entries'] = [Document.parse(entry, service=self) for entry in res['entries']]
         return res
 
     def remove_permission(self, uid, params):
         # type: (Text, Dict[Text, Text]) -> None
-        self.operations.execute('Document.RemovePermission', input_obj=uid, params=params)
-
-    def start_workflow(self, uid, model, options=None):
-        # type: (Text, Text, Optional[Dict[Text, Any]]) -> Workflow
-        """
-        Start a workflow.
-
-        :param uid: the uid of the target document
-        :param model: the workflow to start
-        :param options: options for the workflow
-        :return: the created workflow
-        """
-        data = {
-            'workflowModelName': model,
-            'entity-type': 'workflow'
-        }
-        options = options or {}
-        if 'attachedDocumentIds' in options:
-            data['attachedDocumentIds'] = options['attachedDocumentIds']
-        if 'variables' in options:
-            data['variables'] = options['variables']
-
-        self._cls = Workflow
-        workflow = super(API, self).post(
-            data, request_path=self._path(uid=uid), adapter='workflow')
-        self._cls = Document
-        return workflow
+        self.operations.execute(
+            command='Document.RemovePermission', input_obj=uid, params=params)
 
     def unlock(self, uid):
         # type: (Text) -> Dict[Text, Any]
-        return self.operations.execute('Document.Unlock', input_obj=uid)
+        return self.operations.execute(command='Document.Unlock', input_obj=uid)
 
     def _path(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> Text
