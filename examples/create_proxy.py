@@ -12,7 +12,7 @@ from nuxeo.models import Document
 def main():
 
     # Connection
-    host = 'http://127.0.0.1:8080/nuxeo/'
+    host = 'http://localhost:8080/nuxeo/'
     auth = ('Administrator', 'Administrator')
     nuxeo = Nuxeo(host=host, auth=auth)
 

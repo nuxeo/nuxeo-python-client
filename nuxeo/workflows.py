@@ -100,8 +100,7 @@ class API(APIEndpoint):
         :param model: the workflow model
         :return: the started workflows
         """
-        return super(API, self).get(
-            params={'workflowModelName': model}, default=[])
+        return super(API, self).get(params={'workflowModelName': model})
 
     def tasks(self, options=None):
         # type: (Optional[Dict[Text, Text]]) -> List[Task]

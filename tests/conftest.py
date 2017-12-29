@@ -1,14 +1,18 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import logging
+import os
 import socket
 
-import os
 import pytest
 
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import HTTPError
-from nuxeo.models import Document, BufferBlob, User
+from nuxeo.models import BufferBlob, Document, User
+
+logging.basicConfig(format='%(module)-14s %(levelname).1s %(message)s',
+                    level=logging.DEBUG)
 
 
 def pytest_namespace():
@@ -16,10 +20,11 @@ def pytest_namespace():
     This namespace is used to store global variables for tests.
     They can be accessed with `pytest.<variable_name>` e.g. `pytest.ws_root_path`
     """
-    return {'ws_root_path': '/default-domain/workspaces',
-            'ws_python_test_name': 'ws-python-tests',
-            'ws_python_tests_path': '/default-domain/workspaces/ws-python-tests',
-            }
+    return {
+        'ws_root_path': '/default-domain/workspaces',
+        'ws_python_test_name': 'ws-python-tests',
+        'ws_python_tests_path': '/default-domain/workspaces/ws-python-tests',
+    }
 
 
 @pytest.fixture(scope='function', autouse=True)

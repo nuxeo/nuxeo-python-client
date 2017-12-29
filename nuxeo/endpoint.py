@@ -65,7 +65,7 @@ class APIEndpoint(object):
         else:
             json = response
 
-        if cls == dict:
+        if cls is dict:
             return json
 
         if not single and isinstance(json, dict) and 'entries' in json:

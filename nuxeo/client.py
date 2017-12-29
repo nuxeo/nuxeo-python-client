@@ -22,7 +22,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 CHUNK_SIZE = 8192  # Chunk size to download files
-DEFAULT_URL = 'http://localhost:8080/nuxeo'
+DEFAULT_URL = 'http://localhost:8080/nuxeo/'
 DEFAULT_API_PATH = 'api/v1'
 DEFAULT_APP_NAME = 'Python client'
 
@@ -30,14 +30,15 @@ DEFAULT_APP_NAME = 'Python client'
 class NuxeoClient(object):
     """ The HTTP client used by Nuxeo """
 
-    def __init__(self,
-                 auth=None,                     # type: Optional[Tuple(Text, Text)]
-                 host=DEFAULT_URL,              # type: Text
-                 api_path=DEFAULT_API_PATH,     # type: Text
-                 app_name=DEFAULT_APP_NAME,     # type: Text
-                 chunk_size=CHUNK_SIZE,         # type: int
-                 **kwargs                       # type: **Any
-                 ):
+    def __init__(
+        self,
+        auth=None,                  # type: Optional[Tuple(Text, Text)]
+        host=DEFAULT_URL,           # type: Text
+        api_path=DEFAULT_API_PATH,  # type: Text
+        app_name=DEFAULT_APP_NAME,  # type: Text
+        chunk_size=CHUNK_SIZE,      # type: int
+        **kwargs                    # type: **Any
+    ):
         # type: (...) -> None
 
         self.auth = auth
@@ -51,9 +52,13 @@ class NuxeoClient(object):
         self.chunk_size = chunk_size
         self.schemas = kwargs.get('schemas', '*')
         self.repository = kwargs.get('repository', 'default')
-        self._client_kwargs = kwargs
+        self.client_kwargs = kwargs
         self._session = requests.session()
         self._session.stream = True
+
+        # Ensure the host is well formated
+        if not self.host.endswith('/'):
+            self.host += '/'
 
     def set(self, repository=None, schemas=None):
         # type: (Optional[Text], Optional[Text]) -> NuxeoClient
@@ -72,8 +77,16 @@ class NuxeoClient(object):
 
         return self
 
-    def request(self, method, path, headers=None, data=None, raw=False, **kwargs):
-        # type: (Text, Text, Optional[Dict[Text, Text]], **Any) -> requests.Response
+    def request(
+        self,
+        method,        # type: Text
+        path,          # type: Text
+        headers=None,  # type: Optional[Dict[Text, Text]]
+        data=None,     # type: Optional[Any]
+        raw=False,     # type: bool
+        **kwargs       # type: **Any
+    ):
+        # type: (...) -> requests.Response
         """
         Send a request to the Nuxeo server.
 
@@ -85,15 +98,17 @@ class NuxeoClient(object):
         :param kwargs: other parameters accepted by requests
         :return: the HTTP response
         """
-        url = '{}/{}'.format(self.host, path)
-        if 'adapter' in kwargs:
-            url = '{}/@{}'.format(url, kwargs.pop('adapter'))
-
-        kwargs.update(self._client_kwargs)
 
         if method not in ('GET', 'HEAD', 'POST', 'PUT',
                           'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'):
             raise ValueError('method parameter is not a valid HTTP method.')
+
+        # Construct the full URL without double slashes
+        url = self.host + path.lstrip('/')
+        if 'adapter' in kwargs:
+            url = '{}/@{}'.format(url, kwargs.pop('adapter'))
+
+        kwargs.update(self.client_kwargs)
 
         headers = headers or {}
         headers.update({
@@ -106,37 +121,38 @@ class NuxeoClient(object):
         if data and not isinstance(data, bytes) and not raw:
             data = json.dumps(data, default=json_helper)
 
-        default = kwargs.pop('default', None)
+        default = kwargs.pop('default', object)
 
-        logger.debug('Calling {!r} with headers={!r}, params={!r} and cookies={!r}'.format(
-            url, headers, kwargs.get('params', {}), self._session.cookies))
+        logger.debug(
+            'Calling {!r} with headers={!r}, params={!r} and cookies={!r}'.format(
+                url, headers, kwargs.get('params', {}), self._session.cookies))
         try:
-            response = self._session.request(
+            resp = self._session.request(
                 method, url, headers=headers, auth=self.auth, data=data, **kwargs)
-            response.raise_for_status()
-
-            content_size = response.headers.get('content-length', self.chunk_size + 1)
+            resp.raise_for_status()
+        except Exception as exc:
+            if default is object:
+                raise self._handle_error(exc)
+            resp = default
+        else:
+            content_size = resp.headers.get('content-length', self.chunk_size)
             if int(content_size) <= self.chunk_size:
-                content = response.content
+                content = resp.content
             else:
                 content = '<Too much data to display>'
             logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
                 url, content, self._session.cookies))
 
-        except Exception as exc:
-            if default is None:
-                raise self._handle_error(exc)
-            response = default
+        return resp
 
-        return response
-
-    def request_auth_token(self,
-                           device_id,                   # type: Text
-                           permission,                  # type: Text
-                           app_name=DEFAULT_APP_NAME,   # type: Text
-                           device_description=None,     # type: Optional[Text]
-                           revoke=False                 # type: bool
-                           ):
+    def request_auth_token(
+        self,
+        device_id,                  # type: Text
+        permission,                 # type: Text
+        app_name=DEFAULT_APP_NAME,  # type: Text
+        device=None,                # type: Optional[Text]
+        revoke=False                # type: bool
+    ):
         # type: (...) -> Text
         """
         Request a token for the user.
@@ -144,7 +160,7 @@ class NuxeoClient(object):
         :param device_id: device identifier
         :param permission: read/write permissions
         :param app_name: application name
-        :param device_description: optional description
+        :param device: optional device description
         :param revoke: revoke the token
         """
 
@@ -154,8 +170,8 @@ class NuxeoClient(object):
             'permission': permission,
             'revoke': text(revoke).lower(),
         }
-        if device_description:
-            parameters['deviceDescription'] = device_description
+        if device:
+            parameters['deviceDescription'] = device
 
         path = 'authentication/token?' + urlencode(parameters)
         token = self.request('GET', path).text
@@ -196,13 +212,14 @@ class NuxeoClient(object):
 
 
 class Nuxeo(object):
-    def __init__(self,
-                 auth=None,                     # type: Optional[Tuple(Text, Text)]
-                 host=DEFAULT_URL,              # type: Text
-                 app_name=DEFAULT_APP_NAME,     # type: Text
-                 client=NuxeoClient,            # type: Type[NuxeoClient]
-                 **kwargs                       # type: **Any
-                 ):
+    def __init__(
+        self,
+        auth=None,                  # type: Optional[Tuple(Text, Text)]
+        host=DEFAULT_URL,           # type: Text
+        app_name=DEFAULT_APP_NAME,  # type: Text
+        client=NuxeoClient,         # type: Type[NuxeoClient]
+        **kwargs                    # type: **Any
+    ):
         # type: (...) -> None
         """
         Instantiate the client and all the API Endpoints.
@@ -211,8 +228,9 @@ class Nuxeo(object):
         :param host: the host URL
         :param app_name: the name of the application using the client
         :param client: the client class
-        :param kwargs: any other argument to pass
+        :param kwargs: any other argument to forward to every requests calls
         """
+
         self.client = client(auth, host=host, app_name=app_name, **kwargs)
         self.operations = operations.API(self.client)
         self.directories = directories.API(self.client)

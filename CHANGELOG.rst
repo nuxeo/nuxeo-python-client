@@ -8,10 +8,9 @@ Release date: ``2017-??-??``
 -  `NXPY-16 <https://jira.nuxeo.com/browse/NXPY-16>`__: Move from urllib2 and poster to Requests
 -  `NXPY-19 <https://jira.nuxeo.com/browse/NXPY-19>`__: Remove proxy support
 -  `NXPY-22 <https://jira.nuxeo.com/browse/NXPY-22>`__: Sanitize relative URLs
--  `NXPY-25 <https://jira.nuxeo.com/browse/NXPY-25>`__: Allow strings as properties
 -  `NXPY-26 <https://jira.nuxeo.com/browse/NXPY-26>`__: Use of setup.cfg
--  `NXPY-29 <https://jira.nuxeo.com/browse/NXPY-29>`__: Fix an encoding error in ``Nuxeo._log_details()``
 -  `NXPY-37 <https://jira.nuxeo.com/browse/NXPY-37>`__: Add type checking for operation parameters
+-  `NXPY-42 <https://jira.nuxeo.com/browse/NXPY-42>`__: Client refactoring
 -  A lot of code clean-up and improvement
 
 Technical changes

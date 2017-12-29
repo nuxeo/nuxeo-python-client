@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import atexit
 import os
 from io import StringIO
 
@@ -529,24 +530,42 @@ class BufferBlob(Blob):
 class FileBlob(Blob):
     """ Represent a File as Blob for future upload. """
 
+    # File descriptor
+    fd = None  # type: Optional[IO[bytes]]
+
     def __init__(self, path, **kwargs):
         # type: (Text, **Any) -> None
         """
         :param path: file path
         :param **kwargs: named attributes
         """
-
         super(FileBlob, self).__init__(**kwargs)
         self.path = path
         self.name = os.path.basename(self.path)
         self.size = os.path.getsize(self.path)
-        self.mimetype = self.mimetype or guess_mimetype(path)
+        self.mimetype = self.mimetype or guess_mimetype(self.path)
+        atexit.register(self.on_exit)
+
+    def on_exit(self):
+        # type: () -> None
+        """ Ensure the file descriptor is closed on exit. """
+
+        if self.fd:
+            self.fd.close()
+            self.fd = None
 
     @property
     def data(self):
         # type: () -> IO[bytes]
-        """ Request data. """
-        return open(self.path, 'rb')
+        """
+        Request data.
+
+        The caller is not required to manually close the file descriptor.
+        It will be done when the class object is destroyed.
+        """
+
+        self.fd = open(self.path, 'rb')
+        return self.fd
 
 
 class Operation(Model):
@@ -564,4 +583,3 @@ class Operation(Model):
 
     def execute(self, **kwargs):
         return self.service.execute(self, **kwargs)
-

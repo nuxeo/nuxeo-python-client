@@ -2,12 +2,13 @@
 from __future__ import unicode_literals
 
 import json
+import os
+import re
 import sys
 
-import os
 import pkg_resources
 import pytest
-import re
+from requests.exceptions import ConnectionError
 
 from nuxeo import _extract_version
 from nuxeo.client import Nuxeo
@@ -77,9 +78,10 @@ def test_encoding_404_error(server):
     server.client.host = 'http://localhost:8080/'
 
     try:
-        with pytest.raises(HTTPError) as e:
+        with pytest.raises((ConnectionError, HTTPError)) as e:
             server.documents.get(path='/')
-        assert e.value.status == 404
+        if isinstance(e, HTTPError):
+            assert e.value.status == 404
     finally:
         server.client.host = url
 

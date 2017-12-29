@@ -23,24 +23,6 @@ def test_document_create(server):
     assert not server.documents.exists(doc.uid)
 
 
-def test_document_create_properties_as_str(server):
-    operation = server.operations.new('Document.Create')
-    operation.params = {
-        'type': 'File',
-        'name': 'ру́сский.txt',
-        'properties': 'dc:title=ру́сский.txt\ndc:description=日本',
-    }
-    operation.input_obj = '/'
-    doc = Document.parse(operation.execute())
-    assert doc.entity_type == 'document'
-    assert doc.type == 'File'
-    assert doc.title == 'ру́сский.txt'
-    assert doc.properties['dc:title'] == 'ру́сский.txt'
-    assert doc.properties['dc:description'] == '日本'
-    server.documents.delete(doc.id)
-    assert not server.documents.exists(path='/' + doc.title)
-
-
 def test_document_list_update(server):
     new_doc1 = Document(
         name='ws-js-tests1',
