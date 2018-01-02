@@ -22,15 +22,15 @@ def batch(server):
     batch = server.uploads.batch()
     assert batch
     batch.upload(BufferBlob(data='data', name='Test.txt', mimetype='text/plain'))
-    assert batch.id
+    assert batch.uid
     return batch
 
 
 def test_cancel(batch):
     batch.upload(BufferBlob(data='data', name='Test.txt', mimetype='text/plain'))
-    assert batch.id
+    assert batch.uid
     batch.cancel()
-    assert batch.id is None
+    assert batch.uid is None
     batch.cancel()
     with pytest.raises(InvalidBatch):
         batch.get(0)
@@ -109,6 +109,6 @@ def test_mimetype():
 
 def test_wrong_batch_id(server):
     batch = server.uploads.batch()
-    batch.id = '1234'
+    batch.uid = '1234'
     with pytest.raises(HTTPError):
         batch.get(0)

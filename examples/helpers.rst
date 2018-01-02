@@ -48,7 +48,7 @@ You can also run the following bit of code to see the list:
 .. code:: python
 
     import json
-    ops = nuxeo.operations.dict.keys()
+    ops = nuxeo.operations.operations.keys()
     ops.sort()
     json.dumps(ops)
 
@@ -69,7 +69,7 @@ And if you pick one you can see its definition:
 
 .. code:: python
 
-    json.dumps(nuxeo.operations.dict['Log'])
+    json.dumps(nuxeo.operations.operations['Log'])
 
 With an output like this:
 

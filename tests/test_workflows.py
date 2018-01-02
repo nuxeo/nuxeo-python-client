@@ -7,7 +7,7 @@ import pytest
 @pytest.fixture(scope='function')
 def workflows(server):
     for wf in server.workflows.started('SerialDocumentReview'):
-        server.workflows.delete(wf.id)
+        server.workflows.delete(wf.uid)
     return server.workflows
 
 
@@ -29,7 +29,7 @@ def test_basic_workflow(tasks, workflows, doc, georges):
             'participants': ['user:Administrator'],
             'assignees': ['user:Administrator'],
             'end_date': '2011-10-23T12:00:00.00Z'}
-        task.delegate(['user:{}'.format(georges.id)], comment='a comment')
+        task.delegate(['user:{}'.format(georges.uid)], comment='a comment')
         task.complete('start_review', infos, comment='a comment')
         assert len(workflows.of(doc)) == 1
         assert task.state == 'ended'
@@ -37,7 +37,7 @@ def test_basic_workflow(tasks, workflows, doc, georges):
         assert len(tks) == 1
         task = tks[0]
         # NXPY-12: Reassign task give _read() error
-        task.reassign(['user:{}'.format(georges.id)], comment='a comment')
+        task.reassign(['user:{}'.format(georges.uid)], comment='a comment')
         task.complete('validate', {'comment': 'a comment'})
         assert task.state == 'ended'
         assert not workflows.of(doc)
@@ -50,20 +50,20 @@ def test_get_workflows(tasks, workflows):
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
     assert len(tasks.get()) == 1
-    tks = tasks.get({'workflowInstanceId': wfs[0].id})
+    tks = tasks.get({'workflowInstanceId': wfs[0].uid})
     assert len(tks) == 1
     tks = tasks.get({'workflowInstanceId': 'unknown'})
     assert not tks
     tks = tasks.get(
-        {'workflowInstanceId': wfs[0].id, 'userId': 'Administrator'})
+        {'workflowInstanceId': wfs[0].uid, 'userId': 'Administrator'})
     assert len(tks) == 1
     tks = tasks.get({
-        'workflowInstanceId': wfs[0].id,
+        'workflowInstanceId': wfs[0].uid,
         'userId': 'Georges Abitbol'
     })
     assert not tks
     tks = tasks.get({
-        'workflowInstanceId': wfs[0].id,
+        'workflowInstanceId': wfs[0].uid,
         'workflowModelName': 'SerialDocumentReview'
     })
     assert len(tks) == 1

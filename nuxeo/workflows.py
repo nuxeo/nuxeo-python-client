@@ -75,7 +75,7 @@ class API(APIEndpoint):
         :param workflow: the worklow to get the graph from
         :return: the graph
         """
-        request_path = '{}/graph'.format(workflow.id)
+        request_path = '{}/graph'.format(workflow.uid)
         return super(API, self).get(path=request_path)
 
     def of(self, document):

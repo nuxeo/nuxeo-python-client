@@ -114,7 +114,7 @@ class APIEndpoint(object):
         :return the modified resource
         """
 
-        endpoint = '{}/{}'.format(self.endpoint, path or resource.id)
+        endpoint = '{}/{}'.format(self.endpoint, path or resource.uid)
 
         if resource:
             resource = resource.as_dict()

@@ -30,7 +30,7 @@ PARAM_TYPES = {  # Types allowed for operations parameters
 class API(APIEndpoint):
     def __init__(self, client, endpoint='site/automation', headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        self.operations = {}
+        self.ops = {}
         headers = headers or {}
         headers.update({
             'Content-Type': 'application/json+nxrequest',
@@ -50,27 +50,27 @@ class API(APIEndpoint):
         raise NotImplementedError()
 
     @property
-    def dict(self):
+    def operations(self):
         """
         Get a dict of available operations.
 
         :return: the available operations
         """
-        if not self.operations:
-            self.operations = {}
+        if not self.ops:
+            self.ops = {}
 
             response = self.get()
             for operation in response['operations']:
-                self.operations[operation['id']] = operation
+                self.ops[operation['id']] = operation
                 for alias in operation.get('aliases', []):
-                    self.operations[alias] = operation
+                    self.ops[alias] = operation
 
-        return self.operations
+        return self.ops
 
     def check_params(self, command, params):
         # type: (Text, Dict[Text, Any]) -> None
         """
-        Check given paramaters of the `command` operation.  It will also
+        Check given parameters of the `command` operation.  It will also
         check for types whenever possible.
 
         :raises ValueError: When the `command` is not valid.
@@ -79,7 +79,7 @@ class API(APIEndpoint):
         :raises TypeError: When a parameter has not the required type.
         """
 
-        operation = self.dict.get(command)
+        operation = self.operations.get(command)
         if not operation:
             raise ValueError('{!r} is not a registered operation'.format(command))
 

@@ -100,5 +100,5 @@ class API(APIEndpoint):
         )
 
         batch.upload_idx += 1
-        response.batch_id = batch.id
+        response.batch_id = batch.uid
         return response

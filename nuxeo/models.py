@@ -55,12 +55,12 @@ class Model(object):
 class Refreshable(object):
     _valid_properties = {}
     service = None
-    id = None
+    uid = None
 
     def load(self, model=None):
         # type: (Optional[Model]) -> None
         if not model:
-            model = self.service.get(self.id)
+            model = self.service.get(self.uid)
         for key in self._valid_properties:
             key = key.replace('-', '_')
             setattr(self, key, getattr(model, key))
@@ -93,10 +93,6 @@ class Document(Model, Refreshable):
         for key, default in Document._valid_properties.items():
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
-
-    @property
-    def id(self):
-        return self.uid
 
     def add_permission(self, params):
         # type: (Dict[Text, Any]) -> None
@@ -239,28 +235,28 @@ class Directory(Model):
             setattr(self, key, kwargs.get(key, default))
 
     @property
-    def id(self):
+    def uid(self):
         return self.directoryName
 
     def get(self, entry=None):
         # type: (Optional[Text]) -> Union[DirectoryEntry, List[DirectoryEntry]]
-        return self.service.get(self.id, dir_entry=entry)
+        return self.service.get(self.uid, dir_entry=entry)
 
     def create(self, entry):
         # type: (DirectoryEntry) -> DirectoryEntry
-        return self.service.post(entry, dir_name=self.id)
+        return self.service.post(entry, dir_name=self.uid)
 
     def save(self, entry):
         # type: (DirectoryEntry) -> DirectoryEntry
-        return self.service.put(entry, dir_name=self.id)
+        return self.service.put(entry, dir_name=self.uid)
 
     def delete(self, entry=None):
         # type: (Text) -> Union[Directory, DirectoryEntry]
-        return self.service.delete(self.id, dir_entry=entry)
+        return self.service.delete(self.uid, dir_entry=entry)
 
     def exists(self, entry):
         # type: (Text) -> bool
-        return self.service.exists(self.id, dir_entry=entry)
+        return self.service.exists(self.uid, dir_entry=entry)
 
 
 class DirectoryEntry(Model):
@@ -277,16 +273,16 @@ class DirectoryEntry(Model):
             setattr(self, key, kwargs.get(key, default))
 
     @property
-    def id(self):
+    def uid(self):
         return self.properties['id']
 
     def save(self):
         # type: () -> DirectoryEntry
-        return self.service.put(self, self.directoryName, self.id)
+        return self.service.put(self, self.directoryName, self.uid)
 
     def delete(self):
         # type: () -> DirectoryEntry
-        return self.service.delete(self.directoryName, self.id)
+        return self.service.delete(self.directoryName, self.uid)
 
 
 class Group(Model):
@@ -305,12 +301,12 @@ class Group(Model):
             setattr(self, key, kwargs.get(key, default))
 
     @property
-    def id(self):
+    def uid(self):
         return self.groupname
 
     def delete(self):
         # type: () -> Group
-        return self.service.delete(self.id)
+        return self.service.delete(self.uid)
 
 
 class User(Model, Refreshable):
@@ -329,6 +325,10 @@ class User(Model, Refreshable):
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
 
+    @property
+    def uid(self):
+        return self.id
+
     def change_password(self, password):
         # type: (Text) -> None
         """
@@ -340,7 +340,7 @@ class User(Model, Refreshable):
         self.save()
 
     def delete(self):
-        self.service.delete(self.id)
+        self.service.delete(self.uid)
 
 
 class Workflow(Model):
@@ -363,8 +363,12 @@ class Workflow(Model):
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
 
+    @property
+    def uid(self):
+        return self.id
+
     def delete(self):
-        self.service.delete(self.id)
+        self.service.delete(self.uid)
 
     def graph(self):
         return self.service.graph(self)
@@ -397,6 +401,10 @@ class Task(Model, Refreshable):
         for key, default in Task._valid_properties.items():
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def uid(self):
+        return self.id
 
     def complete(self, action, variables=None, comment=None):
         # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> None
@@ -432,18 +440,18 @@ class Batch(Model):
             setattr(self, key, kwargs.get(key, default))
 
     @property
-    def id(self):
+    def uid(self):
         return self.batchId
 
-    @id.setter
-    def id(self, value):
+    @uid.setter
+    def uid(self, value):
         self.batchId = value
 
     def get(self, file_idx):
         # type: (int) -> Blob
         if self.batchId is None:
             raise InvalidBatch('Cannot fetch blob for inexistant/deleted batch.')
-        blob = self.service.get(self.id, file_idx=file_idx)
+        blob = self.service.get(self.uid, file_idx=file_idx)
         self.blobs[file_idx] = blob
         return blob
 
@@ -451,7 +459,7 @@ class Batch(Model):
         # type: () -> None
         if not self.batchId:
             return
-        self.service.delete(self.id)
+        self.service.delete(self.uid)
         self.batchId = None
 
     def upload(self, blob):

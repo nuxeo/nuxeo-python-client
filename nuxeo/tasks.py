@@ -60,7 +60,7 @@ class API(APIEndpoint):
         if variables:
             task.variables.update(variables)
 
-        request_path = '{}/{}'.format(task.id, action)
+        request_path = '{}/{}'.format(task.uid, action)
         return super(API, self).put(task, path=request_path)
 
     def of(self, workflow):
@@ -95,5 +95,5 @@ class API(APIEndpoint):
         if comment:
             params['comment'] = comment
 
-        request_path = '{}/{}'.format(task.id, transfer)
+        request_path = '{}/{}'.format(task.uid, transfer)
         super(API, self).put(None, path=request_path, params=params)

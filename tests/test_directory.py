@@ -17,7 +17,7 @@ def test_crud(directory):
     assert entry.entity_type == 'directoryEntry'
     assert entry.directoryName == 'nature'
     assert entry.properties['id'] == 'foo'
-    assert entry.id == 'foo'
+    assert entry.uid == 'foo'
     assert entry.properties['label'] == 'Foo'
 
     entry.properties['label'] = 'Test'
@@ -32,7 +32,7 @@ def test_fetch(directory):
     assert entry.entity_type == 'directoryEntry'
     assert entry.directoryName == 'nature'
     assert entry.properties['id'] == 'article'
-    assert entry.id == 'article'
+    assert entry.uid == 'article'
     assert entry.properties['label'] == 'label.directories.nature.article'
 
 
