@@ -18,7 +18,7 @@ You can fetch the Drive configuration from the server:
 
 .. code:: python
 
-    config = nuxeo.client.request('GET', 'drive/configuration')
+    config = nuxeo.client.request('GET', 'drive/configuration', default={})
 
 If it has been filled, ``config`` will have the following structure:
 

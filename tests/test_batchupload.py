@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import hashlib
 import os
+
 import pytest
 
 from nuxeo.exceptions import HTTPError, InvalidBatch
@@ -17,8 +18,7 @@ new_doc = Document(
 )
 
 
-@pytest.fixture(scope='function')
-def batch(server):
+def get_batch(server):
     batch = server.uploads.batch()
     assert batch
     batch.upload(BufferBlob(data='data', name='Test.txt', mimetype='text/plain'))
@@ -26,9 +26,8 @@ def batch(server):
     return batch
 
 
-def test_cancel(batch):
-    batch.upload(BufferBlob(data='data', name='Test.txt', mimetype='text/plain'))
-    assert batch.uid
+def test_cancel(server):
+    batch = get_batch(server)
     batch.cancel()
     assert batch.uid is None
     batch.cancel()
@@ -36,7 +35,8 @@ def test_cancel(batch):
         batch.get(0)
 
 
-def test_fetch(batch):
+def test_fetch(server):
+    batch = get_batch(server)
     blob = batch.get(0)
     assert not blob.fileIdx
     assert blob.uploadType == 'normal'
@@ -50,7 +50,8 @@ def test_fetch(batch):
     assert blob.uploadedSize == 4
 
 
-def test_operation(server, batch):
+def test_operation(server):
+    batch = get_batch(server)
     server.client.set(schemas=['dublincore', 'file'])
     doc = server.documents.create(
         new_doc, parent_path=pytest.ws_root_path)
@@ -69,17 +70,18 @@ def test_operation(server, batch):
         doc.delete()
 
 
-def test_iter_content(server, batch):
+def test_iter_content(server):
+    batch = server.uploads.batch()
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+        f.write(b'\x00' + os.urandom(100*1024*1024) + b'\x00')
 
     doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
     try:
         batch.upload(FileBlob(file_in, mimetype='application/octet-stream'))
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': pytest.ws_root_path + '/Document'}
-        operation.input_obj = batch.get(1)
+        operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
 
         operation = server.operations.new('Blob.Get')

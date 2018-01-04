@@ -9,7 +9,6 @@ import pytest
 
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import HTTPError
-from nuxeo.models import BufferBlob, Document, User
 
 logging.basicConfig(format='%(module)-14s %(levelname).1s %(message)s',
                     level=logging.DEBUG)
@@ -37,31 +36,6 @@ def cleanup(server):
         pass
 
 
-@pytest.fixture(scope='function')
-def doc(server):
-    new_doc = Document.parse({
-        'name': pytest.ws_python_test_name,
-        'type': 'File',
-        'properties': {
-            'dc:title': 'bar.txt',
-        },
-    })
-    doc = server.documents.create(
-        new_doc, parent_path=pytest.ws_root_path)
-    assert doc is not None
-    assert isinstance(doc, Document)
-    assert doc.path == pytest.ws_python_tests_path
-    assert doc.type == 'File'
-    assert doc.properties['dc:title'] == 'bar.txt'
-
-    blob = BufferBlob(data='foo', name='foo.txt', mimetype='text/plain')
-    batch = server.uploads.batch()
-    blob = batch.upload(blob)
-    doc.properties['file:content'] = blob
-    doc.save()
-    return doc
-
-
 @pytest.fixture(scope='module')
 def directory(server):
     directory = server.directories.get('nature')
@@ -70,20 +44,6 @@ def directory(server):
     except HTTPError:
         pass
     return directory
-
-
-@pytest.fixture(scope='function')
-def georges(server):
-    georges = User(
-        properties={
-            'lastName': 'Abitbol',
-            'firstName': 'Georges',
-            'username': 'georges',
-            'email': 'georges@example.com',
-            'company': 'Pom Pom Gali resort',
-            'password': 'Test'
-        })
-    return server.users.create(georges)
 
 
 @pytest.fixture(scope='module')
@@ -98,4 +58,3 @@ def server():
                    auth=('Administrator', 'Administrator'))
     server.client.set(schemas=['dublincore'])
     return server
-

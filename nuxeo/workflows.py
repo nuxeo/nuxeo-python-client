@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from .endpoint import APIEndpoint
 from .models import Task, Workflow
+from .utils import SwapAttr
 
 
 class API(APIEndpoint):
@@ -42,14 +43,11 @@ class API(APIEndpoint):
             data['variables'] = options['variables']
 
         if document:
-            self.endpoint = self.client.api_path
             path = 'id/{}/@workflow'.format(document.uid)
+            with SwapAttr(self, 'endpoint', self.client.api_path):
+                workflow = super(API, self).post(data, path=path)
         else:
-            path = None
-
-        workflow = super(API, self).post(data, path=path)
-        if document:
-            self.endpoint = '{}/workflow'.format(self.client.api_path)
+            workflow = super(API, self).post(data)
         return workflow
 
     start = post  # Alias for clarity
@@ -86,10 +84,10 @@ class API(APIEndpoint):
         :param document: the document
         :return: the corresponding workflows
         """
-        self.endpoint = self.client.api_path
         path = 'id/{}/@workflow'.format(document.uid)
-        workflows = super(API, self).get(path=path)
-        self.endpoint = '{}/workflow'.format(self.client.api_path)
+
+        with SwapAttr(self, 'endpoint', self.client.api_path):
+            workflows = super(API, self).get(path=path)
         return workflows
 
     def started(self, model):
@@ -110,8 +108,7 @@ class API(APIEndpoint):
         :param options: the options
         :return: the corresponding list of tasks
         """
-
-        self.endpoint = '{}/task'.format(self.client.api_path)
-        tasks = super(API, self).get(cls=Task, params=options)
-        self.endpoint = '{}/workflow'.format(self.client.api_path)
+        endpoint = '{}/task'.format(self.client.api_path)
+        with SwapAttr(self, 'endpoint', endpoint):
+            tasks = super(API, self).get(cls=Task, params=options)
         return tasks

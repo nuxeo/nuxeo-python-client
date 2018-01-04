@@ -552,27 +552,12 @@ class FileBlob(Blob):
         self.name = os.path.basename(self.path)
         self.size = os.path.getsize(self.path)
         self.mimetype = self.mimetype or guess_mimetype(self.path)
-        atexit.register(self.on_exit)
-
-    def on_exit(self):
-        # type: () -> None
-        """ Ensure the file descriptor is closed on exit. """
-
-        if self.fd:
-            self.fd.close()
-            self.fd = None
 
     @property
     def data(self):
         # type: () -> IO[bytes]
-        """
-        Request data.
-
-        The caller is not required to manually close the file descriptor.
-        It will be done when the class object is destroyed.
-        """
-
-        self.fd = open(self.path, 'rb')
+        if self.fd is None:
+            self.fd = open(self.path, 'rb')
         return self.fd
 
 

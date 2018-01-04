@@ -3,11 +3,16 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.models import Document, User
 
-@pytest.fixture(scope='function')
-def workflows(server):
+
+def cleanup_workflows(server):
     for wf in server.workflows.started('SerialDocumentReview'):
         server.workflows.delete(wf.uid)
+
+
+@pytest.fixture(scope='module')
+def workflows(server):
     return server.workflows
 
 
@@ -16,7 +21,25 @@ def tasks(server):
     return server.tasks
 
 
-def test_basic_workflow(tasks, workflows, doc, georges):
+def test_basic_workflow(tasks, workflows, server):
+    cleanup_workflows(server)
+    user = User(
+        properties={
+            'firstName': 'Georges',
+            'username': 'georges',
+            'email': 'georges@example.com',
+            'password': 'Test'
+        })
+    user = server.users.create(user)
+    doc = Document(
+        name=pytest.ws_python_test_name,
+        type='File',
+        properties={
+            'dc:title': 'bar.txt',
+        }
+    )
+    doc = server.documents.create(
+        doc, parent_path=pytest.ws_root_path)
     try:
         workflow = workflows.start('SerialDocumentReview', doc)
         assert workflow
@@ -29,7 +52,7 @@ def test_basic_workflow(tasks, workflows, doc, georges):
             'participants': ['user:Administrator'],
             'assignees': ['user:Administrator'],
             'end_date': '2011-10-23T12:00:00.00Z'}
-        task.delegate(['user:{}'.format(georges.uid)], comment='a comment')
+        task.delegate(['user:{}'.format(user.uid)], comment='a comment')
         task.complete('start_review', infos, comment='a comment')
         assert len(workflows.of(doc)) == 1
         assert task.state == 'ended'
@@ -37,15 +60,17 @@ def test_basic_workflow(tasks, workflows, doc, georges):
         assert len(tks) == 1
         task = tks[0]
         # NXPY-12: Reassign task give _read() error
-        task.reassign(['user:{}'.format(georges.uid)], comment='a comment')
+        task.reassign(['user:{}'.format(user.uid)], comment='a comment')
         task.complete('validate', {'comment': 'a comment'})
         assert task.state == 'ended'
         assert not workflows.of(doc)
     finally:
-        georges.delete()
+        user.delete()
+        doc.delete()
 
 
-def test_get_workflows(tasks, workflows):
+def test_get_workflows(tasks, workflows, server):
+    cleanup_workflows(server)
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
@@ -71,7 +96,8 @@ def test_get_workflows(tasks, workflows):
     assert not tks
 
 
-def test_fetch_graph(workflows):
+def test_fetch_graph(workflows, server):
+    cleanup_workflows(server)
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1

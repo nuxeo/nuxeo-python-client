@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from .compat import quote, text
 from .endpoint import APIEndpoint
 from .models import Batch, Blob, FileBlob
+from .utils import SwapAttr
 
 
 class API(APIEndpoint):
@@ -42,9 +43,8 @@ class API(APIEndpoint):
 
         :return: the created batch
         """
-        self._cls = Batch
-        batch = super(API, self).post()
-        self._cls = Blob
+        with SwapAttr(self, '_cls', Batch):
+            batch = super(API, self).post()
         return batch
 
     batch = post  # Alias for clarity
@@ -66,12 +66,11 @@ class API(APIEndpoint):
         """
         if file_idx:
             target = '{}/{}'.format(batch_id, file_idx)
+            super(API, self).delete(target)
         else:
             target = batch_id
-            self._cls = Batch
-
-        super(API, self).delete(target)
-        self._cls = Blob
+            with SwapAttr(self, '_cls', Batch):
+                super(API, self).delete(target)
 
     def upload(self, batch, blob):
         # type: (Batch, Blob) -> Blob
@@ -98,7 +97,8 @@ class API(APIEndpoint):
             raw=True,
             headers=headers
         )
-
+        if isinstance(blob, FileBlob):
+            blob.fd.close()
         batch.upload_idx += 1
         response.batch_id = batch.uid
         return response

@@ -9,8 +9,7 @@ from nuxeo.compat import text
 from nuxeo.models import Group
 
 
-@pytest.fixture(scope='function')
-def group(server):
+def get_group(server):
     group = Group(
         groupname='plops',
         grouplabel='Group Test',
@@ -19,7 +18,8 @@ def group(server):
     return server.groups.create(group)
 
 
-def test_create_delete_group_dict(server, group):
+def test_create_delete_group_dict(server):
+    get_group(server)
     try:
         group = server.groups.get('plops')
         assert group.groupname == 'plops'
@@ -44,7 +44,8 @@ def test_fetch_unknown_group(server):
     assert not server.groups.exists('admins')
 
 
-def test_update_group(server, group):
+def test_update_group(server):
+    group = get_group(server)
     try:
         grouplabel = text(int(round(time.time() * 1000)))
         group.grouplabel = grouplabel

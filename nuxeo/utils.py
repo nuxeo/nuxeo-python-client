@@ -36,3 +36,19 @@ def json_helper(o):
     if hasattr(o, 'to_json'):
         return o.to_json()
     raise TypeError(repr(o) + 'is not JSON serializable (no to_json() found)')
+
+
+class SwapAttr:
+    def __init__(self, o, attr, value):
+        if not hasattr(o, attr):
+            raise AttributeError()
+        self.o = o
+        self.attr = attr
+        self.value = value
+        self.old_value = getattr(o, attr)
+
+    def __enter__(self):
+        setattr(self.o, self.attr, self.value)
+
+    def __exit__(self, *args):
+        setattr(self.o, self.attr, self.old_value)

@@ -9,9 +9,8 @@ Work with blobs
 
     # Create a file
     new_file = Document(
-        entity-type='document',
         name='foo',
-        type'File',
+        type='File',
         properties={
             'dc:title': 'foo',
         })

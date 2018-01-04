@@ -35,7 +35,7 @@ Requirements
 The Nuxeo Python client works only with:
 
 -  The Nuxeo Platform >= LTS 2015
--  `Python >= 2.7 <https://www.python.org/downloads/>`__
+-  `Python >= 2.7 or >= 3.6 <https://www.python.org/downloads/>`__
 
 Quick Start
 -----------
@@ -64,7 +64,7 @@ to use a specific instance, you can specify the ``base_url`` like so:
 
     nuxeo = Nuxeo(
         host='http://demo.nuxeo.com/nuxeo/',
-        auth=auth=('Administrator', 'Administrator')
+        auth=('Administrator', 'Administrator')
         )
 
 Run NXQL queries

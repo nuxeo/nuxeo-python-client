@@ -14,12 +14,14 @@ def test_document_create(server):
                     'dc:description': 'ру́сский'}
     )
     doc = server.documents.create(doc, parent_path='/')
-    assert doc.entity_type == 'document'
-    assert doc.type == 'File'
-    assert doc.title == '日本.txt'
-    assert doc.properties['dc:title'] == '日本.txt'
-    assert doc.properties['dc:description'] == 'ру́сский'
-    doc.delete()
+    try:
+        assert doc.entity_type == 'document'
+        assert doc.type == 'File'
+        assert doc.title == '日本.txt'
+        assert doc.properties['dc:title'] == '日本.txt'
+        assert doc.properties['dc:description'] == 'ру́сский'
+    finally:
+        doc.delete()
     assert not server.documents.exists(doc.uid)
 
 
@@ -55,26 +57,43 @@ def test_document_list_update(server):
     doc2.delete()
 
 
-def test_document_move(server, doc):
+def test_document_move(server):
+    doc = Document(
+        name=pytest.ws_python_test_name,
+        type='File',
+        properties={
+            'dc:title': 'bar.txt',
+        })
     folder = Document(
         name='Test',
         type='Folder',
         properties={
             'dc:title': 'Test'
         })
-    f = server.documents.create(folder, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(doc, parent_path=pytest.ws_root_path)
+    folder = server.documents.create(folder, parent_path=pytest.ws_root_path)
     try:
         doc.move(pytest.ws_root_path + '/Test', 'new name')
         assert doc.path == pytest.ws_root_path + '/Test/new name'
     finally:
         doc.delete()
-        f.delete()
+        folder.delete()
 
 
-def test_follow_transition(doc):
-    assert doc.state == 'project'
-    doc.follow_transition('approve')
-    assert doc.state == 'approved'
-    doc.follow_transition('backToProject')
-    assert doc.state == 'project'
-    doc.delete()
+def test_follow_transition(server):
+    doc = Document(
+        name=pytest.ws_python_test_name,
+        type='File',
+        properties={
+            'dc:title': 'bar.txt',
+        })
+    doc = server.documents.create(
+        doc, parent_path=pytest.ws_root_path)
+    try:
+        assert doc.state == 'project'
+        doc.follow_transition('approve')
+        assert doc.state == 'approved'
+        doc.follow_transition('backToProject')
+        assert doc.state == 'project'
+    finally:
+        doc.delete()

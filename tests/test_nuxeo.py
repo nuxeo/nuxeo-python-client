@@ -155,17 +155,16 @@ def test_unauthorized(server):
             'password': password
         }))
 
+    auth = server.client.auth
+    server.client.auth = (get_bytes(username), password)
     try:
-        new_server = Nuxeo(
-            host=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
-                                'http://localhost:8080/nuxeo'),
-            auth=(get_bytes(username), password))
 
         with pytest.raises(Unauthorized):
-            new_server.users.create(
+            server.users.create(
                 User(properties={
                     'username': 'another_one',
                     'password': 'test'
                 }))
     finally:
+        server.client.auth = auth
         user.delete()

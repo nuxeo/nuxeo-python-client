@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import atexit
 import json
 import logging
 
@@ -55,10 +56,14 @@ class NuxeoClient(object):
         self.client_kwargs = kwargs
         self._session = requests.session()
         self._session.stream = True
+        atexit.register(self.on_exit)
 
         # Ensure the host is well formated
         if not self.host.endswith('/'):
             self.host += '/'
+
+    def on_exit(self):
+        self._session.close()
 
     def set(self, repository=None, schemas=None):
         # type: (Optional[Text], Optional[Text]) -> NuxeoClient
@@ -98,7 +103,6 @@ class NuxeoClient(object):
         :param kwargs: other parameters accepted by requests
         :return: the HTTP response
         """
-
         if method not in ('GET', 'HEAD', 'POST', 'PUT',
                           'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'):
             raise ValueError('method parameter is not a valid HTTP method.')
@@ -126,6 +130,7 @@ class NuxeoClient(object):
         logger.debug(
             'Calling {!r} with headers={!r}, params={!r} and cookies={!r}'.format(
                 url, headers, kwargs.get('params', {}), self._session.cookies))
+
         try:
             resp = self._session.request(
                 method, url, headers=headers, auth=self.auth, data=data, **kwargs)
