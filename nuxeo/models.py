@@ -9,6 +9,8 @@ from nuxeo.compat import text
 from nuxeo.exceptions import InvalidBatch
 from nuxeo.utils import guess_mimetype
 
+""" Base classes """
+
 
 class Model(object):
     _valid_properties = {}
@@ -64,6 +66,209 @@ class Refreshable(object):
         for key in self._valid_properties:
             key = key.replace('-', '_')
             setattr(self, key, getattr(model, key))
+
+
+""" Entities """
+
+
+class Batch(Model):
+    _valid_properties = {
+        'batchId': None,
+        'dropped': None,
+    }
+
+    def __init__(self, **kwargs):
+        super(Batch, self).__init__(**kwargs)
+        self.blobs = {}
+        self.batchId = None
+        self.upload_idx = 0
+        for key, default in Batch._valid_properties.items():
+            setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def uid(self):
+        return self.batchId
+
+    @uid.setter
+    def uid(self, value):
+        self.batchId = value
+
+    def get(self, file_idx):
+        # type: (int) -> Blob
+        if self.batchId is None:
+            raise InvalidBatch('Cannot fetch blob for inexistant/deleted batch.')
+        blob = self.service.get(self.uid, file_idx=file_idx)
+        self.blobs[file_idx] = blob
+        return blob
+
+    def cancel(self):
+        # type: () -> None
+        if not self.batchId:
+            return
+        self.service.delete(self.uid)
+        self.batchId = None
+
+    def upload(self, blob):
+        # type: (Blob) -> Blob
+        return self.service.upload(self, blob)
+
+
+class Blob(Model):
+    _valid_properties = {
+        'uploaded': 'true',
+        'name': None,
+        'uploadType': None,
+        'size': 0,
+        'uploadedSize': None,
+        'fileIdx': None,
+        'mimetype': None,
+    }
+
+    def __init__(self, **kwargs):
+        super(Blob, self).__init__(**kwargs)
+        for key, default in Blob._valid_properties.items():
+            if key == 'uploaded':
+                val = kwargs.get(key, 'true') == 'true'
+            elif key == 'size':
+                val = kwargs.get(key, 0)
+            elif key == 'uploadedSize':
+                val = kwargs.get(key, kwargs.get('size', 0))
+            else:
+                val = kwargs.get(key, default)
+            setattr(self, key, val)
+
+    @classmethod
+    def parse(cls, json, service=None):
+        """ Parse a JSON object into a model instance. """
+        model = cls()
+
+        if service:
+            setattr(model, 'service', service)
+
+        for key, val in json.items():
+            if key in cls._valid_properties:
+                setattr(model, key, val)
+
+        if model.uploaded and model.uploadedSize == 0:
+            model.uploadedSize = model.size
+        return model
+
+    def to_json(self):
+        # type: () -> Dict[Text, Text]
+        return {
+            'upload-batch': self.batch_id,
+            'upload-fileId': text(self.fileIdx),
+        }
+
+
+class BufferBlob(Blob):
+    """ InMemory content to upload to Nuxeo. """
+
+    def __init__(self, data, **kwargs):
+        # type: (Text, **Any) -> None
+        """
+        :param data: content to upload to Nuxeo
+        :param **kwargs: named attributes
+        """
+        super(BufferBlob, self).__init__(**kwargs)
+        self.buffer = data
+        self.mimetype = self.mimetype or 'application/octet-stream'
+
+    @property
+    def data(self):
+        # type: () -> StringIO
+        """ Request data. """
+        return StringIO(self.buffer)
+
+
+class FileBlob(Blob):
+    """ Represent a File as Blob for future upload. """
+
+    # File descriptor
+    fd = None  # type: Optional[IO[bytes]]
+
+    def __init__(self, path, **kwargs):
+        # type: (Text, **Any) -> None
+        """
+        :param path: file path
+        :param **kwargs: named attributes
+        """
+        super(FileBlob, self).__init__(**kwargs)
+        self.path = path
+        self.name = os.path.basename(self.path)
+        self.size = os.path.getsize(self.path)
+        self.mimetype = self.mimetype or guess_mimetype(self.path)
+
+    @property
+    def data(self):
+        # type: () -> IO[bytes]
+        if self.fd is None:
+            self.fd = open(self.path, 'rb')
+        return self.fd
+
+
+class Directory(Model):
+    _valid_properties = {
+        'entity-type': 'directory',
+        'directoryName': None,
+        'entries': []
+    }
+
+    def __init__(self, **kwargs):
+        super(Directory, self).__init__(**kwargs)
+        for key, default in Directory._valid_properties.items():
+            key = key.replace('-', '_')
+            setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def uid(self):
+        return self.directoryName
+
+    def get(self, entry=None):
+        # type: (Optional[Text]) -> Union[DirectoryEntry, List[DirectoryEntry]]
+        return self.service.get(self.uid, dir_entry=entry)
+
+    def create(self, entry):
+        # type: (DirectoryEntry) -> DirectoryEntry
+        return self.service.post(entry, dir_name=self.uid)
+
+    def save(self, entry):
+        # type: (DirectoryEntry) -> DirectoryEntry
+        return self.service.put(entry, dir_name=self.uid)
+
+    def delete(self, entry=None):
+        # type: (Text) -> Union[Directory, DirectoryEntry]
+        return self.service.delete(self.uid, dir_entry=entry)
+
+    def exists(self, entry):
+        # type: (Text) -> bool
+        return self.service.exists(self.uid, dir_entry=entry)
+
+
+class DirectoryEntry(Model):
+    _valid_properties = {
+        'entity-type': 'directoryEntry',
+        'directoryName': None,
+        'properties': {},
+    }
+
+    def __init__(self, **kwargs):
+        super(DirectoryEntry, self).__init__(**kwargs)
+        for key, default in DirectoryEntry._valid_properties.items():
+            key = key.replace('-', '_')
+            setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def uid(self):
+        return self.properties['id']
+
+    def save(self):
+        # type: () -> DirectoryEntry
+        return self.service.put(self, self.directoryName, self.uid)
+
+    def delete(self):
+        # type: () -> DirectoryEntry
+        return self.service.delete(self.directoryName, self.uid)
 
 
 class Document(Model, Refreshable):
@@ -221,70 +426,6 @@ class Document(Model, Refreshable):
         return self.service.unlock(self.uid)
 
 
-class Directory(Model):
-    _valid_properties = {
-        'entity-type': 'directory',
-        'directoryName': None,
-        'entries': []
-    }
-
-    def __init__(self, **kwargs):
-        super(Directory, self).__init__(**kwargs)
-        for key, default in Directory._valid_properties.items():
-            key = key.replace('-', '_')
-            setattr(self, key, kwargs.get(key, default))
-
-    @property
-    def uid(self):
-        return self.directoryName
-
-    def get(self, entry=None):
-        # type: (Optional[Text]) -> Union[DirectoryEntry, List[DirectoryEntry]]
-        return self.service.get(self.uid, dir_entry=entry)
-
-    def create(self, entry):
-        # type: (DirectoryEntry) -> DirectoryEntry
-        return self.service.post(entry, dir_name=self.uid)
-
-    def save(self, entry):
-        # type: (DirectoryEntry) -> DirectoryEntry
-        return self.service.put(entry, dir_name=self.uid)
-
-    def delete(self, entry=None):
-        # type: (Text) -> Union[Directory, DirectoryEntry]
-        return self.service.delete(self.uid, dir_entry=entry)
-
-    def exists(self, entry):
-        # type: (Text) -> bool
-        return self.service.exists(self.uid, dir_entry=entry)
-
-
-class DirectoryEntry(Model):
-    _valid_properties = {
-        'entity-type': 'directoryEntry',
-        'directoryName': None,
-        'properties': {},
-    }
-
-    def __init__(self, **kwargs):
-        super(DirectoryEntry, self).__init__(**kwargs)
-        for key, default in DirectoryEntry._valid_properties.items():
-            key = key.replace('-', '_')
-            setattr(self, key, kwargs.get(key, default))
-
-    @property
-    def uid(self):
-        return self.properties['id']
-
-    def save(self):
-        # type: () -> DirectoryEntry
-        return self.service.put(self, self.directoryName, self.uid)
-
-    def delete(self):
-        # type: () -> DirectoryEntry
-        return self.service.delete(self.directoryName, self.uid)
-
-
 class Group(Model):
     _valid_properties = {
         'entity-type': 'group',
@@ -307,6 +448,71 @@ class Group(Model):
     def delete(self):
         # type: () -> Group
         return self.service.delete(self.uid)
+
+
+class Operation(Model):
+    _valid_properties = {
+        'command': None,
+        'input_obj': None,
+        'params': {},
+        'progress': 0,
+    }
+
+    def __init__(self, **kwargs):
+        super(Operation, self).__init__(**kwargs)
+        for key, default in Operation._valid_properties.items():
+            setattr(self, key, kwargs.get(key, default))
+
+    def execute(self, **kwargs):
+        return self.service.execute(self, **kwargs)
+
+
+class Task(Model, Refreshable):
+    _valid_properties = {
+        'entity-type': 'task',
+        'id': None,
+        'name': None,
+        'workflowInstanceId': None,
+        'workflowModelName': None,
+        'state': None,
+        'directive': None,
+        'created': None,
+        'dueDate': None,
+        'nodeName': None,
+        'targetDocumentIds': [],
+        'actors': [],
+        'comments': [],
+        'variables': {},
+        'taskInfo': {},
+    }
+
+    def __init__(self, **kwargs):
+        super(Task, self).__init__(**kwargs)
+        for key, default in Task._valid_properties.items():
+            key = key.replace('-', '_')
+            setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def uid(self):
+        return self.id
+
+    def complete(self, action, variables=None, comment=None):
+        # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> None
+        updated_task = self.service.complete(
+            self, action, variables=variables, comment=comment)
+        self.load(updated_task)
+
+    def delegate(self, actors, comment=None):
+        # type: (Text, Optional[Text]) -> None
+        """ Delegate the Task to someone else. """
+        self.service.transfer(self, 'delegate', actors, comment=comment)
+        self.load()
+
+    def reassign(self, actors, comment=None):
+        # type: (Text, Optional[Text]) -> None
+        """ Reassign the Task to someone else. """
+        self.service.transfer(self, 'reassign', actors, comment=comment)
+        self.load()
 
 
 class User(Model, Refreshable):
@@ -375,204 +581,3 @@ class Workflow(Model):
 
     def tasks(self):
         return self.service.tasks(self)
-
-
-class Task(Model, Refreshable):
-    _valid_properties = {
-        'entity-type': 'task',
-        'id': None,
-        'name': None,
-        'workflowInstanceId': None,
-        'workflowModelName': None,
-        'state': None,
-        'directive': None,
-        'created': None,
-        'dueDate': None,
-        'nodeName': None,
-        'targetDocumentIds': [],
-        'actors': [],
-        'comments': [],
-        'variables': {},
-        'taskInfo': {},
-    }
-
-    def __init__(self, **kwargs):
-        super(Task, self).__init__(**kwargs)
-        for key, default in Task._valid_properties.items():
-            key = key.replace('-', '_')
-            setattr(self, key, kwargs.get(key, default))
-
-    @property
-    def uid(self):
-        return self.id
-
-    def complete(self, action, variables=None, comment=None):
-        # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> None
-        updated_task = self.service.complete(
-            self, action, variables=variables, comment=comment)
-        self.load(updated_task)
-
-    def delegate(self, actors, comment=None):
-        # type: (Text, Optional[Text]) -> None
-        """ Delegate the Task to someone else. """
-        self.service.transfer(self, 'delegate', actors, comment=comment)
-        self.load()
-
-    def reassign(self, actors, comment=None):
-        # type: (Text, Optional[Text]) -> None
-        """ Reassign the Task to someone else. """
-        self.service.transfer(self, 'reassign', actors, comment=comment)
-        self.load()
-
-
-class Batch(Model):
-    _valid_properties = {
-        'batchId': None,
-        'dropped': None,
-    }
-
-    def __init__(self, **kwargs):
-        super(Batch, self).__init__(**kwargs)
-        self.blobs = {}
-        self.batchId = None
-        self.upload_idx = 0
-        for key, default in Batch._valid_properties.items():
-            setattr(self, key, kwargs.get(key, default))
-
-    @property
-    def uid(self):
-        return self.batchId
-
-    @uid.setter
-    def uid(self, value):
-        self.batchId = value
-
-    def get(self, file_idx):
-        # type: (int) -> Blob
-        if self.batchId is None:
-            raise InvalidBatch('Cannot fetch blob for inexistant/deleted batch.')
-        blob = self.service.get(self.uid, file_idx=file_idx)
-        self.blobs[file_idx] = blob
-        return blob
-
-    def cancel(self):
-        # type: () -> None
-        if not self.batchId:
-            return
-        self.service.delete(self.uid)
-        self.batchId = None
-
-    def upload(self, blob):
-        # type: (Blob) -> Blob
-        return self.service.upload(self, blob)
-
-
-class Blob(Model):
-    _valid_properties = {
-        'uploaded': 'true',
-        'name': None,
-        'uploadType': None,
-        'size': 0,
-        'uploadedSize': None,
-        'fileIdx': None,
-        'mimetype': None,
-    }
-
-    def __init__(self, **kwargs):
-        super(Blob, self).__init__(**kwargs)
-        for key, default in Blob._valid_properties.items():
-            if key == 'uploaded':
-                val = kwargs.get(key, 'true') == 'true'
-            elif key == 'size':
-                val = kwargs.get(key, 0)
-            elif key == 'uploadedSize':
-                val = kwargs.get(key, kwargs.get('size', 0))
-            else:
-                val = kwargs.get(key, default)
-            setattr(self, key, val)
-
-    @classmethod
-    def parse(cls, json, service=None):
-        """ Parse a JSON object into a model instance. """
-        model = cls()
-
-        if service:
-            setattr(model, 'service', service)
-
-        for key, val in json.items():
-            if key in cls._valid_properties:
-                setattr(model, key, val)
-
-        if model.uploaded and model.uploadedSize == 0:
-            model.uploadedSize = model.size
-        return model
-
-    def to_json(self):
-        # type: () -> Dict[Text, Text]
-        return {
-            'upload-batch': self.batch_id,
-            'upload-fileId': text(self.fileIdx),
-        }
-
-
-class BufferBlob(Blob):
-    """ InMemory content to upload to Nuxeo. """
-
-    def __init__(self, data, **kwargs):
-        # type: (Text, **Any) -> None
-        """
-        :param data: content to upload to Nuxeo
-        :param **kwargs: named attributes
-        """
-        super(BufferBlob, self).__init__(**kwargs)
-        self.buffer = data
-        self.mimetype = self.mimetype or 'application/octet-stream'
-
-    @property
-    def data(self):
-        # type: () -> StringIO
-        """ Request data. """
-        return StringIO(self.buffer)
-
-
-class FileBlob(Blob):
-    """ Represent a File as Blob for future upload. """
-
-    # File descriptor
-    fd = None  # type: Optional[IO[bytes]]
-
-    def __init__(self, path, **kwargs):
-        # type: (Text, **Any) -> None
-        """
-        :param path: file path
-        :param **kwargs: named attributes
-        """
-        super(FileBlob, self).__init__(**kwargs)
-        self.path = path
-        self.name = os.path.basename(self.path)
-        self.size = os.path.getsize(self.path)
-        self.mimetype = self.mimetype or guess_mimetype(self.path)
-
-    @property
-    def data(self):
-        # type: () -> IO[bytes]
-        if self.fd is None:
-            self.fd = open(self.path, 'rb')
-        return self.fd
-
-
-class Operation(Model):
-    _valid_properties = {
-        'command': None,
-        'input_obj': None,
-        'params': {},
-        'progress': 0,
-    }
-
-    def __init__(self, **kwargs):
-        super(Operation, self).__init__(**kwargs)
-        for key, default in Operation._valid_properties.items():
-            setattr(self, key, kwargs.get(key, default))
-
-    def execute(self, **kwargs):
-        return self.service.execute(self, **kwargs)
