@@ -1,7 +1,6 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import atexit
 import os
 from io import StringIO
 
@@ -172,7 +171,7 @@ class BufferBlob(Blob):
         """
         super(BufferBlob, self).__init__(**kwargs)
         self.buffer = data
-        self.mimetype = self.mimetype or 'application/octet-stream'
+        self.mimetype = 'application/octet-stream'
 
     @property
     def data(self):
@@ -201,8 +200,11 @@ class FileBlob(Blob):
 
     @property
     def data(self):
+        """
+        Request data.  The caller has to close the file descriptor itself.
+        """
         # type: () -> IO[bytes]
-        if self.fd is None:
+        if not self.fd:
             self.fd = open(self.path, 'rb')
         return self.fd
 
