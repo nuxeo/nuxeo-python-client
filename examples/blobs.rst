@@ -5,27 +5,25 @@ Work with blobs
 
 .. code:: python
 
-    from nuxeo.blob import FileBlob
+    from nuxeo.models import Document, FileBlob
 
     # Create a file
-    new_file = {
-        'entity-type': 'document',
-        'name': 'foo',
-        'type': 'File',
-        'properties': {
+    new_file = Document(
+        name='foo',
+        type='File',
+        properties={
             'dc:title': 'foo',
-        }
-    }
-    file = nuxeo.repository().create('/', new_file)
+        })
+    file = nuxeo.documents.create(new_file, parent_path='/')
 
     # Create and upload a blob
     blob = FileBlob('/path/to/file')
-    uploaded = nuxeo.batch_upload().upload(blob)
+    uploaded = nuxeo.uploads.upload(blob)
 
     # Attach it to the file
-    operation = nuxeo.operation('Blob.AttachOnDocument')
-    operation.params({'document':'/foo'})
-    operation.input(uploaded)
+    operation = nuxeo.operations.new('Blob.AttachOnDocument')
+    operation.params = {'document': '/foo'}
+    operation.input_obj = uploaded
     operation.execute()
 
 

@@ -8,27 +8,28 @@ Users
 
 .. code:: python
 
-    nuxeo.users().fetch('Administrator')
+    nuxeo.users.get('Administrator')
 
 **Create a new user**
 
 .. code:: python
 
-    new_user = {
-        'username': 'leela',
-        'password': 'goodnewseveryone',
-        'firstName': 'Leela',
-        'lastName': 'Turanga',
-        'company': 'Futurama',
-        'email': 'leela@futurama.com',
-    }
-    user = nuxeo.users().create(new_user)
+    new_user = User(
+        properties = {
+            'username': 'leela',
+            'password': 'goodnewseveryone',
+            'firstName': 'Leela',
+            'lastName': 'Turanga',
+            'company': 'Futurama',
+            'email': 'leela@futurama.com',
+        })
+    user = nuxeo.users.create(new_user)
 
 **Modify a user**
 
 .. code:: python
 
-    user = nuxeo.users().fetch('leela')
+    user = nuxeo.users.get('leela')
     user.set({
         'company': 'Planet Express',
         'email': 'leela@planetexpress.com'
@@ -42,14 +43,14 @@ but you can also use this one-liner instead:
 
 .. code:: python
 
-    user = nuxeo.users().fetch('leela')
+    user = nuxeo.users.get('leela')
     user.change_password('multipass')
 
 **Delete a user**
 
 .. code:: python
 
-    nuxeo.users().delete('leela')
+    nuxeo.users.delete('leela')
 
 Groups
 ~~~~~~
@@ -58,31 +59,29 @@ Groups
 
 .. code:: python
 
-    nuxeo.groups().fetch('administrators')
+    nuxeo.groups.get('administrators')
 
 **Create a new group**
 
 .. code:: python
 
-    new_group = {
-        'groupname': 'foo',
-        'grouplabel': 'Foo',
-    }
-    group = nuxeo.groups().create(new_group)
+    new_group = Group(
+        groupname='foo',
+        grouplabel='Foo',
+    )
+    group = nuxeo.groups.create(new_group)
 
 **Modify a group**
 
 .. code:: python
 
-    group = nuxeo.groups().fetch('foo')
-    group.set({
-        'groupname': 'bar',
-        'grouplabel': 'Bar',
-    })
+    group = nuxeo.groups.get('foo')
+    group.groupname = 'bar'
+    group.grouplabel = 'Bar'
     group.save()
 
 **Delete a group**
 
 .. code:: python
 
-    nuxeo.groups().delete('foo')
+    nuxeo.groups.delete('foo')

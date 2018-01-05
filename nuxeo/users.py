@@ -1,44 +1,54 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from .common import NuxeoAutosetObject, NuxeoService
-
-try:
-    from typing import Any, Dict, Optional, Text, Union
-except ImportError:
-    pass
-
-__all__ = ('User', 'Users')
+from .endpoint import APIEndpoint
+from .models import User
 
 
-class User(NuxeoAutosetObject):
-    """ Represent a User on the server. """
+class API(APIEndpoint):
+    def __init__(self, client, endpoint='user', headers=None):
+        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
+        super(API, self).__init__(
+            client, endpoint=endpoint, cls=User, headers=headers)
 
-    entity_type = 'user'
-
-    def __init__(self, obj=None, service=None, id=None):
-        # type: (Union[User, Dict[Text, Any]], Users, Optional[Text]) -> None
-        super(User, self).__init__(obj=obj, service=service, id=id)
-        self._autoset = True
-        self._entity_type = 'user'
-        # Avoid change of password on update
-        if not self._lazy and 'password' in self.properties:
-            del self.properties['password']
-
-    def change_password(self, password):
-        # type: (Text) -> None
+    def get(self, user_id=None):
+        # type: (Optional[Text]) -> User
         """
-        Change user password.
+        Get the detail of a user.
 
-        :param password: New password to set
+        :param user_id: the id of the user
+        :return: the user
         """
-        self.properties['password'] = password
-        self.service.update(self)
+        return super(API, self).get(path=user_id)
 
+    def post(self, user):
+        # type: (User) -> User
+        """
+        Create a user.
 
-class Users(NuxeoService):
-    """ Users management. """
+        :param user: the user to create
+        :return: the created user
+        """
+        return super(API, self).post(user)
 
-    def __init__(self, nuxeo):
-        # type: (Nuxeo) -> None
-        super(Users, self).__init__(nuxeo, 'user', User)
+    create = post  # Alias for clarity
+
+    def put(self, user):
+        # type: (User) -> User
+        """
+        Update a user.
+
+        :param user: the user to update
+        :return: the updated user
+        """
+        return super(API, self).put(user)
+
+    def delete(self, user_id):
+        # type: (Text) -> User
+        """
+        Delete a user.
+
+        :param user_id: the id of the user to delete
+        :return: the deleted user
+        """
+        return super(API, self).delete(user_id)

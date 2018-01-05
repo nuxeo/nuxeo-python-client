@@ -12,10 +12,10 @@ to your Nuxeo Platform).
 
 .. code:: python
 
-    user = nuxeo.request('user/Administrator')
+    user = nuxeo.client.request('GET', 'user/Administrator')
 
 **Fetch the whole list of Natures**
 
 .. code:: python
 
-    natures = nuxeo.request('directory/nature')
+    natures = nuxeo.client.request('GET', 'directory/nature')

@@ -9,7 +9,7 @@ availability of the server.
 
 .. code:: python
 
-    is_reachable = nuxeo.server_reachable()
+    is_reachable = nuxeo.client.is_reachable()
 
 
 **Get the Nuxeo Drive configuration**
@@ -18,7 +18,7 @@ You can fetch the Drive configuration from the server:
 
 .. code:: python
 
-    config = nuxeo.drive_config()
+    config = nuxeo.client.request('GET', 'drive/configuration', default={})
 
 If it has been filled, ``config`` will have the following structure:
 
@@ -48,7 +48,7 @@ You can also run the following bit of code to see the list:
 .. code:: python
 
     import json
-    ops = nuxeo.operations.keys()
+    ops = nuxeo.operations.operations.keys()
     ops.sort()
     json.dumps(ops)
 
@@ -69,7 +69,7 @@ And if you pick one you can see its definition:
 
 .. code:: python
 
-    json.dumps(nuxeo.operations['Log'])
+    json.dumps(nuxeo.operations.operations['Log'])
 
 With an output like this:
 
@@ -121,14 +121,14 @@ With an output like this:
 **Check operation parameters**
 
 When you execute an operation, the name of the operation and
-the parameters you chose will be checked by the ``nuxeo.check_params()``
+the parameters you chose will be checked by the ``nuxeo.operations.check_params()``
 method. If you want to check the parameters of your operation by
 yourself before running it, you can use the following:
 
 .. code:: python
 
     try:
-        nuxeo.check_params('Log', {'level': 'info'
+        nuxeo.operations.check_params('Log', {'level': 'info'
                                    'message': 'I am logging something'})
         # The parameters are valid
     except ValueError as e:

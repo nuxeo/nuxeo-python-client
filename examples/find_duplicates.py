@@ -32,8 +32,8 @@ from collections import defaultdict
 
 from requests import HTTPError
 
+from nuxeo.client import Nuxeo
 from nuxeo.compat import quote, get_bytes
-from nuxeo.nuxeo import Nuxeo
 
 
 class BColors(object):
@@ -47,14 +47,12 @@ class BColors(object):
     UNDERLINE = '\033[4m'
 
 
-base_url = os.environ.get('NXDRIVE_TEST_SERVER_URL',
-                          'http://localhost:8080/nuxeo')
-auth = {
-    'username': os.environ.get('NXDRIVE_TEST_USER', 'Administrator'),
-    'password': os.environ.get('NXDRIVE_TEST_PASSWORD', 'Administrator'),
-}
+host = os.environ.get('NXDRIVE_TEST_SERVER_URL',
+                      'http://localhost:8080/nuxeo')
+auth = (os.environ.get('NXDRIVE_TEST_USER', 'Administrator'),
+        os.environ.get('NXDRIVE_TEST_PASSWORD', 'Administrator'))
 
-nuxeo = Nuxeo(base_url=base_url, auth=auth)
+nuxeo = Nuxeo(host=host, auth=auth)
 
 
 def color_print(text, color):
@@ -74,8 +72,8 @@ def compute_uid_line(item):
 
 
 def find_duplicates_in_folder(folder):
-    operation = nuxeo.operation('Document.GetChildren')
-    operation.input(folder)
+    operation = nuxeo.operations.new('Document.GetChildren')
+    operation.input_obj = folder
     children = operation.execute()
     doc_names = defaultdict(list)
 
@@ -95,11 +93,11 @@ def find_duplicates_of_uid(uid):
         color_print('Not a valid uid.', BColors.FAIL)
     else:
         try:
-            doc = nuxeo.repository().fetch(uid)
+            doc = nuxeo.documents.get(uid=uid)
             query = "SELECT * FROM Document WHERE ecm:parentId = '" + doc.parentRef + "'"
             query += " AND dc:title = '" + doc.title + "'"
             request = 'query?query=' + quote(get_bytes(query), safe='!=:')
-            entries = nuxeo.request(request).get('entries')
+            entries = nuxeo.client.request('GET', request).get('entries')
             if len(entries) > 1:
                 print_duplicates('/'.join([doc.path.rsplit('/', 1)[0], doc.title]),
                                  [compute_uid_line(x) for x in entries])
@@ -111,8 +109,8 @@ def find_duplicates_of_uid(uid):
 
 
 def find_duplicates_with_name(name):
-    operation = nuxeo.operation('Document.FetchByProperty')
-    operation.params({'property': 'dc:title', 'values': name})
+    operation = nuxeo.operations.new('Document.FetchByProperty')
+    operation.params = {'property': 'dc:title', 'values': name}
     docs = operation.execute()
     doc_paths = defaultdict(list)
     for doc in docs['entries']:

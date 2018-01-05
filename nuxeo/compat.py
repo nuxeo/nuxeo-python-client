@@ -8,13 +8,9 @@ except ImportError:
     pass
 
 try:
-    from urllib.parse import quote
+    from urllib.parse import quote, urlencode
 except ImportError:
     from urllib2 import quote
-
-try:
-    from urllib.parse import urlencode
-except ImportError:
     from urllib import urlencode
 
 try:
@@ -36,6 +32,17 @@ def get_bytes(data):
     return data
 
 
+def get_error_message(exc):
+    # type: (HTTPError) -> Text
+    """
+    Get error message from an HTTPError.
+
+    :param exc: the HTTPError
+    :return: The text of the message
+    """
+    return get_text(getattr(exc, 'message', exc.args[0]))
+
+
 def get_text(data):
     # type: (Union[Text, bytes]) -> Text
     """
@@ -47,17 +54,3 @@ def get_text(data):
     if not isinstance(data, text):
         data = data.decode('utf-8')
     return data
-
-
-def get_error_message(e):
-    # type: (HTTPError) -> Text
-    """
-    Get error message from an HTTPError.
-
-    :param e: the HTTPError
-    :return: The text of the message
-    """
-    if hasattr(e, 'message'):
-        return get_text(e.message)
-    else:
-        return get_text(e.args[0])

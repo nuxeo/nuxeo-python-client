@@ -5,26 +5,27 @@ Work with directories
 
 .. code:: python
 
-    entries = nuxeo.directory('nature').fetch_all()
+    entries = nuxeo.directories.get('nature').entries
 
 **Fetch a given directory entry**
 
 .. code:: python
 
-    entry = nuxeo.directory('nature').fetch('article')
+    entry = nuxeo.directories.get('nature', 'article')
 
 **Create a new directory entry**
 
 .. code:: python
 
-    new_entry = {
-      'id': 'foo',
-      'label': 'Foo',
-    }
-    entry = nuxeo.directory('nature').create(new_entry)
+    new_entry = DirectoryEntry(
+        properties={
+          'id': 'foo',
+          'label': 'Foo',
+        })
+    entry = nuxeo.directories.get('nature').create(new_entry)
 
 **Delete a directory entry**
 
 .. code:: python
 
-    nuxeo.directory('nature').delete('foo')
+    nuxeo.directories.get('nature').delete('foo')

@@ -21,8 +21,6 @@ from os import path
 import pkg_resources
 from setuptools.config import read_configuration
 
-from .nuxeo import Nuxeo
-
 try:
     from typing import Text
 except ImportError:
@@ -56,4 +54,3 @@ __copyright__ = """
     See the License for the specific language governing permissions and
     limitations under the License.
 """
-__all__ = ('Nuxeo',)

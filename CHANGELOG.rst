@@ -8,46 +8,51 @@ Release date: ``2017-??-??``
 -  `NXPY-16 <https://jira.nuxeo.com/browse/NXPY-16>`__: Move from urllib2 and poster to Requests
 -  `NXPY-19 <https://jira.nuxeo.com/browse/NXPY-19>`__: Remove proxy support
 -  `NXPY-22 <https://jira.nuxeo.com/browse/NXPY-22>`__: Sanitize relative URLs
--  `NXPY-25 <https://jira.nuxeo.com/browse/NXPY-25>`__: Allow strings as properties
 -  `NXPY-26 <https://jira.nuxeo.com/browse/NXPY-26>`__: Use of setup.cfg
--  `NXPY-29 <https://jira.nuxeo.com/browse/NXPY-29>`__: Fix an encoding error in ``Nuxeo._log_details()``
 -  `NXPY-37 <https://jira.nuxeo.com/browse/NXPY-37>`__: Add type checking for operation parameters
+-  `NXPY-42 <https://jira.nuxeo.com/browse/NXPY-42>`__: Client refactoring
 -  A lot of code clean-up and improvement
 
 Technical changes
 ~~~~~~~~~~~~~~~~~
 
--  Changed ``BatchBlob`` to ``BlobInfo``
--  Changed ``BlobInfo._batchid`` to ``BlobInfo.batchid``
--  Changed ``BlobInfo._service`` to ``BlobInfo.service``
--  Changed ``Directory.fetchAll()`` to ``Directory.fetch_all()``
+-  Added nuxeo/operations.py::\ ``API``
+-  Added nuxeo/tasks.py::\ ``API``
+-  Added ``APIEndpoint.exists()``
+-  Changed ``BatchBlob`` to ``Blob``
+-  Changed ``BatchUpload`` to nuxeo/uploads.py::\ ``API``
+-  Changed ``Blob._batchid`` to ``Blob.batchid``
+-  Changed ``Blob._service`` to ``Blob.service``
+-  Changed ``Directory`` to nuxeo/directories.py::\ ``API``
 -  Added ``Document.is_locked()``
 -  Removed ``FileBlob.get_upload_buffer()``
 -  Removed ``FileBlob._read_data()``
 -  Added nuxeo/compat.py::\ ``get_bytes()``
 -  Added nuxeo/compat.py::\ ``get_error_message()``
 -  Added nuxeo/compat.py::\ ``get_text()``
--  Removed ``Nuxeo.Request``
+-  Changed ``Groups`` to nuxeo/groups.py::\ ``API``
+-  Changed ``Nuxeo.request()`` to ``NuxeoClient.request()``
 -  Moved ``Nuxeo.InvalidBatchException`` to
-   nuxeo/exceptions.py::\ ``InvalidBatchException``
+   nuxeo/exceptions.py::\ ``InvalidBatch``
 -  Moved ``Nuxeo.Unauthorized`` to nuxeo/exceptions.py::\ ``Unauthorized``
 -  Removed ``Nuxeo.debug()``
 -  Removed ``Nuxeo.error()``
--  Added ``Nuxeo.drive_config()``
 -  Removed ``Nuxeo.force_decode()``
--  Added ``Nuxeo.send()``
 -  Removed ``Nuxeo.trace()``
--  Changed ``Nuxeo._check_params()`` to ``Nuxeo.check_params()``
--  Changed ``Nuxeo._create_action()`` to ``Nuxeo.create_action()``
--  Changed ``Nuxeo._end_action()`` to ``Nuxeo.end_action()``
--  Changed ``Nuxeo._get_action()`` to ``Nuxeo.get_action()``
+-  Changed ``Nuxeo._check_params()`` to
+   nuxeo/operations.py::\ ``API.check_params()``
+-  Removed ``Nuxeo._create_action()``
+-  Removed ``Nuxeo._end_action()``
+-  Removed ``Nuxeo._get_action()``
 -  Removed ``Nuxeo._get_common_headers()``
 -  Removed ``Nuxeo._get_cookies()``
--  Changed ``Nuxeo._rest_url`` to ``Nuxeo.rest_url``
--  Changed ``NuxeoObject._service`` to ``NuxeoObject.service``
--  Added ``NuxeoService.exists()``
--  Changed ``Operation._service`` to ``Operation.service``
--  Added ``Repository.exists()``
--  Added ``Task.refresh()``
+-  Changed ``Nuxeo._rest_url`` to ``NuxeoClient.api_path``
+-  Added nuxeo/client.py::\ ``NuxeoClient``
+-  Changed ``NuxeoObject`` to ``Model``
+-  Changed ``NuxeoService`` to ``APIEndpoint``
+-  Changed ``Repository`` to nuxeo/documents.py::\ ``API``
+-  Added nuxeo/auth.py::\ ``TokenAuth``
 -  Added nuxeo/exceptions.py::\ ``UnavailableConvertor``
--  Changed ``Workflows._map()`` to ``Workflows.map()``
+-  Changed ``Users`` to nuxeo/users.py::\ ``API``
+-  Removed ``Workflows._map()``
+-  Changed ``Workflows`` to nuxeo/workflows.py::\ ``API``

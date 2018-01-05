@@ -1,17 +1,35 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from requests import HTTPError
-
-from .compat import text
-
-try:
-    from typing import Any, Dict, Optional, Text
-except ImportError:
-    pass
+from .compat import get_text, text
 
 
-class InvalidBatchException(ValueError):
+class HTTPError(Exception):
+    _valid_properties = {
+        'status': None,
+        'message': None,
+        'stacktrace': None
+    }
+
+    def __init__(self, **kwargs):
+        for key, default in HTTPError._valid_properties.items():
+            setattr(self, key, kwargs.get(key, default))
+
+    def __str__(self):
+        return '{} error: {}'.format(self.status, get_text(self.message))
+
+    @classmethod
+    def parse(cls, json):
+        """ Parse a JSON object into a model instance. """
+        model = cls()
+
+        for key, val in json.items():
+            if key in cls._valid_properties:
+                setattr(model, key, val)
+        return model
+
+
+class InvalidBatch(ValueError):
     """
     Exception thrown when accessing inexistant or deleted batches.
     """
@@ -20,25 +38,9 @@ class InvalidBatchException(ValueError):
 
 class Unauthorized(HTTPError):
     """
-    HTTPError-derived class.
-
-    Used for filtering purposes so the errors due to lack of
-    permissions don't get lost among the others.
-
-    :param user_id: ID of logged user
-    :param http_error: The HTTPError raised by the request
+    Exception thrown when the HTTPError code is 401 or 403
     """
-    def __init__(self, user_id, http_error=None):
-        # type: (Text, Optional[HTTPError]) -> None
-        if http_error:
-            self.__dict__.update(http_error.__dict__)
-        self.user_id = user_id
-        self.message = text(self)
-
-    def __str__(self):
-        # type: () -> Text
-        return '\'{!s}\' is not authorized to access {!s} with the provided credentials'.format(
-            self.user_id, self.response.url)
+    pass
 
 
 class UnavailableConvertor(Exception):
