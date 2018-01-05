@@ -91,14 +91,16 @@ class API(APIEndpoint):
         })
 
         request_path = '{}/{}'.format(batch.batchId, batch.upload_idx)
-        response = super(API, self).post(
-            resource=blob.data,
-            path=request_path,
-            raw=True,
-            headers=headers
-        )
-        if isinstance(blob, FileBlob):
-            blob.fd.close()
+        try:
+            response = super(API, self).post(
+                resource=blob.data,
+                path=request_path,
+                raw=True,
+                headers=headers
+            )
+        finally:
+            if isinstance(blob, FileBlob):
+                blob.fd.close()
         batch.upload_idx += 1
         response.batch_id = batch.uid
         return response
