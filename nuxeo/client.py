@@ -235,6 +235,10 @@ class Nuxeo(object):
         :param kwargs: any other argument to forward to every requests calls
         """
 
+        if requests.__version__ < '2.12.2':
+            from warnings import warn
+            warn('Requests >= 2.12.2 required for auth unicode support.')
+
         self.client = client(auth, host=host, app_name=app_name, **kwargs)
         self.operations = operations.API(self.client)
         self.directories = directories.API(self.client)
