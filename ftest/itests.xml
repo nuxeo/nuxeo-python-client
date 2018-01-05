@@ -20,7 +20,6 @@
       <echo level="info">SERVER_URL environment variable = ${env.SERVER_URL}</echo>
       <exec executable="python" failonerror="true">
         <arg value="-E" />
-        <arg value="-s" />
         <arg value="-m" />
         <arg value="pytest" />
         <arg value="--showlocals" />
