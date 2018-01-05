@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import mimetypes
 import sys
 
-
 WIN32_PATCHED_MIME_TYPES = {
     'image/pjpeg': 'image/jpeg',
     'image/x-png': 'image/png',

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from .endpoint import APIEndpoint
 from .exceptions import HTTPError, UnavailableConvertor
-from .models import Document, Workflow
+from .models import Document
 
 
 class API(APIEndpoint):

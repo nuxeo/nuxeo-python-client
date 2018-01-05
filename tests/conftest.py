@@ -6,7 +6,6 @@ import os
 import socket
 
 import pytest
-import requests
 
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import HTTPError
@@ -54,7 +53,6 @@ def repository(server):
 
 @pytest.fixture(scope='module')
 def server():
-    assert requests.__version__ >= '2.12.2'
     server = Nuxeo(host=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
                                        'http://localhost:8080/nuxeo'),
                    auth=('Administrator', 'Administrator'))

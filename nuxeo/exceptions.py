@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from .compat import text, get_text
+from .compat import get_text, text
 
 
 class HTTPError(Exception):

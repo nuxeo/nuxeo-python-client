@@ -7,9 +7,8 @@ import logging
 
 import requests
 
-from . import __version__
-from . import (directories, documents, groups, operations,
-               tasks, uploads, users, workflows)
+from . import __version__, directories, documents, groups, operations, tasks, \
+    uploads, users, workflows
 from .auth import TokenAuth
 from .compat import text, urlencode
 from .exceptions import HTTPError, Unauthorized

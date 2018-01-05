@@ -1,12 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import time
-
 import pytest
 
-from nuxeo.client import Nuxeo
-from nuxeo.compat import text
 from nuxeo.users import User
 
 

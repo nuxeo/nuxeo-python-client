@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import operator
+
 import pytest
 
 from nuxeo.compat import get_bytes, get_error_message

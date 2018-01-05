@@ -8,10 +8,10 @@ import sys
 
 import pkg_resources
 import pytest
+import requests
 from requests.exceptions import ConnectionError
 
 from nuxeo import _extract_version
-from nuxeo.client import Nuxeo
 from nuxeo.compat import get_bytes
 from nuxeo.exceptions import HTTPError, Unauthorized
 from nuxeo.models import Blob, User
@@ -103,7 +103,7 @@ def test_get_operations(server):
 
 
 def test_init(monkeypatch):
-    def missing_dist(dist):
+    def missing_dist(_):
         raise pkg_resources.DistributionNotFound
 
     assert re.match('\d+\.\d+\.\d+', _extract_version())
@@ -146,6 +146,9 @@ def test_server_reachable(server):
         server.client.host = url
 
 
+@pytest.mark.skipif(
+    requests.__version__ < '2.12.2',
+    reason='Requests >= 2.12.2 required for auth unicode support.')
 def test_unauthorized(server):
     username = 'ミカエル'
     password = 'test'

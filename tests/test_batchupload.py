@@ -7,7 +7,7 @@ import os
 import pytest
 
 from nuxeo.exceptions import HTTPError, InvalidBatch
-from nuxeo.models import BufferBlob, FileBlob, Document
+from nuxeo.models import BufferBlob, Document, FileBlob
 
 new_doc = Document(
     name='Document',
