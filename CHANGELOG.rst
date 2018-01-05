@@ -33,7 +33,7 @@ Technical changes
 -  Changed ``Groups`` to nuxeo/groups.py::\ ``API``
 -  Changed ``Nuxeo.request()`` to ``NuxeoClient.request()``
 -  Moved ``Nuxeo.InvalidBatchException`` to
-   nuxeo/exceptions.py::\ ``InvalidBatchException``
+   nuxeo/exceptions.py::\ ``InvalidBatch``
 -  Moved ``Nuxeo.Unauthorized`` to nuxeo/exceptions.py::\ ``Unauthorized``
 -  Removed ``Nuxeo.debug()``
 -  Removed ``Nuxeo.error()``

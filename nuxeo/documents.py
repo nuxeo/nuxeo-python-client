@@ -101,7 +101,7 @@ class API(APIEndpoint):
 
         try:
             return super(API, self).get(
-                path=self._path(uid=uid), params=options, adapter=adapter)
+                path=self._path(uid=uid), params=options, adapter=adapter, raw=True)
         except HTTPError as e:
             if 'is not registered' in e.message:
                 raise ValueError(e.message)

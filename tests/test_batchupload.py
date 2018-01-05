@@ -74,7 +74,7 @@ def test_iter_content(server):
     batch = server.uploads.batch()
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:
-        f.write(b'\x00' + os.urandom(100*1024*1024) + b'\x00')
+        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
 
     doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
     try:
