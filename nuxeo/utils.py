@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import mimetypes
 import sys
 
+
 WIN32_PATCHED_MIME_TYPES = {
     'image/pjpeg': 'image/jpeg',
     'image/x-png': 'image/png',
@@ -31,24 +32,36 @@ def guess_mimetype(filename):
     return 'application/octet-stream'
 
 
-def json_helper(o):
+def json_helper(obj):
     # type: (Any) -> Dict[Text, Any]
-    if hasattr(o, 'to_json'):
-        return o.to_json()
-    raise TypeError(repr(o) + 'is not JSON serializable (no to_json() found)')
+    try:
+        return obj.to_json()
+    except AttributeError:
+        raise TypeError(
+            repr(obj) + ' is not JSON serializable (no to_json() found)')
 
 
 class SwapAttr:
-    def __init__(self, o, attr, value):
-        if not hasattr(o, attr):
+    """
+    Context manager to swap an attribute's value:
+
+        >>> # self.person equals 'Alice'
+        >>> with SwapAttr(self, 'person', 'Bob'):
+        ...     # ...
+
+    """
+
+    def __init__(self, cls, attr, value):
+        if not hasattr(cls, attr):
             raise AttributeError()
-        self.o = o
+
+        self.cls = cls
         self.attr = attr
         self.value = value
-        self.old_value = getattr(o, attr)
+        self.old_value = getattr(cls, attr)
 
     def __enter__(self):
-        setattr(self.o, self.attr, self.value)
+        setattr(self.cls, self.attr, self.value)
 
     def __exit__(self, *args):
-        setattr(self.o, self.attr, self.old_value)
+        setattr(self.cls, self.attr, self.old_value)

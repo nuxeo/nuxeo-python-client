@@ -10,21 +10,24 @@ from nuxeo.client import Nuxeo
 from nuxeo.models import Document, FileBlob
 
 
-@profile
-def upload_random_file(server, file_in, i):
+def create_random_file(file_in, i):
     filename = '{}_{}'.format(file_in, i)
     r_size = random.randint(10, 500)
     with open(filename, 'wb') as f:
         f.write(b'\x00' + os.urandom(r_size*100*1024) + b'\x00')
+    return filename
 
+
+@profile
+def upload_file(server, filename):
     batch = server.uploads.batch()
-    batch.upload(FileBlob(filename, mimetype='application/octet-stream'))
+    batch.upload(FileBlob(filename))
     doc = server.documents.create(
         Document(
-            name='Foo{}'.format(i),
+            name=filename,
             type='File',
             properties={
-                'dc:title': 'foo{}'.format(i),
+                'dc:title': filename,
             }
         ), parent_path='/default-domain/workspaces')
     try:
@@ -39,16 +42,18 @@ def upload_random_file(server, file_in, i):
 
 
 @profile
-def download_file(server, file_in, file_out, i):
+def download_file(server, file_in, i):
     filename = '{}_{}'.format(file_in, i)
+    file_out = filename + '.dl'
     try:
         operation = server.operations.new('Blob.Get')
-        operation.input_obj = '{}/Foo{}'.format(
-            '/default-domain/workspaces', i)
+        operation.input_obj = '{}/{}'.format(
+            '/default-domain/workspaces', filename)
         operation.execute(file_out=file_out)
     finally:
         os.remove(filename)
         os.remove(file_out)
+
 
 @profile
 def run_test(server):
@@ -56,13 +61,12 @@ def run_test(server):
     n = 10
     docs = []
     for i in range(n):
+        filename = create_random_file(file_in, i)
         docs.append(
-            upload_random_file(
-                server, file_in, i))
+            upload_file(server, filename))
 
     for i in range(n):
-        download_file(
-            server, file_in, file_out, i)
+        download_file(server, file_in, i)
 
     for doc in docs:
         doc.delete()
