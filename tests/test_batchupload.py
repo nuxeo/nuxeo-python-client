@@ -84,9 +84,14 @@ def test_iter_content(server):
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
 
+        operation = server.operations.new('Document.Fetch')
+        operation.params = {'value': pytest.ws_root_path + '/Document'}
+        info = operation.execute()
+        digest = info['properties']['file:content']['digest']
+
         operation = server.operations.new('Blob.Get')
         operation.input_obj = pytest.ws_root_path + '/Document'
-        file_out = operation.execute(file_out=file_out)
+        file_out = operation.execute(file_out=file_out, digest=digest)
         with open(file_in, 'rb') as f:
             md5_in = hashlib.md5(f.read()).hexdigest()
         with open(file_out, 'rb') as f:

@@ -1,8 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import logging
 import mimetypes
 import sys
+
+import hashlib
 
 try:
     from typing import TYPE_CHECKING
@@ -23,6 +26,31 @@ WIN32_PATCHED_MIME_TYPES = {
     'application/x-mspowerpoint.12':
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 }
+
+
+def get_digester(digest):
+    """
+    Get digester corresponding to the given hash.
+
+    To choose the digester used by the server, see
+    https://doc.nuxeo.com/nxdoc/file-storage-configuration/#configuring-the-default-blobprovider
+    :param digest: the hash
+    :return: the digester function
+    """
+    if not digest:
+        return None
+
+    digesters = {32: 'md5', 40: 'sha1', 64: 'sha256', 128: 'sha512'}
+    try:
+        int(digest, 16) >= 0
+    except ValueError:
+        return None
+    algo = digesters.get(len(digest), None)
+    digester = getattr(hashlib, algo, None)
+    if digester is None:
+        logging.debug(
+            "Digest can't be traced to a hash algorithm: {}".format(digest))
+    return digester
 
 
 def guess_mimetype(filename):

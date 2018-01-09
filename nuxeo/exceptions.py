@@ -11,6 +11,18 @@ except ImportError:
     pass
 
 
+class CorruptedFileError(Exception):
+
+    def __init__(self, filename, server_digest, local_digest):
+        self.filename = filename
+        self.server_digest = server_digest
+        self.local_digest = local_digest
+
+    def __str__(self):
+        return 'Corrupted file {}: server digest = {}, local digest = {}'.format(
+                            self.filename, self.server_digest, self.local_digest)
+
+
 class HTTPError(Exception):
     _valid_properties = {
         'status': None,

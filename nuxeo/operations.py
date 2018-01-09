@@ -1,11 +1,14 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import hashlib
 from collections import Sequence
 
+from nuxeo.exceptions import CorruptedFileError
 from .compat import text
 from .endpoint import APIEndpoint
 from .models import Blob, Operation
+from .utils import get_digester
 
 try:
     from typing import TYPE_CHECKING
@@ -128,7 +131,7 @@ class API(APIEndpoint):
                 void_op=False,          # type: bool
                 headers=None,           # type: Optional[Dict[Text, Text]]
                 file_out=None,          # type: Optional[Text]
-                **params                # type: Any
+                **kwargs                # type: Any
                 ):
         # type: (...) -> Any
         """
@@ -144,7 +147,7 @@ class API(APIEndpoint):
         :param headers: extra HTTP headers
         :param file_out: if not None, path of the file
         where the response will be saved
-        :param params: any other parameter
+        :param kwargs: any other parameter
         :return: the result of the execution
         """
 
@@ -152,8 +155,8 @@ class API(APIEndpoint):
             command = operation.command
             input_obj = operation.input_obj
             params = operation.params
-        elif 'params' in params:
-            params = params['params']
+        else:
+            params = kwargs.get('params', kwargs)
 
         if check_params:
             self.check_params(command, params)
@@ -192,11 +195,23 @@ class API(APIEndpoint):
 
         # Save to a file, part by part of chunk_size
         if file_out:
+            digest = kwargs.pop('digest', None)
+            digester = get_digester(digest) if digest else None
+            digester = digester() if digester else None
+
             with open(file_out, 'wb') as f:
                 for chunk in resp.iter_content(chunk_size=self.client.chunk_size):
                     if operation:
                         operation.progress += self.client.chunk_size
                     f.write(chunk)
+                    if digester:
+                        digester.update(chunk)
+
+            if digester:
+                actual_digest = digester.hexdigest()
+                if digest != actual_digest:
+                    raise CorruptedFileError(file_out, digest, actual_digest)
+
             return file_out
 
         # It is likely a JSON response we do not want to save to a file
