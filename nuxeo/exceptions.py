@@ -11,7 +11,8 @@ except ImportError:
     pass
 
 
-class CorruptedFile(Exception):
+class CorruptedFile(ValueError):
+    """ Exception thrown when digests of a downloaded blob are differents. """
 
     def __init__(self, filename, server_digest, local_digest):
         self.filename = filename
@@ -19,8 +20,8 @@ class CorruptedFile(Exception):
         self.local_digest = local_digest
 
     def __str__(self):
-        return 'Corrupted file {}: server digest = {}, local digest = {}'.format(
-                            self.filename, self.server_digest, self.local_digest)
+        err = 'Corrupted file {!r}: server digest is {!r}, local digest is {!r}'
+        return err.format(self.filename, self.server_digest, self.local_digest)
 
 
 class HTTPError(Exception):

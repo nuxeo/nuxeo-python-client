@@ -33,7 +33,7 @@ WIN32_PATCHED_MIME_TYPES = {
 def get_digester(digest):
     # type: (Text) -> Union[HASH, None]
     """
-    Get digester corresponding to the given hash.
+    Get the digester corresponding to the given hash.
 
     To choose the digester used by the server, see
     https://doc.nuxeo.com/nxdoc/file-storage-configuration/#configuring-the-default-blobprovider
