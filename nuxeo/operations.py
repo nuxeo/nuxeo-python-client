@@ -1,12 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import hashlib
 from collections import Sequence
 
-from nuxeo.exceptions import CorruptedFileError
 from .compat import text
 from .endpoint import APIEndpoint
+from .exceptions import CorruptedFile
 from .models import Blob, Operation
 from .utils import get_digester
 
@@ -196,8 +195,7 @@ class API(APIEndpoint):
         # Save to a file, part by part of chunk_size
         if file_out:
             digest = kwargs.pop('digest', None)
-            digester = get_digester(digest) if digest else None
-            digester = digester() if digester else None
+            digester = get_digester(digest)
 
             with open(file_out, 'wb') as f:
                 for chunk in resp.iter_content(chunk_size=self.client.chunk_size):
@@ -210,7 +208,7 @@ class API(APIEndpoint):
             if digester:
                 actual_digest = digester.hexdigest()
                 if digest != actual_digest:
-                    raise CorruptedFileError(file_out, digest, actual_digest)
+                    raise CorruptedFile(file_out, digest, actual_digest)
 
             return file_out
 

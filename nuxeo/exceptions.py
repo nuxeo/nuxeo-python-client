@@ -11,7 +11,7 @@ except ImportError:
     pass
 
 
-class CorruptedFileError(Exception):
+class CorruptedFile(Exception):
 
     def __init__(self, filename, server_digest, local_digest):
         self.filename = filename

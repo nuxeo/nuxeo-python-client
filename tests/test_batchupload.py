@@ -99,8 +99,11 @@ def test_iter_content(server):
         assert md5_in == md5_out
     finally:
         doc.delete()
-        os.remove(file_in)
-        os.remove(file_out)
+        for file_ in (file_in, file_out):
+            try:
+                os.remove(file_)
+            except OSError:
+                pass
 
 
 def test_mimetype():

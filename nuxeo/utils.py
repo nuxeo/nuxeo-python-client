@@ -1,19 +1,21 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import hashlib
 import logging
 import mimetypes
 import sys
 
-import hashlib
-
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
+        from _hashlib import HASH
         from typing import Any, Dict, Text, Type
 except ImportError:
     pass
 
+
+logger = logging.getLogger(__name__)
 WIN32_PATCHED_MIME_TYPES = {
     'image/pjpeg': 'image/jpeg',
     'image/x-png': 'image/png',
@@ -29,28 +31,40 @@ WIN32_PATCHED_MIME_TYPES = {
 
 
 def get_digester(digest):
+    # type: (Text) -> Union[HASH, None]
     """
     Get digester corresponding to the given hash.
 
     To choose the digester used by the server, see
     https://doc.nuxeo.com/nxdoc/file-storage-configuration/#configuring-the-default-blobprovider
+
     :param digest: the hash
     :return: the digester function
     """
-    if not digest:
-        return None
 
-    digesters = {32: 'md5', 40: 'sha1', 64: 'sha256', 128: 'sha512'}
+    # Available alogrithms
+    digesters = {
+        32: 'md5',
+        40: 'sha1',
+        56: 'sha224',
+        64: 'sha256',
+        96: 'sha384',
+        128: 'sha512',
+    }
+
+    # Ensure the digest is hexadecimal
     try:
         int(digest, 16) >= 0
-    except ValueError:
+    except (TypeError, ValueError):
         return None
-    algo = digesters.get(len(digest), None)
-    digester = getattr(hashlib, algo, None)
-    if digester is None:
-        logging.debug(
-            "Digest can't be traced to a hash algorithm: {}".format(digest))
-    return digester
+
+    # Retreive the hashlib function for the given digest, None if not found
+    func = getattr(hashlib, digesters.get(len(digest), ''), None)
+    if not func:
+        logger.error('No valid hash algorithm found for digest %r', digest)
+        return None
+
+    return func()
 
 
 def guess_mimetype(filename):
