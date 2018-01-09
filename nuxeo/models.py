@@ -394,7 +394,7 @@ class Document(RefreshableModel):
         return self.service.fetch_lock_status(self.uid)
 
     def fetch_rendition(self, name):
-        # type: (Text) -> Any
+        # type: (Text) -> Union[Text, bytes]
         """
         :param name: Rendition name to use
         :return: The rendition content
@@ -402,7 +402,7 @@ class Document(RefreshableModel):
         return self.service.fetch_rendition(self.uid, name)
 
     def fetch_renditions(self):
-        # type: () -> List[Any]
+        # type: () -> List[Union[Text, bytes]]
         """
         :return: Available renditions for this document
         """

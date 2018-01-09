@@ -147,13 +147,13 @@ class API(APIEndpoint):
             return {}
 
     def fetch_rendition(self, uid, name):
-        # type: (Text, Text) -> Any
+        # type: (Text, Text) -> Union[Text, bytes]
         adapter = 'rendition/{}'.format(name)
         return super(API, self).get(
             path=self._path(uid=uid), raw=True, adapter=adapter)
 
     def fetch_renditions(self, uid):
-        # type: (Text) -> List[Any]
+        # type: (Text) -> List[Union[Text, bytes]]
         headers = self.headers or {}
         headers.update({'enrichers-document': 'renditions'})
 
