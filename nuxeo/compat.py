@@ -2,8 +2,10 @@
 from __future__ import unicode_literals
 
 try:
-    from typing import Text, Union
-    from requests import HTTPError
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Text, Type, Union
+        from requests import HTTPError
 except ImportError:
     pass
 
@@ -14,9 +16,9 @@ except ImportError:
     from urllib import urlencode
 
 try:
-    text = unicode
+    text = unicode  # type: Type[Text]
 except NameError:
-    text = str
+    text = str      # type: Type[Text]
 
 
 def get_bytes(data):
@@ -27,7 +29,7 @@ def get_bytes(data):
     :param data: the input data
     :return: the bytes of data
     """
-    if isinstance(data, text):
+    if not isinstance(data, bytes):
         data = data.encode('utf-8')
     return data
 

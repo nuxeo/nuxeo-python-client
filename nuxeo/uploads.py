@@ -6,6 +6,14 @@ from .endpoint import APIEndpoint
 from .models import Batch, Blob, FileBlob
 from .utils import SwapAttr
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, List, Optional, Text, Union
+        from .client import NuxeoClient
+except ImportError:
+    pass
+
 
 class API(APIEndpoint):
     def __init__(self, client, endpoint='upload', headers=None):
@@ -14,7 +22,7 @@ class API(APIEndpoint):
             client, endpoint=endpoint, cls=Blob, headers=headers)
 
     def get(self, batch_id, file_idx=None):
-        # type: (Text, Optional[int]) -> Batch
+        # type: (Text, Optional[int]) -> Union[List[Blob], Blob]
         """
         Get the detail of a batch.
 
@@ -49,7 +57,8 @@ class API(APIEndpoint):
 
     batch = post  # Alias for clarity
 
-    def put(self, batch):
+    def put(self, **kwargs):
+        # type: (Any) -> None
         raise NotImplementedError
 
     def delete(self, batch_id, file_idx=None):

@@ -4,6 +4,14 @@ from __future__ import unicode_literals
 from .endpoint import APIEndpoint
 from .models import Directory, DirectoryEntry
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, Text, Optional, Union
+        from .client import NuxeoClient
+except ImportError:
+    pass
+
 
 class API(APIEndpoint):
     def __init__(self, client, endpoint='directory', headers=None):
@@ -34,9 +42,9 @@ class API(APIEndpoint):
     def post(self,
              resource=None,     # type: Union[Directory, DirectoryEntry]
              dir_name=None,     # type: Optional[Text]
-             **kwargs           # type: **Any
+             **kwargs           # type: Any
              ):
-        # type: (...) -> Union[Directory, DirectoryEntry]
+        # type: (...) -> resource
         """
         Create a directory or an entry.
 
@@ -55,18 +63,16 @@ class API(APIEndpoint):
     def put(self,
             resource,  # type: Union[Directory, DirectoryEntry]
             dir_name,  # type: Text
-            dir_entry  # type: Optional[Text]
             ):
-        # type: (...) -> Union[Directory, DirectoryEntry]
+        # type: (...) -> resource
         """
         Update an entry.
 
         :param resource: the entry to update
         :param dir_name: the name of the directory
-        :param dir_entry: the name of the entry
         :return: the updated entry
         """
-        path = '{}/{}'.format(dir_name, dir_entry)
+        path = '{}/{}'.format(dir_name, resource.uid)
         return super(API, self).put(resource, path=path)
 
     def delete(self, dir_name, dir_entry=None):

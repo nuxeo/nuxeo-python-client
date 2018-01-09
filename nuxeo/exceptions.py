@@ -3,6 +3,13 @@ from __future__ import unicode_literals
 
 from .compat import get_text, text
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, Text
+except ImportError:
+    pass
+
 
 class HTTPError(Exception):
     _valid_properties = {
@@ -12,14 +19,17 @@ class HTTPError(Exception):
     }
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         for key, default in HTTPError._valid_properties.items():
             setattr(self, key, kwargs.get(key, default))
 
     def __str__(self):
+        # type: () -> Text
         return '{} error: {}'.format(self.status, get_text(self.message))
 
     @classmethod
     def parse(cls, json):
+        # type: (Dict[Text, Any]) -> HTTPError
         """ Parse a JSON object into a model instance. """
         model = cls()
 

@@ -8,16 +8,37 @@ from nuxeo.compat import text
 from nuxeo.exceptions import InvalidBatch
 from nuxeo.utils import guess_mimetype
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, BinaryIO, Dict, List, Optional, Text, Union
+        from io import FileIO
+        from .directories import API as DirectoriesAPI
+        from .documents import API as DocumentsAPI
+        from .endpoint import APIEndpoint
+        from .groups import API as GroupsAPI
+        from .operations import API as OperationsAPI
+        from .tasks import API as TasksAPI
+        from .uploads import API as UploadsAPI
+        from .users import API as UsersAPI
+        from .workflows import API as WorkflowsAPI
+except ImportError:
+    pass
+
 """ Base classes """
 
 
 class Model(object):
-    _valid_properties = {}
+    _valid_properties = {}  # type: Dict[Text, Any]
+    service = None  # type: APIEndpoint
+    uid = None  # type: Text
 
     def __init__(self, service=None, **kwargs):
+        # type: (Optional[APIEndpoint], Any) -> None
         self.service = service
 
     def as_dict(self):
+        # type: () -> Dict[Text, Any]
         """ Returns a dict representation of the resource. """
         types = (int, float, str, list, dict, bytes, text)
         result = {}
@@ -37,6 +58,7 @@ class Model(object):
 
     @classmethod
     def parse(cls, json, service=None):
+        # type: (Dict[Text, Any], Optional[APIEndpoint]) -> Model
         """ Parse a JSON object into a model instance. """
         model = cls()
 
@@ -50,16 +72,23 @@ class Model(object):
         return model
 
     def save(self):
+        # type: () -> None
         self.service.put(self)
 
 
-class Refreshable(object):
-    _valid_properties = {}
-    service = None
-    uid = None
+class RefreshableModel(Model):
 
     def load(self, model=None):
         # type: (Optional[Model]) -> None
+        """
+        Reload the Model.
+
+        If model is not none, copy from its
+        attributes, otherwise query the server
+        for the entity with its uid.
+        :param model: the entity to copy
+        :return: the refreshed model
+        """
         if not model:
             model = self.service.get(self.uid)
         for key in self._valid_properties:
@@ -75,21 +104,25 @@ class Batch(Model):
         'batchId': None,
         'dropped': None,
     }
+    service = None  # type: UploadsAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Batch, self).__init__(**kwargs)
-        self.blobs = {}
-        self.batchId = None
+        self.batchId = None  # type: Text
+        self.blobs = {}  # type: Dict[int, Blob]
         self.upload_idx = 0
         for key, default in Batch._valid_properties.items():
             setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
+        # type: () -> Text
         return self.batchId
 
     @uid.setter
     def uid(self, value):
+        # type: (Text) -> None
         self.batchId = value
 
     def get(self, file_idx):
@@ -122,8 +155,10 @@ class Blob(Model):
         'fileIdx': None,
         'mimetype': None,
     }
+    service = None  # type: UploadsAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Blob, self).__init__(**kwargs)
         for key, default in Blob._valid_properties.items():
             if key == 'uploaded':
@@ -138,6 +173,7 @@ class Blob(Model):
 
     @classmethod
     def parse(cls, json, service=None):
+        # type: (Dict[Text, Any], Optional[APIEndpoint]) -> Blob
         """ Parse a JSON object into a model instance. """
         model = cls()
 
@@ -164,7 +200,7 @@ class BufferBlob(Blob):
     """ InMemory content to upload to Nuxeo. """
 
     def __init__(self, data, **kwargs):
-        # type: (Text, **Any) -> None
+        # type: (Text, Any) -> None
         """
         :param data: content to upload to Nuxeo
         :param **kwargs: named attributes
@@ -184,10 +220,10 @@ class FileBlob(Blob):
     """ Represent a File as Blob for future upload. """
 
     # File descriptor
-    fd = None  # type: Optional[IO[bytes]]
+    fd = None  # type: Optional[BinaryIO]
 
     def __init__(self, path, **kwargs):
-        # type: (Text, **Any) -> None
+        # type: (Text, Any) -> None
         """
         :param path: file path
         :param **kwargs: named attributes
@@ -196,14 +232,14 @@ class FileBlob(Blob):
         self.path = path
         self.name = os.path.basename(self.path)
         self.size = os.path.getsize(self.path)
-        self.mimetype = self.mimetype or guess_mimetype(self.path)
+        self.mimetype = self.mimetype or guess_mimetype(self.path)  # type: Text
 
     @property
     def data(self):
+        # type: () -> BinaryIO
         """
-        Request data.  The caller has to close the file descriptor itself.
+        Request data. The caller has to close the file descriptor itself.
         """
-        # type: () -> IO[bytes]
         if not self.fd:
             self.fd = open(self.path, 'rb')
         return self.fd
@@ -215,8 +251,10 @@ class Directory(Model):
         'directoryName': None,
         'entries': []
     }
+    service = None  # type: DirectoriesAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Directory, self).__init__(**kwargs)
         for key, default in Directory._valid_properties.items():
             key = key.replace('-', '_')
@@ -224,10 +262,11 @@ class Directory(Model):
 
     @property
     def uid(self):
+        # type: () -> Text
         return self.directoryName
 
     def get(self, entry=None):
-        # type: (Optional[Text]) -> Union[DirectoryEntry, List[DirectoryEntry]]
+        # type: (Optional[Text]) -> Union[Directory, DirectoryEntry]
         return self.service.get(self.uid, dir_entry=entry)
 
     def create(self, entry):
@@ -253,8 +292,10 @@ class DirectoryEntry(Model):
         'directoryName': None,
         'properties': {},
     }
+    service = None  # type: DirectoriesAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(DirectoryEntry, self).__init__(**kwargs)
         for key, default in DirectoryEntry._valid_properties.items():
             key = key.replace('-', '_')
@@ -262,18 +303,19 @@ class DirectoryEntry(Model):
 
     @property
     def uid(self):
+        # type: () -> Text
         return self.properties['id']
 
     def save(self):
         # type: () -> DirectoryEntry
-        return self.service.put(self, self.directoryName, self.uid)
+        return self.service.put(self, self.directoryName)
 
     def delete(self):
         # type: () -> DirectoryEntry
         return self.service.delete(self.directoryName, self.uid)
 
 
-class Document(Model, Refreshable):
+class Document(RefreshableModel):
     _valid_properties = {
         'entity-type': 'document',
         'repository': 'default',
@@ -294,8 +336,10 @@ class Document(Model, Refreshable):
         'changeToken': None,
         'contextParameters': {},
     }
+    service = None  # type: DocumentsAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Document, self).__init__(**kwargs)
         for key, default in Document._valid_properties.items():
             key = key.replace('-', '_')
@@ -350,7 +394,7 @@ class Document(Model, Refreshable):
         return self.service.fetch_lock_status(self.uid)
 
     def fetch_rendition(self, name):
-        # type: (Text) -> Dict[Text, Any]
+        # type: (Text) -> Union[Text, bytes]
         """
         :param name: Rendition name to use
         :return: The rendition content
@@ -358,16 +402,11 @@ class Document(Model, Refreshable):
         return self.service.fetch_rendition(self.uid, name)
 
     def fetch_renditions(self):
-        # type: () -> list
+        # type: () -> List[Union[Text, bytes]]
         """
         :return: Available renditions for this document
         """
         return self.service.fetch_renditions(self.uid)
-
-    def fetch_workflows(self):
-        # type: () -> list
-        """ Fetch the workflows running on this document. """
-        return self.service.fetch_workflows(self.uid)
 
     def follow_transition(self, name):
         # type: (Text) -> None
@@ -383,10 +422,10 @@ class Document(Model, Refreshable):
         # type: (Text) -> Any
         return self.properties[prop]
 
-    def has_permission(self, params):
-        # type: (Dict[Text, Any]) -> bool
+    def has_permission(self, permission):
+        # type: (Text) -> bool
         """ Verify if a document has the permission. """
-        return self.service.has_permission(self.uid, params)
+        return self.service.has_permission(self.uid, permission)
 
     def is_locked(self):
         # type: () -> bool
@@ -418,10 +457,6 @@ class Document(Model, Refreshable):
         # type: (Dict[Text, Any]) -> None
         self.properties.update(properties)
 
-    def start_workflow(self, model, options=None):
-        # type: (Text, Optional[Dict[Text, Any]]) -> Workflow
-        return self.service.start_workflow(self.uid, model, options=options)
-
     def unlock(self):
         # type: () -> Dict[Text, Any]
         """ Unlock the document. """
@@ -436,8 +471,10 @@ class Group(Model):
         'memberUsers': [],
         'memberGroups': [],
     }
+    service = None  # type: GroupsAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Group, self).__init__(**kwargs)
         for key, default in Group._valid_properties.items():
             key = key.replace('-', '_')
@@ -445,6 +482,7 @@ class Group(Model):
 
     @property
     def uid(self):
+        # type: () -> Text
         return self.groupname
 
     def delete(self):
@@ -459,17 +497,20 @@ class Operation(Model):
         'params': {},
         'progress': 0,
     }
+    service = None  # type: OperationsAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Operation, self).__init__(**kwargs)
         for key, default in Operation._valid_properties.items():
             setattr(self, key, kwargs.get(key, default))
 
     def execute(self, **kwargs):
+        # type: (Any) -> Any
         return self.service.execute(self, **kwargs)
 
 
-class Task(Model, Refreshable):
+class Task(RefreshableModel):
     _valid_properties = {
         'entity-type': 'task',
         'id': None,
@@ -487,8 +528,10 @@ class Task(Model, Refreshable):
         'variables': {},
         'taskInfo': {},
     }
+    service = None  # type: TasksAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Task, self).__init__(**kwargs)
         for key, default in Task._valid_properties.items():
             key = key.replace('-', '_')
@@ -496,6 +539,7 @@ class Task(Model, Refreshable):
 
     @property
     def uid(self):
+        # type: () -> Text
         return self.id
 
     def complete(self, action, variables=None, comment=None):
@@ -517,7 +561,7 @@ class Task(Model, Refreshable):
         self.load()
 
 
-class User(Model, Refreshable):
+class User(RefreshableModel):
     _valid_properties = {
         'entity-type': 'user',
         'id': None,
@@ -526,8 +570,10 @@ class User(Model, Refreshable):
         'isAdministrator': False,
         'isAnonymous': False,
     }
+    service = None  # type: UsersAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(User, self).__init__(**kwargs)
         for key, default in User._valid_properties.items():
             key = key.replace('-', '_')
@@ -535,6 +581,7 @@ class User(Model, Refreshable):
 
     @property
     def uid(self):
+        # type: () -> Text
         return self.id
 
     def change_password(self, password):
@@ -548,6 +595,7 @@ class User(Model, Refreshable):
         self.save()
 
     def delete(self):
+        # type: () -> None
         self.service.delete(self.uid)
 
 
@@ -564,8 +612,10 @@ class Workflow(Model):
         'variables': {},
         'graphResource': None,
     }
+    service = None  # type: WorkflowsAPI
 
     def __init__(self, **kwargs):
+        # type: (Any) -> None
         super(Workflow, self).__init__(**kwargs)
         for key, default in Workflow._valid_properties.items():
             key = key.replace('-', '_')
@@ -573,13 +623,13 @@ class Workflow(Model):
 
     @property
     def uid(self):
+        # type: () -> Text
         return self.id
 
     def delete(self):
+        # type: () -> None
         self.service.delete(self.uid)
 
     def graph(self):
+        # type: () -> Dict[Text, Any]
         return self.service.graph(self)
-
-    def tasks(self):
-        return self.service.tasks(self)

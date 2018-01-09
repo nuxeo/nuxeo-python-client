@@ -7,15 +7,18 @@ import logging
 
 import requests
 
-from . import __version__, directories, documents, groups, operations, tasks, \
-    uploads, users, workflows
+from . import (__version__, directories, documents, groups,
+               operations, tasks, uploads, users, workflows)
 from .auth import TokenAuth
 from .compat import text, urlencode
 from .exceptions import HTTPError, Unauthorized
 from .utils import json_helper
 
 try:
-    from typing import Any, Dict, Text, Tuple, Type, Optional
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, Optional, Text, Tuple, Type, Union
+        from requests.auth import AuthBase
 except ImportError:
     pass
 
@@ -32,15 +35,14 @@ class NuxeoClient(object):
 
     def __init__(
         self,
-        auth=None,                  # type: Optional[Tuple(Text, Text)]
+        auth=None,                  # type: Optional[Union[Tuple[Text, Text], AuthBase]]
         host=DEFAULT_URL,           # type: Text
         api_path=DEFAULT_API_PATH,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
         chunk_size=CHUNK_SIZE,      # type: int
-        **kwargs                    # type: **Any
+        **kwargs                    # type: Any
     ):
         # type: (...) -> None
-
         self.auth = auth
         self.host = host
         self.api_path = api_path
@@ -57,11 +59,12 @@ class NuxeoClient(object):
         self._session.stream = True
         atexit.register(self.on_exit)
 
-        # Ensure the host is well formated
+        # Ensure the host is well formatted
         if not self.host.endswith('/'):
             self.host += '/'
 
     def on_exit(self):
+        # type: () -> None
         self._session.close()
 
     def set(self, repository=None, schemas=None):
@@ -88,9 +91,9 @@ class NuxeoClient(object):
         headers=None,  # type: Optional[Dict[Text, Text]]
         data=None,     # type: Optional[Any]
         raw=False,     # type: bool
-        **kwargs       # type: **Any
+        **kwargs       # type: Any
     ):
-        # type: (...) -> requests.Response
+        # type: (...) -> Union[requests.Response, Any]
         """
         Send a request to the Nuxeo server.
 
@@ -124,6 +127,8 @@ class NuxeoClient(object):
         if data and not isinstance(data, bytes) and not raw:
             data = json.dumps(data, default=json_helper)
 
+        # Set the default value to `object` to allow someone
+        # to set `default` to `None`.
         default = kwargs.pop('default', object)
 
         logger.debug(
@@ -141,7 +146,7 @@ class NuxeoClient(object):
         else:
             content_size = resp.headers.get('content-length', self.chunk_size)
             if int(content_size) <= self.chunk_size:
-                content = resp.content
+                content = resp.text
             else:
                 content = '<Too much data to display>'
             logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
@@ -186,11 +191,12 @@ class NuxeoClient(object):
         return token
 
     def is_reachable(self):
+        # type: () -> bool
         response = self.request('GET', 'runningstatus', default=False)
         if isinstance(response, requests.Response):
             return response.ok
         else:
-            return response
+            return bool(response)
 
     @staticmethod
     def _handle_error(error):
@@ -211,18 +217,18 @@ class NuxeoClient(object):
             error = error_class.parse(error_data)
             logger.exception('Remote exception: {}'.format(error))
         else:
-            logger.exception(error)
+            logger.exception(text(error))
         return error
 
 
 class Nuxeo(object):
     def __init__(
         self,
-        auth=None,                  # type: Optional[Tuple(Text, Text)]
+        auth=None,                  # type: Optional[Tuple[Text, Text]]
         host=DEFAULT_URL,           # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
         client=NuxeoClient,         # type: Type[NuxeoClient]
-        **kwargs                    # type: **Any
+        **kwargs                    # type: Any
     ):
         # type: (...) -> None
         """
