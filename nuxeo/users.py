@@ -4,6 +4,14 @@ from __future__ import unicode_literals
 from .endpoint import APIEndpoint
 from .models import User
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Dict, Optional, Text
+        from .client import NuxeoClient
+except ImportError:
+    pass
+
 
 class API(APIEndpoint):
     def __init__(self, client, endpoint='user', headers=None):

@@ -5,10 +5,20 @@ from .endpoint import APIEndpoint
 from .exceptions import HTTPError, UnavailableConvertor
 from .models import Document
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, List, Optional, Text, Union
+        from .client import NuxeoClient
+        from .models import Blob
+        from .operations import API as OperationsAPI
+except ImportError:
+    pass
+
 
 class API(APIEndpoint):
     def __init__(self, client, operations, endpoint=None, headers=None):
-        # type: (NuxeoClient, APIEndpoint, Text, Optional[Dict[Text, Text]]) -> None
+        # type: (NuxeoClient, OperationsAPI, Text, Optional[Dict[Text, Text]]) -> None
         self.operations = operations
         super(API, self).__init__(
             client, endpoint=endpoint, cls=Document, headers=headers)
@@ -137,13 +147,13 @@ class API(APIEndpoint):
             return {}
 
     def fetch_rendition(self, uid, name):
-        # type: (Text, Text) -> bytes
+        # type: (Text, Text) -> Any
         adapter = 'rendition/{}'.format(name)
         return super(API, self).get(
             path=self._path(uid=uid), raw=True, adapter=adapter)
 
     def fetch_renditions(self, uid):
-        # type: (Text) -> List[Text]
+        # type: (Text) -> List[Any]
         headers = self.headers or {}
         headers.update({'enrichers-document': 'renditions'})
 

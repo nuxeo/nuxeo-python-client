@@ -3,12 +3,16 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.exceptions import HTTPError
 from nuxeo.models import Document, User
 
 
 def cleanup_workflows(server):
-    for wf in server.workflows.started('SerialDocumentReview'):
-        server.workflows.delete(wf.uid)
+    try:
+        for wf in server.workflows.started('SerialDocumentReview'):
+            server.workflows.delete(wf.uid)
+    except HTTPError:
+        pass
 
 
 @pytest.fixture(scope='module')

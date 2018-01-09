@@ -5,6 +5,15 @@ from .compat import text
 from .endpoint import APIEndpoint
 from .models import Task
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, List, Optional, Text, Union
+        from .client import NuxeoClient
+        from .models import Workflow
+except ImportError:
+    pass
+
 
 class API(APIEndpoint):
     def __init__(self, client, endpoint='task', headers=None):
@@ -13,7 +22,7 @@ class API(APIEndpoint):
             client, endpoint=endpoint, cls=Task, headers=headers)
 
     def get(self, options=None):
-        # type: (Optional[Text]) -> Union[Task, List[Task]]
+        # type: (Optional[Union[Dict[Text, Any], Text]]) -> Union[Task, List[Task]]
         """
         Get tasks by id or by options.
 
@@ -29,7 +38,8 @@ class API(APIEndpoint):
 
         return super(API, self).get(path=request_path, params=params)
 
-    def post(self, task):
+    def post(self, **kwargs):
+        # type: (Any) -> None
         raise NotImplementedError()
 
     def put(self, task):
@@ -43,6 +53,7 @@ class API(APIEndpoint):
         return super(API, self).put(task)
 
     def delete(self, task_id):
+        # type: (Text) -> None
         raise NotImplementedError()
 
     def complete(self, task, action, variables=None, comment=None):
@@ -74,7 +85,7 @@ class API(APIEndpoint):
         return self.get(workflow.as_dict())
 
     def transfer(self, task, transfer, actors, comment=None):
-        # type: (Text, Text, Text, Optional[Text]) -> None
+        # type: (Task, Text, Text, Optional[Text]) -> None
         """
          Delegate or reassign the Task to someone else.
 

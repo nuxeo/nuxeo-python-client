@@ -4,6 +4,13 @@ from __future__ import unicode_literals
 import mimetypes
 import sys
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, Text, Type
+except ImportError:
+    pass
+
 WIN32_PATCHED_MIME_TYPES = {
     'image/pjpeg': 'image/jpeg',
     'image/x-png': 'image/png',
@@ -51,6 +58,7 @@ class SwapAttr:
     """
 
     def __init__(self, cls, attr, value):
+        # type: (Any, Text, Any) -> None
         if not hasattr(cls, attr):
             raise AttributeError()
 
@@ -60,7 +68,9 @@ class SwapAttr:
         self.old_value = getattr(cls, attr)
 
     def __enter__(self):
+        # type: () -> None
         setattr(self.cls, self.attr, self.value)
 
     def __exit__(self, *args):
+        # type: (Any) -> None
         setattr(self.cls, self.attr, self.old_value)

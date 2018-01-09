@@ -3,19 +3,31 @@ from __future__ import unicode_literals
 
 from requests.auth import AuthBase
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Text
+        from requests import Request
+except ImportError:
+    pass
+
 
 class TokenAuth(AuthBase):
     """ Attaches Nuxeo Token Authentication to the given Request object. """
 
     def __init__(self, token):
+        # type: (Text) -> None
         self.token = token
 
     def __eq__(self, other):
+        # type: (object) -> bool
         return self.token == getattr(other, 'token', None)
 
     def __ne__(self, other):
+        # type: (object) -> bool
         return not self == other
 
     def __call__(self, r):
+        # type: (Request) -> Request
         r.headers['X-Authentication-Token'] = self.token
         return r

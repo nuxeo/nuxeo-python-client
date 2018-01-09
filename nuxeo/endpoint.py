@@ -5,6 +5,15 @@ from requests import Response
 
 from .exceptions import HTTPError
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, Optional, Text, Type, Union
+        from .client import NuxeoClient
+        from .models import Model
+except ImportError:
+    pass
+
 
 class APIEndpoint(object):
     """
@@ -35,7 +44,7 @@ class APIEndpoint(object):
             cls=None,       # type: Optional[Type]
             raw=False,      # type: bool
             single=False,   # type: bool
-            **kwargs        # type: **Any
+            **kwargs        # type: Any
             ):
         # type: (...) -> Any
         """
@@ -74,10 +83,10 @@ class APIEndpoint(object):
         if isinstance(json, list):
             return [cls.parse(resource, service=self) for resource in json]
 
-        return cls.parse(response.json(), service=self)
+        return cls.parse(json, service=self)
 
     def post(self, resource=None, path=None, raw=False, **kwargs):
-        # type: (Optional[Any], Optional[Text], Optional[Text], **Any) -> Any
+        # type: (Optional[Any], Optional[Text], bool, Any) -> Any
         """
         Creates a new instance of the resource.
 
@@ -102,10 +111,8 @@ class APIEndpoint(object):
 
         return self._cls.parse(response.json(), service=self)
 
-    create = post  # Alias for clarity
-
     def put(self, resource=None, path=None, **kwargs):
-        # type: (Optional[Model], Optional[Text], **Any) -> Any
+        # type: (Optional[Model], Optional[Text], Any) -> Any
         """
         Edits an existing resource.
 
@@ -116,10 +123,9 @@ class APIEndpoint(object):
 
         endpoint = '{}/{}'.format(self.endpoint, path or resource.uid)
 
-        if resource:
-            resource = resource.as_dict()
+        data = resource.as_dict() if resource else resource
 
-        response = self.client.request('PUT', endpoint, data=resource, **kwargs)
+        response = self.client.request('PUT', endpoint, data=data, **kwargs)
 
         if resource:
             return self._cls.parse(response.json(), service=self)

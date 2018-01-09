@@ -7,6 +7,14 @@ from .compat import text
 from .endpoint import APIEndpoint
 from .models import Blob, Operation
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, Optional, Text, Tuple, Type
+        from .client import NuxeoClient
+except ImportError:
+    pass
+
 PARAM_TYPES = {  # Types allowed for operations parameters
     'blob': (text, Blob),
     'boolean': (bool,),
@@ -24,13 +32,13 @@ PARAM_TYPES = {  # Types allowed for operations parameters
     'string': (text,),
     'stringlist': (Sequence,),
     'validationmethod': (text,),
-}  # type = Dict[Text, Tuple[type, ...]])
+}  # type: Dict[Text, Tuple[Type, ...]]
 
 
 class API(APIEndpoint):
     def __init__(self, client, endpoint='site/automation', headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        self.ops = {}
+        self.ops = {}  # type: Dict[Text, Any]
         headers = headers or {}
         headers.update({
             'Content-Type': 'application/json+nxrequest',
@@ -41,16 +49,20 @@ class API(APIEndpoint):
         self.endpoint = endpoint
 
     def get(self, **kwargs):
+        # type: (Any) -> Dict[Text, Any]
         return super(API, self).get()
 
-    def put(self, resource, **kwargs):
+    def put(self, **kwargs):
+        # type: (Any) -> None
         raise NotImplementedError()
 
     def delete(self, resource_id):
+        # type: (Text) -> None
         raise NotImplementedError()
 
     @property
     def operations(self):
+        # type: () -> Dict[Text, Any]
         """
         Get a dict of available operations.
 
@@ -116,7 +128,7 @@ class API(APIEndpoint):
                 void_op=False,          # type: bool
                 headers=None,           # type: Optional[Dict[Text, Text]]
                 file_out=None,          # type: Optional[Text]
-                **params                # type: **Any
+                **params                # type: Any
                 ):
         # type: (...) -> Any
         """
@@ -158,7 +170,7 @@ class API(APIEndpoint):
         if void_op:
             headers['X-NXVoidOperation'] = 'true'
 
-        data = {'params': {}}
+        data = {'params': {}}  # type: Dict[Text, Any]
         for k, v in params.items():
             if v is None:
                 continue
@@ -197,5 +209,5 @@ class API(APIEndpoint):
             return resp.content
 
     def new(self, command, **kwargs):
-        # type: (Text, **Any) -> Operation
+        # type: (Text, Any) -> Operation
         return Operation(command=command, service=self, **kwargs)

@@ -5,6 +5,15 @@ from .endpoint import APIEndpoint
 from .models import Task, Workflow
 from .utils import SwapAttr
 
+try:
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Dict, List, Optional, Text, Union
+        from .client import NuxeoClient
+        from .models import Document
+except ImportError:
+    pass
+
 
 class API(APIEndpoint):
     def __init__(self, client, endpoint='workflow', headers=None):
@@ -23,7 +32,7 @@ class API(APIEndpoint):
         return super(API, self).get(path=workflow_id)
 
     def post(self, model, document=None, options=None):
-        # type: (Text, Document, Optional[Dict[Text, Any]]) -> Workflow
+        # type: (Text, Optional[Document], Optional[Dict[Text, Any]]) -> Workflow
         """
         Start a workflow.
 
@@ -53,6 +62,7 @@ class API(APIEndpoint):
     start = post  # Alias for clarity
 
     def put(self, **kwargs):
+        # type: (Any) -> None
         raise NotImplementedError
 
     def delete(self, workflow_id):
@@ -66,7 +76,7 @@ class API(APIEndpoint):
         return super(API, self).delete(workflow_id)
 
     def graph(self, workflow):
-        # type: (Text) -> Dict[Text, Any]
+        # type: (Workflow) -> Dict[Text, Any]
         """
         Get the graph of the workflow in JSON format.
 
@@ -99,16 +109,3 @@ class API(APIEndpoint):
         :return: the started workflows
         """
         return super(API, self).get(params={'workflowModelName': model})
-
-    def tasks(self, options=None):
-        # type: (Optional[Dict[Text, Text]]) -> List[Task]
-        """
-        Get a list of tasks following the (optional) constraints.
-
-        :param options: the options
-        :return: the corresponding list of tasks
-        """
-        endpoint = '{}/task'.format(self.client.api_path)
-        with SwapAttr(self, 'endpoint', endpoint):
-            tasks = super(API, self).get(cls=Task, params=options)
-        return tasks

@@ -89,11 +89,11 @@ Manipulate documents
 Use workflows and tasks
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-**Start a workflow**
+**Start a workflow on a document**
 
 .. code:: python
 
-    doc.start_workflow('SerialDocumentReview')
+    nuxeo.workflows.start('SerialDocumentReview', document=doc)
 
 **Complete a workflow task**
 
