@@ -18,8 +18,6 @@ from __future__ import unicode_literals
 
 from os import path
 
-import pkg_resources
-from setuptools.config import read_configuration
 
 try:
     from typing import Text
@@ -30,8 +28,10 @@ except ImportError:
 def _extract_version():
     # type: () -> Text
     try:
+        import pkg_resources
         return pkg_resources.get_distribution('nuxeo').version
-    except pkg_resources.DistributionNotFound:
+    except (ImportError, pkg_resources.DistributionNotFound):
+        from setuptools.config import read_configuration
         _conf = read_configuration(path.join(
             path.dirname(path.dirname(__file__)), 'setup.cfg'))
         return _conf['metadata']['version']

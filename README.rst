@@ -32,7 +32,11 @@ Check out the `API documentation <https://nuxeo.github.io/nuxeo-python-client/la
 Requirements
 ------------
 
-The Nuxeo Python client works only with the Nuxeo Platform >= LTS 2015.
+The Nuxeo Python client works only with:
+
+-  the Nuxeo Platform >= LTS 2015
+-  ``requests`` >= 2.12.2 (for unicode authentication)
+-  ``setuptools`` >= 30.3.0
 
 Quick Start
 -----------
