@@ -12,7 +12,7 @@ except ImportError:
 
 
 class CorruptedFile(ValueError):
-    """ Exception thrown when digests of a downloaded blob are differents. """
+    """ Exception thrown when digests of a downloaded blob are different. """
 
     def __init__(self, filename, server_digest, local_digest):
         self.filename = filename

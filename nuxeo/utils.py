@@ -10,7 +10,7 @@ try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
         from _hashlib import HASH
-        from typing import Any, Dict, Text, Type
+        from typing import Any, Dict, Text, Type, Union
 except ImportError:
     pass
 
@@ -58,7 +58,7 @@ def get_digester(digest):
     except (TypeError, ValueError):
         return None
 
-    # Retreive the hashlib function for the given digest, None if not found
+    # Retrieve the hashlib function for the given digest, None if not found
     func = getattr(hashlib, digesters.get(len(digest), ''), None)
     if not func:
         logger.error('No valid hash algorithm found for digest %r', digest)
