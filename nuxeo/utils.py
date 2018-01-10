@@ -1,16 +1,21 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import hashlib
+import logging
 import mimetypes
 import sys
 
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, Text, Type
+        from _hashlib import HASH
+        from typing import Any, Dict, Text, Type, Union
 except ImportError:
     pass
 
+
+logger = logging.getLogger(__name__)
 WIN32_PATCHED_MIME_TYPES = {
     'image/pjpeg': 'image/jpeg',
     'image/x-png': 'image/png',
@@ -23,6 +28,43 @@ WIN32_PATCHED_MIME_TYPES = {
     'application/x-mspowerpoint.12':
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 }
+
+
+def get_digester(digest):
+    # type: (Text) -> Union[HASH, None]
+    """
+    Get the digester corresponding to the given hash.
+
+    To choose the digester used by the server, see
+    https://doc.nuxeo.com/nxdoc/file-storage-configuration/#configuring-the-default-blobprovider
+
+    :param digest: the hash
+    :return: the digester function
+    """
+
+    # Available alogrithms
+    digesters = {
+        32: 'md5',
+        40: 'sha1',
+        56: 'sha224',
+        64: 'sha256',
+        96: 'sha384',
+        128: 'sha512',
+    }
+
+    # Ensure the digest is hexadecimal
+    try:
+        int(digest, 16) >= 0
+    except (TypeError, ValueError):
+        return None
+
+    # Retrieve the hashlib function for the given digest, None if not found
+    func = getattr(hashlib, digesters.get(len(digest), ''), None)
+    if not func:
+        logger.error('No valid hash algorithm found for digest %r', digest)
+        return None
+
+    return func()
 
 
 def guess_mimetype(filename):

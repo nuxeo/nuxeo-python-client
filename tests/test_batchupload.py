@@ -1,12 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import hashlib
 import os
 
 import pytest
 
-from nuxeo.exceptions import HTTPError, InvalidBatch
+from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch
 from nuxeo.models import BufferBlob, Document, FileBlob
 
 new_doc = Document(
@@ -35,6 +34,41 @@ def test_cancel(server):
         batch.get(0)
 
 
+@pytest.mark.parametrize('hash, is_valid', [
+    # Known algos
+    ('0' * 32, False),
+    ('0' * 40, False),
+    ('0' * 56, False),
+    ('0' * 64, False),
+    ('0' * 96, False),
+    ('0' * 128, False),
+    # Other
+    (None, True),
+    ('', True),
+    ('foo', True),
+])
+def test_digester(hash, is_valid, server):
+    file_out = 'test_out'
+    doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
+    try:
+        batch = get_batch(server)
+        operation = server.operations.new('Blob.AttachOnDocument')
+        operation.params = {'document': pytest.ws_root_path + '/Document'}
+        operation.input_obj = batch.get(0)
+        operation.execute(void_op=True)
+
+        operation = server.operations.new('Blob.Get')
+        operation.input_obj = pytest.ws_root_path + '/Document'
+        if is_valid:
+            operation.execute(file_out=file_out, digest=hash)
+        else:
+            with pytest.raises(CorruptedFile):
+                operation.execute(file_out=file_out, digest=hash)
+    finally:
+        doc.delete()
+        os.remove(file_out)
+
+
 def test_fetch(server):
     batch = get_batch(server)
     blob = batch.get(0)
@@ -48,26 +82,6 @@ def test_fetch(server):
     assert blob.uploadType == 'normal'
     assert blob.uploaded
     assert blob.uploadedSize == 4
-
-
-def test_operation(server):
-    batch = get_batch(server)
-    server.client.set(schemas=['dublincore', 'file'])
-    doc = server.documents.create(
-        new_doc, parent_path=pytest.ws_root_path)
-    try:
-        assert doc.properties['file:content'] is None
-        operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': pytest.ws_root_path + '/Document'}
-        operation.input_obj = batch.get(0)
-        operation.execute()
-        doc = server.documents.get(path=pytest.ws_root_path + '/Document')
-        assert doc.properties['file:content'] is not None
-        blob = doc.fetch_blob()
-        assert isinstance(blob, bytes)
-        assert blob == b'data'
-    finally:
-        doc.delete()
 
 
 def test_iter_content(server):
@@ -84,18 +98,21 @@ def test_iter_content(server):
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
 
+        operation = server.operations.new('Document.Fetch')
+        operation.params = {'value': pytest.ws_root_path + '/Document'}
+        info = operation.execute()
+        digest = info['properties']['file:content']['digest']
+
         operation = server.operations.new('Blob.Get')
         operation.input_obj = pytest.ws_root_path + '/Document'
-        file_out = operation.execute(file_out=file_out)
-        with open(file_in, 'rb') as f:
-            md5_in = hashlib.md5(f.read()).hexdigest()
-        with open(file_out, 'rb') as f:
-            md5_out = hashlib.md5(f.read()).hexdigest()
-        assert md5_in == md5_out
+        file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
         doc.delete()
-        os.remove(file_in)
-        os.remove(file_out)
+        for file_ in (file_in, file_out):
+            try:
+                os.remove(file_)
+            except OSError:
+                pass
 
 
 def test_mimetype():
@@ -107,6 +124,26 @@ def test_mimetype():
         assert blob.mimetype in ['image/bmp', 'image/x-ms-bmp']
     finally:
         os.remove(test)
+
+
+def test_operation(server):
+    batch = get_batch(server)
+    server.client.set(schemas=['dublincore', 'file'])
+    doc = server.documents.create(
+        new_doc, parent_path=pytest.ws_root_path)
+    try:
+        assert not doc.properties['file:content']
+        operation = server.operations.new('Blob.AttachOnDocument')
+        operation.params = {'document': pytest.ws_root_path + '/Document'}
+        operation.input_obj = batch.get(0)
+        operation.execute()
+        doc = server.documents.get(path=pytest.ws_root_path + '/Document')
+        assert doc.properties['file:content']
+        blob = doc.fetch_blob()
+        assert isinstance(blob, bytes)
+        assert blob == b'data'
+    finally:
+        doc.delete()
 
 
 def test_wrong_batch_id(server):
