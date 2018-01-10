@@ -65,8 +65,8 @@ def test_digester(hash, is_valid, server):
             with pytest.raises(CorruptedFile):
                 operation.execute(file_out=file_out, digest=hash)
     finally:
-        os.remove(file_out)
         doc.delete()
+        os.remove(file_out)
 
 
 def test_fetch(server):
@@ -132,13 +132,13 @@ def test_operation(server):
     doc = server.documents.create(
         new_doc, parent_path=pytest.ws_root_path)
     try:
-        assert doc.properties['file:content'] is None
+        assert not doc.properties['file:content']
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': pytest.ws_root_path + '/Document'}
         operation.input_obj = batch.get(0)
         operation.execute()
         doc = server.documents.get(path=pytest.ws_root_path + '/Document')
-        assert doc.properties['file:content'] is not None
+        assert doc.properties['file:content']
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
         assert blob == b'data'
