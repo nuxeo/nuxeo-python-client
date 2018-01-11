@@ -18,7 +18,6 @@ from __future__ import unicode_literals
 
 from os import path
 
-
 try:
     from typing import Text
 except ImportError:

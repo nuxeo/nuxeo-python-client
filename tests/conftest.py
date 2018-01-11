@@ -2,9 +2,9 @@
 from __future__ import unicode_literals
 
 import logging
-import os
 import socket
 
+import os
 import pytest
 
 from nuxeo.client import Nuxeo

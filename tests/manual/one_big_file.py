@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 import os
-
 from memory_profiler import profile
 
 from nuxeo.client import Nuxeo

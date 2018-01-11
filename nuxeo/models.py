@@ -224,7 +224,8 @@ class BufferBlob(Blob):
         return self.stringio
 
     def __exit__(self, *args):
-        self.stringio.close()
+        if self.stringio:
+            self.stringio.close()
 
 
 class FileBlob(Blob):
@@ -258,7 +259,8 @@ class FileBlob(Blob):
         return self.fd
 
     def __exit__(self, *args):
-        self.fd.close()
+        if self.fd:
+            self.fd.close()
 
 
 class Directory(Model):

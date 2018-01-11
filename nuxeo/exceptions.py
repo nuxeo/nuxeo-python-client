@@ -26,6 +26,18 @@ class CorruptedFile(ValueError):
         return err.format(self.filename, self.server_digest, self.local_digest)
 
 
+class EmptyFile(ValueError):
+    """ Exception thrown when someone tries to upload an empty file. """
+
+    def __init__(self, name):
+        # type: (Text) -> None
+        self.name = name
+
+    def __str__(self):
+        # type: () -> Text
+        return 'File {!r} is empty.'.format(self.name)
+
+
 class HTTPError(Exception):
     _valid_properties = {
         'status': None,
@@ -83,3 +95,20 @@ class UnavailableConvertor(Exception):
     def __str__(self):
         # type: () -> Text
         return 'Conversion with options {!r} is not available'.format(self.options)
+
+
+class UploadError(OSError):
+    """
+    Exception thrown when an upload fails even after retries.
+    """
+    def __init__(self, name, chunk=None):
+        # type: (Text, Optional[int]) -> None
+        self.name = name
+        self.chunk = chunk
+
+    def __str__(self):
+        # type: () -> Text
+        err = 'Unable to upload file {!r}'.format(self.name)
+        if self.chunk:
+            err = '{} (failed at chunk {})'.format(err, self.chunk)
+        return err

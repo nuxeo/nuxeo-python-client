@@ -26,10 +26,10 @@ Example output:
 from __future__ import unicode_literals
 
 import argparse
+
 import os
 import re
 from collections import defaultdict
-
 from requests import HTTPError
 
 from nuxeo.client import Nuxeo

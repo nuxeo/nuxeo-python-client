@@ -1,10 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import hashlib
 import logging
 import mimetypes
 import sys
+
+import hashlib
 
 try:
     from typing import TYPE_CHECKING

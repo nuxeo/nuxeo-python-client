@@ -2,10 +2,9 @@
 from __future__ import unicode_literals
 
 import os
-
 import pytest
 
-from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch
+from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, EmptyFile
 from nuxeo.models import BufferBlob, Document, FileBlob
 
 new_doc = Document(
@@ -67,6 +66,12 @@ def test_digester(hash, is_valid, server):
     finally:
         doc.delete()
         os.remove(file_out)
+
+
+def test_empty_file(server):
+    batch = server.uploads.batch()
+    with pytest.raises(EmptyFile):
+        batch.upload(BufferBlob(data='', name='Test.txt'))
 
 
 def test_fetch(server):
