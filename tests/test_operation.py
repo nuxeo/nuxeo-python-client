@@ -8,6 +8,7 @@ from nuxeo.exceptions import HTTPError
 
 def test_document_fetch_by_property(server):
     operation = server.operations.new('Document.FetchByProperty')
+    assert repr(operation)
     operation.params = {'property': 'dc:title', 'values': 'Workspaces'}
     res = operation.execute()
     assert res['entity-type'] == 'documents'

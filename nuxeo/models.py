@@ -37,6 +37,11 @@ class Model(object):
         # type: (Optional[APIEndpoint], Any) -> None
         self.service = service
 
+    def __repr__(self):
+        attrs = ', '.join('{}={!r}'.format(attr, getattr(self, attr, None))
+                          for attr in sorted(self._valid_properties))
+        return '<{} {}>'.format(self.__class__.__name__, attrs)
+
     def as_dict(self):
         # type: () -> Dict[Text, Any]
         """ Returns a dict representation of the resource. """

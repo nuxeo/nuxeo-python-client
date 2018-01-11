@@ -19,7 +19,10 @@ new_doc = Document(
 def get_batch(server):
     batch = server.uploads.batch()
     assert batch
-    batch.upload(BufferBlob(data='data', name='Test.txt', mimetype='text/plain'))
+    assert repr(batch)
+    blob = BufferBlob(data='data', name='Test.txt', mimetype='text/plain')
+    assert repr(blob)
+    batch.upload(blob)
     assert batch.uid
     return batch
 
@@ -128,7 +131,9 @@ def test_upload(server):
 
     doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
     try:
-        batch.upload(FileBlob(file_in, mimetype='application/octet-stream'))
+        blob = FileBlob(file_in, mimetype='application/octet-stream')
+        assert repr(blob)
+        batch.upload(blob)
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': pytest.ws_root_path + '/Document'}
         operation.input_obj = batch.get(0)

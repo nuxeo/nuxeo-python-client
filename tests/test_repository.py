@@ -140,7 +140,7 @@ def test_fetch_acls(server):
         assert acls[0]['name'] == 'inherited'
         aces = list(sorted(acls[0]['aces'], key=operator.itemgetter('id')))
         assert aces[0]['id'] == 'Administrator:Everything:true:::'
-        assert aces[1]['id'] == 'members:Read:true:::'
+        assert aces[-1]['id'] == 'members:Read:true:::'
 
 
 def test_fetch_blob(server):

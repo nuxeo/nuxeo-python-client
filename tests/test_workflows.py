@@ -47,11 +47,13 @@ def test_basic_workflow(tasks, workflows, server):
     try:
         workflow = workflows.start('SerialDocumentReview', doc)
         assert workflow
+        assert repr(workflow)
         wfs = workflows.started('SerialDocumentReview')
         assert len(wfs) == 1
         tks = tasks.get()
         assert len(tks) == 1
         task = tks[0]
+        assert repr(task)
         infos = {
             'participants': ['user:Administrator'],
             'assignees': ['user:Administrator'],

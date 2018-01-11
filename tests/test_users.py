@@ -45,6 +45,7 @@ def test_create_wrong_arguments(server):
 def test_fetch(server):
     user = server.users.get('Administrator')
     assert user
+    assert repr(user)
     assert 'administrators' in user.properties['groups']
 
 

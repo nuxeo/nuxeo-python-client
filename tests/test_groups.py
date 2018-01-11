@@ -15,6 +15,7 @@ def get_group(server):
         grouplabel='Group Test',
         memberUsers=['Administrator'],
         memberGroups=['Administrators'])
+    assert repr(group)
     return server.groups.create(group)
 
 

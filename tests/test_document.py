@@ -64,6 +64,7 @@ def test_document_move(server):
         properties={
             'dc:title': 'bar.txt',
         })
+    assert repr(doc)
     folder = Document(
         name='Test',
         type='Folder',

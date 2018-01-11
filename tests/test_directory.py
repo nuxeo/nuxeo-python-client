@@ -19,6 +19,7 @@ def test_crud(directory):
     assert entry.properties['id'] == 'foo'
     assert entry.uid == 'foo'
     assert entry.properties['label'] == 'Foo'
+    assert repr(entry)
 
     entry.properties['label'] = 'Test'
     entry.save()
