@@ -72,7 +72,7 @@ class APIEndpoint(object):
                 return response.content
             json = response.json()
         else:
-            json = response
+            return response
 
         if cls is dict:
             return json

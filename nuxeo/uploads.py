@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from .compat import quote, text
 from .endpoint import APIEndpoint
-from .models import Batch, Blob, FileBlob
+from .models import Batch, Blob
 from .utils import SwapAttr
 
 try:
@@ -13,6 +13,9 @@ try:
         from .client import NuxeoClient
 except ImportError:
     pass
+
+CHUNK_LIMIT = 10 * 1024 * 1024
+MAX_RETRY = 3
 
 
 class API(APIEndpoint):
@@ -33,11 +36,11 @@ class API(APIEndpoint):
         :param file_idx: the index of the blob
         :return: the batch details
         """
-        request_path = batch_id
+        path = batch_id
         if file_idx is not None:
-            request_path = '{}/{}'.format(request_path, file_idx)
+            path = '{}/{}'.format(path, file_idx)
 
-        resource = super(API, self).get(path=request_path)
+        resource = super(API, self).get(path=path)
 
         if file_idx is not None:
             resource.batch_id = batch_id
@@ -81,15 +84,19 @@ class API(APIEndpoint):
             with SwapAttr(self, '_cls', Batch):
                 super(API, self).delete(target)
 
-    def upload(self, batch, blob):
+    def upload(self, batch, blob, chunked=False, limit=CHUNK_LIMIT):
         # type: (Batch, Blob) -> Blob
         """
         Upload a blob.
 
         :param batch: batch of the upload
         :param blob: blob to upload
+        :param chunked: if True, send in chunks
+        :param limit: if blob is bigger, send in chunks
         :return: uploaded blob details
         """
+        chunked = chunked or blob.size > limit
+
         headers = self.headers
         headers.update({
             'Cache-Control': 'no-cache',
@@ -99,17 +106,59 @@ class API(APIEndpoint):
             'Content-Length': text(blob.size),
         })
 
-        request_path = '{}/{}'.format(batch.batchId, batch.upload_idx)
-        try:
-            response = super(API, self).post(
-                resource=blob.data,
-                path=request_path,
-                raw=True,
-                headers=headers
-            )
-        finally:
-            if isinstance(blob, FileBlob):
-                blob.fd.close()
+        path = '{}/{}'.format(batch.batchId, batch.upload_idx)
+
+        if chunked:
+            info = super(API, self).get(path, default=None)
+
+            if info and (info.uploadType == 'normal'
+                         or len(info.uploadedChunkIds) == info.chunkCount):
+                return info  # All the chunks have been uploaded
+
+            if info:
+                chunk_count = info.chunkCount
+                chunk_size = info.size // chunk_count + (info.size % chunk_count > 0)
+                index = info.uploadedChunkIds[-1] + 1
+            else:  # It's a new upload
+                chunk_size = self.client.chunk_size
+                chunk_count = blob.size // chunk_size + (blob.size % chunk_size > 0)
+                index = 0
+
+            headers.update({
+                'X-Upload-Type': 'chunked',
+                'X-Upload-Chunk-Count': text(chunk_count),
+                'Content-Length': text(chunk_size)
+            })
+        else:
+            index, chunk_count = 0, 1
+            chunk_size = blob.size or None
+
+        with blob as source:
+            if index:
+                source.seek(index * chunk_size)
+            while index < chunk_count:
+                data = source.read(chunk_size)
+                if not data:
+                    break
+
+                if chunked:
+                    headers['X-Upload-Chunk-Index'] = text(index)
+
+                for i in range(MAX_RETRY):
+                    response = super(API, self).post(
+                        resource=data,
+                        path=path,
+                        raw=True,
+                        headers=headers,
+                        default=None
+                    )
+                    if response:
+                        break
+
+                if not response:
+                    raise ConnectionError('Unable to upload chunk.')
+                index += 1
+
         batch.upload_idx += 1
         response.batch_id = batch.uid
         return response

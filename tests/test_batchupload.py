@@ -84,7 +84,38 @@ def test_fetch(server):
     assert blob.uploadedSize == 4
 
 
-def test_iter_content(server):
+def test_mimetype():
+    test = 'test.bmp'
+    with open(test, 'wb') as f:
+        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+    try:
+        blob = FileBlob(test)
+        assert blob.mimetype in ['image/bmp', 'image/x-ms-bmp']
+    finally:
+        os.remove(test)
+
+
+def test_operation(server):
+    batch = get_batch(server)
+    server.client.set(schemas=['dublincore', 'file'])
+    doc = server.documents.create(
+        new_doc, parent_path=pytest.ws_root_path)
+    try:
+        assert not doc.properties['file:content']
+        operation = server.operations.new('Blob.AttachOnDocument')
+        operation.params = {'document': pytest.ws_root_path + '/Document'}
+        operation.input_obj = batch.get(0)
+        operation.execute()
+        doc = server.documents.get(path=pytest.ws_root_path + '/Document')
+        assert doc.properties['file:content']
+        blob = doc.fetch_blob()
+        assert isinstance(blob, bytes)
+        assert blob == b'data'
+    finally:
+        doc.delete()
+
+
+def test_upload(server):
     batch = server.uploads.batch()
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:
@@ -115,35 +146,35 @@ def test_iter_content(server):
                 pass
 
 
-def test_mimetype():
-    test = 'test.bmp'
-    with open(test, 'wb') as f:
+def test_upload_chunked(server):
+    batch = server.uploads.batch()
+    file_in, file_out = 'test_in', 'test_out'
+    with open(file_in, 'wb') as f:
         f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
-    try:
-        blob = FileBlob(test)
-        assert blob.mimetype in ['image/bmp', 'image/x-ms-bmp']
-    finally:
-        os.remove(test)
 
-
-def test_operation(server):
-    batch = get_batch(server)
-    server.client.set(schemas=['dublincore', 'file'])
-    doc = server.documents.create(
-        new_doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
     try:
-        assert not doc.properties['file:content']
+        batch.upload(FileBlob(file_in, mimetype='application/octet-stream'), chunked=True)
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': pytest.ws_root_path + '/Document'}
         operation.input_obj = batch.get(0)
-        operation.execute()
-        doc = server.documents.get(path=pytest.ws_root_path + '/Document')
-        assert doc.properties['file:content']
-        blob = doc.fetch_blob()
-        assert isinstance(blob, bytes)
-        assert blob == b'data'
+        operation.execute(void_op=True)
+
+        operation = server.operations.new('Document.Fetch')
+        operation.params = {'value': pytest.ws_root_path + '/Document'}
+        info = operation.execute()
+        digest = info['properties']['file:content']['digest']
+
+        operation = server.operations.new('Blob.Get')
+        operation.input_obj = pytest.ws_root_path + '/Document'
+        file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
         doc.delete()
+        for file_ in (file_in, file_out):
+            try:
+                os.remove(file_)
+            except OSError:
+                pass
 
 
 def test_wrong_batch_id(server):

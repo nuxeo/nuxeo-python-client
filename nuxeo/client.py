@@ -24,7 +24,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-CHUNK_SIZE = 8192  # Chunk size to download files
+CHUNK_SIZE = 256 * 1024  # Chunk size to download files
 DEFAULT_URL = 'http://localhost:8080/nuxeo/'
 DEFAULT_API_PATH = 'api/v1'
 DEFAULT_APP_NAME = 'Python client'
