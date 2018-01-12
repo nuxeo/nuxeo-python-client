@@ -1,22 +1,27 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import socket
+
 import pytest
 
 from nuxeo.exceptions import HTTPError
 from nuxeo.models import Document, User
 
 
-def cleanup_workflows(server):
+@pytest.fixture(scope='function')
+def workflows(server):
     try:
-        for wf in server.workflows.started('SerialDocumentReview'):
-            server.workflows.delete(wf.uid)
+        for wf in server.workflows.started(None):
+            wf.delete()
     except HTTPError:
         pass
-
-
-@pytest.fixture(scope='module')
-def workflows(server):
+    for item in ('task-root', 'document-route-instances-root'):
+        try:
+            server.client.request(
+                'DELETE', 'repo/default/path/{}'.format(item))
+        except (HTTPError, socket.timeout):
+            pass
     return server.workflows
 
 
@@ -26,7 +31,6 @@ def tasks(server):
 
 
 def test_basic_workflow(tasks, workflows, server):
-    cleanup_workflows(server)
     user = User(
         properties={
             'firstName': 'Georges',
@@ -76,7 +80,6 @@ def test_basic_workflow(tasks, workflows, server):
 
 
 def test_get_workflows(tasks, workflows, server):
-    cleanup_workflows(server)
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
@@ -103,7 +106,6 @@ def test_get_workflows(tasks, workflows, server):
 
 
 def test_fetch_graph(workflows, server):
-    cleanup_workflows(server)
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
