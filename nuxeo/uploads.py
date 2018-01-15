@@ -85,6 +85,18 @@ class API(APIEndpoint):
 
     def send_data(self, name, data, path, chunked, index, headers):
         # type: (Union[Text, bytes], Text, bool, int, Dict[Text, Text]) -> Blob
+        """
+        Send data/chunks to the server.
+
+
+        :param name: name of the file being uploaded
+        :param data: data being sent
+        :param path: url for the upload
+        :param chunked: True if the upload is in chunks
+        :param index: which chunk is being sent (0 if not chunked)
+        :param headers: HTTP request headers
+        :return: the blob info
+        """
         if chunked:
             headers['X-Upload-Chunk-Index'] = text(index)
 
@@ -93,8 +105,7 @@ class API(APIEndpoint):
                 resource=data,
                 path=path,
                 raw=True,
-                headers=headers,
-                default=None
+                headers=headers
             )
             if response:
                 break

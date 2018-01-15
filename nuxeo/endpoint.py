@@ -109,6 +109,8 @@ class APIEndpoint(object):
         response = self.client.request(
             'POST', endpoint, data=resource, raw=raw, **kwargs)
 
+        if isinstance(response, dict):
+            return response
         return self._cls.parse(response.json(), service=self)
 
     def put(self, resource=None, path=None, **kwargs):

@@ -38,7 +38,8 @@ class Model(object):
         self.service = service
 
     def __repr__(self):
-        attrs = ', '.join('{}={!r}'.format(attr, getattr(self, attr, None))
+        attrs = ', '.join('{}={!r}'.format(
+            attr, getattr(self, attr.replace('-', '_'), None))
                           for attr in sorted(self._valid_properties))
         return '<{} {}>'.format(self.__class__.__name__, attrs)
 

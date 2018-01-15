@@ -79,6 +79,7 @@ def test_document_move(server):
     finally:
         doc.delete()
         folder.delete()
+    assert not server.documents.exists(path=doc.path)
 
 
 def test_follow_transition(server):

@@ -1,11 +1,14 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import threading
+
 import os
 import pytest
 
 from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, EmptyFile
 from nuxeo.models import BufferBlob, Document, FileBlob
+from tests.server import Server
 
 new_doc = Document(
     name='Document',
@@ -123,7 +126,8 @@ def test_operation(server):
         doc.delete()
 
 
-def test_upload(server):
+@pytest.mark.parametrize('chunked', [False, True])
+def test_upload(chunked, server, monkeypatch):
     batch = server.uploads.batch()
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:
@@ -133,7 +137,7 @@ def test_upload(server):
     try:
         blob = FileBlob(file_in, mimetype='application/octet-stream')
         assert repr(blob)
-        batch.upload(blob)
+        batch.upload(blob, chunked=chunked)
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': pytest.ws_root_path + '/Document'}
         operation.input_obj = batch.get(0)
@@ -156,35 +160,34 @@ def test_upload(server):
                 pass
 
 
-def test_upload_chunked(server):
-    batch = server.uploads.batch()
-    file_in, file_out = 'test_in', 'test_out'
-    with open(file_in, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
-
-    doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
+def test_server(server):
+    """can safely send generators"""
+    close_server = threading.Event()
+    server_host = server.client.host
+    server.client.host = 'http://localhost:8081/nuxeo/'
     try:
-        batch.upload(FileBlob(file_in, mimetype='application/octet-stream'), chunked=True)
-        operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': pytest.ws_root_path + '/Document'}
-        operation.input_obj = batch.get(0)
-        operation.execute(void_op=True)
+        serv = Server.upload_response_server(
+            wait_to_close_event=close_server,
+            port=8081,
+            requests_to_handle=2
+        )
+        file_in = 'test_in'
 
-        operation = server.operations.new('Document.Fetch')
-        operation.params = {'value': pytest.ws_root_path + '/Document'}
-        info = operation.execute()
-        digest = info['properties']['file:content']['digest']
+        with serv:
+            batch = server.uploads.batch()
+            with open(file_in, 'wb') as f:
+                f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+            blob = FileBlob(file_in, mimetype='application/octet-stream')
+            # batch = Batch(batchId='361d04e8-da3f-43f8-8234-f36598b62192', service=server.uploads)
+            batch.upload(blob)
+            close_server.set()  # release server block
 
-        operation = server.operations.new('Blob.Get')
-        operation.input_obj = pytest.ws_root_path + '/Document'
-        file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
-        doc.delete()
-        for file_ in (file_in, file_out):
-            try:
-                os.remove(file_)
-            except OSError:
-                pass
+        server.client.host = server_host
+        try:
+            os.remove(file_in)
+        except OSError:
+            pass
 
 
 def test_wrong_batch_id(server):
