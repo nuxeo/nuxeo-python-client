@@ -16,8 +16,9 @@ logging.basicConfig(format='%(module)-14s %(levelname).1s %(message)s',
 
 def pytest_namespace():
     """
-    This namespace is used to store global variables for tests.
-    They can be accessed with `pytest.<variable_name>` e.g. `pytest.ws_root_path`
+    This namespace is used to store global variables for
+    tests. They can be accessed with `pytest.<variable_name>`
+    e.g. `pytest.ws_root_path`
     """
     return {
         'ws_root_path': '/default-domain/workspaces',
@@ -35,10 +36,8 @@ def cleanup(request, server):
     except (HTTPError, socket.timeout):
         pass
 
-    msg = ('>>> testing: '
-           + request.module.__name__
-           + '.'
-           + request.function.__name__)
+    msg = ('>>> testing: {}.{}'.format(
+        request.module.__name__, request.function.__name__))
     server.operations.execute(command='Log', level='warn', message=msg)
 
 

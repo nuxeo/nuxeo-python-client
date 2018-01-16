@@ -22,7 +22,8 @@ class CorruptedFile(ValueError):
 
     def __str__(self):
         # type: () -> Text
-        err = 'Corrupted file {!r}: server digest is {!r}, local digest is {!r}'
+        err = ('Corrupted file {!r}: server digest '
+               'is {!r}, local digest is {!r}')
         return err.format(self.filename, self.server_digest, self.local_digest)
 
 
@@ -94,7 +95,8 @@ class UnavailableConvertor(Exception):
 
     def __str__(self):
         # type: () -> Text
-        return 'Conversion with options {!r} is not available'.format(self.options)
+        err = 'Conversion with options {!r} is not available'
+        return err.format(self.options)
 
 
 class UploadError(OSError):

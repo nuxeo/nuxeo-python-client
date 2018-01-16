@@ -95,7 +95,8 @@ class API(APIEndpoint):
 
         operation = self.operations.get(command)
         if not operation:
-            raise ValueError('{!r} is not a registered operation'.format(command))
+            raise ValueError(
+                '{!r} is not a registered operation'.format(command))
 
         parameters = {param['name']: param for param in operation['params']}
 
@@ -122,16 +123,17 @@ class API(APIEndpoint):
                 err = 'missing required parameter {!r} for operation {!r}'
                 raise ValueError(err.format(name, command))
 
-    def execute(self,
-                operation=None,         # type: Optional[Operation]
-                command=None,           # type: Optional[Text]
-                input_obj=None,         # type: Optional[Any]
-                check_params=False,     # type: bool
-                void_op=False,          # type: bool
-                headers=None,           # type: Optional[Dict[Text, Text]]
-                file_out=None,          # type: Optional[Text]
-                **kwargs                # type: Any
-                ):
+    def execute(
+        self,
+        operation=None,  # type: Optional[Operation]
+        command=None,  # type: Optional[Text]
+        input_obj=None,  # type: Optional[Any]
+        check_params=False,  # type: bool
+        void_op=False,  # type: bool
+        headers=None,  # type: Optional[Dict[Text, Text]]
+        file_out=None,  # type: Optional[Text]
+        **kwargs,  # type: Any
+    ):
         # type: (...) -> Any
         """
         Execute an operation.
@@ -198,9 +200,10 @@ class API(APIEndpoint):
             digester = get_digester(digest)
 
             with open(file_out, 'wb') as f:
-                for chunk in resp.iter_content(chunk_size=self.client.chunk_size):
+                chunk_size = kwargs.get('chunk_size', self.client.chunk_size)
+                for chunk in resp.iter_content(chunk_size=chunk_size):
                     if operation:
-                        operation.progress += self.client.chunk_size
+                        operation.progress += chunk_size
                     f.write(chunk)
                     if digester:
                         digester.update(chunk)

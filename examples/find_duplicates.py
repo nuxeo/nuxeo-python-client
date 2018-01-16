@@ -33,7 +33,7 @@ from collections import defaultdict
 from requests import HTTPError
 
 from nuxeo.client import Nuxeo
-from nuxeo.compat import quote, get_bytes
+from nuxeo.compat import get_bytes, quote
 
 
 class BColors(object):

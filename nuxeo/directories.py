@@ -39,11 +39,12 @@ class API(APIEndpoint):
             return entries
         return Directory(directoryName=dir_name, entries=entries, service=self)
 
-    def post(self,
-             resource=None,     # type: Union[Directory, DirectoryEntry]
-             dir_name=None,     # type: Optional[Text]
-             **kwargs           # type: Any
-             ):
+    def post(
+        self,
+        resource=None,  # type: Union[Directory, DirectoryEntry]
+        dir_name=None,  # type: Optional[Text]
+        **kwargs,  # type: Any
+    ):
         # type: (...) -> resource
         """
         Create a directory or an entry.
@@ -60,10 +61,11 @@ class API(APIEndpoint):
 
     create = post  # Alias for clarity
 
-    def put(self,
-            resource,  # type: Union[Directory, DirectoryEntry]
-            dir_name,  # type: Text
-            ):
+    def put(
+        self,
+        resource,  # type: Union[Directory, DirectoryEntry]
+        dir_name,  # type: Text
+    ):
         # type: (...) -> resource
         """
         Update an entry.

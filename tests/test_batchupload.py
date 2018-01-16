@@ -6,7 +6,8 @@ import threading
 import os
 import pytest
 
-from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, EmptyFile, UploadError
+from nuxeo.exceptions import (CorruptedFile, EmptyFile, HTTPError,
+                              InvalidBatch, UploadError)
 from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
 from .server import Server
@@ -99,7 +100,7 @@ def test_fetch(server):
 def test_mimetype():
     test = 'test.bmp'
     with open(test, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
     try:
         blob = FileBlob(test)
         assert blob.mimetype in ['image/bmp', 'image/x-ms-bmp']
@@ -132,7 +133,7 @@ def test_upload(chunked, server, monkeypatch):
     batch = server.uploads.batch()
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
 
     doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
     try:
@@ -176,7 +177,7 @@ def test_upload_retry(server):
             with serv:
                 batch = server.uploads.batch()
                 with open(file_in, 'wb') as f:
-                    f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+                    f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
                 blob = FileBlob(file_in, mimetype='application/octet-stream')
                 batch.upload(blob, chunked=True)
                 close_server.set()  # release server block
@@ -203,7 +204,7 @@ def test_upload_resume(server):
             with serv:
                 batch = server.uploads.batch()
                 with open(file_in, 'wb') as f:
-                    f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+                    f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
                 blob = FileBlob(file_in, mimetype='application/octet-stream')
                 with pytest.raises(UploadError):
                     batch.upload(blob, chunked=True)

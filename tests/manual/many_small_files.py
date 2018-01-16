@@ -13,7 +13,7 @@ def create_random_file(file_in, i):
     filename = '{}_{}'.format(file_in, i)
     r_size = random.randint(10, 500)
     with open(filename, 'wb') as f:
-        f.write(b'\x00' + os.urandom(r_size*100*1024) + b'\x00')
+        f.write(b'\x00' + os.urandom(r_size * 100 * 1024) + b'\x00')
     return filename
 
 
@@ -34,7 +34,7 @@ def upload_file(server, filename):
         operation.params = {'document': doc.path}
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
-    except:
+    except Exception:
         doc.delete()
     else:
         return doc
@@ -56,7 +56,7 @@ def download_file(server, file_in, i):
 
 @profile
 def run_test(server):
-    file_in, file_out = 'test_in', 'test_out'
+    file_in = 'test_in'
     n = 10
     docs = []
     for i in range(n):
