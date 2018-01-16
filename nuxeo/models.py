@@ -38,6 +38,7 @@ class Model(object):
         self.service = service
 
     def __repr__(self):
+        # type: () -> Text
         attrs = ', '.join('{}={!r}'.format(
             attr, getattr(self, attr.replace('-', '_'), None))
                           for attr in sorted(self._valid_properties))
@@ -147,7 +148,7 @@ class Batch(Model):
         self.batchId = None
 
     def upload(self, blob, **kwargs):
-        # type: (Blob) -> Blob
+        # type: (Blob, Any) -> Blob
         return self.service.upload(self, blob, **kwargs)
 
 

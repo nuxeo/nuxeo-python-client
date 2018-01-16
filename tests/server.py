@@ -1,4 +1,14 @@
 # coding: utf-8
+"""
+
+Most of this file's code has been taken from
+https://github.com/requests/requests/blob/d58753344638992a63f4fe8e516c9f55a9a7f027/tests/testserver/server.py
+and modified to fit our needs such as:
+- Parsing a subset of upload queries
+- Keeping track of uploaded chunks
+- Options to generate 500 errors
+
+"""
 import json
 import select
 import socket

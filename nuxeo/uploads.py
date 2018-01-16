@@ -11,7 +11,7 @@ from .utils import SwapAttr
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Union
+        from typing import Any, Dict, List, Optional, Text, Tuple, Union
         from .client import NuxeoClient
 except ImportError:
     pass
@@ -84,7 +84,7 @@ class API(APIEndpoint):
                 super(API, self).delete(target)
 
     def send_data(self, name, data, path, chunked, index, headers):
-        # type: (Union[Text, bytes], Text, bool, int, Dict[Text, Text]) -> Blob
+        # type: (Text, Union[Text, bytes], Text, bool, int, Dict[Text, Text]) -> Blob
         """
         Send data/chunks to the server.
 
@@ -116,7 +116,24 @@ class API(APIEndpoint):
         return response
 
     def state(self, path, blob):
-        # type: (Text, Blob) -> (int, int, int, Blob)
+        # type: (Text, Blob) -> Tuple[int, int, int, Blob]
+        """
+        Get the state of a blob.
+
+        If the blob upload has not begun yet, the server
+        will return a 404 error, so we initialize the
+        different values.
+        If the blob upload is incomplete, we return the
+        values the server sent us.
+        If the blob upload is complete, we return None
+        for these values.
+
+        :param path: path for the request
+        :param blob: the target blob
+        :return: the chunk size, chunk count, the index
+                 of the next blob to upload, and the
+                 response from the server
+        """
         info = super(API, self).get(path, default=None)
 
         if info and (info.uploadType == 'normal'
@@ -138,6 +155,9 @@ class API(APIEndpoint):
         # type: (Batch, Blob, bool, int) -> Blob
         """
         Upload a blob.
+
+        Can be used to upload a new blob or resume
+        the upload of a chunked blob.
 
         :param batch: batch of the upload
         :param blob: blob to upload
