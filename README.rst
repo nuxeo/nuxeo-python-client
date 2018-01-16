@@ -68,7 +68,20 @@ to use a specific instance, you can specify the ``base_url`` like so:
         auth=('Administrator', 'Administrator')
         )
 
-Run NXQL queries
+Download/Upload Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the ``nuxeo/constants.py`` file, you have several constants that are
+used throughout the client that you can change to fit your needs:
+
+-  ``CHUNK_SIZE`` (8 Kio by default), the size of the chunks when downloading,
+-  ``UPLOAD_CHUNK_SIZE`` (256 Kio by default), the size of the chunks when uploading,
+-  ``CHUNK_LIMIT`` (10 Mio by default), the size above which the upload will
+   automatically be chunked,
+-  ``MAX_RETRY`` (3 by default), the number of retries for the upload of a given blob/chunk.
+
+
+Run NXQL Queries
 ~~~~~~~~~~~~~~~~
 
 With ``nuxeo.request(...)`` you can run queries in NXQL (NXQL is a subset of SQL,
