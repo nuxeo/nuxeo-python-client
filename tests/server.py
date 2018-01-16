@@ -1,9 +1,10 @@
 # coding: utf-8
 import json
-import threading
-import socket
 import select
+import socket
+import threading
 import uuid
+
 from nuxeo.compat import get_bytes, get_text, text
 
 uploads = {}

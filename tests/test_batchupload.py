@@ -6,10 +6,10 @@ import threading
 import os
 import pytest
 
-from nuxeo.utils import SwapAttr
 from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, EmptyFile, UploadError
 from nuxeo.models import BufferBlob, Document, FileBlob
-from tests.server import Server
+from nuxeo.utils import SwapAttr
+from .server import Server
 
 new_doc = Document(
     name='Document',
