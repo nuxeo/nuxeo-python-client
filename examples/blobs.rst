@@ -5,9 +5,10 @@ Work with blobs
 
 When uploading a blob, you can choose to do a chunked upload
 by passing ``chunked=True`` to the upload method. If the file
-is too big it will be chunked automatically even without this
-argument. An interrupted chunked upload can be resumed by
-relaunching the upload command with the same batch and blob.
+is too big (``> constants.CHUNK_LIMIT``) it will be chunked
+automatically even without this argument. An interrupted
+chunked upload can be resumed by relaunching the upload
+command with the same batch and blob.
 
 .. code:: python
 
