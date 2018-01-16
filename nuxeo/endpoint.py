@@ -21,8 +21,14 @@ class APIEndpoint(object):
     for CRUD operations.
     """
 
-    def __init__(self, client, endpoint=None, headers=None, cls=None):
-        # type: (NuxeoClient, Optional[Text], Optional[Dict[Text, Text]], Optional[Type]) -> None
+    def __init__(
+        self,
+        client,  # type: NuxeoClient
+        endpoint=None,  # type: Optional[Text]
+        headers=None,  # type: Optional[Dict[Text, Text]]
+        cls=None,  # type: Optional[Type]
+    ):
+        # type: (...) -> None
         """
         Creates an instance of the APIEndpoint class.
 
@@ -39,22 +45,26 @@ class APIEndpoint(object):
         self.headers = headers or {}
         self._cls = cls
 
-    def get(self,
-            path=None,      # type: Optional[Text]
-            cls=None,       # type: Optional[Type]
-            raw=False,      # type: bool
-            single=False,   # type: bool
-            **kwargs        # type: Any
-            ):
+    def get(
+        self,
+        path=None,  # type: Optional[Text]
+        cls=None,  # type: Optional[Type]
+        raw=False,  # type: bool
+        single=False,  # type: bool
+        **kwargs  # type: Any
+    ):
         # type: (...) -> Any
         """
         Gets the details for one or more resources
 
         :param path: the endpoint (URL path) for the request
-        :param cls: a class to use for parsing, if different than the base resource
-        :param raw: if True, directly return the content of the response
+        :param cls: a class to use for parsing, if different
+                    than the base resource
+        :param raw: if True, directly return the content of
+                    the response
         :param single: if True, do not parse as list
-        :return one or more instances of cls parsed from the returned JSON
+        :return one or more instances of cls parsed from
+                the returned JSON
         """
 
         endpoint = self.endpoint
@@ -99,7 +109,8 @@ class APIEndpoint(object):
             if isinstance(resource, self._cls):
                 resource = resource.as_dict()
             else:
-                raise ValueError('Data must be a Model object or a dictionary.')
+                raise ValueError(
+                    'Data must be a Model object or a dictionary.')
 
         endpoint = self.endpoint
 

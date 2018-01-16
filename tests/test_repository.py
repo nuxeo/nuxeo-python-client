@@ -104,7 +104,7 @@ def test_create_doc_and_delete(server):
         name=pytest.ws_python_test_name,
         type='Workspace',
         properties={
-          'dc:title': 'foo',
+            'dc:title': 'foo',
         })
     doc = server.documents.create(doc, parent_path=pytest.ws_root_path)
     try:
@@ -123,7 +123,7 @@ def test_create_doc_with_space_and_delete(server):
         name='my domain',
         type='Workspace',
         properties={
-          'dc:title': 'My domain',
+            'dc:title': 'My domain',
         })
     doc = server.documents.create(doc, parent_path=pytest.ws_root_path)
     try:

@@ -32,7 +32,7 @@ def upload_file(server, filename):
         operation.params = {'document': doc.path}
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
-    except:
+    except Exception:
         doc.delete()
     return doc
 

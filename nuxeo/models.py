@@ -41,7 +41,7 @@ class Model(object):
         # type: () -> Text
         attrs = ', '.join('{}={!r}'.format(
             attr, getattr(self, attr.replace('-', '_'), None))
-                          for attr in sorted(self._valid_properties))
+            for attr in sorted(self._valid_properties))
         return '<{} {}>'.format(self.__class__.__name__, attrs)
 
     def as_dict(self):
@@ -135,7 +135,8 @@ class Batch(Model):
     def get(self, file_idx):
         # type: (int) -> Blob
         if self.batchId is None:
-            raise InvalidBatch('Cannot fetch blob for inexistant/deleted batch.')
+            raise InvalidBatch(
+                'Cannot fetch blob for inexistant/deleted batch.')
         blob = self.service.get(self.uid, file_idx=file_idx)
         self.blobs[file_idx] = blob
         return blob
@@ -251,7 +252,8 @@ class FileBlob(Blob):
         self.path = path
         self.name = os.path.basename(self.path)
         self.size = os.path.getsize(self.path)
-        self.mimetype = self.mimetype or guess_mimetype(self.path)  # type: Text
+        self.mimetype = (self.mimetype or
+                         guess_mimetype(self.path))  # type: Text
 
     @property
     def data(self):

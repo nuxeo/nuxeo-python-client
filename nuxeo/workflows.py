@@ -31,8 +31,13 @@ class API(APIEndpoint):
         """
         return super(API, self).get(path=workflow_id)
 
-    def post(self, model, document=None, options=None):
-        # type: (Text, Optional[Document], Optional[Dict[Text, Any]]) -> Workflow
+    def post(
+        self,
+        model,  # type: Text
+        document=None,  # type: Optional[Document]
+        options=None,  # type: Optional[Dict[Text, Any]]
+    ):
+        # type: (...) -> Workflow
         """
         Start a workflow.
 

@@ -20,7 +20,7 @@ from nuxeo.compat import get_bytes, get_text, text
 uploads = {}
 
 
-def consume_socket_content(sock, timeout=0.5):
+def consume_socket(sock, timeout=0.5):
     chunks = 65536
     content = b''
 
@@ -120,17 +120,17 @@ class Server(threading.Thread):
     WAIT_EVENT_TIMEOUT = 5
 
     def __init__(
-            self,
-            handler=None,
-            host='localhost',
-            port=0,
-            requests_to_handle=1,
-            wait_to_close_event=None,
-            **kwargs
-        ):
+        self,
+        handler=None,
+        host='localhost',
+        port=0,
+        requests_to_handle=1,
+        wait_to_close_event=None,
+        **kwargs
+    ):
         super(Server, self).__init__()
 
-        self.handler = handler or consume_socket_content
+        self.handler = handler or consume_socket
         self.handler_results = []
         self.fail_args = kwargs.get('fail_args', None)
         self.request_number = 0
@@ -146,7 +146,7 @@ class Server(threading.Thread):
     @classmethod
     def text_response_server(cls, text, request_timeout=0.5, **kwargs):
         def text_response_handler(sock):
-            request_content = consume_socket_content(sock, timeout=request_timeout)
+            request_content = consume_socket(sock, timeout=request_timeout)
             sock.send(text.encode('utf-8'))
 
             return request_content
@@ -156,7 +156,7 @@ class Server(threading.Thread):
     @classmethod
     def upload_response_server(cls, request_timeout=0.5, **kwargs):
         def upload_response_handler(sock):
-            request_content = consume_socket_content(sock, timeout=request_timeout)
+            request_content = consume_socket(sock, timeout=request_timeout)
             resp = handle_nuxeo_request(request_content)
             sock.send(resp)
             sock.close()
@@ -209,7 +209,7 @@ class Server(threading.Thread):
             fail_at = self.fail_args.get('fail_at', 0)
             fail_number = self.fail_args.get('fail_number', 0)
             if fail_at <= self.request_number < fail_at + fail_number:
-                consume_socket_content(sock)
+                consume_socket(sock)
                 sock.send(generate_response('500 Server Error'))
                 sock.close()
                 handler_result = ''
@@ -221,7 +221,8 @@ class Server(threading.Thread):
 
     def _accept_connection(self):
         try:
-            ready, _, _ = select.select([self.server_sock], [], [], self.WAIT_EVENT_TIMEOUT)
+            ready, _, _ = select.select(
+                [self.server_sock], [], [], self.WAIT_EVENT_TIMEOUT)
             if not ready:
                 return None
 

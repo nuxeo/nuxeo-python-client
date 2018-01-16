@@ -18,40 +18,58 @@ from nuxeo.models import Blob, User
 
 
 @pytest.mark.parametrize('method, params, is_valid', [
-    ('Document.SetBlob', {'file': Blob()}, True),  # 'file' type in (Blob, str)
+    # 'file' type in (Blob, str)
+    ('Document.SetBlob', {'file': Blob()}, True),
     ('Document.SetBlob', {'file': 'test.txt'}, True),
     ('Document.SetBlob', {'file': 0}, False),
+    # 'blockInheritance' type == boolean
     ('Document.AddPermission', {'permission': 'Read',
-                                'blockInheritance': False}, True),  # 'blockInheritance' type == boolean
+                                'blockInheritance': False}, True),
     ('Document.AddPermission', {'permission': 'Read',
                                 'blockInheritance': 'false'}, False),
-    ('Document.AddPermission', {'permission': 'Read', 'end': '01-01-2018'}, True),  # 'end' type == str
+    # 'end' type == str
+    ('Document.AddPermission',
+        {'permission': 'Read', 'end': '01-01-2018'}, True),
     ('Document.AddPermission', {'permission': 'Read', 'end': True}, False),
-    ('Document.Fetch', {'value': 'test.txt'}, True),  # 'value' type == str
+    # 'value' type == str
+    ('Document.Fetch', {'value': 'test.txt'}, True),
     ('Document.Fetch', {'value': True}, False),
-    ('Document.MultiPublish', {'target': ['test1.txt', 'test2.txt']}, True),  # 'target' type == list
+    # 'target' type == list
+    ('Document.MultiPublish', {'target': ['test1.txt', 'test2.txt']}, True),
     ('Document.MultiPublish', {'target': 0}, False),
-    ('Audit.Query', {'query': 'test', 'pageNo': 100}, True),  # 'pageNo' type == int
+    # 'pageNo' type == int
+    ('Audit.Query', {'query': 'test', 'pageNo': 100}, True),
+    # 'pageSize' type == int
     ('Audit.Query', {'query': 'test', 'pageNo': 'test'}, False),
-    ('Document.Query', {'query': 'test', 'pageSize': 10}, True),  # 'pageSize' type == int
+    ('Document.Query', {'query': 'test', 'pageSize': 10}, True),
     ('Document.Query', {'query': 'test', 'pageSize': 'test'}, False),
-    ('PDF.ExtractPages', {'startPage': 1, 'endPage': 2}, True),  # 'startPage', 'endPage' type == long
+    # 'startPage', 'endPage' type == long
+    ('PDF.ExtractPages', {'startPage': 1, 'endPage': 2}, True),
     ('PDF.ExtractPages', {'startPage': 'test', 'endPage': 'test'}, False),
-    ('User.Invite', {'info': {'username': 'test'}}, True),  # 'info' type == dict
+    # 'info' type == dict
+    ('User.Invite', {'info': {'username': 'test'}}, True),
     ('User.Invite', {'info': 0}, False),
-    ('Document.Create', {'type': 'Document', 'properties': {'dc:title': 'test'}}, True),  # 'properties' type == dict
+    # 'properties' type == dict
+    ('Document.Create', {'type': 'Document',
+                         'properties': {'dc:title': 'test'}}, True),
     ('Document.Create', {'type': 'Document', 'properties': 0}, False),
-    ('Blob.Create', {'file': 'test.txt'}, True),  # 'file' type == str
+    # 'file' type == str
+    ('Blob.Create', {'file': 'test.txt'}, True),
     ('Blob.Create', {'file': 0}, False),
-    ('Document.SetProperty', {'xpath': 'test', 'value': 'test'}, True),  # 'value' type == Sequence
+    # 'value' type == Sequence
+    ('Document.SetProperty', {'xpath': 'test', 'value': 'test'}, True),
     ('Document.SetProperty', {'xpath': 'test', 'value': [0, 1, 2]}, True),
     ('Document.SetProperty', {'xpath': 'test', 'value': 0}, False),
-    ('Document.Query', {'query': 'test'}, True),  # 'query' type == str
+    # 'query' type == str
+    ('Document.Query', {'query': 'test'}, True),
     ('Document.Query', {'query': 0}, False),
-    ('Document.Query', {'query': 'test', 'queryParams': ['a', 'b', 'c']}, True),  # 'queryParams' type in [list, str]
+    # 'queryParams' type in [list, str]
+    ('Document.Query', {'query': 'test',
+                        'queryParams': ['a', 'b', 'c']}, True),
     ('Document.Query', {'query': 'test', 'queryParams': 'test'}, True),
     ('Document.Query', {'query': 'test', 'queryParams': 0}, False),
-    ('User.Invite', {'validationMethod': 'test'}, True),  # 'validationMethod' type == str
+    # 'validationMethod' type == str
+    ('User.Invite', {'validationMethod': 'test'}, True),
     ('User.Invite', {'validationMethod': 0}, False),
 ])
 def test_check_params(method, params, is_valid, server):
@@ -124,7 +142,8 @@ def test_request_token(server):
 
     prev_auth = server.client.auth
 
-    token = server.client.request_auth_token(device_id, permission, app_name, device_descr)
+    token = server.client.request_auth_token(
+        device_id, permission, app_name, device_descr)
     assert server.client.auth.token == token
     assert server.client.is_reachable()
     server.client.auth = prev_auth

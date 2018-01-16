@@ -21,8 +21,11 @@ class API(APIEndpoint):
         super(API, self).__init__(
             client, endpoint=endpoint, cls=Task, headers=headers)
 
-    def get(self, options=None):
-        # type: (Optional[Union[Dict[Text, Any], Text]]) -> Union[Task, List[Task]]
+    def get(
+        self,
+        options=None,  # type: Optional[Union[Dict[Text, Any], Text]]
+    ):
+        # type: (...) -> Union[Task, List[Task]]
         """
         Get tasks by id or by options.
 
@@ -100,7 +103,8 @@ class API(APIEndpoint):
         elif transfer == 'reassign':
             actors_type = 'actors'
         else:
-            raise ValueError('Task tranfer must be either delegate or reassign.')
+            raise ValueError(
+                'Task transfer must be either delegate or reassign.')
 
         params = {actors_type: actors}
         if comment:

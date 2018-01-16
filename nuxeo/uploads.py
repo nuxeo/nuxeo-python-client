@@ -1,9 +1,9 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from nuxeo.exceptions import UploadError, EmptyFile
+from nuxeo.exceptions import EmptyFile, UploadError
 from .compat import quote, text
-from .constants import MAX_RETRY, UPLOAD_CHUNK_SIZE, CHUNK_LIMIT
+from .constants import CHUNK_LIMIT, MAX_RETRY, UPLOAD_CHUNK_SIZE
 from .endpoint import APIEndpoint
 from .models import Batch, Blob
 from .utils import SwapAttr
@@ -13,6 +13,7 @@ try:
     if TYPE_CHECKING:
         from typing import Any, Dict, List, Optional, Text, Tuple, Union
         from .client import NuxeoClient
+        OptInt = Optional[int]
 except ImportError:
     pass
 
@@ -83,8 +84,16 @@ class API(APIEndpoint):
             with SwapAttr(self, '_cls', Batch):
                 super(API, self).delete(target)
 
-    def send_data(self, name, data, path, chunked, index, headers):
-        # type: (Text, Union[Text, bytes], Text, bool, int, Dict[Text, Text]) -> Blob
+    def send_data(
+        self,
+        name,  # type: Text
+        data,  # type: Union[Text, bytes]
+        path,  # type: Text
+        chunked,  # type: bool
+        index,  # type: int
+        headers,  # type: Dict[Text, Text]
+    ):
+        # type: (...) -> Blob
         """
         Send data/chunks to the server.
 
@@ -116,7 +125,7 @@ class API(APIEndpoint):
         return response
 
     def state(self, path, blob):
-        # type: (Text, Blob) -> Tuple[int, int, int, Blob]
+        # type: (Text, Blob) -> Tuple[OptInt, OptInt, OptInt, Blob]
         """
         Get the state of a blob.
 
@@ -136,8 +145,8 @@ class API(APIEndpoint):
         """
         info = super(API, self).get(path, default=None)
 
-        if info and (info.uploadType == 'normal'
-                     or len(info.uploadedChunkIds) == info.chunkCount):
+        if info and (info.uploadType == 'normal' or
+                     len(info.uploadedChunkIds) == info.chunkCount):
             return None, None, None, info  # All the chunks have been uploaded
 
         if info:
@@ -146,7 +155,8 @@ class API(APIEndpoint):
             index = int(info.uploadedChunkIds[-1]) + 1
         else:  # It's a new upload
             chunk_size = UPLOAD_CHUNK_SIZE
-            chunk_count = blob.size // chunk_size + (blob.size % chunk_size > 0)
+            chunk_count = (blob.size // chunk_size +
+                           (blob.size % chunk_size > 0))
             index = 0
 
         return chunk_size, chunk_count, index, info

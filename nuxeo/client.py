@@ -7,12 +7,12 @@ import logging
 
 import requests
 
-from .constants import (DEFAULT_URL, DEFAULT_API_PATH,
-                        DEFAULT_APP_NAME, CHUNK_SIZE)
 from . import (__version__, directories, documents, groups,
                operations, tasks, uploads, users, workflows)
 from .auth import TokenAuth
 from .compat import text, urlencode
+from .constants import (CHUNK_SIZE, DEFAULT_API_PATH, DEFAULT_APP_NAME,
+                        DEFAULT_URL)
 from .exceptions import HTTPError, Unauthorized
 from .utils import json_helper
 
@@ -21,6 +21,7 @@ try:
     if TYPE_CHECKING:
         from typing import Any, Dict, Optional, Text, Tuple, Type, Union
         from requests.auth import AuthBase
+        AuthType = Optional[Union[Tuple[Text, Text], AuthBase]]
 except ImportError:
     pass
 
@@ -32,12 +33,12 @@ class NuxeoClient(object):
 
     def __init__(
         self,
-        auth=None,                  # type: Optional[Union[Tuple[Text, Text], AuthBase]]
-        host=DEFAULT_URL,           # type: Text
+        auth=None,  # type: AuthType
+        host=DEFAULT_URL,  # type: Text
         api_path=DEFAULT_API_PATH,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
-        chunk_size=CHUNK_SIZE,      # type: int
-        **kwargs                    # type: Any
+        chunk_size=CHUNK_SIZE,  # type: int
+        **kwargs  # type: Any
     ):
         # type: (...) -> None
         self.auth = auth
@@ -83,12 +84,12 @@ class NuxeoClient(object):
 
     def request(
         self,
-        method,        # type: Text
-        path,          # type: Text
+        method,  # type: Text
+        path,  # type: Text
         headers=None,  # type: Optional[Dict[Text, Text]]
-        data=None,     # type: Optional[Any]
-        raw=False,     # type: bool
-        **kwargs       # type: Any
+        data=None,  # type: Optional[Any]
+        raw=False,  # type: bool
+        **kwargs  # type: Any
     ):
         # type: (...) -> Union[requests.Response, Any]
         """
@@ -129,12 +130,14 @@ class NuxeoClient(object):
         default = kwargs.pop('default', object)
 
         logger.debug(
-            'Calling {!r} with headers={!r}, params={!r} and cookies={!r}'.format(
+            ('Calling {!r} with headers={!r}, '
+             'params={!r} and cookies={!r}').format(
                 url, headers, kwargs.get('params', {}), self._session.cookies))
 
         try:
             resp = self._session.request(
-                method, url, headers=headers, auth=self.auth, data=data, **kwargs)
+                method, url, headers=headers,
+                auth=self.auth, data=data, **kwargs)
             resp.raise_for_status()
         except Exception as exc:
             if default is object:
@@ -153,11 +156,11 @@ class NuxeoClient(object):
 
     def request_auth_token(
         self,
-        device_id,                  # type: Text
-        permission,                 # type: Text
+        device_id,  # type: Text
+        permission,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
-        device=None,                # type: Optional[Text]
-        revoke=False                # type: bool
+        device=None,  # type: Optional[Text]
+        revoke=False,  # type: bool
     ):
         # type: (...) -> Text
         """
@@ -210,7 +213,10 @@ class NuxeoClient(object):
                 error_data = {'status': error.response.status_code,
                               'message': error.response.content}
 
-            error_class = Unauthorized if error_data.get('status') in (401, 403) else HTTPError
+            error_class = (Unauthorized
+                           if error_data.get('status') in (401, 403)
+                           else HTTPError)
+
             error = error_class.parse(error_data)
             logger.exception('Remote exception: {}'.format(error))
         else:
@@ -221,11 +227,11 @@ class NuxeoClient(object):
 class Nuxeo(object):
     def __init__(
         self,
-        auth=None,                  # type: Optional[Tuple[Text, Text]]
-        host=DEFAULT_URL,           # type: Text
+        auth=None,  # type: Optional[Tuple[Text, Text]]
+        host=DEFAULT_URL,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
-        client=NuxeoClient,         # type: Type[NuxeoClient]
-        **kwargs                    # type: Any
+        client=NuxeoClient,  # type: Type[NuxeoClient]
+        **kwargs  # type: Any
     ):
         # type: (...) -> None
         """

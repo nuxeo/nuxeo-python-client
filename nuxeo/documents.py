@@ -17,8 +17,14 @@ except ImportError:
 
 
 class API(APIEndpoint):
-    def __init__(self, client, operations, endpoint=None, headers=None):
-        # type: (NuxeoClient, OperationsAPI, Text, Optional[Dict[Text, Text]]) -> None
+    def __init__(
+        self,
+        client,  # type: NuxeoClient
+        operations,  # type: OperationsAPI
+        endpoint=None,  # type: Text
+        headers=None,  # type: Optional[Dict[Text, Text]]
+    ):
+        # type: (...) -> None
         self.operations = operations
         super(API, self).__init__(
             client, endpoint=endpoint, cls=Document, headers=headers)
@@ -57,7 +63,8 @@ class API(APIEndpoint):
         :param document: the document to update
         :return: the updated document
         """
-        return super(API, self).put(document, path=self._path(uid=document.uid))
+        return super(API, self).put(
+            document, path=self._path(uid=document.uid))
 
     def delete(self, document_id):
         # type: (Text) -> Document
@@ -105,13 +112,14 @@ class API(APIEndpoint):
         adapter = 'blob/{}/@convert'.format(xpath)
         if ('converter' not in options
                 and 'type' not in options
-                and 'format' not in options):
+                and'format' not in options):
             raise ValueError(
                 'One of (converter, type, format) is mandatory in options')
 
         try:
             return super(API, self).get(
-                path=self._path(uid=uid), params=options, adapter=adapter, raw=True)
+                path=self._path(uid=uid), params=options,
+                adapter=adapter, raw=True)
         except HTTPError as e:
             if 'is not registered' in e.message:
                 raise ValueError(e.message)
@@ -130,7 +138,8 @@ class API(APIEndpoint):
 
     def fetch_audit(self, uid):
         # type: (Text) -> Dict[Text, Any]
-        return super(API, self).get(self._path(uid=uid), adapter='audit', cls=dict)
+        return super(API, self).get(
+            self._path(uid=uid), adapter='audit', cls=dict)
 
     def fetch_lock_status(self, uid):
         # type: (Text) -> Dict[Text, Any]
@@ -159,7 +168,8 @@ class API(APIEndpoint):
 
         req = super(API, self).get(
             path=self._path(uid=uid), cls=dict, headers=headers)
-        return [rend['name'] for rend in req['contextParameters']['renditions']]
+        return [rend['name']
+                for rend in req['contextParameters']['renditions']]
 
     def follow_transition(self, uid, name):
         # type: (Text, Text) -> None
@@ -171,7 +181,8 @@ class API(APIEndpoint):
         """
         params = {'value': name}
         self.operations.execute(
-            command='Document.FollowLifecycleTransition', input_obj=uid, params=params)
+            command='Document.FollowLifecycleTransition',
+            input_obj=uid, params=params)
 
     def fetch_blob(self, uid=None, path=None, xpath='blobholder:0'):
         # type: (Optional[Text], Optional[Text], Text) -> Blob
@@ -240,7 +251,8 @@ class API(APIEndpoint):
 
         path = 'query/{}'.format(query)
         res = super(API, self).get(path=path, params=opts, cls=dict)
-        res['entries'] = [Document.parse(entry, service=self) for entry in res['entries']]
+        res['entries'] = [Document.parse(entry, service=self)
+                          for entry in res['entries']]
         return res
 
     def remove_permission(self, uid, params):
@@ -250,12 +262,13 @@ class API(APIEndpoint):
 
     def unlock(self, uid):
         # type: (Text) -> Dict[Text, Any]
-        return self.operations.execute(command='Document.Unlock', input_obj=uid)
+        return self.operations.execute(
+            command='Document.Unlock', input_obj=uid)
 
     def _path(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> Text
         if uid:
-            request_path = 'repo/{}/id/{}'.format(self.client.repository, uid)
+            path = 'repo/{}/id/{}'.format(self.client.repository, uid)
         elif path:
-            request_path = 'repo/{}/path{}'.format(self.client.repository, path)
-        return request_path
+            path = 'repo/{}/path{}'.format(self.client.repository, path)
+        return path
