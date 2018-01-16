@@ -6,7 +6,8 @@ import threading
 import os
 import pytest
 
-from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, EmptyFile
+from nuxeo.utils import SwapAttr
+from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, EmptyFile, UploadError
 from nuxeo.models import BufferBlob, Document, FileBlob
 from tests.server import Server
 
@@ -160,34 +161,60 @@ def test_upload(chunked, server, monkeypatch):
                 pass
 
 
-def test_server(server):
-    """can safely send generators"""
+def test_upload_retry(server):
     close_server = threading.Event()
-    server_host = server.client.host
-    server.client.host = 'http://localhost:8081/nuxeo/'
-    try:
-        serv = Server.upload_response_server(
-            wait_to_close_event=close_server,
-            port=8081,
-            requests_to_handle=2
-        )
-        file_in = 'test_in'
-
-        with serv:
-            batch = server.uploads.batch()
-            with open(file_in, 'wb') as f:
-                f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
-            blob = FileBlob(file_in, mimetype='application/octet-stream')
-            # batch = Batch(batchId='361d04e8-da3f-43f8-8234-f36598b62192', service=server.uploads)
-            batch.upload(blob)
-            close_server.set()  # release server block
-
-    finally:
-        server.client.host = server_host
+    with SwapAttr(server.client, 'host', 'http://localhost:8081/nuxeo/'):
         try:
-            os.remove(file_in)
-        except OSError:
-            pass
+            serv = Server.upload_response_server(
+                wait_to_close_event=close_server,
+                port=8081,
+                requests_to_handle=20,
+                fail_args={'fail_at': 4, 'fail_number': 1}
+            )
+            file_in = 'test_in'
+
+            with serv:
+                batch = server.uploads.batch()
+                with open(file_in, 'wb') as f:
+                    f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+                blob = FileBlob(file_in, mimetype='application/octet-stream')
+                batch.upload(blob, chunked=True)
+                close_server.set()  # release server block
+
+        finally:
+            try:
+                os.remove(file_in)
+            except OSError:
+                pass
+
+
+def test_upload_resume(server):
+    close_server = threading.Event()
+    with SwapAttr(server.client, 'host', 'http://localhost:8081/nuxeo/'):
+        try:
+            serv = Server.upload_response_server(
+                wait_to_close_event=close_server,
+                port=8081,
+                requests_to_handle=20,
+                fail_args={'fail_at': 4, 'fail_number': 3}
+            )
+            file_in = 'test_in'
+
+            with serv:
+                batch = server.uploads.batch()
+                with open(file_in, 'wb') as f:
+                    f.write(b'\x00' + os.urandom(1024*1024) + b'\x00')
+                blob = FileBlob(file_in, mimetype='application/octet-stream')
+                with pytest.raises(UploadError):
+                    batch.upload(blob, chunked=True)
+                batch.upload(blob, chunked=True)
+                close_server.set()  # release server block
+
+        finally:
+            try:
+                os.remove(file_in)
+            except OSError:
+                pass
 
 
 def test_wrong_batch_id(server):

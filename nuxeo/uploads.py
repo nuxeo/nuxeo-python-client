@@ -105,7 +105,8 @@ class API(APIEndpoint):
                 resource=data,
                 path=path,
                 raw=True,
-                headers=headers
+                headers=headers,
+                default={}
             )
             if response:
                 break
@@ -123,9 +124,9 @@ class API(APIEndpoint):
             return None, None, None, info  # All the chunks have been uploaded
 
         if info:
-            chunk_count = info.chunkCount
-            chunk_size = info.size // chunk_count + (info.size % chunk_count > 0)
-            index = info.uploadedChunkIds[-1] + 1
+            chunk_count = int(info.chunkCount)
+            chunk_size = int(info.uploadedSize)
+            index = int(info.uploadedChunkIds[-1]) + 1
         else:  # It's a new upload
             chunk_size = UPLOAD_CHUNK_SIZE
             chunk_count = blob.size // chunk_size + (blob.size % chunk_size > 0)

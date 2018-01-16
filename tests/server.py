@@ -6,7 +6,6 @@ import select
 import uuid
 from nuxeo.compat import get_bytes, get_text, text
 
-# uploads = {'361d04e8-da3f-43f8-8234-f36598b62192': {}}
 uploads = {}
 
 
@@ -53,46 +52,56 @@ def parse_nuxeo_request(request_content):
 
 def handle_nuxeo_request(request_content):
     method, path, headers = parse_nuxeo_request(request_content)
-    if method == 'POST':
+    try:
         if len(path) == 1 and path[0] == 'upload':
-            # Create batch
-            batch_id = text(uuid.uuid4())
-            uploads[batch_id] = {}
-            return generate_response('201 Created', {'batchId': batch_id})
+            if method == 'POST':
+                # Create batch
+                batch_id = text(uuid.uuid4())
+                uploads[batch_id] = {}
+                return generate_response('201 Created', {'batchId': batch_id})
         if len(path) == 3 and path[0] == 'upload':
-            # Upload blob
             batch_id, file_idx = path[1:]
-            upload_type = headers.get('X-Upload-Type', 'normal')
-            if upload_type == 'normal':
-                blob = {
-                    'name': headers['X-File-Name'],
-                    'size': headers['Content-Length'],
-                    'uploadType': upload_type
-                }
+            if method == 'GET':
+                # Get blob completeness
+                blob = uploads[batch_id][file_idx]
+
+                if len(blob['uploadedChunkIds']) < int(blob['chunkCount']):
+                    return generate_response('308 Resume Incomplete', blob)
+                else:
+                    return generate_response('200 OK', blob)
+            if method == 'POST':
+                # Upload blob
+                upload_type = headers.get('X-Upload-Type', 'normal')
+                if upload_type == 'normal':
+                    blob = {
+                        'name': headers['X-File-Name'],
+                        'size': headers['Content-Length'],
+                        'uploadType': upload_type
+                    }
+                    uploads[batch_id][file_idx] = blob
+                    return generate_response('200 OK', blob)
+
+                blob = uploads.get(batch_id, {}).get(file_idx, None)
+                if not blob:
+                    blob = {
+                        'batchId': batch_id,
+                        'fileIdx': file_idx,
+                        'uploadType': upload_type,
+                        'uploadedChunkIds': [],
+                        'uploadedSize': headers['Content-Length'],
+                        'chunkCount': headers['X-Upload-Chunk-Count']
+                    }
+                chunk_idx = headers['X-Upload-Chunk-Index']
+                if chunk_idx not in blob['uploadedChunkIds']:
+                    blob['uploadedChunkIds'].append(chunk_idx)
                 uploads[batch_id][file_idx] = blob
-                return generate_response('200 OK', blob)
 
-            blob = uploads[batch_id][file_idx]
-            if not blob:
-                blob = {
-                    'batchId': batch_id,
-                    'fileIdx': file_idx,
-                    'uploadType': upload_type,
-                    'uploadedChunkIds': [],
-                    'uploadedSize': headers['Content-Length'],
-                    'chunkCount': headers['X-Upload-Chunk-Count']
-                }
-            chunk_idx = headers['X-Upload-Chunk-Index']
-            if chunk_idx not in blob['uploadedChunkIds']:
-                blob['uploadedChunkIds'].append(chunk_idx)
-            uploads[batch_id][file_idx] = blob
-
-            if len(blob['uploadedChunkIds']) < blob['chunkCount']:
-                return generate_response('308 Resume Incomplete', blob)
-            else:
-                return generate_response('201 Created', blob)
-
-    return generate_response('404 Not Found')
+                if len(blob['uploadedChunkIds']) < int(blob['chunkCount']):
+                    return generate_response('308 Resume Incomplete', blob)
+                else:
+                    return generate_response('201 Created', blob)
+    except Exception:
+        return generate_response('404 Not Found')
 
 
 class Server(threading.Thread):
@@ -139,7 +148,7 @@ class Server(threading.Thread):
             request_content = consume_socket_content(sock, timeout=request_timeout)
             resp = handle_nuxeo_request(request_content)
             sock.send(resp)
-
+            sock.close()
             return request_content
 
         return Server(upload_response_handler, **kwargs)
@@ -186,18 +195,17 @@ class Server(threading.Thread):
             if not sock:
                 break
 
-            if self.fail_args:
-                fail_at = self.fail_args['fail_at']
-                fail_number = self.fail_args['fail_number']
-                if fail_at <= self.request_number < fail_at + fail_number:
-                    consume_socket_content(sock)
-                    sock.send(generate_response('500 Server error'))
-                    self.request_number += 1
-                    return
+            fail_at = self.fail_args.get('fail_at', 0)
+            fail_number = self.fail_args.get('fail_number', 0)
+            if fail_at <= self.request_number < fail_at + fail_number:
+                consume_socket_content(sock)
+                sock.send(generate_response('500 Server Error'))
+                sock.close()
+                handler_result = ''
+            else:
+                handler_result = self.handler(sock)
 
-            handler_result = self.handler(sock)
             self.request_number += 1
-
             self.handler_results.append(handler_result)
 
     def _accept_connection(self):
