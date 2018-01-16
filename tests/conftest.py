@@ -2,9 +2,9 @@
 from __future__ import unicode_literals
 
 import logging
-import os
 import socket
 
+import os
 import pytest
 
 from nuxeo.client import Nuxeo
@@ -27,13 +27,19 @@ def pytest_namespace():
 
 
 @pytest.fixture(scope='function', autouse=True)
-def cleanup(server):
+def cleanup(request, server):
     try:
         docs = server.documents.get_children(path=pytest.ws_root_path)
         for doc in docs:
             doc.delete()
     except (HTTPError, socket.timeout):
         pass
+
+    msg = ('>>> testing: '
+           + request.module.__name__
+           + '.'
+           + request.function.__name__)
+    server.operations.execute(command='Log', level='warn', message=msg)
 
 
 @pytest.fixture(scope='module')

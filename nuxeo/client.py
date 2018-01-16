@@ -7,6 +7,8 @@ import logging
 
 import requests
 
+from .constants import (DEFAULT_URL, DEFAULT_API_PATH,
+                        DEFAULT_APP_NAME, CHUNK_SIZE)
 from . import (__version__, directories, documents, groups,
                operations, tasks, uploads, users, workflows)
 from .auth import TokenAuth
@@ -23,11 +25,6 @@ except ImportError:
     pass
 
 logger = logging.getLogger(__name__)
-
-CHUNK_SIZE = 8192  # Chunk size to download files
-DEFAULT_URL = 'http://localhost:8080/nuxeo/'
-DEFAULT_API_PATH = 'api/v1'
-DEFAULT_APP_NAME = 'Python client'
 
 
 class NuxeoClient(object):

@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 import json
-import os
-import re
 import sys
 
+import os
 import pkg_resources
 import pytest
+import re
 import requests
 from requests.exceptions import ConnectionError
 

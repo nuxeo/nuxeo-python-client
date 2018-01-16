@@ -1,10 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import hashlib
 import logging
 import mimetypes
 import sys
+
+import hashlib
 
 try:
     from typing import TYPE_CHECKING
@@ -99,20 +100,20 @@ class SwapAttr:
 
     """
 
-    def __init__(self, cls, attr, value):
+    def __init__(self, obj, attr, value):
         # type: (Any, Text, Any) -> None
-        if not hasattr(cls, attr):
+        if not hasattr(obj, attr):
             raise AttributeError()
 
-        self.cls = cls
+        self.obj = obj
         self.attr = attr
         self.value = value
-        self.old_value = getattr(cls, attr)
+        self.old_value = getattr(obj, attr)
 
     def __enter__(self):
         # type: () -> None
-        setattr(self.cls, self.attr, self.value)
+        setattr(self.obj, self.attr, self.value)
 
     def __exit__(self, *args):
         # type: (Any) -> None
-        setattr(self.cls, self.attr, self.old_value)
+        setattr(self.obj, self.attr, self.old_value)

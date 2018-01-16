@@ -37,6 +37,13 @@ class Model(object):
         # type: (Optional[APIEndpoint], Any) -> None
         self.service = service
 
+    def __repr__(self):
+        # type: () -> Text
+        attrs = ', '.join('{}={!r}'.format(
+            attr, getattr(self, attr.replace('-', '_'), None))
+                          for attr in sorted(self._valid_properties))
+        return '<{} {}>'.format(self.__class__.__name__, attrs)
+
     def as_dict(self):
         # type: () -> Dict[Text, Any]
         """ Returns a dict representation of the resource. """
@@ -140,9 +147,9 @@ class Batch(Model):
         self.service.delete(self.uid)
         self.batchId = None
 
-    def upload(self, blob):
-        # type: (Blob) -> Blob
-        return self.service.upload(self, blob)
+    def upload(self, blob, **kwargs):
+        # type: (Blob, Any) -> Blob
+        return self.service.upload(self, blob, **kwargs)
 
 
 class Blob(Model):
@@ -151,9 +158,11 @@ class Blob(Model):
         'name': None,
         'uploadType': None,
         'size': 0,
-        'uploadedSize': None,
+        'uploadedSize': 0,
         'fileIdx': None,
         'mimetype': None,
+        'uploadedChunkIds': [],
+        'chunkCount': 0
     }
     service = None  # type: UploadsAPI
 
@@ -199,6 +208,8 @@ class Blob(Model):
 class BufferBlob(Blob):
     """ InMemory content to upload to Nuxeo. """
 
+    stringio = None  # type: Optional[StringIO]
+
     def __init__(self, data, **kwargs):
         # type: (Text, Any) -> None
         """
@@ -213,7 +224,15 @@ class BufferBlob(Blob):
     def data(self):
         # type: () -> StringIO
         """ Request data. """
-        return StringIO(self.buffer)
+        return self.stringio
+
+    def __enter__(self):
+        self.stringio = StringIO(self.buffer)
+        return self.stringio
+
+    def __exit__(self, *args):
+        if self.stringio:
+            self.stringio.close()
 
 
 class FileBlob(Blob):
@@ -240,9 +259,15 @@ class FileBlob(Blob):
         """
         Request data. The caller has to close the file descriptor itself.
         """
-        if not self.fd:
-            self.fd = open(self.path, 'rb')
         return self.fd
+
+    def __enter__(self):
+        self.fd = open(self.path, 'rb')
+        return self.fd
+
+    def __exit__(self, *args):
+        if self.fd:
+            self.fd.close()
 
 
 class Directory(Model):

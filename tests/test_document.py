@@ -64,6 +64,7 @@ def test_document_move(server):
         properties={
             'dc:title': 'bar.txt',
         })
+    assert repr(doc)
     folder = Document(
         name='Test',
         type='Folder',
@@ -78,6 +79,7 @@ def test_document_move(server):
     finally:
         doc.delete()
         folder.delete()
+    assert not server.documents.exists(path=doc.path)
 
 
 def test_follow_transition(server):

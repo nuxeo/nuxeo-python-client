@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from .endpoint import APIEndpoint
-from .models import Task, Workflow
+from .models import Workflow
 from .utils import SwapAttr
 
 try:

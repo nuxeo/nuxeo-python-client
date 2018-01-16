@@ -10,6 +10,7 @@ Release date: ``2017-??-??``
 -  `NXPY-22 <https://jira.nuxeo.com/browse/NXPY-22>`__: Sanitize relative URLs
 -  `NXPY-26 <https://jira.nuxeo.com/browse/NXPY-26>`__: Use of setup.cfg
 -  `NXPY-37 <https://jira.nuxeo.com/browse/NXPY-37>`__: Add type checking for operation parameters
+-  `NXPY-40 <https://jira.nuxeo.com/browse/NXPY-40>`__: Add chunked resumable upload
 -  `NXPY-42 <https://jira.nuxeo.com/browse/NXPY-42>`__: Client refactoring
 -  A lot of code clean-up and improvement
 

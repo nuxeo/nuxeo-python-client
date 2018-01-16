@@ -1,15 +1,17 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from nuxeo.exceptions import UploadError, EmptyFile
 from .compat import quote, text
+from .constants import MAX_RETRY, UPLOAD_CHUNK_SIZE, CHUNK_LIMIT
 from .endpoint import APIEndpoint
-from .models import Batch, Blob, FileBlob
+from .models import Batch, Blob
 from .utils import SwapAttr
 
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Union
+        from typing import Any, Dict, List, Optional, Text, Tuple, Union
         from .client import NuxeoClient
 except ImportError:
     pass
@@ -33,11 +35,11 @@ class API(APIEndpoint):
         :param file_idx: the index of the blob
         :return: the batch details
         """
-        request_path = batch_id
+        path = batch_id
         if file_idx is not None:
-            request_path = '{}/{}'.format(request_path, file_idx)
+            path = '{}/{}'.format(path, file_idx)
 
-        resource = super(API, self).get(path=request_path)
+        resource = super(API, self).get(path=path)
 
         if file_idx is not None:
             resource.batch_id = batch_id
@@ -81,15 +83,91 @@ class API(APIEndpoint):
             with SwapAttr(self, '_cls', Batch):
                 super(API, self).delete(target)
 
-    def upload(self, batch, blob):
-        # type: (Batch, Blob) -> Blob
+    def send_data(self, name, data, path, chunked, index, headers):
+        # type: (Text, Union[Text, bytes], Text, bool, int, Dict[Text, Text]) -> Blob
+        """
+        Send data/chunks to the server.
+
+
+        :param name: name of the file being uploaded
+        :param data: data being sent
+        :param path: url for the upload
+        :param chunked: True if the upload is in chunks
+        :param index: which chunk is being sent (0 if not chunked)
+        :param headers: HTTP request headers
+        :return: the blob info
+        """
+        if chunked:
+            headers['X-Upload-Chunk-Index'] = text(index)
+
+        for i in range(MAX_RETRY):
+            response = super(API, self).post(
+                resource=data,
+                path=path,
+                raw=True,
+                headers=headers,
+                default={}
+            )
+            if response:
+                break
+        else:
+            chunk = index if chunked else None
+            raise UploadError(name, chunk=chunk)
+        return response
+
+    def state(self, path, blob):
+        # type: (Text, Blob) -> Tuple[int, int, int, Blob]
+        """
+        Get the state of a blob.
+
+        If the blob upload has not begun yet, the server
+        will return a 404 error, so we initialize the
+        different values.
+        If the blob upload is incomplete, we return the
+        values the server sent us.
+        If the blob upload is complete, we return None
+        for these values.
+
+        :param path: path for the request
+        :param blob: the target blob
+        :return: the chunk size, chunk count, the index
+                 of the next blob to upload, and the
+                 response from the server
+        """
+        info = super(API, self).get(path, default=None)
+
+        if info and (info.uploadType == 'normal'
+                     or len(info.uploadedChunkIds) == info.chunkCount):
+            return None, None, None, info  # All the chunks have been uploaded
+
+        if info:
+            chunk_count = int(info.chunkCount)
+            chunk_size = int(info.uploadedSize)
+            index = int(info.uploadedChunkIds[-1]) + 1
+        else:  # It's a new upload
+            chunk_size = UPLOAD_CHUNK_SIZE
+            chunk_count = blob.size // chunk_size + (blob.size % chunk_size > 0)
+            index = 0
+
+        return chunk_size, chunk_count, index, info
+
+    def upload(self, batch, blob, chunked=False, limit=CHUNK_LIMIT):
+        # type: (Batch, Blob, bool, int) -> Blob
         """
         Upload a blob.
 
+        Can be used to upload a new blob or resume
+        the upload of a chunked blob.
+
         :param batch: batch of the upload
         :param blob: blob to upload
+        :param chunked: if True, send in chunks
+        :param limit: if blob is bigger, send in chunks
         :return: uploaded blob details
         """
+        chunked = chunked or blob.size > limit
+        response = None
+
         headers = self.headers
         headers.update({
             'Cache-Control': 'no-cache',
@@ -99,17 +177,35 @@ class API(APIEndpoint):
             'Content-Length': text(blob.size),
         })
 
-        request_path = '{}/{}'.format(batch.batchId, batch.upload_idx)
-        try:
-            response = super(API, self).post(
-                resource=blob.data,
-                path=request_path,
-                raw=True,
-                headers=headers
-            )
-        finally:
-            if isinstance(blob, FileBlob):
-                blob.fd.close()
+        path = '{}/{}'.format(batch.batchId, batch.upload_idx)
+
+        if chunked:
+            chunk_size, chunk_count, index, info = self.state(path, blob)
+            if not chunk_count:
+                return info
+
+            headers.update({
+                'X-Upload-Type': 'chunked',
+                'X-Upload-Chunk-Count': text(chunk_count),
+                'Content-Length': text(chunk_size)
+            })
+        else:
+            chunk_size, chunk_count, index = blob.size or None, 1, 0
+
+        with blob as source:
+            if index:
+                source.seek(index * chunk_size)
+            while index < chunk_count:
+                data = source.read(chunk_size)
+                if not data:
+                    if not response:
+                        raise EmptyFile(blob.name)
+                    break
+
+                response = self.send_data(
+                    blob.name, data, path, chunked, index, headers)
+                index += 1
+
         batch.upload_idx += 1
         response.batch_id = batch.uid
         return response
