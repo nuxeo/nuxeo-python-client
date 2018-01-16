@@ -51,7 +51,7 @@ class APIEndpoint(object):
         cls=None,  # type: Optional[Type]
         raw=False,  # type: bool
         single=False,  # type: bool
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> Any
         """

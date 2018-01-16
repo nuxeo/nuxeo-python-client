@@ -38,7 +38,7 @@ class NuxeoClient(object):
         api_path=DEFAULT_API_PATH,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
         chunk_size=CHUNK_SIZE,  # type: int
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> None
         self.auth = auth
@@ -89,7 +89,7 @@ class NuxeoClient(object):
         headers=None,  # type: Optional[Dict[Text, Text]]
         data=None,  # type: Optional[Any]
         raw=False,  # type: bool
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> Union[requests.Response, Any]
         """
@@ -231,7 +231,7 @@ class Nuxeo(object):
         host=DEFAULT_URL,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
         client=NuxeoClient,  # type: Type[NuxeoClient]
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> None
         """

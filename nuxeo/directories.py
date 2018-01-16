@@ -43,7 +43,7 @@ class API(APIEndpoint):
         self,
         resource=None,  # type: Union[Directory, DirectoryEntry]
         dir_name=None,  # type: Optional[Text]
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> resource
         """

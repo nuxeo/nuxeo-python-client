@@ -126,7 +126,7 @@ class Server(threading.Thread):
         port=0,
         requests_to_handle=1,
         wait_to_close_event=None,
-        **kwargs,
+        **kwargs
     ):
         super(Server, self).__init__()
 

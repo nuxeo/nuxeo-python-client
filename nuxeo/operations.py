@@ -132,7 +132,7 @@ class API(APIEndpoint):
         void_op=False,  # type: bool
         headers=None,  # type: Optional[Dict[Text, Text]]
         file_out=None,  # type: Optional[Text]
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> Any
         """
