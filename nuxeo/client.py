@@ -213,10 +213,9 @@ class NuxeoClient(object):
                 error_data = {'status': error.response.status_code,
                               'message': error.response.content}
 
-            if error_data.get('status') in (401, 403):
-                error_class = Unauthorized
-            else:
-                error_class = HTTPError
+            error_class = (Unauthorized
+                           if error_data.get('status') in (401, 403)
+                           else HTTPError)
 
             error = error_class.parse(error_data)
             logger.exception('Remote exception: {}'.format(error))
