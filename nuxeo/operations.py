@@ -38,6 +38,7 @@ PARAM_TYPES = {  # Types allowed for operations parameters
 
 
 class API(APIEndpoint):
+    """ Endpoint for operations. """
     def __init__(self, client, endpoint='site/automation', headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         self.ops = {}  # type: Dict[Text, Any]
@@ -52,6 +53,7 @@ class API(APIEndpoint):
 
     def get(self, **kwargs):
         # type: (Any) -> Dict[Text, Any]
+        """ Get the list of available operations from the server. """
         return super(API, self).get()
 
     def put(self, **kwargs):
@@ -226,4 +228,5 @@ class API(APIEndpoint):
 
     def new(self, command, **kwargs):
         # type: (Text, Any) -> Operation
+        """ Make a new Operation object. """
         return Operation(command=command, service=self, **kwargs)

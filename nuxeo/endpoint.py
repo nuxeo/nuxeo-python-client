@@ -55,7 +55,7 @@ class APIEndpoint(object):
     ):
         # type: (...) -> Any
         """
-        Gets the details for one or more resources
+        Gets the details for one or more resources.
 
         :param path: the endpoint (URL path) for the request
         :param cls: a class to use for parsing, if different
@@ -63,10 +63,9 @@ class APIEndpoint(object):
         :param raw: if True, directly return the content of
                     the response
         :param single: if True, do not parse as list
-        :return one or more instances of cls parsed from
-                the returned JSON
+        :return: one or more instances of cls parsed from
+                 the returned JSON
         """
-
         endpoint = self.endpoint
 
         if not cls:
@@ -103,7 +102,7 @@ class APIEndpoint(object):
         :param resource: the data to post
         :param path: the endpoint (URL path) for the request
         :param raw: if False, parse the outgoing data to JSON
-        :return the created resource
+        :return: the created resource
         """
         if resource and not raw and not isinstance(resource, dict):
             if isinstance(resource, self._cls):
@@ -131,7 +130,7 @@ class APIEndpoint(object):
 
         :param resource: the resource instance
         :param path: the endpoint (URL path) for the request
-        :return the modified resource
+        :return: the modified resource
         """
 
         endpoint = '{}/{}'.format(self.endpoint, path or resource.uid)
@@ -149,7 +148,7 @@ class APIEndpoint(object):
         Deletes an existing resource.
 
         :param resource_id: the resource ID to be deleted
-        :
+        :return: the deleted resource
         """
 
         endpoint = '{}/{}'.format(self.endpoint, resource_id)

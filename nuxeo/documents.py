@@ -17,6 +17,7 @@ except ImportError:
 
 
 class API(APIEndpoint):
+    """ Endpoint for documents. """
     def __init__(
         self,
         client,  # type: NuxeoClient
@@ -95,6 +96,12 @@ class API(APIEndpoint):
 
     def add_permission(self, uid, params):
         # type: (Text, Dict[Text, Any]) -> None
+        """
+        Add a permission to a document.
+
+        :param uid: the uid of the document
+        :param params: the permissions to add
+        """
         self.operations.execute(
             command='Document.AddPermission', input_obj=uid, params=params)
 
@@ -129,6 +136,12 @@ class API(APIEndpoint):
 
     def fetch_acls(self, uid):
         # type: (Text) -> Dict[Text, Any]
+        """
+        Fetch the ACLs of a document.
+
+        :param uid: the uid of the document
+        :return: the ACLs
+        """
         headers = self.headers or {}
         headers.update({'enrichers-document': 'acls'})
 
@@ -138,11 +151,23 @@ class API(APIEndpoint):
 
     def fetch_audit(self, uid):
         # type: (Text) -> Dict[Text, Any]
+        """
+        Fetch the audit of a document.
+
+        :param uid: the uid of the document
+        :return: the audit
+        """
         return super(API, self).get(
             self._path(uid=uid), adapter='audit', cls=dict)
 
     def fetch_lock_status(self, uid):
         # type: (Text) -> Dict[Text, Any]
+        """
+        Fetch the lock status of a document.
+
+        :param uid: the uid of the document
+        :return: the lock status
+        """
         headers = self.headers or {}
         headers.update({'fetch-document': 'lock'})
         req = super(API, self).get(
@@ -157,12 +182,25 @@ class API(APIEndpoint):
 
     def fetch_rendition(self, uid, name):
         # type: (Text, Text) -> Union[Text, bytes]
+        """
+        Fetch a rendition of a document.
+
+        :param uid: the uid of the document
+        :param name: the name of the rendition
+        :return: the corresponding rendition
+        """
         adapter = 'rendition/{}'.format(name)
         return super(API, self).get(
             path=self._path(uid=uid), raw=True, adapter=adapter)
 
     def fetch_renditions(self, uid):
         # type: (Text) -> List[Union[Text, bytes]]
+        """
+        Fetch all renditions of a document.
+
+        :param uid: the uid of a document
+        :return: the renditions
+        """
         headers = self.headers or {}
         headers.update({'enrichers-document': 'renditions'})
 
@@ -212,6 +250,13 @@ class API(APIEndpoint):
 
     def has_permission(self, uid, permission):
         # type: (Text, Text) -> bool
+        """
+        Check if a document has a permission.
+
+        :param uid: the uid of the document
+        :param permission: the permission to check
+        :return: True if the document has it, False otherwise
+        """
         headers = self.headers or {}
         headers.update({'enrichers-document': 'permissions'})
 
@@ -221,6 +266,7 @@ class API(APIEndpoint):
 
     def lock(self, uid):
         # type: (Text) -> Dict[Text, Any]
+        """ Lock a document. """
         return self.operations.execute(
             command='Document.Lock', input_obj=uid)
 
@@ -241,6 +287,12 @@ class API(APIEndpoint):
 
     def query(self, opts=None):
         # type: (Optional[Dict[Text, Text]]) -> Dict[Text, Any]
+        """
+        Run a query on the documents.
+
+        :param opts: a query or a pageProvider
+        :return: the corresponding documents
+        """
         opts = opts or {}
         if 'query' in opts:
             query = 'NXQL'
@@ -257,11 +309,18 @@ class API(APIEndpoint):
 
     def remove_permission(self, uid, params):
         # type: (Text, Dict[Text, Text]) -> None
+        """
+        Remove a permission on a document.
+
+        :param uid: the uid of the document
+        :param params: the permission to remove
+        """
         self.operations.execute(
             command='Document.RemovePermission', input_obj=uid, params=params)
 
     def unlock(self, uid):
         # type: (Text) -> Dict[Text, Any]
+        """ Unlock a document. """
         return self.operations.execute(
             command='Document.Unlock', input_obj=uid)
 
