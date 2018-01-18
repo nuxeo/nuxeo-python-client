@@ -14,6 +14,7 @@ except ImportError:
 
 
 class API(APIEndpoint):
+    """ Endpoint for directories. """
     def __init__(self, client, endpoint='directory', headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         super(API, self).__init__(

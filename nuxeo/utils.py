@@ -70,6 +70,7 @@ def get_digester(digest):
 
 def guess_mimetype(filename):
     # type: (Text) -> Text
+    """ Guess the mimetype of a given file. """
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type:
         if sys.platform == 'win32':

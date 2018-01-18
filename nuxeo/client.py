@@ -29,7 +29,16 @@ logger = logging.getLogger(__name__)
 
 
 class NuxeoClient(object):
-    """ The HTTP client used by Nuxeo """
+    """
+    The HTTP client used by Nuxeo.
+
+    :param auth: An authentication object passed to Requests
+    :param host: The url of the Nuxeo Platform
+    :param api_path: The API path appended to the host url
+    :param app_name: The name of the application using the client
+    :param chunk_size: The size of the chunks for blob download
+    :param kwargs: kwargs passed to :func:`NuxeoClient.request`
+    """
 
     def __init__(
         self,
@@ -70,7 +79,7 @@ class NuxeoClient(object):
         """
         Set the repository and/or the schemas for the requests.
 
-        :return: the client instance after adding the settings
+        :return: The client instance after adding the settings
         """
         if repository:
             self.repository = repository
@@ -100,7 +109,8 @@ class NuxeoClient(object):
         :param headers: the headers for the HTTP request
         :param data: data to put in the body
         :param raw: if True, don't parse the data to JSON
-        :param kwargs: other parameters accepted by requests
+        :param kwargs: other parameters accepted by
+               :func:`requests.request`
         :return: the HTTP response
         """
         if method not in ('GET', 'HEAD', 'POST', 'PUT',
@@ -191,6 +201,7 @@ class NuxeoClient(object):
         return token
 
     def is_reachable(self):
+        """ Check if the Nuxeo Platform is reachable. """
         # type: () -> bool
         response = self.request('GET', 'runningstatus', default=False)
         if isinstance(response, requests.Response):
@@ -204,7 +215,7 @@ class NuxeoClient(object):
         """
         Log error and handle raise.
 
-        :param error: the error to handle
+        :param error: The error to handle
         """
         if isinstance(error, requests.HTTPError):
             try:
@@ -225,6 +236,15 @@ class NuxeoClient(object):
 
 
 class Nuxeo(object):
+    """
+    Instantiate the client and all the API Endpoints.
+
+    :param auth: the authenticator
+    :param host: the host URL
+    :param app_name: the name of the application using the client
+    :param client: the client class
+    :param kwargs: any other argument to forward to every requests calls
+    """
     def __init__(
         self,
         auth=None,  # type: Optional[Tuple[Text, Text]]
@@ -234,16 +254,6 @@ class Nuxeo(object):
         **kwargs  # type: Any
     ):
         # type: (...) -> None
-        """
-        Instantiate the client and all the API Endpoints.
-
-        :param auth: the authenticator
-        :param host: the host URL
-        :param app_name: the name of the application using the client
-        :param client: the client class
-        :param kwargs: any other argument to forward to every requests calls
-        """
-
         if requests.__version__ < '2.12.2':
             from warnings import warn
             warn('Requests >= 2.12.2 required for auth unicode support.')

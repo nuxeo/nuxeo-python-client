@@ -1,7 +1,10 @@
+Changelog
+=========
+
 dev
 ---
 
-Release date: ``2017-??-??``
+Release date: ``2018-??-??``
 
 -  `NXPY-11 <https://jira.nuxeo.com/browse/NXPY-11>`__: Add usage examples
 -  `NXPY-14 <https://jira.nuxeo.com/browse/NXPY-14>`__: Quote Repository URLs

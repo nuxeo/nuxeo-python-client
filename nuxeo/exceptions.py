@@ -40,6 +40,7 @@ class EmptyFile(ValueError):
 
 
 class HTTPError(Exception):
+    """ Exception thrown when the server returns an error. """
     _valid_properties = {
         'status': None,
         'message': None,
@@ -76,14 +77,14 @@ class InvalidBatch(ValueError):
 
 class Unauthorized(HTTPError):
     """
-    Exception thrown when the HTTPError code is 401 or 403
+    Exception thrown when the HTTPError code is 401 or 403.
     """
     pass
 
 
 class UnavailableConvertor(Exception):
     """
-    Exception for when a converter is registered but not
+    Exception thrown when a converter is registered but not
     available right now (e.g. not installed on the server).
 
     :param options: options passed to the conversion request

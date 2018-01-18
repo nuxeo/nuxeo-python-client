@@ -29,6 +29,7 @@ except ImportError:
 
 
 class Model(object):
+    """ Base class for all entities. """
     _valid_properties = {}  # type: Dict[Text, Any]
     service = None  # type: APIEndpoint
     uid = None  # type: Text
@@ -79,6 +80,7 @@ class Model(object):
         return model
 
     def save(self):
+        """ Save the resource. """
         # type: () -> None
         self.service.put(self)
 
@@ -90,9 +92,9 @@ class RefreshableModel(Model):
         """
         Reload the Model.
 
-        If model is not none, copy from its
-        attributes, otherwise query the server
-        for the entity with its uid.
+        If model is not None, copy from its attributes,
+        otherwise query the server for the entity with its uid.
+
         :param model: the entity to copy
         :return: the refreshed model
         """
@@ -107,6 +109,8 @@ class RefreshableModel(Model):
 
 
 class Batch(Model):
+    """ Upload batch. """
+
     _valid_properties = {
         'batchId': None,
         'dropped': None,
@@ -133,6 +137,12 @@ class Batch(Model):
         self.batchId = value
 
     def get(self, file_idx):
+        """
+        Get the blob info.
+
+        :param file_idx: the index of the blob in the batch
+        :return: the corresponding blob
+        """
         # type: (int) -> Blob
         if self.batchId is None:
             raise InvalidBatch(
@@ -142,6 +152,7 @@ class Batch(Model):
         return blob
 
     def cancel(self):
+        """ Cancel an upload batch. """
         # type: () -> None
         if not self.batchId:
             return
@@ -149,11 +160,20 @@ class Batch(Model):
         self.batchId = None
 
     def upload(self, blob, **kwargs):
+        """
+        Upload a blob.
+
+        :param blob: the blob to upload
+        :param kwargs: the upload settings
+        :return: the blob info
+        """
         # type: (Blob, Any) -> Blob
         return self.service.upload(self, blob, **kwargs)
 
 
 class Blob(Model):
+    """ Blob superclass used for metadata. """
+
     _valid_properties = {
         'uploaded': 'true',
         'name': None,
@@ -184,7 +204,7 @@ class Blob(Model):
     @classmethod
     def parse(cls, json, service=None):
         # type: (Dict[Text, Any], Optional[APIEndpoint]) -> Blob
-        """ Parse a JSON object into a model instance. """
+        """ Parse a JSON object into a blob instance. """
         model = cls()
 
         if service:
@@ -200,6 +220,7 @@ class Blob(Model):
 
     def to_json(self):
         # type: () -> Dict[Text, Text]
+        """ Return a JSON object used during the upload. """
         return {
             'upload-batch': self.batch_id,
             'upload-fileId': text(self.fileIdx),
@@ -207,7 +228,12 @@ class Blob(Model):
 
 
 class BufferBlob(Blob):
-    """ InMemory content to upload to Nuxeo. """
+    """
+    InMemory content to upload to Nuxeo.
+
+    Acts as a context manager so its data can be read
+    with the `with` statement.
+    """
 
     stringio = None  # type: Optional[StringIO]
 
@@ -237,7 +263,12 @@ class BufferBlob(Blob):
 
 
 class FileBlob(Blob):
-    """ Represent a File as Blob for future upload. """
+    """
+    File to upload to Nuxeo.
+
+    Acts as a context manager so its data can be read
+    with the `with` statement.
+    """
 
     # File descriptor
     fd = None  # type: Optional[BinaryIO]
@@ -259,7 +290,11 @@ class FileBlob(Blob):
     def data(self):
         # type: () -> BinaryIO
         """
-        Request data. The caller has to close the file descriptor itself.
+        Request data.
+
+        The caller has to close the file descriptor
+        himself if he doesn't open it with the
+        context manager.
         """
         return self.fd
 
@@ -273,6 +308,7 @@ class FileBlob(Blob):
 
 
 class Directory(Model):
+    """ Directory. """
     _valid_properties = {
         'entity-type': 'directory',
         'directoryName': None,
@@ -292,28 +328,49 @@ class Directory(Model):
         # type: () -> Text
         return self.directoryName
 
-    def get(self, entry=None):
-        # type: (Optional[Text]) -> Union[Directory, DirectoryEntry]
+    def get(self, entry):
+        # type: (Text) -> DirectoryEntry
+        """
+        Get an entry of the directory.
+
+        :param entry: the name of the entry
+        :return: the corresponding directory entry
+        """
         return self.service.get(self.uid, dir_entry=entry)
 
     def create(self, entry):
         # type: (DirectoryEntry) -> DirectoryEntry
+        """ Create an entry in the directory. """
         return self.service.post(entry, dir_name=self.uid)
 
     def save(self, entry):
         # type: (DirectoryEntry) -> DirectoryEntry
+        """ Save a modified entry of the directory. """
         return self.service.put(entry, dir_name=self.uid)
 
     def delete(self, entry=None):
         # type: (Text) -> Union[Directory, DirectoryEntry]
+        """
+        Delete the directory or one of its entries.
+
+        :param entry: if specified, the entry to delete
+        :return: the deleted directory
+        """
         return self.service.delete(self.uid, dir_entry=entry)
 
     def exists(self, entry):
         # type: (Text) -> bool
+        """
+        Check if an entry is in the directory.
+
+        :param entry: the entry name
+        :return: True if it exists, else False
+        """
         return self.service.exists(self.uid, dir_entry=entry)
 
 
 class DirectoryEntry(Model):
+    """ Directory entry. """
     _valid_properties = {
         'entity-type': 'directoryEntry',
         'directoryName': None,
@@ -335,14 +392,17 @@ class DirectoryEntry(Model):
 
     def save(self):
         # type: () -> DirectoryEntry
+        """ Save the entry. """
         return self.service.put(self, self.directoryName)
 
     def delete(self):
         # type: () -> DirectoryEntry
+        """ Delete the entry. """
         return self.service.delete(self.directoryName, self.uid)
 
 
 class Document(RefreshableModel):
+    """ Document. """
     _valid_properties = {
         'entity-type': 'document',
         'repository': 'default',
@@ -374,7 +434,8 @@ class Document(RefreshableModel):
 
     def add_permission(self, params):
         # type: (Dict[Text, Any]) -> None
-        """ Add a permission to a document.
+        """
+        Add a permission to a document.
 
         :param params: permission to add
         """
@@ -447,6 +508,7 @@ class Document(RefreshableModel):
 
     def get(self, prop):
         # type: (Text) -> Any
+        """ Get a property of the document by its name. """
         return self.properties[prop]
 
     def has_permission(self, permission):
@@ -456,7 +518,7 @@ class Document(RefreshableModel):
 
     def is_locked(self):
         # type: () -> bool
-        """ Get lock status. """
+        """ Get the lock status. """
         return not not self.fetch_lock_status()
 
     def lock(self):
@@ -482,6 +544,7 @@ class Document(RefreshableModel):
 
     def set(self, properties):
         # type: (Dict[Text, Any]) -> None
+        """ Add/update the properties of the document. """
         self.properties.update(properties)
 
     def unlock(self):
@@ -491,6 +554,7 @@ class Document(RefreshableModel):
 
 
 class Group(Model):
+    """ User group. """
     _valid_properties = {
         'entity-type': 'group',
         'groupname': None,
@@ -513,11 +577,13 @@ class Group(Model):
         return self.groupname
 
     def delete(self):
+        """ Delete the group. """
         # type: () -> Group
         return self.service.delete(self.uid)
 
 
 class Operation(Model):
+    """ Automation operation. """
     _valid_properties = {
         'command': None,
         'input_obj': None,
@@ -534,10 +600,12 @@ class Operation(Model):
 
     def execute(self, **kwargs):
         # type: (Any) -> Any
+        """ Execute the operation. """
         return self.service.execute(self, **kwargs)
 
 
 class Task(RefreshableModel):
+    """ Workflow task. """
     _valid_properties = {
         'entity-type': 'task',
         'id': None,
@@ -571,24 +639,26 @@ class Task(RefreshableModel):
 
     def complete(self, action, variables=None, comment=None):
         # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> None
+        """ Complete the action of a task. """
         updated_task = self.service.complete(
             self, action, variables=variables, comment=comment)
         self.load(updated_task)
 
     def delegate(self, actors, comment=None):
         # type: (Text, Optional[Text]) -> None
-        """ Delegate the Task to someone else. """
+        """ Delegate the task to someone else. """
         self.service.transfer(self, 'delegate', actors, comment=comment)
         self.load()
 
     def reassign(self, actors, comment=None):
         # type: (Text, Optional[Text]) -> None
-        """ Reassign the Task to someone else. """
+        """ Reassign the task to someone else. """
         self.service.transfer(self, 'reassign', actors, comment=comment)
         self.load()
 
 
 class User(RefreshableModel):
+    """ User. """
     _valid_properties = {
         'entity-type': 'user',
         'id': None,
@@ -622,11 +692,13 @@ class User(RefreshableModel):
         self.save()
 
     def delete(self):
+        """ Delete the user. """
         # type: () -> None
         self.service.delete(self.uid)
 
 
 class Workflow(Model):
+    """ Workflow. """
     _valid_properties = {
         'entity-type': 'workflow',
         'id': None,
@@ -655,8 +727,10 @@ class Workflow(Model):
 
     def delete(self):
         # type: () -> None
+        """ Delete the workflow. """
         self.service.delete(self.uid)
 
     def graph(self):
         # type: () -> Dict[Text, Any]
+        """ Return a JSON representation of the workflow graph. """
         return self.service.graph(self)

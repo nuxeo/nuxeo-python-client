@@ -16,6 +16,7 @@ except ImportError:
 
 
 class API(APIEndpoint):
+    """ Endpoint for tasks. """
     def __init__(self, client, endpoint='task', headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         super(API, self).__init__(
