@@ -10,6 +10,8 @@ Nuxeo Python Client
    :maxdepth: 2
    :caption: Contents:
 
+* :ref:`genindex`
+
 .. autoclass:: nuxeo.client.Nuxeo
     :members:
 

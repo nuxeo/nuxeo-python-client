@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Helpers &mdash; Nuxeo 2.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="Nuxeo 2.0.0 documentation" href="../index.html"/>
+        <link rel="next" title="Useful snippets" href="snippets.html"/>
+        <link rel="prev" title="Run requests" href="requests.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/nuxeo_logo2.svg" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="users_and_groups.html">Manage users and groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documents.html">Work with documents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="directories.html">Work with directories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blobs.html">Work with blobs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests.html">Run requests</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Helpers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snippets.html">Useful snippets</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nuxeo</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Helpers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/helpers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="helpers">
+<h1>Helpers<a class="headerlink" href="#helpers" title="Permalink to this headline">¶</a></h1>
+<p><strong>Check the server access</strong></p>
+<p>Whenever you want to check if the Nuxeo Platform server is reachable,
+you can run this command. It will return a <code class="docutils literal"><span class="pre">boolean</span></code> representing the
+availability of the server.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">is_reachable</span> <span class="o">=</span> <span class="n">nuxeo</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">is_reachable</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Get the Nuxeo Drive configuration</strong></p>
+<p>You can fetch the Drive configuration from the server:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">nuxeo</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;drive/configuration&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">{})</span>
+</pre></div>
+</div>
+<p>If it has been filled, <code class="docutils literal"><span class="pre">config</span></code> will have the following structure:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;log_level_file&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ignored_suffixes&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;.bak&#39;</span><span class="p">,</span> <span class="s1">&#39;.crdownload&#39;</span><span class="p">,</span> <span class="s1">&#39;.lock&#39;</span><span class="p">,</span> <span class="s1">&#39;.nxpart&#39;</span><span class="p">,</span> <span class="s1">&#39;.part&#39;</span><span class="p">,</span> <span class="s1">&#39;.partial&#39;</span><span class="p">,</span> <span class="s1">&#39;.swp&#39;</span><span class="p">,</span> <span class="s1">&#39;.tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;~&#39;</span><span class="p">,</span> <span class="s1">&#39;.dwl&#39;</span><span class="p">,</span> <span class="s1">&#39;.dwl2&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;ignored_files&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;^atmp</span><span class="se">\\</span><span class="s1">d+$&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;update_check_delay&#39;</span><span class="p">:</span> <span class="mi">3600</span><span class="p">,</span>
+    <span class="s1">&#39;delay&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="s1">&#39;ui&#39;</span><span class="p">:</span> <span class="s1">&#39;web&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;beta_channel&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="s1">&#39;ignored_prefixes&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;icon</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;thumbs.db&#39;</span><span class="p">,</span> <span class="s1">&#39;desktop.ini&#39;</span><span class="p">,</span> <span class="s1">&#39;~$&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;handshake_timeout&#39;</span><span class="p">:</span> <span class="mi">60</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Get available operations</strong></p>
+<p>You can search for available operations on the
+<a class="reference external" href="http://explorer.nuxeo.com/nuxeo/site/distribution/">explorer</a>
+(click on <cite>Search Operations</cite> on the version corresponding
+to your Nuxeo Platform).
+You can also run the following bit of code to see the list:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="n">ops</span> <span class="o">=</span> <span class="n">nuxeo</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">ops</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You’ll get an output like this:</p>
+<div class="code json highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="s2">&quot;Actions.GET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AddEntryToMultivaluedProperty&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AttachFiles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Audit.Log&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Audit.LogEvent&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>And if you pick one you can see its definition:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">nuxeo</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">operations</span><span class="p">[</span><span class="s1">&#39;Log&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>With an output like this:</p>
+<div class="code json highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="s2">&quot;Notification&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Logging with log4j&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;Log&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Log&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="s2">&quot;Option&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="s2">&quot;warn&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;widget&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+            <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;signature&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;void&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;void&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;requires&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;Log&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;aliases&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;LogOperation&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Check operation parameters</strong></p>
+<p>When you execute an operation, the name of the operation and
+the parameters you chose will be checked by the <code class="docutils literal"><span class="pre">nuxeo.operations.check_params()</span></code>
+method. If you want to check the parameters of your operation by
+yourself before running it, you can use the following:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="n">nuxeo</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">check_params</span><span class="p">(</span><span class="s1">&#39;Log&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;info&#39;</span>
+                               <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;I am logging something&#39;</span><span class="p">})</span>
+    <span class="c1"># The parameters are valid</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># Indicates what is wrong</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="snippets.html" class="btn btn-neutral float-right" title="Useful snippets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="requests.html" class="btn btn-neutral" title="Run requests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Nuxeo.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

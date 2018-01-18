@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Client Library for Nuxeo API &mdash; Nuxeo 2.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Nuxeo 2.0.0 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/nuxeo_logo2.svg" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/users_and_groups.html">Manage users and groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/documents.html">Work with documents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/directories.html">Work with directories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/blobs.html">Work with blobs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/requests.html">Run requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/helpers.html">Helpers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/snippets.html">Useful snippets</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nuxeo</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Client Library for Nuxeo API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/README.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="client-library-for-nuxeo-api">
+<h1>Client Library for Nuxeo API<a class="headerlink" href="#client-library-for-nuxeo-api" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://qa.nuxeo.org/jenkins/job/Client/job/nuxeo-python-client-master/"><img alt="Build Status" src="https://qa.nuxeo.org/jenkins/buildStatus/icon?job=Client/nuxeo-python-client-master&amp;style=flat" /></a></p>
+<p>The Nuxeo Python Client is a Python client library for the Nuxeo
+Automation and REST API. It works with both Python 2 and 3.</p>
+<p>This is an ongoing project, supported by Nuxeo.</p>
+</div>
+<div class="section" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>The installation is as simple as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install --upgrade nuxeo
+</pre></div>
+</div>
+<p>Then, use the following <code class="docutils literal"><span class="pre">import</span></code> statement to have access to the Nuxeo
+API:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nuxeo.client</span> <span class="k">import</span> <span class="n">Nuxeo</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<p>Check out the <a class="reference external" href="https://nuxeo.github.io/nuxeo-python-client/latest/">API documentation</a>.</p>
+</div>
+<div class="section" id="requirements">
+<h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
+<p>The Nuxeo Python client works only with:</p>
+<ul class="simple">
+<li>the Nuxeo Platform &gt;= LTS 2015</li>
+<li><code class="docutils literal"><span class="pre">requests</span></code> &gt;= 2.12.2 (for unicode authentication)</li>
+<li><code class="docutils literal"><span class="pre">setuptools</span></code> &gt;= 30.3.0</li>
+</ul>
+</div>
+<div class="section" id="quick-start">
+<h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
+<p>This quick start guide will show how to do basics operations using the
+client.</p>
+<div class="section" id="connect-to-the-nuxeo-platform">
+<h2>Connect to the Nuxeo Platform<a class="headerlink" href="#connect-to-the-nuxeo-platform" title="Permalink to this headline">¶</a></h2>
+<p>The easiest way to connect to the Nuxeo Platform with a basic authentication
+is passing a tuple containing the <code class="docutils literal"><span class="pre">username</span></code> and the <code class="docutils literal"><span class="pre">password</span></code> to the
+client, like so:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nuxeo.client</span> <span class="k">import</span> <span class="n">Nuxeo</span>
+
+<span class="n">nuxeo</span> <span class="o">=</span> <span class="n">Nuxeo</span><span class="p">(</span><span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Administrator&#39;</span><span class="p">,</span> <span class="s1">&#39;Administrator&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>You can then use the <code class="docutils literal"><span class="pre">nuxeo</span></code> object to interact with the Platform. If you want
+to use a specific instance, you can specify the <code class="docutils literal"><span class="pre">base_url</span></code> like so:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">nuxeo</span> <span class="o">=</span> <span class="n">Nuxeo</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s1">&#39;http://demo.nuxeo.com/nuxeo/&#39;</span><span class="p">,</span>
+    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Administrator&#39;</span><span class="p">,</span> <span class="s1">&#39;Administrator&#39;</span><span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="download-upload-configuration">
+<h2>Download/Upload Configuration<a class="headerlink" href="#download-upload-configuration" title="Permalink to this headline">¶</a></h2>
+<p>In the <code class="docutils literal"><span class="pre">nuxeo/constants.py</span></code> file, you have several constants that are
+used throughout the client that you can change to fit your needs:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">CHUNK_SIZE</span></code> (8 Kio by default), the size of the chunks when downloading,</li>
+<li><code class="docutils literal"><span class="pre">UPLOAD_CHUNK_SIZE</span></code> (256 Kio by default), the size of the chunks when uploading,</li>
+<li><code class="docutils literal"><span class="pre">CHUNK_LIMIT</span></code> (10 Mio by default), the size above which the upload will
+automatically be chunked,</li>
+<li><code class="docutils literal"><span class="pre">MAX_RETRY</span></code> (3 by default), the number of retries for the upload of a given blob/chunk.</li>
+</ul>
+</div>
+<div class="section" id="run-nxql-queries">
+<h2>Run NXQL Queries<a class="headerlink" href="#run-nxql-queries" title="Permalink to this headline">¶</a></h2>
+<p>With <code class="docutils literal"><span class="pre">nuxeo.request(...)</span></code> you can run queries in NXQL (NXQL is a subset of SQL,
+you can check how to use it <a class="reference external" href="https://doc.nuxeo.com/nxdoc/nxql/">in the documentation</a>).
+Here, we are first <a class="reference external" href="documents.rst">fetching a workspace</a>, and then using its
+<code class="docutils literal"><span class="pre">uid</span></code> to build a query which will find all its children that have a <code class="docutils literal"><span class="pre">File</span></code>
+or <code class="docutils literal"><span class="pre">Picture</span></code> type, and are not deleted.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Fetch a workspace</span>
+<span class="n">ws</span> <span class="o">=</span> <span class="n">nuxeo</span><span class="o">.</span><span class="n">documents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;/default-domain/workspaces/ws&#39;</span><span class="p">)</span>
+<span class="c1"># Build a query using its uid</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM Document WHERE ecm:ancestorId = &#39;&quot;</span> <span class="o">+</span> <span class="n">ws</span><span class="o">.</span><span class="n">uid</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+<span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot; AND ecm:primaryType IN (&#39;File&#39;, &#39;Picture&#39;)&quot;</span>
+<span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot; AND ecm:currentLifeCycleState != &#39;deleted&#39;&quot;</span>
+<span class="n">request</span> <span class="o">=</span> <span class="s1">&#39;query?query=&#39;</span> <span class="o">+</span> <span class="n">urllib</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="s1">&#39;!=:&#39;</span><span class="p">)</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">nuxeo</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+<span class="n">entries</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;entries&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">entries</span></code> will be a <code class="docutils literal"><span class="pre">list</span></code> containing a <code class="docutils literal"><span class="pre">dict</span></code> for each
+element returned by the query.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Now that your client is set up, here are pages to help you with the
+main functions available:</p>
+<ul class="simple">
+<li><a class="reference external" href="examples/users_and_groups.rst">Manage users and groups</a></li>
+<li><a class="reference external" href="examples/documents.rst">Work with documents</a></li>
+<li><a class="reference external" href="examples/directories.rst">Work with directories</a></li>
+<li><a class="reference external" href="examples/blobs.rst">Work with blobs</a></li>
+<li><a class="reference external" href="examples/requests.rst">Run requests</a></li>
+<li><a class="reference external" href="examples/helpers.rst">Helpers</a></li>
+<li><a class="reference external" href="examples/snippets.rst">Useful snippets</a></li>
+<li><a class="reference external" href="examples/find_duplicates.py">Script: Find duplicates</a></li>
+<li><a class="reference external" href="examples/create_proxy.py">Script: Create a live proxy</a></li>
+</ul>
+<p>You can also check <a class="reference external" href="http://nuxeo.github.io/nuxeo-python-client/latest/">the  API documentation</a>
+of this Python client for further options.</p>
+</div>
+</div>
+<div class="section" id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<p>See our <a class="reference external" href="https://doc.nuxeo.com/x/VIZH">contribution documentation</a>.</p>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/nuxeo/nuxeo-python-client
+$ cd nuxeo-python-client
+$ python setup.py develop
+</pre></div>
+</div>
+</div>
+<div class="section" id="test">
+<h2>Test<a class="headerlink" href="#test" title="Permalink to this headline">¶</a></h2>
+<p>A Nuxeo Platform instance needs to be running on
+<code class="docutils literal"><span class="pre">http://localhost:8080/nuxeo</span></code> for the tests to be run, and then:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python setup.py test
+</pre></div>
+</div>
+<p>Tests can be launched without a server with Maven and pytest:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ mvn -f ftest/pom.xml clean verify
+</pre></div>
+</div>
+</div>
+<div class="section" id="reporting-issues">
+<h2>Reporting Issues<a class="headerlink" href="#reporting-issues" title="Permalink to this headline">¶</a></h2>
+<p>You can follow the developments in the Nuxeo Python Client project of
+our JIRA bug tracker: <a class="reference external" href="https://jira.nuxeo.com/browse/NXPY">https://jira.nuxeo.com/browse/NXPY</a>.</p>
+<p>You can report issues on
+<a class="reference external" href="http://answers.nuxeo.com">answers.nuxeo.com</a>.</p>
+</div>
+</div>
+<div class="section" id="license">
+<h1>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache License 2.0</a>
+Copyright (c) Nuxeo</p>
+</div>
+<div class="section" id="about-nuxeo">
+<h1>About Nuxeo<a class="headerlink" href="#about-nuxeo" title="Permalink to this headline">¶</a></h1>
+<p>Nuxeo dramatically improves how content-based applications are built,
+managed and deployed, making customers more agile, innovative and
+successful. Nuxeo provides a next generation, enterprise ready platform
+for building traditional and cutting-edge content oriented applications.
+Combining a powerful application development environment with SaaS-based
+tools and a modular architecture, the Nuxeo Platform and Products
+provide clear business value to some of the most recognizable brands
+including Verizon, Electronic Arts, Sharp, FICO, the U.S. Navy, and
+Boeing. Nuxeo is headquartered in New York and Paris. More information
+is available at <a class="reference external" href="http://www.nuxeo.com/">www.nuxeo.com</a>.</p>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Nuxeo.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
