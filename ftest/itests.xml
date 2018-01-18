@@ -25,6 +25,7 @@
         <arg value="--exitfirst" />
         <arg value="--no-print-logs" />
         <arg value="--log-level=CRITICAL" />
+        <arg value="--cov-report xml --cov=nuxeo" />
         <arg value="../tests" />
       </exec>
       <echo level="info">################### Ended Nuxeo Python Client functional tests ###################</echo>
