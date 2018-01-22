@@ -21,12 +21,13 @@
       <exec executable="python" failonerror="true">
         <arg value="-m" />
         <arg value="pytest" />
+        <arg value="--cov-report=xml" />
+        <arg value="--cov=nuxeo" />
         <arg value="--showlocals" />
         <arg value="--exitfirst" />
         <arg value="--no-print-logs" />
         <arg value="--log-level=CRITICAL" />
-        <arg value="--cov-report xml --cov=nuxeo" />
-        <arg value="../tests" />
+        <arg value="tests" />
       </exec>
       <echo level="info">################### Ended Nuxeo Python Client functional tests ###################</echo>
     </target>

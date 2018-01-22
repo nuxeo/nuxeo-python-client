@@ -18,6 +18,9 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+    <properties>
+      <sonar.exclusions>pom.xml</sonar.exclusions>
+    </properties>
 
   <build>
     <plugins>
@@ -52,7 +55,7 @@
             <id>run-tests</id>
             <goals>
               <goal>integration-test</goal>
-              <goal>verify</goal>
+              <!-- <goal>verify</goal> -->
             </goals>
             <configuration>
               <targets>
@@ -76,6 +79,35 @@
               <reportsDirectory>${project.build.directory}/js-reports</reportsDirectory>
               <summaryFile>${project.build.directory}/js-reports/js-summary.xml</summaryFile>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>scripts/sed_coverage.sh</executable>
+          <!-- <workingDirectory>/tmp</workingDirectory> -->
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.3.0.603</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>sonar</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
