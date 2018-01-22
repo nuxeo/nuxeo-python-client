@@ -194,7 +194,9 @@ class API(APIEndpoint):
                 input_obj = 'docs:' + ','.join(input_obj)
             data['input'] = input_obj
 
-        resp = self.client.request('POST', url, data=data, headers=headers)
+        default = kwargs.get('default', object)
+        resp = self.client.request(
+            'POST', url, data=data, headers=headers, default=default)
 
         # Save to a file, part by part of chunk_size
         if file_out:

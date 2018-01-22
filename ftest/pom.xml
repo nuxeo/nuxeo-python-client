@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>nuxeo-python-client-ftest</artifactId>
-  <name>Functional Tests for Nuxeo Python Client</name>
+  <name>Nuxeo Python Client</name>
 
   <dependencies>
     <dependency>
