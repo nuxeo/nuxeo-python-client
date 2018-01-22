@@ -82,6 +82,7 @@
           </execution>
         </executions>
       </plugin>
+      <!--
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -96,9 +97,9 @@
         </executions>
         <configuration>
           <executable>scripts/sed_coverage.sh</executable>
-          <!-- <workingDirectory>/tmp</workingDirectory> -->
         </configuration>
       </plugin>
+      -->
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
