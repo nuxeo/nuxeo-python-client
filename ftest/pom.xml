@@ -18,11 +18,9 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-    <properties>
-      <sonar.exclusions>pom.xml</sonar.exclusions>
-    </properties>
 
   <build>
+    <sourceDirectory>../nuxeo</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
