@@ -21,6 +21,8 @@
       <exec executable="python" failonerror="true">
         <arg value="-m" />
         <arg value="pytest" />
+        <arg value="--cov-report=xml" />
+        <arg value="--cov=nuxeo" />
         <arg value="--showlocals" />
         <arg value="--exitfirst" />
         <arg value="--no-print-logs" />
