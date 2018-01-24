@@ -12,6 +12,7 @@ from .utils import get_digester
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
+        from requests import Response
         from typing import Any, Dict, Optional, Text, Tuple, Type
         from .client import NuxeoClient
 except ImportError:
@@ -128,9 +129,6 @@ class API(APIEndpoint):
     def execute(
         self,
         operation=None,  # type: Optional[Operation]
-        command=None,  # type: Optional[Text]
-        input_obj=None,  # type: Optional[Any]
-        check_params=False,  # type: bool
         void_op=False,  # type: bool
         headers=None,  # type: Optional[Dict[Text, Text]]
         file_out=None,  # type: Optional[Text]
@@ -141,10 +139,6 @@ class API(APIEndpoint):
         Execute an operation.
 
         :param operation: the operation
-        :param command: the name of the operation
-        :param input_obj: the input of the operation
-        :param check_params: if True, parameters will
-        be checked client-side
         :param void_op: if True, the body of the response
         from the server will be empty
         :param headers: extra HTTP headers
@@ -153,15 +147,9 @@ class API(APIEndpoint):
         :param kwargs: any other parameter
         :return: the result of the execution
         """
+        command, input_obj, params = self.get_attributes(operation, **kwargs)
 
-        if operation:
-            command = operation.command
-            input_obj = operation.input_obj
-            params = operation.params
-        else:
-            params = kwargs.get('params', kwargs)
-
-        if check_params:
+        if kwargs.pop('check_params', False):
             self.check_params(command, params)
 
         url = 'site/automation/{}'.format(command)
@@ -200,24 +188,7 @@ class API(APIEndpoint):
 
         # Save to a file, part by part of chunk_size
         if file_out:
-            digest = kwargs.pop('digest', None)
-            digester = get_digester(digest)
-
-            with open(file_out, 'wb') as f:
-                chunk_size = kwargs.get('chunk_size', self.client.chunk_size)
-                for chunk in resp.iter_content(chunk_size=chunk_size):
-                    if operation:
-                        operation.progress += chunk_size
-                    f.write(chunk)
-                    if digester:
-                        digester.update(chunk)
-
-            if digester:
-                actual_digest = digester.hexdigest()
-                if digest != actual_digest:
-                    raise CorruptedFile(file_out, digest, actual_digest)
-
-            return file_out
+            return self.save_to_file(operation, resp, file_out, **kwargs)
 
         # It is likely a JSON response we do not want to save to a file
         if operation:
@@ -228,7 +199,41 @@ class API(APIEndpoint):
         except ValueError:
             return resp.content
 
+    def get_attributes(self, operation, **kwargs):
+        # type: (Operation, Any) -> (Text, Any, Dict[Text, Any])
+        """ Get the operation attributes. """
+        if operation:
+            command = operation.command
+            input_obj = operation.input_obj
+            params = operation.params
+        else:
+            command = kwargs.pop('command', None)
+            input_obj = kwargs.pop('input_obj', None)
+            params = kwargs.pop('params', kwargs)
+        return command, input_obj, params
+
     def new(self, command, **kwargs):
         # type: (Text, Any) -> Operation
         """ Make a new Operation object. """
         return Operation(command=command, service=self, **kwargs)
+
+    def save_to_file(self, operation, resp, path, **kwargs):
+        # type: (Operation, Response, Text, Any) -> Text
+        digest = kwargs.pop('digest', None)
+        digester = get_digester(digest)
+
+        with open(path, 'wb') as f:
+            chunk_size = kwargs.get('chunk_size', self.client.chunk_size)
+            for chunk in resp.iter_content(chunk_size=chunk_size):
+                if operation:
+                    operation.progress += chunk_size
+                f.write(chunk)
+                if digester:
+                    digester.update(chunk)
+
+        if digester:
+            actual_digest = digester.hexdigest()
+            if digest != actual_digest:
+                raise CorruptedFile(path, digest, actual_digest)
+
+        return path
