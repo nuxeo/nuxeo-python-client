@@ -1,7 +1,7 @@
 Client Library for Nuxeo API
 ----------------------------
 
-|Build Status|
+|Build Status| |Coverage| |Lines of code|
 
 The Nuxeo Python Client is a Python client library for the Nuxeo
 Automation and REST API. It works with both Python 2 and 3.
@@ -185,3 +185,9 @@ is available at `www.nuxeo.com <http://www.nuxeo.com/>`__.
 
 .. |Build Status| image:: https://qa.nuxeo.org/jenkins/buildStatus/icon?job=Client/nuxeo-python-client-master&style=flat
    :target: https://qa.nuxeo.org/jenkins/job/Client/job/nuxeo-python-client-master/
+
+.. |Coverage| image:: https://sonarcloud.io/api/badges/measure?key=org.nuxeo:nuxeo-python-client&metric=coverage
+   :target: https://sonarcloud.io/dashboard?id=org.nuxeo%3Anuxeo-python-client
+
+.. |Lines of code| image:: https://sonarcloud.io/api/badges/measure?key=org.nuxeo:nuxeo-python-client&metric=ncloc
+   :target: https://sonarcloud.io/dashboard?id=org.nuxeo%3Anuxeo-python-client
