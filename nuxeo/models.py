@@ -432,6 +432,12 @@ class Document(RefreshableModel):
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
 
+    @property
+    def workflows(self):
+        # type: () -> List[Workflow]
+        """ Return the workflows associated with the document. """
+        return self.service.workflows(self)
+
     def add_permission(self, params):
         # type: (Dict[Text, Any]) -> None
         """
@@ -719,6 +725,12 @@ class Workflow(Model):
         for key, default in Workflow._valid_properties.items():
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def tasks(self):
+        # type: () -> List[Task]
+        """ Return the tasks associated with the workflow. """
+        return self.service.tasks(self)
 
     @property
     def uid(self):

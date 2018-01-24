@@ -64,16 +64,16 @@ def test_basic_workflow(tasks, workflows, server):
             'end_date': '2011-10-23T12:00:00.00Z'}
         task.delegate(['user:{}'.format(user.uid)], comment='a comment')
         task.complete('start_review', infos, comment='a comment')
-        assert len(workflows.of(doc)) == 1
+        assert len(doc.workflows) == 1
         assert task.state == 'ended'
-        tks = tasks.of(workflow)
+        tks = workflow.tasks
         assert len(tks) == 1
         task = tks[0]
         # NXPY-12: Reassign task give _read() error
         task.reassign(['user:{}'.format(user.uid)], comment='a comment')
         task.complete('validate', {'comment': 'a comment'})
         assert task.state == 'ended'
-        assert not workflows.of(doc)
+        assert not doc.workflows
     finally:
         user.delete()
         doc.delete()

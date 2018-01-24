@@ -78,16 +78,6 @@ class API(APIEndpoint):
         request_path = '{}/{}'.format(task.uid, action)
         return super(API, self).put(task, path=request_path)
 
-    def of(self, workflow):
-        # type: (Workflow) -> Union[Task, List[Task]]
-        """
-        Get the tasks of a workflow.
-
-        :param workflow: the workflow
-        :return: the corresponding tasks
-        """
-        return self.get(workflow.as_dict())
-
     def transfer(self, task, transfer, actors, comment=None):
         # type: (Task, Text, Text, Optional[Text]) -> None
         """
