@@ -79,7 +79,7 @@ def test_basic_workflow(tasks, workflows, server):
         doc.delete()
 
 
-def test_get_workflows(tasks, workflows, server):
+def test_get_workflows(tasks, workflows):
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
@@ -105,7 +105,7 @@ def test_get_workflows(tasks, workflows, server):
     assert not tks
 
 
-def test_fetch_graph(workflows, server):
+def test_fetch_graph(workflows):
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
