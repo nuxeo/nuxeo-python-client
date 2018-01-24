@@ -138,6 +138,10 @@ class API(APIEndpoint):
         """
         Execute an operation.
 
+        If there is no operation parameter, the command,
+        the input object, and the parameters of the operation
+        will be taken from the kwargs.
+
         :param operation: the operation
         :param void_op: if True, the body of the response
         from the server will be empty
@@ -219,6 +223,18 @@ class API(APIEndpoint):
 
     def save_to_file(self, operation, resp, path, **kwargs):
         # type: (Operation, Response, Text, Any) -> Text
+        """
+        Save the result of an operation to a file.
+
+        If there is a digest of the file to check
+        against the server, it can be passed in
+        the kwargs.
+        :param operation: the operation
+        :param resp: the response from the Platform
+        :param path: the path to save the file to
+        :param kwargs: additional parameters
+        :return:
+        """
         digest = kwargs.pop('digest', None)
         digester = get_digester(digest)
 

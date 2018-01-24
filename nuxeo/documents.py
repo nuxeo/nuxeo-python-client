@@ -1,10 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from nuxeo.utils import SwapAttr
 from .endpoint import APIEndpoint
 from .exceptions import HTTPError, UnavailableConvertor
 from .models import Document
+from .utils import SwapAttr
 from .workflows import API as WorkflowsAPI
 
 try:
