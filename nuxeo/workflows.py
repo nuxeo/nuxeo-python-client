@@ -80,14 +80,13 @@ class API(APIEndpoint):
         raise NotImplementedError
 
     def delete(self, workflow_id):
-        # type: (Text) -> Workflow
+        # type: (Text) -> None
         """
         Delete a workflow.
 
         :param workflow_id: the id of the workflow to delete
-        :return: the deleted workflow
         """
-        return super(API, self).delete(workflow_id)
+        super(API, self).delete(workflow_id)
 
     def graph(self, workflow):
         # type: (Workflow) -> Dict[Text, Any]

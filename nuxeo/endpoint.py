@@ -143,20 +143,15 @@ class APIEndpoint(object):
             return self._cls.parse(response.json(), service=self)
 
     def delete(self, resource_id):
-        # type: (Text) -> Any
+        # type: (Text) -> None
         """
         Deletes an existing resource.
 
         :param resource_id: the resource ID to be deleted
-        :return: the deleted resource
         """
 
         endpoint = '{}/{}'.format(self.endpoint, resource_id)
-
-        response = self.client.request('DELETE', endpoint)
-
-        if response.content:
-            return self._cls.parse(response.json(), service=self)
+        self.client.request('DELETE', endpoint)
 
     def exists(self, path):
         # type: (Text) -> bool

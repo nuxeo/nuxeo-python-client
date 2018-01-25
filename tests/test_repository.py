@@ -3,8 +3,9 @@ from __future__ import unicode_literals
 
 import operator
 import pytest
+import time
 
-from nuxeo.compat import get_bytes, get_error_message
+from nuxeo.compat import get_bytes, get_error_message, text
 from nuxeo.exceptions import HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 
@@ -89,6 +90,20 @@ def test_convert_missing_args(server):
             doc.convert({})
 
 
+def test_convert_unavailable(server, monkeypatch):
+    def raise_convert(api, uid, options):
+        raise UnavailableConvertor(options)
+    monkeypatch.setattr('nuxeo.documents.API.convert', raise_convert)
+
+    with Doc(server, with_blob=True) as doc:
+        with pytest.raises(UnavailableConvertor) as e:
+            res = doc.convert({'converter': 'office2html'})
+        assert text(e.value)
+        msg = e.value.message
+        assert msg.startswith('Conversion with options')
+        assert msg.endswith('is not available')
+
+
 def test_convert_xpath(server):
     with Doc(server, with_blob=True) as doc:
         try:
@@ -141,6 +156,20 @@ def test_fetch_acls(server):
         aces = list(sorted(acls[0]['aces'], key=operator.itemgetter('id')))
         assert aces[0]['id'] == 'Administrator:Everything:true:::'
         assert aces[-1]['id'] == 'members:Read:true:::'
+
+
+def test_fetch_audit(server):
+    with Doc(server) as doc:
+        # XXX: Replace with NuxeoDrive.WaitForElasticsearchCompletion
+        time.sleep(1)
+        audit = doc.fetch_audit()
+        assert len(audit['entries']) == 1
+        entry = audit['entries'][0]
+        assert entry
+        assert entry['eventId'] == 'documentCreated'
+        assert entry['entity-type'] == 'logEntry'
+        assert entry['docType'] == doc.type
+        assert entry['docPath'] == doc.path
 
 
 def test_fetch_blob(server):

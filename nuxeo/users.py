@@ -53,11 +53,10 @@ class API(APIEndpoint):
         return super(API, self).put(user)
 
     def delete(self, user_id):
-        # type: (Text) -> User
+        # type: (Text) -> None
         """
         Delete a user.
 
         :param user_id: the id of the user to delete
-        :return: the deleted user
         """
-        return super(API, self).delete(user_id)
+        super(API, self).delete(user_id)

@@ -72,14 +72,13 @@ class API(APIEndpoint):
             document, path=self._path(uid=document.uid))
 
     def delete(self, document_id):
-        # type: (Text) -> Document
+        # type: (Text) -> None
         """
         Delete a document.
 
         :param document_id: the id of the document to delete
-        :return: the deleted document
         """
-        return super(API, self).delete(self._path(uid=document_id))
+        super(API, self).delete(self._path(uid=document_id))
 
     def exists(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> bool

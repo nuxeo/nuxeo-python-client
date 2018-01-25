@@ -14,18 +14,25 @@ def test_create_wrong_arguments(directory):
 def test_crud(directory):
     new_entry = DirectoryEntry(properties={'id': 'foo', 'label': 'Foo'})
     entry = directory.create(new_entry)
-    assert entry.entity_type == 'directoryEntry'
-    assert entry.directoryName == 'nature'
-    assert entry.properties['id'] == 'foo'
-    assert entry.uid == 'foo'
-    assert entry.properties['label'] == 'Foo'
-    assert repr(entry)
+    try:
+        assert entry.entity_type == 'directoryEntry'
+        assert entry.directoryName == 'nature'
+        assert entry.properties['id'] == 'foo'
+        assert entry.uid == 'foo'
+        assert entry.properties['label'] == 'Foo'
+        assert repr(entry)
 
-    entry.properties['label'] = 'Test'
-    entry.save()
-    entry = directory.get('foo')
-    assert entry.properties['label'] == 'Test'
-    entry.delete()
+        entry.properties['label'] = 'Test'
+        entry.save()
+        entry = directory.get('foo')
+        assert entry.properties['label'] == 'Test'
+
+        entry.properties['label'] = 'Foo'
+        directory.save(entry)
+        entry = directory.get('foo')
+        assert entry.properties['label'] == 'Foo'
+    finally:
+        entry.delete()
 
 
 def test_fetch(directory):

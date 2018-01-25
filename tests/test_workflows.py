@@ -5,8 +5,9 @@ import socket
 
 import pytest
 
+from nuxeo.compat import text
 from nuxeo.exceptions import HTTPError
-from nuxeo.models import Document, User
+from nuxeo.models import Document, Task, User
 
 
 @pytest.fixture(scope='function')
@@ -79,7 +80,7 @@ def test_basic_workflow(tasks, workflows, server):
         doc.delete()
 
 
-def test_get_workflows(tasks, workflows, server):
+def test_get_workflows(tasks, workflows):
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
@@ -105,8 +106,16 @@ def test_get_workflows(tasks, workflows, server):
     assert not tks
 
 
-def test_fetch_graph(workflows, server):
+def test_fetch_graph(workflows):
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
     assert wfs[0].graph()
+
+
+def test_task_transfer(tasks):
+    task = Task()
+    with pytest.raises(ValueError) as e:
+        tasks.transfer(task, 'bogus_transfer', {})
+    msg = text(e.value)
+    assert msg == 'Task transfer must be either delegate or reassign.'

@@ -55,11 +55,10 @@ class API(APIEndpoint):
         return super(API, self).put(group)
 
     def delete(self, group_id):
-        # type: (Text) -> Group
+        # type: (Text) -> None
         """
         Delete a group.
 
         :param group_id: the id of the group to delete
-        :return: the deleted group
         """
-        return super(API, self).delete(group_id)
+        super(API, self).delete(group_id)

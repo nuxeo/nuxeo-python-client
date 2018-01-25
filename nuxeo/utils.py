@@ -103,9 +103,6 @@ class SwapAttr:
 
     def __init__(self, obj, attr, value):
         # type: (Any, Text, Any) -> None
-        if not hasattr(obj, attr):
-            raise AttributeError()
-
         self.obj = obj
         self.attr = attr
         self.value = value
