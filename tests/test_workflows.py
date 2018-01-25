@@ -53,8 +53,8 @@ def test_basic_workflow(tasks, workflows, server):
         workflow = workflows.start('SerialDocumentReview', doc)
         assert workflow
         assert repr(workflow)
-        wfs = workflows.started('SerialDocumentReview')
-        assert len(wfs) == 1
+        assert len(workflows.get()) == 1
+        assert len(workflows.started('SerialDocumentReview')) == 1
         tks = tasks.get()
         assert len(tks) == 1
         task = tks[0]

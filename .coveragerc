@@ -6,3 +6,6 @@ exclude_lines =
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
     except ImportError:
+    # Others
+    except NameError:
+    if requests.__version__ < '2.12.2':

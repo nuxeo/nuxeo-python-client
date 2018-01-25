@@ -27,7 +27,7 @@ def test_document_fetch_by_property_params_validation(server):
 
 def test_document_get_child(server):
     operation = server.operations.new('Document.GetChild')
-    operation.params = {'name': 'workspaces'}
+    operation.params = {'name': 'workspaces', 'shouldbeignored': None}
     operation.input_obj = '/default-domain'
     res = operation.execute()
     assert res['entity-type'] == 'document'

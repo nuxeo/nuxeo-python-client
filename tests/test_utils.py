@@ -18,6 +18,7 @@ from nuxeo.utils import get_digester
     (None, None),
     ('', None),
     ('foo', None),
+    ('dead', None),
 ])
 def test_get_digester(hash, digester):
     if not digester:
