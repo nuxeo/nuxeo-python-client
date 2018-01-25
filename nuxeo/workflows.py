@@ -77,7 +77,7 @@ class API(APIEndpoint):
 
     def put(self, **kwargs):
         # type: (Any) -> None
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def delete(self, workflow_id):
         # type: (Text) -> None

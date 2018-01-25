@@ -63,7 +63,7 @@ class API(APIEndpoint):
 
     def put(self, **kwargs):
         # type: (Any) -> None
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def delete(self, batch_id, file_idx=None):
         # type: (Text, Optional[int]) -> None

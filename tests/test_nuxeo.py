@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 import json
-import sys
 
 import os
 import pkg_resources
@@ -145,23 +144,24 @@ def test_set_repository(server):
 def test_request_token(server):
     app_name = 'Nuxeo Drive'
     device_id = '41f0711a-f008-4c11-b3f1-c5bddcb50d77'
-    device_descr = {
-        'cygwin': 'Windows',
-        'darwin': 'macOS',
-        'linux2': 'GNU/Linux',
-        'win32': 'Windows',
-    }.get(sys.platform)
+    device = 'GNU/Linux'
     permission = 'ReadWrite'
 
     prev_auth = server.client.auth
+    try:
+        token = server.client.request_auth_token(
+            device_id, permission, app_name=app_name, device=device)
+        assert server.client.auth.token == token
+        assert server.client.auth == TokenAuth(token)
+        assert server.client.auth != TokenAuth('0')
+        assert server.client.is_reachable()
 
-    token = server.client.request_auth_token(
-        device_id, permission, app_name, device_descr)
-    assert server.client.auth.token == token
-    assert server.client.auth == TokenAuth(token)
-    assert server.client.auth != TokenAuth('0')
-    assert server.client.is_reachable()
-    server.client.auth = prev_auth
+        # Calling twice should return the same token
+        same_token = server.client.request_auth_token(
+            device_id, permission, app_name=app_name, device=device)
+        assert token == same_token
+    finally:
+        server.client.auth = prev_auth
 
 
 def test_send_wrong_method(server):

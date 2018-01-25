@@ -142,10 +142,9 @@ class Batch(Model):
 
     def delete(self, file_idx):
         """ Delete a blob from the batch. """
-        if not self.batchId:
-            return
-        self.service.delete(self.uid, file_idx=file_idx)
-        self.blobs[file_idx] = None
+        if self.batchId:
+            self.service.delete(self.uid, file_idx=file_idx)
+            self.blobs[file_idx] = None
 
     def get(self, file_idx):
         # type: (int) -> Blob
