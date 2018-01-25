@@ -161,11 +161,11 @@ def test_fetch_acls(server):
 def test_fetch_audit(server):
     with Doc(server) as doc:
         # XXX: Replace with NuxeoDrive.WaitForElasticsearchCompletion
-        time.sleep(2)
+        time.sleep(1)
 
         audit = doc.fetch_audit()
         if not audit['entries']:
-            pytest.mark.xfail('No enough time for the Audit Log.')
+            pytest.xfail('No enough time for the Audit Log.')
 
         assert len(audit['entries']) == 1
         entry = audit['entries'][0]
