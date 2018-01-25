@@ -10,8 +10,6 @@ Nuxeo Python Client
    :maxdepth: 2
    :caption: Contents:
 
-* :ref:`genindex`
-
 .. autoclass:: nuxeo.client.Nuxeo
     :members:
 
@@ -40,6 +38,9 @@ API Endpoints
    :members:
 
 .. autoclass:: nuxeo.groups.API
+   :members:
+
+.. autoclass:: nuxeo.operations.API
    :members:
 
 .. autoclass:: nuxeo.tasks.API

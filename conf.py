@@ -19,7 +19,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../nuxeo-python-client-2/'))
+sys.path.insert(0, os.path.abspath('../nuxeo-python-client/'))
 
 
 # -- General configuration ------------------------------------------------
@@ -89,7 +89,7 @@ todo_include_todos = True
 #
 html_theme = 'sphinx_rtd_theme'
 
-html_logo = '_static/nuxeo_logo2.svg'
+html_logo = '_static/nuxeo_logo.svg'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

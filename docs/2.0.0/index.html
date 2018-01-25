@@ -62,7 +62,7 @@
 
           
             
-            <img src="_static/nuxeo_logo2.svg" class="logo" />
+            <img src="_static/nuxeo_logo.svg" class="logo" />
           
           </a>
 
@@ -295,6 +295,12 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="nuxeo.models.Batch.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>file_idx</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.models.Batch.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a blob from the batch.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="nuxeo.models.Batch.get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>file_idx</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.models.Batch.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the blob info.</p>
@@ -384,8 +390,6 @@ with the <cite>with</cite> statement.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> – if specified, the entry to delete</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the deleted directory</td>
 </tr>
 </tbody>
 </table>
@@ -625,6 +629,12 @@ with the <cite>with</cite> statement.</p>
 <dd><p>Unlock the document.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="nuxeo.models.Document.workflows">
+<code class="descname">workflows</code><a class="headerlink" href="#nuxeo.models.Document.workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the workflows associated with the document.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -758,6 +768,12 @@ context manager.</p>
 <dd><p>Return a JSON representation of the workflow graph.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="nuxeo.models.Workflow.tasks">
+<code class="descname">tasks</code><a class="headerlink" href="#nuxeo.models.Workflow.tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the tasks associated with the workflow.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -777,8 +793,6 @@ for CRUD operations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource_id</strong> – the resource ID to be deleted</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the deleted resource</td>
 </tr>
 </tbody>
 </table>
@@ -904,13 +918,10 @@ the returned JSON</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>dir_name</strong> – the name of the directory</li>
 <li><strong>dir_entry</strong> – the name of the entry</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the deleted directory/entry</p>
 </td>
 </tr>
 </tbody>
@@ -1006,7 +1017,7 @@ the returned JSON</p>
 
 <dl class="class">
 <dt id="nuxeo.documents.API">
-<em class="property">class </em><code class="descclassname">nuxeo.documents.</code><code class="descname">API</code><span class="sig-paren">(</span><em>client</em>, <em>operations</em>, <em>endpoint=None</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.documents.API" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">nuxeo.documents.</code><code class="descname">API</code><span class="sig-paren">(</span><em>client</em>, <em>operations</em>, <em>workflows</em>, <em>endpoint=None</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.documents.API" title="Permalink to this definition">¶</a></dt>
 <dd><p>Endpoint for documents.</p>
 <dl class="method">
 <dt id="nuxeo.documents.API.add_permission">
@@ -1079,8 +1090,6 @@ or converter for the blob</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>document_id</strong> – the id of the document to delete</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the deleted document</td>
 </tr>
 </tbody>
 </table>
@@ -1398,6 +1407,12 @@ or converter for the blob</li>
 <dd><p>Unlock a document.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="nuxeo.documents.API.workflows">
+<code class="descname">workflows</code><span class="sig-paren">(</span><em>document</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.documents.API.workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the workflows of a document.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -1433,13 +1448,10 @@ or converter for the blob</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>dir_name</strong> – the name of the directory</li>
 <li><strong>dir_entry</strong> – the name of the entry</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the deleted directory/entry</p>
 </td>
 </tr>
 </tbody>
@@ -1563,8 +1575,6 @@ or converter for the blob</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group_id</strong> – the id of the group to delete</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the deleted group</td>
-</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1620,6 +1630,120 @@ or converter for the blob</li>
 </dd></dl>
 
 <dl class="class">
+<dt id="nuxeo.operations.API">
+<em class="property">class </em><code class="descclassname">nuxeo.operations.</code><code class="descname">API</code><span class="sig-paren">(</span><em>client</em>, <em>endpoint='site/automation'</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.operations.API" title="Permalink to this definition">¶</a></dt>
+<dd><p>Endpoint for operations.</p>
+<dl class="method">
+<dt id="nuxeo.operations.API.check_params">
+<code class="descname">check_params</code><span class="sig-paren">(</span><em>command</em>, <em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.operations.API.check_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check given parameters of the <cite>command</cite> operation.  It will also
+check for types whenever possible.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ValueError</strong> – When the <cite>command</cite> is not valid.</li>
+<li><strong>ValueError</strong> – On unexpected parameter.</li>
+<li><strong>ValueError</strong> – On missing required parameter.</li>
+<li><strong>TypeError</strong> – When a parameter has not the required type.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.operations.API.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>operation=None</em>, <em>void_op=False</em>, <em>headers=None</em>, <em>file_out=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.operations.API.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an operation.</p>
+<p>If there is no operation parameter, the command,
+the input object, and the parameters of the operation
+will be taken from the kwargs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>operation</strong> – the operation</li>
+<li><strong>void_op</strong> – if True, the body of the response
+from the server will be empty</li>
+<li><strong>headers</strong> – extra HTTP headers</li>
+<li><strong>file_out</strong> – if not None, path of the file
+where the response will be saved</li>
+<li><strong>kwargs</strong> – any other parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the result of the execution</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.operations.API.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.operations.API.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of available operations from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.operations.API.get_attributes">
+<code class="descname">get_attributes</code><span class="sig-paren">(</span><em>operation</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.operations.API.get_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the operation attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.operations.API.new">
+<code class="descname">new</code><span class="sig-paren">(</span><em>command</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.operations.API.new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new Operation object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nuxeo.operations.API.operations">
+<code class="descname">operations</code><a class="headerlink" href="#nuxeo.operations.API.operations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a dict of available operations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the available operations</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.operations.API.save_to_file">
+<code class="descname">save_to_file</code><span class="sig-paren">(</span><em>operation</em>, <em>resp</em>, <em>path</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.operations.API.save_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the result of an operation to a file.</p>
+<p>If there is a digest of the file to check
+against the server, it can be passed in
+the kwargs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>operation</strong> – the operation</li>
+<li><strong>resp</strong> – the response from the Platform</li>
+<li><strong>path</strong> – the path to save the file to</li>
+<li><strong>kwargs</strong> – additional parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the path of the output file</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="nuxeo.tasks.API">
 <em class="property">class </em><code class="descclassname">nuxeo.tasks.</code><code class="descname">API</code><span class="sig-paren">(</span><em>client</em>, <em>endpoint='task'</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.tasks.API" title="Permalink to this definition">¶</a></dt>
 <dd><p>Endpoint for tasks.</p>
@@ -1657,22 +1781,6 @@ or converter for the blob</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>options</strong> – the id of the task or the constraints</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the task(s)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="nuxeo.tasks.API.of">
-<code class="descname">of</code><span class="sig-paren">(</span><em>workflow</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.tasks.API.of" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the tasks of a workflow.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>workflow</strong> – the workflow</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the corresponding tasks</td>
 </tr>
 </tbody>
 </table>
@@ -1748,13 +1856,10 @@ otherwise deletes the corresponding blob.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>batch_id</strong> – the id of the batch</li>
 <li><strong>file_idx</strong> – the index of the blob</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the deleted batch, or None for a blob</p>
 </td>
 </tr>
 </tbody>
@@ -1910,8 +2015,6 @@ the upload of a chunked blob.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user_id</strong> – the id of the user to delete</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the deleted user</td>
-</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -1968,7 +2071,7 @@ the upload of a chunked blob.</p>
 
 <dl class="class">
 <dt id="nuxeo.workflows.API">
-<em class="property">class </em><code class="descclassname">nuxeo.workflows.</code><code class="descname">API</code><span class="sig-paren">(</span><em>client</em>, <em>endpoint='workflow'</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflows.API" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">nuxeo.workflows.</code><code class="descname">API</code><span class="sig-paren">(</span><em>client</em>, <em>tasks</em>, <em>endpoint='workflow'</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflows.API" title="Permalink to this definition">¶</a></dt>
 <dd><p>Endpoint for workflows.</p>
 <dl class="method">
 <dt id="nuxeo.workflows.API.delete">
@@ -1979,8 +2082,6 @@ the upload of a chunked blob.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>workflow_id</strong> – the id of the workflow to delete</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the deleted workflow</td>
 </tr>
 </tbody>
 </table>
@@ -2013,22 +2114,6 @@ the upload of a chunked blob.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>workflow</strong> – the worklow to get the graph from</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the graph</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="nuxeo.workflows.API.of">
-<code class="descname">of</code><span class="sig-paren">(</span><em>document</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflows.API.of" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the workflows of a document.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>document</strong> – the document</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the corresponding workflows</td>
 </tr>
 </tbody>
 </table>
@@ -2092,6 +2177,12 @@ the upload of a chunked blob.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nuxeo.workflows.API.tasks">
+<code class="descname">tasks</code><span class="sig-paren">(</span><em>workflow</em><span class="sig-paren">)</span><a class="headerlink" href="#nuxeo.workflows.API.tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the tasks of a workflow.</p>
 </dd></dl>
 
 </dd></dl>

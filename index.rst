@@ -40,6 +40,9 @@ API Endpoints
 .. autoclass:: nuxeo.groups.API
    :members:
 
+.. autoclass:: nuxeo.operations.API
+   :members:
+
 .. autoclass:: nuxeo.tasks.API
    :members:
 
