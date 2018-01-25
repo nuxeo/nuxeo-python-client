@@ -76,8 +76,8 @@ class Model(object):
         return model
 
     def save(self):
-        """ Save the resource. """
         # type: () -> None
+        """ Save the resource. """
         self.service.put(self)
 
 
@@ -133,8 +133,8 @@ class Batch(Model):
         self.batchId = value
 
     def cancel(self):
-        """ Cancel an upload batch. """
         # type: () -> None
+        """ Cancel an upload batch. """
         if not self.batchId:
             return
         self.service.delete(self.uid)
@@ -148,13 +148,13 @@ class Batch(Model):
         self.blobs[file_idx] = None
 
     def get(self, file_idx):
+        # type: (int) -> Blob
         """
         Get the blob info.
 
         :param file_idx: the index of the blob in the batch
         :return: the corresponding blob
         """
-        # type: (int) -> Blob
         if self.batchId is None:
             raise InvalidBatch(
                 'Cannot fetch blob for inexistant/deleted batch.')
@@ -163,6 +163,7 @@ class Batch(Model):
         return blob
 
     def upload(self, blob, **kwargs):
+        # type: (Blob, Any) -> Blob
         """
         Upload a blob.
 
@@ -170,7 +171,6 @@ class Batch(Model):
         :param kwargs: the upload settings
         :return: the blob info
         """
-        # type: (Blob, Any) -> Blob
         return self.service.upload(self, blob, **kwargs)
 
 
@@ -700,8 +700,8 @@ class User(RefreshableModel):
         self.save()
 
     def delete(self):
-        """ Delete the user. """
         # type: () -> None
+        """ Delete the user. """
         self.service.delete(self.uid)
 
 

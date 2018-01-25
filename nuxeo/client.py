@@ -201,8 +201,8 @@ class NuxeoClient(object):
         return token
 
     def is_reachable(self):
-        """ Check if the Nuxeo Platform is reachable. """
         # type: () -> bool
+        """ Check if the Nuxeo Platform is reachable. """
         response = self.request('GET', 'runningstatus', default=False)
         if isinstance(response, requests.Response):
             return response.ok
