@@ -41,6 +41,7 @@ def test_cancel(server):
     with pytest.raises(InvalidBatch) as e:
         batch.get(0)
     assert text(e.value)
+    batch.delete(0)
 
 
 def test_data():

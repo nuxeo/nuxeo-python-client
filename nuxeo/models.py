@@ -48,17 +48,13 @@ class Model(object):
     def as_dict(self):
         # type: () -> Dict[Text, Any]
         """ Returns a dict representation of the resource. """
-        types = (int, float, str, list, dict, bytes, text)
         result = {}
         for key in self._valid_properties:
             val = getattr(self, key.replace('-', '_'))
             if not val:
                 continue
-            # Parse custom classes
-            if not isinstance(val, types):
-                val = val.as_dict()
             # Parse lists of objects
-            elif isinstance(val, list) and not isinstance(val[0], types):
+            elif isinstance(val, list) and isinstance(val[0], Model):
                 val = [item.as_dict() for item in val]
 
             result[key] = val

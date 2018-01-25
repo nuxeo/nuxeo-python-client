@@ -126,7 +126,7 @@ def test_create_doc_and_delete(server):
         assert isinstance(doc, Document)
         assert doc.path == pytest.ws_python_tests_path
         assert doc.type == 'Workspace'
-        assert doc.properties['dc:title'] == 'foo'
+        assert doc.get('dc:title') == 'foo'
         assert server.documents.exists(path=pytest.ws_python_tests_path)
     finally:
         doc.delete()
@@ -316,7 +316,7 @@ def test_update_doc_and_delete(server):
         assert isinstance(doc, Document)
         assert doc.uid == uid
         assert doc.path == path
-        assert doc.properties['dc:title'] == 'bar'
+        assert doc.get('dc:title') == 'bar'
     finally:
         doc.delete()
 
