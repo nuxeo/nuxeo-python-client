@@ -22,6 +22,7 @@
         <arg value="-m" />
         <arg value="pytest" />
         <arg value="--cov-report=xml" />
+        <arg value="--cov-config=../.coveragerc" />
         <arg value="--cov=nuxeo" />
         <arg value="--showlocals" />
         <arg value="--exitfirst" />

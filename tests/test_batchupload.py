@@ -6,6 +6,7 @@ import threading
 import os
 import pytest
 
+from nuxeo.compat import text
 from nuxeo.exceptions import (CorruptedFile, EmptyFile, HTTPError,
                               InvalidBatch, UploadError)
 from nuxeo.models import BufferBlob, Document, FileBlob
@@ -37,19 +38,31 @@ def test_cancel(server):
     batch.cancel()
     assert batch.uid is None
     batch.cancel()
-    with pytest.raises(InvalidBatch):
+    with pytest.raises(InvalidBatch) as e:
         batch.get(0)
+    assert text(e.value)
+
+
+def test_data():
+    blob = BufferBlob(data='data', name='Test.txt', mimetype='text/plain')
+    with blob:
+        assert blob.data
+
+    test = 'test_file'
+    with open(test, 'wb') as f:
+        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+    try:
+        blob = FileBlob(test)
+        with blob:
+            assert blob.data
+    finally:
+        os.remove(test)
 
 
 @pytest.mark.parametrize('hash, is_valid', [
-    # Known algos
+    # Raises CorruptedFile
     ('0' * 32, False),
-    ('0' * 40, False),
-    ('0' * 56, False),
-    ('0' * 64, False),
-    ('0' * 96, False),
-    ('0' * 128, False),
-    # Other
+    # Bypasses checksum validation
     (None, True),
     ('', True),
     ('foo', True),
@@ -69,8 +82,9 @@ def test_digester(hash, is_valid, server):
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
-            with pytest.raises(CorruptedFile):
+            with pytest.raises(CorruptedFile) as e:
                 operation.execute(file_out=file_out, digest=hash)
+            assert text(e.value)
     finally:
         doc.delete()
         os.remove(file_out)
@@ -78,8 +92,9 @@ def test_digester(hash, is_valid, server):
 
 def test_empty_file(server):
     batch = server.uploads.batch()
-    with pytest.raises(EmptyFile):
+    with pytest.raises(EmptyFile) as e:
         batch.upload(BufferBlob(data='', name='Test.txt'))
+    assert text(e.value)
 
 
 def test_fetch(server):
@@ -95,6 +110,8 @@ def test_fetch(server):
     assert blob.uploadType == 'normal'
     assert blob.uploaded
     assert blob.uploadedSize == 4
+    batch.delete(0)
+    assert not batch.blobs[0]
 
 
 def test_mimetype():
@@ -206,8 +223,9 @@ def test_upload_resume(server):
                 with open(file_in, 'wb') as f:
                     f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
                 blob = FileBlob(file_in, mimetype='application/octet-stream')
-                with pytest.raises(UploadError):
+                with pytest.raises(UploadError) as e:
                     batch.upload(blob, chunked=True)
+                assert text(e.value)
                 batch.upload(blob, chunked=True)
                 close_server.set()  # release server block
 

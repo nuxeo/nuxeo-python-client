@@ -4,13 +4,15 @@ from __future__ import unicode_literals
 from .endpoint import APIEndpoint
 from .exceptions import HTTPError, UnavailableConvertor
 from .models import Document
+from .utils import SwapAttr
+from .workflows import API as WorkflowsAPI
 
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
         from typing import Any, Dict, List, Optional, Text, Union
         from .client import NuxeoClient
-        from .models import Blob
+        from .models import Blob, Workflow
         from .operations import API as OperationsAPI
 except ImportError:
     pass
@@ -22,11 +24,13 @@ class API(APIEndpoint):
         self,
         client,  # type: NuxeoClient
         operations,  # type: OperationsAPI
+        workflows,  # type: WorkflowsAPI
         endpoint=None,  # type: Text
         headers=None,  # type: Optional[Dict[Text, Text]]
     ):
         # type: (...) -> None
         self.operations = operations
+        self.workflows_api = workflows
         super(API, self).__init__(
             client, endpoint=endpoint, cls=Document, headers=headers)
 
@@ -68,14 +72,13 @@ class API(APIEndpoint):
             document, path=self._path(uid=document.uid))
 
     def delete(self, document_id):
-        # type: (Text) -> Document
+        # type: (Text) -> None
         """
         Delete a document.
 
         :param document_id: the id of the document to delete
-        :return: the deleted document
         """
-        return super(API, self).delete(self._path(uid=document_id))
+        super(API, self).delete(self._path(uid=document_id))
 
     def exists(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> bool
@@ -323,6 +326,14 @@ class API(APIEndpoint):
         """ Unlock a document. """
         return self.operations.execute(
             command='Document.Unlock', input_obj=uid)
+
+    def workflows(self, document):
+        # type: (Document) -> Union[Workflow, List[Workflow]]
+        """ Get the workflows of a document. """
+        path = 'id/{}/@workflow'.format(document.uid)
+
+        with SwapAttr(self.workflows_api, 'endpoint', self.endpoint):
+            return super(WorkflowsAPI, self.workflows_api).get(path=path)
 
     def _path(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> Text

@@ -261,9 +261,10 @@ class Nuxeo(object):
         self.client = client(auth, host=host, app_name=app_name, **kwargs)
         self.operations = operations.API(self.client)
         self.directories = directories.API(self.client)
-        self.documents = documents.API(self.client, self.operations)
         self.groups = groups.API(self.client)
         self.tasks = tasks.API(self.client)
         self.uploads = uploads.API(self.client)
         self.users = users.API(self.client)
-        self.workflows = workflows.API(self.client)
+        self.workflows = workflows.API(self.client, self.tasks)
+        self.documents = documents.API(
+            self.client, self.operations, self.workflows)

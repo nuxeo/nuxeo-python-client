@@ -75,7 +75,6 @@ class API(APIEndpoint):
 
         :param batch_id: the id of the batch
         :param file_idx: the index of the blob
-        :return: the deleted batch, or None for a blob
         """
         if file_idx:
             target = '{}/{}'.format(batch_id, file_idx)

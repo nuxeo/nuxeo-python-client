@@ -136,6 +136,21 @@ class Batch(Model):
         # type: (Text) -> None
         self.batchId = value
 
+    def cancel(self):
+        """ Cancel an upload batch. """
+        # type: () -> None
+        if not self.batchId:
+            return
+        self.service.delete(self.uid)
+        self.batchId = None
+
+    def delete(self, file_idx):
+        """ Delete a blob from the batch. """
+        if not self.batchId:
+            return
+        self.service.delete(self.uid, file_idx=file_idx)
+        self.blobs[file_idx] = None
+
     def get(self, file_idx):
         """
         Get the blob info.
@@ -150,14 +165,6 @@ class Batch(Model):
         blob = self.service.get(self.uid, file_idx=file_idx)
         self.blobs[file_idx] = blob
         return blob
-
-    def cancel(self):
-        """ Cancel an upload batch. """
-        # type: () -> None
-        if not self.batchId:
-            return
-        self.service.delete(self.uid)
-        self.batchId = None
 
     def upload(self, blob, **kwargs):
         """
@@ -349,14 +356,13 @@ class Directory(Model):
         return self.service.put(entry, dir_name=self.uid)
 
     def delete(self, entry=None):
-        # type: (Text) -> Union[Directory, DirectoryEntry]
+        # type: (Text) -> None
         """
         Delete the directory or one of its entries.
 
         :param entry: if specified, the entry to delete
-        :return: the deleted directory
         """
-        return self.service.delete(self.uid, dir_entry=entry)
+        self.service.delete(self.uid, dir_entry=entry)
 
     def exists(self, entry):
         # type: (Text) -> bool
@@ -396,9 +402,9 @@ class DirectoryEntry(Model):
         return self.service.put(self, self.directoryName)
 
     def delete(self):
-        # type: () -> DirectoryEntry
+        # type: () -> None
         """ Delete the entry. """
-        return self.service.delete(self.directoryName, self.uid)
+        self.service.delete(self.directoryName, self.uid)
 
 
 class Document(RefreshableModel):
@@ -431,6 +437,12 @@ class Document(RefreshableModel):
         for key, default in Document._valid_properties.items():
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def workflows(self):
+        # type: () -> List[Workflow]
+        """ Return the workflows associated with the document. """
+        return self.service.workflows(self)
 
     def add_permission(self, params):
         # type: (Dict[Text, Any]) -> None
@@ -578,8 +590,8 @@ class Group(Model):
 
     def delete(self):
         """ Delete the group. """
-        # type: () -> Group
-        return self.service.delete(self.uid)
+        # type: () -> None
+        self.service.delete(self.uid)
 
 
 class Operation(Model):
@@ -719,6 +731,12 @@ class Workflow(Model):
         for key, default in Workflow._valid_properties.items():
             key = key.replace('-', '_')
             setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def tasks(self):
+        # type: () -> List[Task]
+        """ Return the tasks associated with the workflow. """
+        return self.service.tasks(self)
 
     @property
     def uid(self):

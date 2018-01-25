@@ -79,18 +79,17 @@ class API(APIEndpoint):
         return super(API, self).put(resource, path=path)
 
     def delete(self, dir_name, dir_entry=None):
-        # type: (Text, Optional[Text]) -> Union[Directory, DirectoryEntry]
+        # type: (Text, Optional[Text]) -> None
         """
         Delete a directory or an entry.
 
         :param dir_name: the name of the directory
         :param dir_entry: the name of the entry
-        :return: the deleted directory/entry
         """
         path = dir_name
         if dir_entry:
             path = '{}/{}'.format(path, dir_entry)
-        return super(API, self).delete(path)
+        super(API, self).delete(path)
 
     def exists(self, dir_name, dir_entry=None):
         # type: (Text, Optional[Text]) -> bool

@@ -5,8 +5,9 @@ import socket
 
 import pytest
 
+from nuxeo.compat import text
 from nuxeo.exceptions import HTTPError
-from nuxeo.models import Document, User
+from nuxeo.models import Document, Task, User
 
 
 @pytest.fixture(scope='function')
@@ -64,22 +65,22 @@ def test_basic_workflow(tasks, workflows, server):
             'end_date': '2011-10-23T12:00:00.00Z'}
         task.delegate(['user:{}'.format(user.uid)], comment='a comment')
         task.complete('start_review', infos, comment='a comment')
-        assert len(workflows.of(doc)) == 1
+        assert len(doc.workflows) == 1
         assert task.state == 'ended'
-        tks = tasks.of(workflow)
+        tks = workflow.tasks
         assert len(tks) == 1
         task = tks[0]
         # NXPY-12: Reassign task give _read() error
         task.reassign(['user:{}'.format(user.uid)], comment='a comment')
         task.complete('validate', {'comment': 'a comment'})
         assert task.state == 'ended'
-        assert not workflows.of(doc)
+        assert not doc.workflows
     finally:
         user.delete()
         doc.delete()
 
 
-def test_get_workflows(tasks, workflows, server):
+def test_get_workflows(tasks, workflows):
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
@@ -105,8 +106,16 @@ def test_get_workflows(tasks, workflows, server):
     assert not tks
 
 
-def test_fetch_graph(workflows, server):
+def test_fetch_graph(workflows):
     assert workflows.start('SerialDocumentReview')
     wfs = workflows.started('SerialDocumentReview')
     assert len(wfs) == 1
     assert wfs[0].graph()
+
+
+def test_task_transfer(tasks):
+    task = Task()
+    with pytest.raises(ValueError) as e:
+        tasks.transfer(task, 'bogus_transfer', {})
+    msg = text(e.value)
+    assert msg == 'Task transfer must be either delegate or reassign.'

@@ -11,14 +11,22 @@ try:
         from typing import Any, Dict, List, Optional, Text, Union
         from .client import NuxeoClient
         from .models import Document
+        from .tasks import API as TasksAPI
 except ImportError:
     pass
 
 
 class API(APIEndpoint):
     """ Endpoint for workflows. """
-    def __init__(self, client, endpoint='workflow', headers=None):
-        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
+    def __init__(
+        self,
+        client,  # type: NuxeoClient
+        tasks,  # type: TasksAPI
+        endpoint='workflow',  # type: Text
+        headers=None  # type: Optional[Dict[Text, Text]]
+    ):
+        # type: (...) -> None
+        self.tasks_api = tasks
         super(API, self).__init__(
             client, endpoint=endpoint, cls=Workflow, headers=headers)
 
@@ -72,14 +80,13 @@ class API(APIEndpoint):
         raise NotImplementedError
 
     def delete(self, workflow_id):
-        # type: (Text) -> Workflow
+        # type: (Text) -> None
         """
         Delete a workflow.
 
         :param workflow_id: the id of the workflow to delete
-        :return: the deleted workflow
         """
-        return super(API, self).delete(workflow_id)
+        super(API, self).delete(workflow_id)
 
     def graph(self, workflow):
         # type: (Workflow) -> Dict[Text, Any]
@@ -92,20 +99,6 @@ class API(APIEndpoint):
         request_path = '{}/graph'.format(workflow.uid)
         return super(API, self).get(path=request_path)
 
-    def of(self, document):
-        # type: (Document) -> Union[Workflow, List[Workflow]]
-        """
-        Get the workflows of a document.
-
-        :param document: the document
-        :return: the corresponding workflows
-        """
-        path = 'id/{}/@workflow'.format(document.uid)
-
-        with SwapAttr(self, 'endpoint', self.client.api_path):
-            workflows = super(API, self).get(path=path)
-        return workflows
-
     def started(self, model):
         # type: (Text) -> List[Workflow]
         """
@@ -115,3 +108,8 @@ class API(APIEndpoint):
         :return: the started workflows
         """
         return super(API, self).get(params={'workflowModelName': model})
+
+    def tasks(self, workflow):
+        # type: (Workflow) -> List[Task]
+        """ Get the tasks of a workflow. """
+        return self.tasks_api.get(workflow.as_dict())

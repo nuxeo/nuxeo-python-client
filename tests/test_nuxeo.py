@@ -12,7 +12,8 @@ import requests
 from requests.exceptions import ConnectionError
 
 from nuxeo import _extract_version
-from nuxeo.compat import get_bytes
+from nuxeo.auth import TokenAuth
+from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 
@@ -104,6 +105,12 @@ def test_encoding_404_error(server):
         server.client.host = url
 
 
+def test_handle_error(server):
+    err = ValueError('test')
+    err_handled = server.client._handle_error(err)
+    assert err == err_handled
+
+
 def test_file_out(server):
     operation = server.operations.new('Document.GetChild')
     operation.params = {'name': 'workspaces'}
@@ -129,6 +136,12 @@ def test_init(monkeypatch):
     assert re.match('\d+\.\d+\.\d+', _extract_version())
 
 
+def test_set_repository(server):
+    server.client.set(repository='foo')
+    assert server.documents._path(uid='1234') == 'repo/foo/id/1234'
+    server.client.set(repository='default')
+
+
 def test_request_token(server):
     app_name = 'Nuxeo Drive'
     device_id = '41f0711a-f008-4c11-b3f1-c5bddcb50d77'
@@ -145,6 +158,8 @@ def test_request_token(server):
     token = server.client.request_auth_token(
         device_id, permission, app_name, device_descr)
     assert server.client.auth.token == token
+    assert server.client.auth == TokenAuth(token)
+    assert server.client.auth != TokenAuth('0')
     assert server.client.is_reachable()
     server.client.auth = prev_auth
 
@@ -181,12 +196,13 @@ def test_unauthorized(server):
     server.client.auth = (get_bytes(username), password)
     try:
 
-        with pytest.raises(Unauthorized):
+        with pytest.raises(Unauthorized) as e:
             server.users.create(
                 User(properties={
                     'username': 'another_one',
                     'password': 'test'
                 }))
+        assert text(e.value)
     finally:
         server.client.auth = auth
         user.delete()
