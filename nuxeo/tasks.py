@@ -48,13 +48,7 @@ class API(APIEndpoint):
 
     def put(self, task):
         # type: (Task) -> Task
-        """
-        Update a task.
-
-        :param task: the task to update
-        :return: the updated task
-        """
-        return super(API, self).put(task)
+        raise NotImplementedError()
 
     def delete(self, task_id):
         # type: (Text) -> None

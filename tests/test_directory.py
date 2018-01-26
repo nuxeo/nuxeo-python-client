@@ -46,6 +46,7 @@ def test_fetch(directory):
 
 def test_fetch_all(directory):
     entries = directory.entries
+    assert directory.as_dict()
     assert isinstance(entries, list)
     assert entries
 

@@ -41,6 +41,7 @@ def test_cancel(server):
     with pytest.raises(InvalidBatch) as e:
         batch.get(0)
     assert text(e.value)
+    batch.delete(0)
 
 
 def test_data():
@@ -90,10 +91,11 @@ def test_digester(hash, is_valid, server):
         os.remove(file_out)
 
 
-def test_empty_file(server):
+@pytest.mark.parametrize('chunked', [False, True])
+def test_empty_file(chunked, server):
     batch = server.uploads.batch()
     with pytest.raises(EmptyFile) as e:
-        batch.upload(BufferBlob(data='', name='Test.txt'))
+        batch.upload(BufferBlob(data='', name='Test.txt'), chunked=chunked)
     assert text(e.value)
 
 
@@ -146,7 +148,7 @@ def test_operation(server):
 
 
 @pytest.mark.parametrize('chunked', [False, True])
-def test_upload(chunked, server, monkeypatch):
+def test_upload(chunked, server):
     batch = server.uploads.batch()
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:

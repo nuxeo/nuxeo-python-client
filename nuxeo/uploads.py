@@ -63,7 +63,7 @@ class API(APIEndpoint):
 
     def put(self, **kwargs):
         # type: (Any) -> None
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def delete(self, batch_id, file_idx=None):
         # type: (Text, Optional[int]) -> None
@@ -76,7 +76,7 @@ class API(APIEndpoint):
         :param batch_id: the id of the batch
         :param file_idx: the index of the blob
         """
-        if file_idx:
+        if file_idx is not None:
             target = '{}/{}'.format(batch_id, file_idx)
             super(API, self).delete(target)
         else:
@@ -145,10 +145,6 @@ class API(APIEndpoint):
         """
         info = super(API, self).get(path, default=None)
 
-        if info and (info.uploadType == 'normal' or
-                     len(info.uploadedChunkIds) == info.chunkCount):
-            return None, None, None, info  # All the chunks have been uploaded
-
         if info:
             chunk_count = int(info.chunkCount)
             chunk_size = int(info.uploadedSize)
@@ -187,12 +183,12 @@ class API(APIEndpoint):
             'Content-Length': text(blob.size),
         })
 
-        path = '{}/{}'.format(batch.batchId, batch.upload_idx)
+        path = '{}/{}'.format(batch.batchId, batch._upload_idx)
 
         if chunked:
             chunk_size, chunk_count, index, info = self.state(path, blob)
             if not chunk_count:
-                return info
+                raise EmptyFile(blob.name)
 
             headers.update({
                 'X-Upload-Type': 'chunked',
@@ -207,15 +203,14 @@ class API(APIEndpoint):
                 source.seek(index * chunk_size)
             while index < chunk_count:
                 data = source.read(chunk_size)
-                if not data:
+                if data:
+                    response = self.send_data(
+                        blob.name, data, path, chunked, index, headers)
+                    index += 1
+                else:
                     if not response:
                         raise EmptyFile(blob.name)
-                    break
 
-                response = self.send_data(
-                    blob.name, data, path, chunked, index, headers)
-                index += 1
-
-        batch.upload_idx += 1
+        batch._upload_idx += 1
         response.batch_id = batch.uid
         return response

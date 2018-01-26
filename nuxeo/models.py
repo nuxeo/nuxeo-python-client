@@ -48,17 +48,13 @@ class Model(object):
     def as_dict(self):
         # type: () -> Dict[Text, Any]
         """ Returns a dict representation of the resource. """
-        types = (int, float, str, list, dict, bytes, text)
         result = {}
         for key in self._valid_properties:
             val = getattr(self, key.replace('-', '_'))
             if not val:
                 continue
-            # Parse custom classes
-            if not isinstance(val, types):
-                val = val.as_dict()
             # Parse lists of objects
-            elif isinstance(val, list) and not isinstance(val[0], types):
+            elif isinstance(val, list) and isinstance(val[0], Model):
                 val = [item.as_dict() for item in val]
 
             result[key] = val
@@ -80,8 +76,8 @@ class Model(object):
         return model
 
     def save(self):
-        """ Save the resource. """
         # type: () -> None
+        """ Save the resource. """
         self.service.put(self)
 
 
@@ -122,7 +118,7 @@ class Batch(Model):
         super(Batch, self).__init__(**kwargs)
         self.batchId = None  # type: Text
         self.blobs = {}  # type: Dict[int, Blob]
-        self.upload_idx = 0
+        self._upload_idx = 0
         for key, default in Batch._valid_properties.items():
             setattr(self, key, kwargs.get(key, default))
 
@@ -137,8 +133,8 @@ class Batch(Model):
         self.batchId = value
 
     def cancel(self):
-        """ Cancel an upload batch. """
         # type: () -> None
+        """ Cancel an upload batch. """
         if not self.batchId:
             return
         self.service.delete(self.uid)
@@ -146,19 +142,18 @@ class Batch(Model):
 
     def delete(self, file_idx):
         """ Delete a blob from the batch. """
-        if not self.batchId:
-            return
-        self.service.delete(self.uid, file_idx=file_idx)
-        self.blobs[file_idx] = None
+        if self.batchId:
+            self.service.delete(self.uid, file_idx=file_idx)
+            self.blobs[file_idx] = None
 
     def get(self, file_idx):
+        # type: (int) -> Blob
         """
         Get the blob info.
 
         :param file_idx: the index of the blob in the batch
         :return: the corresponding blob
         """
-        # type: (int) -> Blob
         if self.batchId is None:
             raise InvalidBatch(
                 'Cannot fetch blob for inexistant/deleted batch.')
@@ -167,6 +162,7 @@ class Batch(Model):
         return blob
 
     def upload(self, blob, **kwargs):
+        # type: (Blob, Any) -> Blob
         """
         Upload a blob.
 
@@ -174,7 +170,6 @@ class Batch(Model):
         :param kwargs: the upload settings
         :return: the blob info
         """
-        # type: (Blob, Any) -> Blob
         return self.service.upload(self, blob, **kwargs)
 
 
@@ -704,8 +699,8 @@ class User(RefreshableModel):
         self.save()
 
     def delete(self):
-        """ Delete the user. """
         # type: () -> None
+        """ Delete the user. """
         self.service.delete(self.uid)
 
 

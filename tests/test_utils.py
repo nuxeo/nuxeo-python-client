@@ -1,9 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals
+import sys
 
 import pytest
 
-from nuxeo.utils import get_digester
+from nuxeo.utils import SwapAttr, get_digester, guess_mimetype
 
 
 @pytest.mark.parametrize('hash, digester', [
@@ -18,9 +19,17 @@ from nuxeo.utils import get_digester
     (None, None),
     ('', None),
     ('foo', None),
+    ('dead', None),
 ])
 def test_get_digester(hash, digester):
     if not digester:
         assert not get_digester(hash)
     else:
         assert get_digester(hash).name == digester
+
+
+def test_guess_mimetype():
+    """ Test WIN32_PATCHED_MIME_TYPES. """
+
+    with SwapAttr(sys, 'platform', 'win32'):
+        assert guess_mimetype('foo.ppt')

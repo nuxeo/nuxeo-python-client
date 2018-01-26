@@ -68,8 +68,8 @@ def test_convert(server):
     with Doc(server, with_blob=True) as doc:
         try:
             res = doc.convert({'format': 'html'})
-            assert '<html>' in res
-            assert 'foo' in res
+            assert b'<html>' in res
+            assert b'foo' in res
         except UnavailableConvertor:
             pass
 
@@ -78,8 +78,8 @@ def test_convert_given_converter(server):
     with Doc(server, with_blob=True) as doc:
         try:
             res = doc.convert({'converter': 'office2html'})
-            assert '<html>' in res
-            assert 'foo' in res
+            assert b'<html>' in res
+            assert b'foo' in res
         except UnavailableConvertor:
             pass
 
@@ -97,7 +97,7 @@ def test_convert_unavailable(server, monkeypatch):
 
     with Doc(server, with_blob=True) as doc:
         with pytest.raises(UnavailableConvertor) as e:
-            res = doc.convert({'converter': 'office2html'})
+            doc.convert({'converter': 'office2html'})
         assert text(e.value)
         msg = e.value.message
         assert msg.startswith('Conversion with options')
@@ -108,8 +108,8 @@ def test_convert_xpath(server):
     with Doc(server, with_blob=True) as doc:
         try:
             res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
-            assert '<html>' in res
-            assert 'foo' in res
+            assert b'<html>' in res
+            assert b'foo' in res
         except UnavailableConvertor:
             pass
 
@@ -126,7 +126,7 @@ def test_create_doc_and_delete(server):
         assert isinstance(doc, Document)
         assert doc.path == pytest.ws_python_tests_path
         assert doc.type == 'Workspace'
-        assert doc.properties['dc:title'] == 'foo'
+        assert doc.get('dc:title') == 'foo'
         assert server.documents.exists(path=pytest.ws_python_tests_path)
     finally:
         doc.delete()
@@ -162,7 +162,11 @@ def test_fetch_audit(server):
     with Doc(server) as doc:
         # XXX: Replace with NuxeoDrive.WaitForElasticsearchCompletion
         time.sleep(1)
+
         audit = doc.fetch_audit()
+        if not audit['entries']:
+            pytest.xfail('No enough time for the Audit Log.')
+
         assert len(audit['entries']) == 1
         entry = audit['entries'][0]
         assert entry
@@ -316,7 +320,7 @@ def test_update_doc_and_delete(server):
         assert isinstance(doc, Document)
         assert doc.uid == uid
         assert doc.path == path
-        assert doc.properties['dc:title'] == 'bar'
+        assert doc.get('dc:title') == 'bar'
     finally:
         doc.delete()
 

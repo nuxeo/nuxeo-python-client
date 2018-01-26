@@ -84,11 +84,7 @@ def guess_mimetype(filename):
 
 def json_helper(obj):
     # type: (Any) -> Dict[Text, Any]
-    try:
-        return obj.to_json()
-    except AttributeError:
-        raise TypeError(
-            repr(obj) + ' is not JSON serializable (no to_json() found)')
+    return obj.to_json()
 
 
 class SwapAttr:

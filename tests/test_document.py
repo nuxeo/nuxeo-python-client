@@ -18,7 +18,7 @@ def test_document_create(server):
         assert doc.entity_type == 'document'
         assert doc.type == 'File'
         assert doc.title == '日本.txt'
-        assert doc.properties['dc:title'] == '日本.txt'
+        assert doc.get('dc:title') == doc.properties['dc:title'] == '日本.txt'
         assert doc.properties['dc:description'] == 'ру́сский'
     finally:
         doc.delete()
