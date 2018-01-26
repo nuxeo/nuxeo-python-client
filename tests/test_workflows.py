@@ -9,6 +9,14 @@ from nuxeo.compat import text
 from nuxeo.exceptions import HTTPError
 from nuxeo.models import Document, Task, User
 
+document = Document(
+    name=pytest.ws_python_test_name,
+    type='File',
+    properties={
+        'dc:title': 'bar.txt',
+    }
+)
+
 
 @pytest.fixture(scope='function')
 def workflows(server):
@@ -40,15 +48,7 @@ def test_basic_workflow(tasks, workflows, server):
             'password': 'Test'
         })
     user = server.users.create(user)
-    doc = Document(
-        name=pytest.ws_python_test_name,
-        type='File',
-        properties={
-            'dc:title': 'bar.txt',
-        }
-    )
-    doc = server.documents.create(
-        doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(document, parent_path=pytest.ws_root_path)
     try:
         workflow = workflows.start('SerialDocumentReview', doc)
         assert workflow
@@ -106,11 +106,19 @@ def test_get_workflows(tasks, workflows):
     assert not tks
 
 
-def test_fetch_graph(workflows):
-    assert workflows.start('SerialDocumentReview')
-    wfs = workflows.started('SerialDocumentReview')
-    assert len(wfs) == 1
-    assert wfs[0].graph()
+def test_fetch_graph(server, workflows):
+    doc = server.documents.create(document, parent_path=pytest.ws_root_path)
+    try:
+        options = {
+            'attachedDocumentIds': doc.uid,
+            'variables': {'initiatorComment': 'This is a test comment.'},
+        }
+        assert workflows.start('SerialDocumentReview', options=options)
+        wfs = workflows.started('SerialDocumentReview')
+        assert len(wfs) == 1
+        assert wfs[0].graph()
+    finally:
+        doc.delete()
 
 
 def test_task_transfer(tasks):

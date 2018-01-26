@@ -203,14 +203,13 @@ class API(APIEndpoint):
                 source.seek(index * chunk_size)
             while index < chunk_count:
                 data = source.read(chunk_size)
-                if not data:
+                if data:
+                    response = self.send_data(
+                        blob.name, data, path, chunked, index, headers)
+                    index += 1
+                else:
                     if not response:
                         raise EmptyFile(blob.name)
-                    break
-
-                response = self.send_data(
-                    blob.name, data, path, chunked, index, headers)
-                index += 1
 
         batch._upload_idx += 1
         response.batch_id = batch.uid
