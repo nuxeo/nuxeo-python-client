@@ -94,13 +94,18 @@ or ``Picture`` type, and are not deleted.
 
     # Fetch a workspace
     ws = nuxeo.documents.get(path='/default-domain/workspaces/ws')
-    # Build a query using its uid
-    query = "SELECT * FROM Document WHERE ecm:ancestorId = '" + ws.uid + "'"
-    query += " AND ecm:primaryType IN ('File', 'Picture')"
-    query += " AND ecm:currentLifeCycleState != 'deleted'"
-    request = 'query?query=' + urllib.quote(query, safe='!=:')
-    search = nuxeo.request('GET', request)
-    entries = search.get('entries')
+
+    # Build a query using its UID
+    query = ("SELECT * FROM Document WHERE ecm:ancestorId = '{uid}'"
+             "   AND ecm:primaryType IN ('File', 'Picture')"
+             "   AND ecm:currentLifeCycleState != 'deleted'")
+    query = query.format(uid=ws.uid)
+
+    # Make the request
+    search = nuxeo.client.query(request, params={'properties': '*'})
+
+    # Get results
+    entries = search['entries']
 
 ``entries`` will be a ``list`` containing a ``dict`` for each
 element returned by the query.
