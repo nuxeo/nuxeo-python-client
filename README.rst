@@ -53,8 +53,6 @@ client, like so:
 
 .. code:: python
 
-    from nuxeo.client import Nuxeo
-
     nuxeo = Nuxeo(auth=('Administrator', 'Administrator'))
 
 
@@ -84,7 +82,7 @@ used throughout the client that you can change to fit your needs:
 Run NXQL Queries
 ~~~~~~~~~~~~~~~~
 
-With ``nuxeo.request(...)`` you can run queries in NXQL (NXQL is a subset of SQL,
+You can run queries in NXQL (NXQL is a subset of SQL,
 you can check how to use it `in the documentation <https://doc.nuxeo.com/nxdoc/nxql/>`__).
 Here, we are first `fetching a workspace <documents.rst>`__, and then using its
 ``uid`` to build a query which will find all its children that have a ``File``
