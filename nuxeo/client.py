@@ -74,6 +74,25 @@ class NuxeoClient(object):
         # type: () -> None
         self._session.close()
 
+    def query(
+        self,
+        query,  # type: Text
+        params=None,  # type: Dict[Text, Text]
+    ):
+        """
+        Query the server with the specified NXQL query.
+        Additional qery parameters can be set via the `params` argument:
+
+            >>> nuxeo.client.query('SQL query', params={'properties': '*'})
+        """
+
+        data = {'query': query}
+        if params:
+            data.update(params)
+
+        url = self.api_path + '/search/lang/NXQL/execute'
+        return self.request('GET', url, data=data).json()
+
     def set(self, repository=None, schemas=None):
         # type: (Optional[Text], Optional[Text]) -> NuxeoClient
         """
@@ -105,7 +124,7 @@ class NuxeoClient(object):
         Send a request to the Nuxeo server.
 
         :param method: the HTTP method
-        :param path: the path to append to the host host
+        :param path: the path to append to the host
         :param headers: the headers for the HTTP request
         :param data: data to put in the body
         :param raw: if True, don't parse the data to JSON

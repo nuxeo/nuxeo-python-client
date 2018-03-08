@@ -135,6 +135,21 @@ def test_init(monkeypatch):
     assert re.match('\d+\.\d+\.\d+', _extract_version())
 
 
+def test_query(server):
+    ws = server.documents.get(path=pytest.ws_root_path)
+    query = ("SELECT * FROM Document WHERE ecm:ancestorId = '{uid}'"
+             "   AND ecm:primaryType IN ('File', 'Picture')"
+             "   AND ecm:currentLifeCycleState != 'deleted'")
+    query = query.format(uid=ws.uid)
+
+    docs = server.client.query(query)
+    assert docs.get('entries')
+
+    params = {'properties': '*'}
+    docs = server.client.query(query, params=params)
+    assert docs['entries'][0]['properties']
+
+
 def test_set_repository(server):
     server.client.set(repository='foo')
     assert server.documents._path(uid='1234') == 'repo/foo/id/1234'
