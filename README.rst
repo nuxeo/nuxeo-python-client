@@ -96,13 +96,13 @@ or ``Picture`` type, and are not deleted.
     ws = nuxeo.documents.get(path='/default-domain/workspaces/ws')
 
     # Build a query using its UID
-    query = ("SELECT * FROM Document WHERE ecm:ancestorId = '{uid}'"
-             "   AND ecm:primaryType IN ('File', 'Picture')"
-             "   AND ecm:currentLifeCycleState != 'deleted'")
-    query = query.format(uid=ws.uid)
+    nxql = ("SELECT * FROM Document WHERE ecm:ancestorId = '{uid}'"
+            "   AND ecm:primaryType IN ('File', 'Picture')"
+            "   AND ecm:currentLifeCycleState != 'deleted'")
+    query = nxql.format(uid=ws.uid)
 
     # Make the request
-    search = nuxeo.client.query(request, params={'properties': '*'})
+    search = nuxeo.client.query(query, params={'properties': '*'})
 
     # Get results
     entries = search['entries']
