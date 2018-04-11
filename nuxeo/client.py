@@ -228,6 +228,29 @@ class NuxeoClient(object):
         else:
             return bool(response)
 
+    def server_info(self, force=False):
+        # type: (bool) -> Dict[Text, Text]
+        """
+        Retreive server information.
+
+        :param bool force: Force information renewal.
+        """
+
+        if force or not getattr(self, '_server_info', None):
+            response = self.request('GET', 'json/cmis', default={})
+            if isinstance(response, requests.Response):
+                info = response.json()['default']
+            else:
+                info = response
+            setattr(self, '_server_info', info)
+        return self._server_info
+
+    @property
+    def server_version(self):
+        # type: () -> Text
+        """ Return the server version. """
+        return self.server_info().get('productVersion', '')
+
     @staticmethod
     def _handle_error(error):
         # type: (Exception) -> Exception

@@ -52,6 +52,8 @@ Technical changes
 -  Removed ``Nuxeo._get_cookies()``
 -  Changed ``Nuxeo._rest_url`` to ``NuxeoClient.api_path``
 -  Added nuxeo/client.py::\ ``NuxeoClient``
+-  Added ``NuxeoClient.server_info(force=False)``
+-  Added ``NuxeoClient.server_version``
 -  Changed ``NuxeoObject`` to ``Model``
 -  Changed ``NuxeoService`` to ``APIEndpoint``
 -  Changed ``Repository`` to nuxeo/documents.py::\ ``API``
