@@ -15,6 +15,7 @@ from nuxeo.auth import TokenAuth
 from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import HTTPError, Unauthorized
 from nuxeo.models import Blob, User
+from nuxeo.utils import SwapAttr
 
 
 @pytest.mark.parametrize('method, params, is_valid', [
@@ -115,7 +116,7 @@ def test_file_out(server):
     operation.params = {'name': 'workspaces'}
     operation.input_obj = '/default-domain'
     file_out = operation.execute(file_out='test')
-    with open(file_out, 'rb') as f:
+    with open(file_out) as f:
         file_content = json.loads(f.read())
         resp_content = operation.execute()
         assert file_content == resp_content
@@ -148,6 +149,35 @@ def test_query(server):
     params = {'properties': '*'}
     docs = server.client.query(query, params=params)
     assert docs['entries'][0]['properties']
+
+
+def test_server_info(server):
+    # At start, no server information
+    with pytest.raises(AttributeError):
+        server.client._server_info
+
+    # First call
+    assert server.client.server_info()
+    assert isinstance(server.client.server_info(), dict)
+
+    # Force the call
+    server.client._server_info = None
+    assert server.client.server_info(force=True)
+    assert server.client.server_info() == server.client.server_info(force=True)
+
+    # Bad call
+    server.client._server_info = None
+    with SwapAttr(server.client, 'host', 'http://example.org/'):
+        assert not server.client.server_info()
+
+
+def test_server_version(server):
+    assert server.client.server_version
+
+    # Bad call
+    server.client._server_info = None
+    with SwapAttr(server.client, 'host', 'http://example.org/'):
+        assert not server.client.server_version
 
 
 def test_set_repository(server):
