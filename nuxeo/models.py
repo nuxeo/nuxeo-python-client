@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 import os
 from io import StringIO
 
-from nuxeo.compat import text
-from nuxeo.exceptions import InvalidBatch
-from nuxeo.utils import guess_mimetype
+from .compat import text
+from .exceptions import InvalidBatch
+from .utils import guess_mimetype
 
 try:
     from typing import TYPE_CHECKING
