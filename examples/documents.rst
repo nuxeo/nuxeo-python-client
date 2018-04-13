@@ -54,7 +54,7 @@ Manipulate documents
 
 .. code:: python
 
-    nuxeo.documents.delete('/a-folder')
+    nuxeo.documents.delete(new_folder.uid)
 
 **Get a document property**
 

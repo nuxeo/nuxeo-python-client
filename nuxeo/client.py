@@ -161,7 +161,8 @@ class NuxeoClient(object):
         logger.debug(
             ('Calling {!r} with headers={!r}, '
              'params={!r} and cookies={!r}').format(
-                url, headers, kwargs.get('params', {}), self._session.cookies))
+                url, headers, kwargs.get('params', data if not raw else {}),
+                self._session.cookies))
 
         try:
             resp = self._session.request(
