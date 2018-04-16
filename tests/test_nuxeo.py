@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 import json
-
 import os
 import pkg_resources
-import pytest
 import re
+
+import pytest
 import requests
 from requests.exceptions import ConnectionError
 
@@ -137,18 +137,15 @@ def test_init(monkeypatch):
 
 
 def test_query(server):
-    ws = server.documents.get(path=pytest.ws_root_path)
-    query = ("SELECT * FROM Document WHERE ecm:ancestorId = '{uid}'"
-             "   AND ecm:primaryType IN ('File', 'Picture')"
-             "   AND ecm:currentLifeCycleState != 'deleted'")
-    query = query.format(uid=ws.uid)
+    search = server.client.query('SELECT * FROM Domain')
+    assert search['entries']
 
-    docs = server.client.query(query)
-    assert docs.get('entries')
 
+def test_query_empty(server):
+    query = 'SELECT * FROM Document WHERE uid = "non-existant-ahah"'
     params = {'properties': '*'}
-    docs = server.client.query(query, params=params)
-    assert docs['entries'][0]['properties']
+    search = server.client.query(query, params=params)
+    assert not search.get('entries')
 
 
 def test_server_info(server):
