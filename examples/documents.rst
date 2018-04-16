@@ -16,7 +16,7 @@ Manipulate documents
 
 .. code:: python
 
-    nuxeo.documents.get('/')
+    nuxeo.documents.get(path='/')
 
 **Create a new workspace**
 
@@ -47,7 +47,7 @@ Manipulate documents
 .. code:: python
 
     doc = nuxeo.documents.get(path='/a-folder')
-    doc.properties['dc:title'] ='bar'
+    doc.properties['dc:title'] = 'bar'
     doc.save()
 
 **Delete a document**
