@@ -24,10 +24,13 @@ command with the same batch and blob.
         })
     file = nuxeo.documents.create(new_file, parent_path='/')
 
+    # Create a batch
+    batch = nuxeo.uploads.batch()
+
     # Create and upload a blob
     blob = FileBlob('/path/to/file')
     try:
-        uploaded = nuxeo.uploads.upload(blob, chunked=True)
+        uploaded = batch.upload(blob, chunked=True)
     except UploadError:
         # The blob wasn't uploaded despite the 3 retries,
         # you can handle it however you like and relaunch
