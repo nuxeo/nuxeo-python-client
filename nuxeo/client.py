@@ -91,7 +91,7 @@ class NuxeoClient(object):
             data.update(params)
 
         url = self.api_path + '/search/lang/NXQL/execute'
-        return self.request('GET', url, data=data).json()
+        return self.request('GET', url, params=data).json()
 
     def set(self, repository=None, schemas=None):
         # type: (Optional[Text], Optional[Text]) -> NuxeoClient
