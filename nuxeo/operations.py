@@ -3,9 +3,10 @@ from __future__ import unicode_literals
 
 from collections import Sequence
 
+from . import constants
 from .compat import text
 from .endpoint import APIEndpoint
-from .exceptions import CorruptedFile
+from .exceptions import BadQuery, CorruptedFile
 from .models import Blob, Operation
 from .utils import get_digester
 
@@ -18,23 +19,27 @@ try:
 except ImportError:
     pass
 
-PARAM_TYPES = {  # Types allowed for operations parameters
-    'blob': (text, Blob),
-    'boolean': (bool,),
-    'date': (text,),
-    'document': (text,),
-    'documents': (list,),
-    'int': (int,),
-    'integer': (int,),
-    'long': (int,),
-    'map': (dict,),
-    'object': (object,),
-    'properties': (dict,),
-    'resource': (text,),
-    'serializable': (Sequence,),
-    'string': (text,),
-    'stringlist': (Sequence,),
-    'validationmethod': (text,),
+# Types allowed for operations parameters
+# See https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html
+# for default values
+PARAM_TYPES = {
+    # Operation: ((accepted types), default value if optional))
+    'blob': ((text, bytes, Blob), None),
+    'boolean': ((bool,), False),
+    'date': ((text, bytes,), None),
+    'document': ((text, bytes,), None),
+    'documents': ((list,), None),
+    'int': ((int,), 0),
+    'integer': ((int,), 0),
+    'long': ((int,), 0),
+    'map': ((dict,), None),
+    'object': ((object,), None),
+    'properties': ((dict,), None),
+    'resource': ((text, bytes,), None),
+    'serializable': ((Sequence,), None),
+    'string': ((text, bytes,), None),
+    'stringlist': ((Sequence,), None),
+    'validationmethod': ((text, bytes,), None),
 }  # type: Dict[Text, Tuple[Type, ...]]
 
 
@@ -74,8 +79,6 @@ class API(APIEndpoint):
         :return: the available operations
         """
         if not self.ops:
-            self.ops = {}
-
             response = self.get()
             for operation in response['operations']:
                 self.ops[operation['id']] = operation
@@ -89,42 +92,47 @@ class API(APIEndpoint):
         """
         Check given parameters of the `command` operation.  It will also
         check for types whenever possible.
-
-        :raises ValueError: When the `command` is not valid.
-        :raises ValueError: On unexpected parameter.
-        :raises ValueError: On missing required parameter.
-        :raises TypeError: When a parameter has not the required type.
         """
 
         operation = self.operations.get(command)
         if not operation:
-            raise ValueError(
+            raise BadQuery(
                 '{!r} is not a registered operation'.format(command))
 
         parameters = {param['name']: param for param in operation['params']}
 
-        for (name, value) in params.items():
+        for name, value in params.items():
             # Check for unexpected parameters.  We use `dict.pop()` to
             # get and delete the parameter from the dict.
             try:
-                type_needed = parameters.pop(name)['type']
+                param = parameters.pop(name)
             except KeyError:
-                err = 'unexpected parameter {!r} for operation {!r}'
-                raise ValueError(err.format(name, command))
+                err = 'unexpected parameter {!r} for operation {}'
+                raise BadQuery(err.format(name, command))
 
             # Check types
-            types_accepted = PARAM_TYPES.get(type_needed, tuple())
+            types_accepted, default = PARAM_TYPES[param['type']]
+            if not param['required']:
+                # Allow the default value when the parameter is not required
+                types_accepted += (type(default),)
+
             if not isinstance(value, types_accepted):
-                err = 'parameter {!r} should be of type {!r} (current {!r})'
-                raise TypeError(err.format(
-                    name, types_accepted, type(name).__name__))
+                types = [type_.__name__ for type_ in types_accepted]
+                if len(types) > 1:
+                    types = ', '.join(types[:-1]) + ' or ' + types[-1]
+                else:
+                    types = types[0]
+                err = ('parameter {}={!r} should be of type {}'
+                       ' (current is {})')
+                raise BadQuery(
+                    err.format(name, value, types, type(value).__name__))
 
         # Check for required parameters.  As of now, `parameters` may contain
         # unclaimed parameters and we just need to check for required ones.
         for (name, parameter) in parameters.items():
             if parameter['required']:
                 err = 'missing required parameter {!r} for operation {!r}'
-                raise ValueError(err.format(name, command))
+                raise BadQuery(err.format(name, command))
 
     def execute(
         self,
@@ -151,9 +159,13 @@ class API(APIEndpoint):
         :param kwargs: any other parameter
         :return: the result of the execution
         """
+        json = kwargs.pop('json', True)
+        check_suspended = kwargs.pop('check_suspended', None)
+        enrichers = kwargs.pop('enrichers', None)
+
         command, input_obj, params = self.get_attributes(operation, **kwargs)
 
-        if kwargs.pop('check_params', False):
+        if kwargs.pop('check_params', constants.CHECK_PARAMS):
             self.check_params(command, params)
 
         url = 'site/automation/{}'.format(command)
@@ -168,7 +180,53 @@ class API(APIEndpoint):
         if void_op:
             headers['X-NXVoidOperation'] = 'true'
 
+        data = self.get_params(params)
+
+        if input_obj:
+            if isinstance(input_obj, list):
+                input_obj = 'docs:' + ','.join(input_obj)
+            data['input'] = input_obj
+
+        resp = self.client.request(
+            'POST', url, data=data, headers=headers, enrichers=enrichers,
+            default=kwargs.get('default', object))
+
+        # Save to a file, part by part of chunk_size
+        if file_out:
+            return self.save_to_file(operation, resp, file_out,
+                                     check_suspended=check_suspended, **kwargs)
+
+        # It is likely a JSON response we do not want to save to a file
+        if operation:
+            operation.progress = int(resp.headers.get('content-length', 0))
+
+        if json:
+            try:
+                return resp.json()
+            except ValueError:
+                pass
+        return resp.content
+
+    @staticmethod
+    def get_attributes(operation, **kwargs):
+        # type: (Operation, Any) -> (Text, Any, Dict[Text, Any])
+        """ Get the operation attributes. """
+        if operation:
+            command = operation.command
+            input_obj = operation.input_obj
+            params = operation.params
+        else:
+            command = kwargs.pop('command', None)
+            input_obj = kwargs.pop('input_obj', None)
+            params = kwargs.pop('params', kwargs)
+        return command, input_obj, params
+
+    @staticmethod
+    def get_params(params):
+        # type: (Dict[Text, Any]) -> Dict[Text, Any]
+        """ Get the operation parameters. """
         data = {'params': {}}  # type: Dict[Text, Any]
+
         for k, v in params.items():
             if v is None:
                 continue
@@ -181,40 +239,7 @@ class API(APIEndpoint):
             data['params'][k] = '\n'.join(['{}={}'.format(name, value)
                                            for name, value in v.items()])
 
-        if input_obj:
-            if isinstance(input_obj, list):
-                input_obj = 'docs:' + ','.join(input_obj)
-            data['input'] = input_obj
-
-        default = kwargs.get('default', object)
-        resp = self.client.request(
-            'POST', url, data=data, headers=headers, default=default)
-
-        # Save to a file, part by part of chunk_size
-        if file_out:
-            return self.save_to_file(operation, resp, file_out, **kwargs)
-
-        # It is likely a JSON response we do not want to save to a file
-        if operation:
-            operation.progress = int(resp.headers.get('content-length', 0))
-
-        try:
-            return resp.json()
-        except ValueError:
-            return resp.content
-
-    def get_attributes(self, operation, **kwargs):
-        # type: (Operation, Any) -> (Text, Any, Dict[Text, Any])
-        """ Get the operation attributes. """
-        if operation:
-            command = operation.command
-            input_obj = operation.input_obj
-            params = operation.params
-        else:
-            command = kwargs.pop('command', None)
-            input_obj = kwargs.pop('input_obj', None)
-            params = kwargs.pop('params', kwargs)
-        return command, input_obj, params
+        return data
 
     def new(self, command, **kwargs):
         # type: (Text, Any) -> Operation
@@ -238,14 +263,29 @@ class API(APIEndpoint):
         digest = kwargs.pop('digest', None)
         digester = get_digester(digest)
 
-        with open(path, 'wb') as f:
-            chunk_size = kwargs.get('chunk_size', self.client.chunk_size)
-            for chunk in resp.iter_content(chunk_size=chunk_size):
-                if operation:
-                    operation.progress += chunk_size
-                f.write(chunk)
-                if digester:
-                    digester.update(chunk)
+        unlock_path = kwargs.pop('unlock_path', None)
+        lock_path = kwargs.pop('lock_path', None)
+        check_suspended = kwargs.pop('check_suspended', None)
+        use_lock = callable(unlock_path) and callable(lock_path)
+        locker = None
+
+        if use_lock:
+            locker = unlock_path(path)
+        try:
+            with open(path, 'wb') as f:
+                chunk_size = kwargs.get('chunk_size', self.client.chunk_size)
+                for chunk in resp.iter_content(chunk_size=chunk_size):
+                    # Check if synchronization thread was suspended
+                    if callable(check_suspended):
+                        check_suspended('File download: %s' % path)
+                    if operation:
+                        operation.progress += chunk_size
+                    f.write(chunk)
+                    if digester:
+                        digester.update(chunk)
+        finally:
+            if use_lock:
+                lock_path(path, locker)
 
         if digester:
             actual_digest = digester.hexdigest()

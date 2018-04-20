@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import pytest
 
 from nuxeo.compat import text
-from nuxeo.exceptions import HTTPError
+from nuxeo.exceptions import BadQuery, HTTPError
 
 
 def test_document_fetch_by_property(server):
@@ -21,8 +21,11 @@ def test_document_fetch_by_property_params_validation(server):
     """ Missing mandatory params. """
     operation = server.operations.new('Document.FetchByProperty')
     operation.params = {'property': 'dc:title'}
-    with pytest.raises(ValueError):
+
+    assert not server.operations.ops
+    with pytest.raises(BadQuery):
         operation.execute(check_params=True)
+    assert server.operations.ops
 
 
 def test_document_get_child(server):

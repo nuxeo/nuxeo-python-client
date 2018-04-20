@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from requests import Response
 
-from .exceptions import HTTPError
+from .exceptions import BadQuery, HTTPError
 
 try:
     from typing import TYPE_CHECKING
@@ -77,7 +77,7 @@ class APIEndpoint(object):
         response = self.client.request('GET', endpoint, **kwargs)
 
         if isinstance(response, Response):
-            if raw:
+            if raw or response.status_code == 204:
                 return response.content
             json = response.json()
         else:
@@ -108,7 +108,7 @@ class APIEndpoint(object):
             if isinstance(resource, self._cls):
                 resource = resource.as_dict()
             else:
-                raise ValueError(
+                raise BadQuery(
                     'Data must be a Model object or a dictionary.')
 
         endpoint = self.endpoint

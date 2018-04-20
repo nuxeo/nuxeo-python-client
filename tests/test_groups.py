@@ -6,6 +6,7 @@ import time
 import pytest
 
 from nuxeo.compat import text
+from nuxeo.exceptions import BadQuery
 from nuxeo.models import Group
 
 
@@ -33,7 +34,7 @@ def test_create_delete_group_dict(server):
 
 
 def test_create_wrong_arguments(server):
-    with pytest.raises(ValueError):
+    with pytest.raises(BadQuery):
         server.groups.create(1)
 
 

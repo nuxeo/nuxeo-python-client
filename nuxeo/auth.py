@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from requests.auth import AuthBase
 
+from .compat import get_bytes
+
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
@@ -29,5 +31,5 @@ class TokenAuth(AuthBase):
 
     def __call__(self, r):
         # type: (Request) -> Request
-        r.headers['X-Authentication-Token'] = self.token
+        r.headers[get_bytes('X-Authentication-Token')] = self.token
         return r

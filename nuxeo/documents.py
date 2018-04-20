@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from .endpoint import APIEndpoint
-from .exceptions import HTTPError, UnavailableConvertor
+from .exceptions import BadQuery, HTTPError, UnavailableConvertor
 from .models import Document
 from .utils import SwapAttr
 from .workflows import API as WorkflowsAPI
@@ -123,7 +123,7 @@ class API(APIEndpoint):
         if ('converter' not in options
                 and 'type' not in options
                 and'format' not in options):
-            raise ValueError(
+            raise BadQuery(
                 'One of (converter, type, format) is mandatory in options')
 
         try:
@@ -132,7 +132,7 @@ class API(APIEndpoint):
                 adapter=adapter, raw=True)
         except HTTPError as e:
             if 'is not registered' in e.message:
-                raise ValueError(e.message)
+                raise BadQuery(e.message)
             if 'is not available' in e.message:
                 raise UnavailableConvertor(options)
             raise e
@@ -302,7 +302,7 @@ class API(APIEndpoint):
         elif 'pageProvider' in opts:
             query = opts['pageProvider']
         else:
-            raise ValueError('Need either a pageProvider or a query')
+            raise BadQuery('Need either a pageProvider or a query')
 
         path = 'query/{}'.format(query)
         res = super(API, self).get(path=path, params=opts, cls=dict)

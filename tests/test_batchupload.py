@@ -7,7 +7,7 @@ import os
 import pytest
 
 from nuxeo.compat import text
-from nuxeo.exceptions import (CorruptedFile, EmptyFile, HTTPError,
+from nuxeo.exceptions import (CorruptedFile, HTTPError,
                               InvalidBatch, UploadError)
 from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
@@ -94,9 +94,7 @@ def test_digester(hash, is_valid, server):
 @pytest.mark.parametrize('chunked', [False, True])
 def test_empty_file(chunked, server):
     batch = server.uploads.batch()
-    with pytest.raises(EmptyFile) as e:
-        batch.upload(BufferBlob(data='', name='Test.txt'), chunked=chunked)
-    assert text(e.value)
+    batch.upload(BufferBlob(data='', name='Test.txt'), chunked=chunked)
 
 
 def test_fetch(server):
