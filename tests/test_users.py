@@ -3,10 +3,11 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.exceptions import BadQuery
 from nuxeo.users import User
 
 
-class Georges:
+class Georges(object):
 
     def __init__(self, server):
         self.server = server
@@ -38,7 +39,7 @@ def test_create_delete_user_dict(server):
 
 
 def test_create_wrong_arguments(server):
-    with pytest.raises(ValueError):
+    with pytest.raises(BadQuery):
         server.users.create(1)
 
 

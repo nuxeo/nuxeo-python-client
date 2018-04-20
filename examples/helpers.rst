@@ -127,9 +127,13 @@ yourself before running it, you can use the following:
 
 .. code:: python
 
+    from nuxeo.exceptions import BadQuery
+
     try:
-        nuxeo.operations.check_params('Log', {'level': 'info'
-                                   'message': 'I am logging something'})
-        # The parameters are valid
-    except ValueError as e:
+        nuxeo.operations.check_params(
+            'Log', {'level': 'info',
+                    'message': 'I am logging something'})
+    except BadQuery as e:
         print(e)  # Indicates what is wrong
+    else:
+        # The parameters are valid

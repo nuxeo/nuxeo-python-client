@@ -23,3 +23,6 @@ Default value for the:
     - 'applicationName' URL parameter
 """
 DEFAULT_APP_NAME = 'Python client'
+
+# Force parameters verification for all operations
+CHECK_PARAMS = False

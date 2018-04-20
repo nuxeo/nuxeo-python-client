@@ -2,15 +2,16 @@
 from __future__ import unicode_literals
 
 import operator
-import pytest
 import time
 
+import pytest
+
 from nuxeo.compat import get_bytes, get_error_message, text
-from nuxeo.exceptions import HTTPError, UnavailableConvertor
+from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 
 
-class Doc:
+class Doc(object):
 
     def __init__(self, server, with_blob=False):
         self.server = server
@@ -58,7 +59,7 @@ def test_add_remove_permission(server):
 
 def test_bogus_converter(server):
     with Doc(server, with_blob=True) as doc:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(BadQuery) as e:
             doc.convert({'converter': 'converterthatdoesntexist'})
         msg = get_error_message(e.value)
         assert msg == 'Converter converterthatdoesntexist is not registered'
@@ -86,7 +87,7 @@ def test_convert_given_converter(server):
 
 def test_convert_missing_args(server):
     with Doc(server, with_blob=True) as doc:
-        with pytest.raises(ValueError):
+        with pytest.raises(BadQuery):
             doc.convert({})
 
 
@@ -100,7 +101,7 @@ def test_convert_unavailable(server, monkeypatch):
             doc.convert({'converter': 'office2html'})
         assert text(e.value)
         msg = e.value.message
-        assert msg.startswith('Conversion with options')
+        assert msg.startswith('UnavailableConvertor: conversion with options')
         assert msg.endswith('is not available')
 
 
@@ -288,7 +289,7 @@ def test_page_provider_pagination(server):
 
 def test_query(server):
     docs = server.documents.query({
-        'query': 'SELECT * FROM Document WHERE ecm:primaryType = \'Domain\''})
+        'query': "SELECT * FROM Document WHERE ecm:primaryType = 'Domain'"})
     assert docs['numberOfPages'] == 1
     assert docs['resultsCount'] == 1
     assert docs['currentPageSize'] == 1
@@ -298,7 +299,7 @@ def test_query(server):
 
 
 def test_query_missing_args(server):
-    with pytest.raises(ValueError):
+    with pytest.raises(BadQuery):
         server.documents.query({})
 
 
@@ -326,5 +327,5 @@ def test_update_doc_and_delete(server):
 
 
 def test_update_wrong_args(server):
-    with pytest.raises(ValueError):
+    with pytest.raises(BadQuery):
         server.documents.query({})

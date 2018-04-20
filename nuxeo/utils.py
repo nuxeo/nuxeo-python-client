@@ -87,7 +87,7 @@ def json_helper(obj):
     return obj.to_json()
 
 
-class SwapAttr:
+class SwapAttr(object):
     """
     Context manager to swap an attribute's value:
 

@@ -8,9 +8,10 @@ import pytest
 import requests
 from requests.exceptions import ConnectionError
 
+from nuxeo import constants
 from nuxeo.auth import TokenAuth
 from nuxeo.compat import get_bytes, text
-from nuxeo.exceptions import HTTPError, Unauthorized
+from nuxeo.exceptions import BadQuery, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 from nuxeo.utils import SwapAttr
 
@@ -66,40 +67,49 @@ from nuxeo.utils import SwapAttr
                         'queryParams': ['a', 'b', 'c']}, True),
     ('Document.Query', {'query': 'test', 'queryParams': 'test'}, True),
     ('Document.Query', {'query': 'test', 'queryParams': 0}, False),
+    # 'queryParams' is also optional, None should be accepted
+    ('Document.Query', {'query': 'test',
+                        'queryParams': None}, True),
     # 'validationMethod' type == str
     ('User.Invite', {'validationMethod': 'test'}, True),
     ('User.Invite', {'validationMethod': 0}, False),
+    # unknown param
+    ('Document.Query', {'alien': 'alien'}, False),
 ])
 def test_check_params(method, params, is_valid, server):
     if is_valid:
         server.operations.check_params(method, params)
     else:
-        with pytest.raises(TypeError):
+        with pytest.raises(BadQuery):
             server.operations.check_params(method, params)
 
 
+def test_check_params_constant(server):
+    operation = server.operations.new('Document.GetChild')
+    operation.params = {'name': 'workspaces', 'alien': 'the return'}
+    operation.input_obj = '/default-domain'
+
+    # Should not fail here
+    assert not constants.CHECK_PARAMS
+    operation.execute()
+
+    # But should fail now
+    with SwapAttr(constants, 'CHECK_PARAMS', True):
+        with pytest.raises(BadQuery):
+            operation.execute()
+
+
 def test_check_params_unknown_operation(server):
-    with pytest.raises(ValueError):
+    with pytest.raises(BadQuery):
         server.operations.check_params('alien', {})
 
 
-def test_check_params_unknown_param(server):
-    with pytest.raises(ValueError):
-        server.operations.check_params(
-            'Document.Query', {'alien': 'alien'})
-
-
 def test_encoding_404_error(server):
-    url = server.client.host
-    server.client.host = 'http://localhost:8080/'
-
-    try:
+    with SwapAttr(server.client, 'host', 'http://localhost:8080/'):
         with pytest.raises((ConnectionError, HTTPError)) as e:
             server.documents.get(path='/')
         if isinstance(e, HTTPError):
             assert e.value.status == 404
-    finally:
-        server.client.host = url
 
 
 def test_handle_error(server):
@@ -195,19 +205,15 @@ def test_request_token(server):
 
 
 def test_send_wrong_method(server):
-    with pytest.raises(ValueError):
+    with pytest.raises(BadQuery):
         server.client.request('TEST', 'example')
 
 
 def test_server_reachable(server):
     assert server.client.is_reachable()
-    url = server.client.host
-    server.client.host = 'http://example.org'
-
-    try:
+    with SwapAttr(server.client, 'host', 'http://example.org'):
         assert not server.client.is_reachable()
-    finally:
-        server.client.host = url
+    assert server.client.is_reachable()
 
 
 @pytest.mark.skipif(
@@ -225,7 +231,6 @@ def test_unauthorized(server):
     auth = server.client.auth
     server.client.auth = (get_bytes(username), password)
     try:
-
         with pytest.raises(Unauthorized) as e:
             server.users.create(
                 User(properties={

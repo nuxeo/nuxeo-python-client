@@ -6,7 +6,7 @@ import socket
 import pytest
 
 from nuxeo.compat import text
-from nuxeo.exceptions import HTTPError
+from nuxeo.exceptions import BadQuery, HTTPError
 from nuxeo.models import Document, Task, User
 
 document = Document(
@@ -123,7 +123,7 @@ def test_fetch_graph(server, workflows):
 
 def test_task_transfer(tasks):
     task = Task()
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(BadQuery) as e:
         tasks.transfer(task, 'bogus_transfer', {})
     msg = text(e.value)
     assert msg == 'Task transfer must be either delegate or reassign.'

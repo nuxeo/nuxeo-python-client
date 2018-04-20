@@ -51,10 +51,11 @@ class Model(object):
         result = {}
         for key in self._valid_properties:
             val = getattr(self, key.replace('-', '_'))
-            if not val:
+            if val is None:
                 continue
             # Parse lists of objects
-            elif isinstance(val, list) and isinstance(val[0], Model):
+            elif (isinstance(val, list) and len(val) > 0
+                  and isinstance(val[0], Model)):
                 val = [item.as_dict() for item in val]
 
             result[key] = val

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from .endpoint import APIEndpoint
+from .exceptions import BadQuery
 from .models import Directory, DirectoryEntry
 
 try:
@@ -56,7 +57,7 @@ class API(APIEndpoint):
         """
         if dir_name:
             if not isinstance(resource, DirectoryEntry):
-                raise ValueError('The resource should be a directory entry.')
+                raise BadQuery('The resource should be a directory entry.')
             resource.directoryName = dir_name
         return super(API, self).post(resource=resource, path=dir_name)
 

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from .compat import text
 from .endpoint import APIEndpoint
+from .exceptions import BadQuery
 from .models import Task
 
 try:
@@ -88,7 +89,7 @@ class API(APIEndpoint):
         elif transfer == 'reassign':
             actors_type = 'actors'
         else:
-            raise ValueError(
+            raise BadQuery(
                 'Task transfer must be either delegate or reassign.')
 
         params = {actors_type: actors}

@@ -10,10 +10,10 @@ import requests
 from . import (__version__, directories, documents, groups,
                operations, tasks, uploads, users, workflows)
 from .auth import TokenAuth
-from .compat import text, urlencode
+from .compat import text
 from .constants import (CHUNK_SIZE, DEFAULT_API_PATH, DEFAULT_APP_NAME,
                         DEFAULT_URL)
-from .exceptions import HTTPError, Unauthorized
+from .exceptions import BadQuery, HTTPError, Unauthorized
 from .utils import json_helper
 
 try:
@@ -46,6 +46,7 @@ class NuxeoClient(object):
         host=DEFAULT_URL,  # type: Text
         api_path=DEFAULT_API_PATH,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
+        version=None,  # type: Text
         chunk_size=CHUNK_SIZE,  # type: int
         **kwargs  # type: Any
     ):
@@ -55,15 +56,19 @@ class NuxeoClient(object):
         self.api_path = api_path
         self.headers = {
             'X-Application-Name': app_name,
-            'X-Client-Version': __version__,
+            'X-Client-Version': version,
+            'User-Agent': app_name + '/' + version,
             'Accept': 'application/json+nxentity, */*'
         }
         self.chunk_size = chunk_size
         self.schemas = kwargs.get('schemas', '*')
-        self.repository = kwargs.get('repository', 'default')
-        self.client_kwargs = kwargs
+        self.repository = kwargs.pop('repository', 'default')
         self._session = requests.session()
+        cookies = kwargs.pop('cookies', None)
+        if cookies:
+            self._session.cookies = cookies
         self._session.stream = True
+        self.client_kwargs = kwargs
         atexit.register(self.on_exit)
 
         # Ensure the host is well formatted
@@ -134,7 +139,7 @@ class NuxeoClient(object):
         """
         if method not in ('GET', 'HEAD', 'POST', 'PUT',
                           'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'):
-            raise ValueError('method parameter is not a valid HTTP method.')
+            raise BadQuery('method parameter is not a valid HTTP method.')
 
         # Construct the full URL without double slashes
         url = self.host + path.lstrip('/')
@@ -144,11 +149,17 @@ class NuxeoClient(object):
         kwargs.update(self.client_kwargs)
 
         headers = headers or {}
+        if 'Content-Type' not in headers:
+            headers['Content-Type'] = kwargs.pop(
+                'content_type', 'application/json')
         headers.update({
-            'Content-Type': kwargs.get('content_type', 'application/json'),
             'X-NXDocumentProperties': self.schemas,
             'X-NXRepository': self.repository
         })
+        enrichers = kwargs.pop('enrichers', None)
+        if enrichers:
+            headers['X-NXenrichers.document'] = ', '.join(enrichers)
+
         headers.update(self.headers)
 
         if data and not isinstance(data, bytes) and not raw:
@@ -212,8 +223,8 @@ class NuxeoClient(object):
         if device:
             parameters['deviceDescription'] = device
 
-        path = 'authentication/token?' + urlencode(parameters)
-        token = self.request('GET', path).text
+        path = 'authentication/token'
+        token = self.request('GET', path, params=parameters).text
 
         # Use the (potentially re-newed) token from now on
         if not revoke:
@@ -272,9 +283,7 @@ class NuxeoClient(object):
                            else HTTPError)
 
             error = error_class.parse(error_data)
-            logger.exception('Remote exception: {}'.format(error))
-        else:
-            logger.exception(text(error))
+        logger.exception(error)
         return error
 
 
@@ -293,6 +302,7 @@ class Nuxeo(object):
         auth=None,  # type: Optional[Tuple[Text, Text]]
         host=DEFAULT_URL,  # type: Text
         app_name=DEFAULT_APP_NAME,  # type: Text
+        version=__version__,  # type: Text
         client=NuxeoClient,  # type: Type[NuxeoClient]
         **kwargs  # type: Any
     ):
@@ -301,7 +311,8 @@ class Nuxeo(object):
             from warnings import warn
             warn('Requests >= 2.12.2 required for auth unicode support.')
 
-        self.client = client(auth, host=host, app_name=app_name, **kwargs)
+        self.client = client(auth, host=host, app_name=app_name,
+                             version=version, **kwargs)
         self.operations = operations.API(self.client)
         self.directories = directories.API(self.client)
         self.groups = groups.API(self.client)

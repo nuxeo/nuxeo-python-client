@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.exceptions import BadQuery
 from nuxeo.models import DirectoryEntry
 
 
 def test_create_wrong_arguments(directory):
-    with pytest.raises(ValueError):
+    with pytest.raises(BadQuery):
         directory.create(1)
 
 
