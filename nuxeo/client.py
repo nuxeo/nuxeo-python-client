@@ -128,13 +128,12 @@ class NuxeoClient(object):
         :param headers: the headers for the HTTP request
         :param data: data to put in the body
         :param raw: if True, don't parse the data to JSON
-        :param kwargs: other parameters accepted by
-               :func:`requests.request`
+        :param kwargs: other parameters accepted by :func:`requests.request`
         :return: the HTTP response
         """
-        if method not in ('GET', 'HEAD', 'POST', 'PUT',
-                          'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'):
-            raise ValueError('method parameter is not a valid HTTP method.')
+
+        if method not in ('GET', 'POST', 'PUT', 'DELETE'):
+            raise ValueError('invalid {!r} HTTP method'.format(method))
 
         # Construct the full URL without double slashes
         url = self.host + path.lstrip('/')
@@ -272,7 +271,7 @@ class NuxeoClient(object):
                            else HTTPError)
 
             error = error_class.parse(error_data)
-            logger.exception('Remote exception: {}'.format(error))
+            logger.exception('Remote exception: %r', error)
         else:
             logger.exception(text(error))
         return error

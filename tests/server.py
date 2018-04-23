@@ -132,8 +132,7 @@ class Server(threading.Thread):
 
         self.handler = handler or consume_socket
         self.handler_results = []
-        self.fail_args = kwargs.get('fail_args', None)
-        self.request_number = 0
+        self.fail_args = kwargs.get('fail_args', {})
 
         self.host = host
         self.port = port
@@ -201,14 +200,15 @@ class Server(threading.Thread):
             pass
 
     def _handle_requests(self):
-        for _ in range(self.requests_to_handle):
+        fail_at = self.fail_args.get('fail_at', 0)
+        fail_number = self.fail_args.get('fail_number', 0)
+
+        for request_number in range(self.requests_to_handle):
             sock = self._accept_connection()
             if not sock:
                 break
 
-            fail_at = self.fail_args.get('fail_at', 0)
-            fail_number = self.fail_args.get('fail_number', 0)
-            if fail_at <= self.request_number < fail_at + fail_number:
+            if fail_at <= request_number < fail_at + fail_number:
                 consume_socket(sock)
                 sock.send(generate_response('500 Server Error'))
                 sock.close()
@@ -216,7 +216,6 @@ class Server(threading.Thread):
             else:
                 handler_result = self.handler(sock)
 
-            self.request_number += 1
             self.handler_results.append(handler_result)
 
     def _accept_connection(self):

@@ -43,12 +43,15 @@ def cleanup(request, server):
 
 @pytest.fixture(scope='module')
 def directory(server):
-    directory = server.directories.get('nature')
+    directory_ = server.directories.get('nature')
+
+    # Ensure the old test child is removed
     try:
-        directory.delete('foo')
+        directory_.delete('foo')
     except HTTPError:
         pass
-    return directory
+
+    return directory_
 
 
 @pytest.fixture(scope='module')
@@ -58,8 +61,8 @@ def repository(server):
 
 @pytest.fixture(scope='module')
 def server():
-    server = Nuxeo(host=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
+    remote = Nuxeo(host=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
                                        'http://localhost:8080/nuxeo'),
                    auth=('Administrator', 'Administrator'))
-    server.client.set(schemas=['dublincore'])
-    return server
+    remote.client.set(schemas=['dublincore'])
+    return remote
