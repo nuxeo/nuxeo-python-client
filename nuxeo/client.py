@@ -13,7 +13,7 @@ from .auth import TokenAuth
 from .compat import text, urlencode
 from .constants import (CHUNK_SIZE, DEFAULT_API_PATH, DEFAULT_APP_NAME,
                         DEFAULT_URL)
-from .exceptions import HTTPError, Unauthorized
+from .exceptions import IncompleteRead, HTTPError, Unauthorized
 from .utils import json_helper
 
 try:
@@ -172,15 +172,15 @@ class NuxeoClient(object):
         except Exception as exc:
             if default is object:
                 raise self._handle_error(exc)
-            resp = default
-        else:
-            content_size = resp.headers.get('content-length', self.chunk_size)
-            if int(content_size) <= self.chunk_size:
-                content = resp.text
-            else:
-                content = '<Too much data to display>'
-            logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
-                url, content, self._session.cookies))
+            return default
+
+        if method in ('GET', 'POST') and '@blob/' not in url:
+            # - No need to log other methods as requests will do it for us
+            # - No need to log blob content (almost everytime binary data)
+            logger.debug('Response from {!r}: {!r}'.format(url, resp.text))
+
+        if method == 'GET':
+            self._raise_for_content_length(resp)
 
         return resp
 
@@ -276,6 +276,28 @@ class NuxeoClient(object):
         else:
             logger.exception(text(error))
         return error
+
+    @staticmethod
+    def _raise_for_content_length(response):
+        # type: (requests.Response) -> None
+        """
+        Raises :class:`IncompleteRead` if the server did not send enough data.
+        TODO: Remove that check with request 3.x (NXPY-60)
+
+        :param response: the HTTP response
+        """
+
+        # Check that we have read all the data as the requests library
+        # does not currently enforce this.
+        expected_length = response.headers.get('Content-Length')
+        if expected_length is not None:
+            # We cannot use len(response.content) as this would not work
+            # when the body of the response was compressed
+            # (e.g. when the response has `Content-Encoding: gzip`).
+            actual_length = response.raw.tell()
+            expected_length = int(expected_length)
+            if 0 < actual_length < expected_length:
+                raise IncompleteRead(actual_length, expected_length)
 
 
 class Nuxeo(object):

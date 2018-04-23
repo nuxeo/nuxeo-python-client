@@ -68,6 +68,24 @@ class HTTPError(Exception):
         return model
 
 
+class IncompleteRead(IOError):
+    """ Response length doesn't match expected Content-Length. """
+
+    def __init__(self, actual_length, expected_length):
+        # type: (int, int) -> None
+        self.actual = actual_length
+        self.expected = expected_length
+
+    def __repr__(self):
+        # type: () -> Text
+        return 'IncompleteRead({} bytes read, {} expected)'.format(
+            self.actual, self.expected)
+
+    def __str__(self):
+        # type: () -> Text
+        return repr(self)
+
+
 class InvalidBatch(ValueError):
     """
     Exception thrown when accessing inexistant or deleted batches.

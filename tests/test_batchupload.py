@@ -7,11 +7,11 @@ import os
 import pytest
 
 from nuxeo.compat import text
-from nuxeo.exceptions import (CorruptedFile, EmptyFile, HTTPError,
-                              InvalidBatch, UploadError)
+from nuxeo.exceptions import (CorruptedFile, EmptyFile, IncompleteRead,
+                              HTTPError, InvalidBatch, UploadError)
 from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
-from .server import Server
+from .server import Server, consume_socket
 
 new_doc = Document(
     name='Document',
@@ -114,6 +114,32 @@ def test_fetch(server):
     assert blob.uploadedSize == 4
     batch.delete(0)
     assert not batch.blobs[0]
+
+
+def test_fetch_incomplete(server):
+
+    def incomplete_read(sock):
+        consume_socket(sock)
+        sock.send(b'HTTP/1.1 200 OK\r\n'
+                  b'Content-Length: 42\r\n\r\n'
+                  b'bad data')
+
+    batch = get_batch(server)
+    close_server = threading.Event()
+
+    with SwapAttr(server.client, 'host', 'http://localhost:8081/nuxeo/'):
+        serv = Server(
+            handler=incomplete_read,
+            wait_to_close_event=close_server,
+            port=8081,
+        )
+        with serv:
+            with pytest.raises(IncompleteRead) as exc:
+                batch.get(0)
+            assert str(exc)
+            close_server.set()  # release server block
+
+    batch.delete(0)
 
 
 def test_mimetype():
