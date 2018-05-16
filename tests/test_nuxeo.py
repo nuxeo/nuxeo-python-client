@@ -3,14 +3,11 @@ from __future__ import unicode_literals
 
 import json
 import os
-import pkg_resources
-import re
 
 import pytest
 import requests
 from requests.exceptions import ConnectionError
 
-from nuxeo import _extract_version
 from nuxeo.auth import TokenAuth
 from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import HTTPError, Unauthorized
@@ -125,15 +122,6 @@ def test_file_out(server):
 
 def test_get_operations(server):
     assert server.operations
-
-
-def test_init(monkeypatch):
-    def missing_dist(_):
-        raise pkg_resources.DistributionNotFound
-
-    assert re.match('\d+\.\d+\.\d+', _extract_version())
-    monkeypatch.setattr(pkg_resources, 'get_distribution', missing_dist)
-    assert re.match('\d+\.\d+\.\d+', _extract_version())
 
 
 def test_query(server):

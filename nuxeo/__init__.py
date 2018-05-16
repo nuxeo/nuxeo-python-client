@@ -16,28 +16,9 @@ Contributors:
 """
 from __future__ import unicode_literals
 
-from os import path
-
-try:
-    from typing import Text
-except ImportError:
-    pass
-
-
-def _extract_version():
-    # type: () -> Text
-    try:
-        import pkg_resources
-        return pkg_resources.get_distribution('nuxeo').version
-    except (ImportError, pkg_resources.DistributionNotFound):
-        from setuptools.config import read_configuration
-        _conf = read_configuration(path.join(
-            path.dirname(path.dirname(__file__)), 'setup.cfg'))
-        return _conf['metadata']['version']
-
 
 __author__ = 'Nuxeo'
-__version__ = _extract_version()
+__version__ = '2.0.0'
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 
