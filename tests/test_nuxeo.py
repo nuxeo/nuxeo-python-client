@@ -185,6 +185,7 @@ def test_server_info(server):
 
 def test_server_version(server):
     assert server.client.server_version
+    assert str(server.client)
 
     # Bad call
     server.client._server_info = None
