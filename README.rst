@@ -69,14 +69,14 @@ to use a specific instance, you can specify the ``base_url`` like so:
 Download/Upload Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the ``nuxeo/constants.py`` file, you have several constants that are
-used throughout the client that you can change to fit your needs:
+In the `nuxeo/constants.py <nuxeo/constants.py>`__ file, you have several constants that are
+used throughout the client that you can change to fit your needs. Some of them are:
 
--  ``CHUNK_SIZE`` (8 Kio by default), the size of the chunks when downloading,
--  ``UPLOAD_CHUNK_SIZE`` (256 Kio by default), the size of the chunks when uploading,
--  ``CHUNK_LIMIT`` (10 Mio by default), the size above which the upload will
-   automatically be chunked,
+-  ``CHECK_PARAMS`` (False by default), to check operation's parameters for each and every HTTP calls.
+-  ``CHUNK_LIMIT`` (10 Mio by default), the size above which the upload will automatically be chunked.
+-  ``CHUNK_SIZE`` (8 Kio by default), the size of the chunks when downloading.
 -  ``MAX_RETRY`` (3 by default), the number of retries for the upload of a given blob/chunk.
+-  ``UPLOAD_CHUNK_SIZE`` (256 Kio by default), the size of the chunks when uploading.
 
 
 Run NXQL Queries
