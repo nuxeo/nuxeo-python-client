@@ -1,16 +1,15 @@
 Changelog
 =========
 
-dev
----
+2.0.0
+-----
 
-Release date: ``2018-??-??``
+Release date: ``2018-05-18``
+
+This is a refactoring of the module that **breaks** the compatibility with older versions.
 
 -  `NXPY-11 <https://jira.nuxeo.com/browse/NXPY-11>`__: Add usage examples
--  `NXPY-14 <https://jira.nuxeo.com/browse/NXPY-14>`__: Quote Repository URLs
 -  `NXPY-16 <https://jira.nuxeo.com/browse/NXPY-16>`__: Move from urllib2 and poster to Requests
--  `NXPY-19 <https://jira.nuxeo.com/browse/NXPY-19>`__: Remove proxy support
--  `NXPY-22 <https://jira.nuxeo.com/browse/NXPY-22>`__: Sanitize relative URLs
 -  `NXPY-26 <https://jira.nuxeo.com/browse/NXPY-26>`__: Use of setup.cfg
 -  `NXPY-37 <https://jira.nuxeo.com/browse/NXPY-37>`__: Add type checking for operation parameters
 -  `NXPY-40 <https://jira.nuxeo.com/browse/NXPY-40>`__: Add chunked resumable upload
@@ -40,15 +39,13 @@ Technical changes
 -  Added nuxeo/compat.py::\ ``get_text()``
 -  Changed ``Groups`` to nuxeo/groups.py::\ ``API``
 -  Changed ``Nuxeo.request()`` to ``NuxeoClient.request()``
--  Moved ``Nuxeo.InvalidBatchException`` to
-   nuxeo/exceptions.py::\ ``InvalidBatch``
+-  Moved ``Nuxeo.InvalidBatchException`` to nuxeo/exceptions.py::\ ``InvalidBatch``
 -  Moved ``Nuxeo.Unauthorized`` to nuxeo/exceptions.py::\ ``Unauthorized``
 -  Removed ``Nuxeo.debug()``
 -  Removed ``Nuxeo.error()``
 -  Removed ``Nuxeo.force_decode()``
 -  Removed ``Nuxeo.trace()``
--  Changed ``Nuxeo._check_params()`` to
-   nuxeo/operations.py::\ ``API.check_params()``
+-  Changed ``Nuxeo._check_params()`` to nuxeo/operations.py::\ ``API.check_params()``
 -  Removed ``Nuxeo._create_action()``
 -  Removed ``Nuxeo._end_action()``
 -  Removed ``Nuxeo._get_action()``
