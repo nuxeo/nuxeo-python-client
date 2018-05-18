@@ -85,7 +85,7 @@ class Model(object):
 class RefreshableModel(Model):
 
     def load(self, model=None):
-        # type: (Optional[Model]) -> None
+        # type: (Optional[Union[Model, Dict[Text, Any]]]) -> None
         """
         Reload the Model.
 
@@ -97,9 +97,17 @@ class RefreshableModel(Model):
         """
         if not model:
             model = self.service.get(self.uid)
+
+        if isinstance(model, dict):
+            def get_prop(obj, key):
+                return obj.get(key)
+        else:
+            def get_prop(obj, key):
+                return getattr(obj, key)
+
         for key in self._valid_properties:
             key = key.replace('-', '_')
-            setattr(self, key, getattr(model, key))
+            setattr(self, key, get_prop(model, key))
 
 
 """ Entities """
@@ -416,6 +424,7 @@ class Document(RefreshableModel):
         'parentRef': None,
         'versionLabel': None,
         'isCheckedOut': False,
+        'isTrashed': False,
         'isVersion': False,
         'isProxy': False,
         'title': None,
@@ -511,8 +520,8 @@ class Document(RefreshableModel):
 
         :param name: transition name
         """
-        self.service.follow_transition(self.uid, name)
-        self.load()
+        doc = self.service.follow_transition(self.uid, name)
+        self.load(doc)
 
     def get(self, prop):
         # type: (Text) -> Any
@@ -542,8 +551,8 @@ class Document(RefreshableModel):
         :param dst: The new parent path
         :param name: Rename the document if specified
         """
-        self.service.move(self.uid, dst, name)
-        self.load()
+        doc = self.service.move(self.uid, dst, name)
+        self.load(doc)
 
     def remove_permission(self, params):
         # type: (Dict[Text, Any]) -> None
@@ -555,10 +564,20 @@ class Document(RefreshableModel):
         """ Add/update the properties of the document. """
         self.properties.update(properties)
 
+    def trash(self):
+        # type: () -> None
+        doc = self.service.trash(self.uid)
+        self.load(doc)
+
     def unlock(self):
         # type: () -> Dict[Text, Any]
         """ Unlock the document. """
         return self.service.unlock(self.uid)
+
+    def untrash(self):
+        # type: () -> None
+        doc = self.service.untrash(self.uid)
+        self.load(doc)
 
 
 class Group(Model):
