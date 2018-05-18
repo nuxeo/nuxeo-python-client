@@ -15,6 +15,7 @@ Release date: ``2018-??-??``
 -  `NXPY-37 <https://jira.nuxeo.com/browse/NXPY-37>`__: Add type checking for operation parameters
 -  `NXPY-40 <https://jira.nuxeo.com/browse/NXPY-40>`__: Add chunked resumable upload
 -  `NXPY-42 <https://jira.nuxeo.com/browse/NXPY-42>`__: Client refactoring
+-  `NXPY-54 <https://jira.nuxeo.com/browse/NXPY-54>`__: Add new Trash API
 -  A lot of code clean-up and improvement
 
 Technical changes
@@ -29,6 +30,9 @@ Technical changes
 -  Changed ``Blob._service`` to ``Blob.service``
 -  Changed ``Directory`` to nuxeo/directories.py::\ ``API``
 -  Added ``Document.is_locked()``
+-  Added ``Document.isTrashed``
+-  Added ``Document.trash()``
+-  Added ``Document.untrash()``
 -  Removed ``FileBlob.get_upload_buffer()``
 -  Removed ``FileBlob._read_data()``
 -  Added nuxeo/compat.py::\ ``get_bytes()``
