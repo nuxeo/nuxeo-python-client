@@ -122,7 +122,24 @@ def test_file_out(server):
     operation = server.operations.new('Document.GetChild')
     operation.params = {'name': 'workspaces'}
     operation.input_obj = '/default-domain'
-    file_out = operation.execute(file_out='test')
+
+    from logging import getLogger
+    log = getLogger(__name__)
+
+    def check_suspended(msg):
+        log.info('Check suspended: %s', msg)
+
+    def unlock_path(path):
+        log.info('Unlock path: %s', path)
+        return True
+
+    def lock_path(path, locker):
+        log.info('Lock path: %s, %s', path, locker)
+
+    file_out = operation.execute(
+        file_out='test', check_suspended=check_suspended,
+        lock_path=lock_path, unlock_path=unlock_path)
+
     with open(file_out) as f:
         file_content = json.loads(f.read())
         resp_content = operation.execute()

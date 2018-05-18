@@ -145,11 +145,9 @@ class API(APIEndpoint):
         :param uid: the uid of the document
         :return: the ACLs
         """
-        headers = self.headers or {}
-        headers.update({'enrichers-document': 'acls'})
-
         req = super(API, self).get(
-            path=self._path(uid=uid), cls=dict, headers=headers)
+            path=self._path(uid=uid), cls=dict, headers=self.headers,
+            enrichers=['acls'])
         return req['contextParameters']['acls']
 
     def fetch_audit(self, uid):
@@ -260,11 +258,9 @@ class API(APIEndpoint):
         :param permission: the permission to check
         :return: True if the document has it, False otherwise
         """
-        headers = self.headers or {}
-        headers.update({'enrichers-document': 'permissions'})
-
         req = super(API, self).get(
-            path=self._path(uid=uid), cls=dict, headers=headers)
+            path=self._path(uid=uid), cls=dict, headers=self.headers,
+            enrichers=['permissions'])
         return permission in req['contextParameters']['permissions']
 
     def lock(self, uid):
