@@ -6,6 +6,7 @@ import socket
 
 import os
 import pytest
+from requests.cookies import RequestsCookieJar
 
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import HTTPError
@@ -58,8 +59,11 @@ def repository(server):
 
 @pytest.fixture(scope='module')
 def server():
+    cookies = RequestsCookieJar()
+    cookies.set('device', 'python-client')
     server = Nuxeo(host=os.environ.get('NXDRIVE_TEST_NUXEO_URL',
                                        'http://localhost:8080/nuxeo'),
-                   auth=('Administrator', 'Administrator'))
+                   auth=('Administrator', 'Administrator'),
+                   cookies=cookies)
     server.client.set(schemas=['dublincore'])
     return server

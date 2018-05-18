@@ -26,6 +26,7 @@ def get_batch(server):
     batch = server.uploads.batch()
     assert batch
     assert repr(batch)
+    assert not server.uploads.get(batch.uid)
     blob = BufferBlob(data='data', name='Test.txt', mimetype='text/plain')
     assert repr(blob)
     batch.upload(blob)
