@@ -75,6 +75,15 @@ class NuxeoClient(object):
         if not self.host.endswith('/'):
             self.host += '/'
 
+    def __repr__(self):
+        # type: () -> Text
+        fmt = '{name}<host={cls.host!r}, version={cls.server_version!r}>'
+        return fmt.format(name=type(self).__name__, cls=self)
+
+    def __str__(self):
+        # type: () -> Text
+        return repr(self)
+
     def on_exit(self):
         # type: () -> None
         self._session.close()
