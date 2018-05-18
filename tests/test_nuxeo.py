@@ -10,7 +10,7 @@ from requests.exceptions import ConnectionError
 
 from nuxeo import constants
 from nuxeo.auth import TokenAuth
-from nuxeo.compat import get_bytes, text
+from nuxeo.compat import get_bytes, long, text
 from nuxeo.exceptions import BadQuery, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 from nuxeo.utils import SwapAttr
@@ -43,7 +43,7 @@ from nuxeo.utils import SwapAttr
     ('Document.Query', {'query': 'test', 'pageSize': 10}, True),
     ('Document.Query', {'query': 'test', 'pageSize': 'test'}, False),
     # 'startPage', 'endPage' type == long
-    ('PDF.ExtractPages', {'startPage': 1, 'endPage': 2}, True),
+    ('PDF.ExtractPages', {'startPage': 1, 'endPage': long(2)}, True),
     ('PDF.ExtractPages', {'startPage': 'test', 'endPage': 'test'}, False),
     # 'info' type == dict
     ('User.Invite', {'info': {'username': 'test'}}, True),

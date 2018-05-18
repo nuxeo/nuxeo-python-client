@@ -16,6 +16,11 @@ except ImportError:
     from urllib import urlencode
 
 try:
+    long = long
+except NameError:
+    long = int
+
+try:
     text = unicode  # type: Type[Text]
 except NameError:
     text = str      # type: Type[Text]

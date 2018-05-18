@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from collections import Sequence
 
 from . import constants
-from .compat import text
+from .compat import long, text
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery, CorruptedFile
 from .models import Blob, Operation
@@ -31,7 +31,7 @@ PARAM_TYPES = {
     'documents': ((list,), None),
     'int': ((int,), 0),
     'integer': ((int,), 0),
-    'long': ((int,), 0),
+    'long': ((int, long), 0),
     'map': ((dict,), None),
     'object': ((object,), None),
     'properties': ((dict,), None),
@@ -115,6 +115,7 @@ class API(APIEndpoint):
             if not param['required']:
                 # Allow the default value when the parameter is not required
                 types_accepted += (type(default),)
+            types_accepted = tuple(set(types_accepted))  # Uniquify
 
             if not isinstance(value, types_accepted):
                 types = [type_.__name__ for type_ in types_accepted]
