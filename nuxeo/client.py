@@ -35,7 +35,6 @@ class NuxeoClient(object):
     :param auth: An authentication object passed to Requests
     :param host: The url of the Nuxeo Platform
     :param api_path: The API path appended to the host url
-    :param app_name: The name of the application using the client
     :param chunk_size: The size of the chunks for blob download
     :param kwargs: kwargs passed to :func:`NuxeoClient.request`
     """
@@ -45,8 +44,6 @@ class NuxeoClient(object):
         auth=None,  # type: AuthType
         host=DEFAULT_URL,  # type: Text
         api_path=DEFAULT_API_PATH,  # type: Text
-        app_name=DEFAULT_APP_NAME,  # type: Text
-        version=None,  # type: Text
         chunk_size=CHUNK_SIZE,  # type: int
         **kwargs  # type: Any
     ):
@@ -54,13 +51,16 @@ class NuxeoClient(object):
         self.auth = auth
         self.host = host
         self.api_path = api_path
+        self.chunk_size = chunk_size
+
+        version = kwargs.pop('version', '')
+        app_name = kwargs.pop('app_name', DEFAULT_APP_NAME)
         self.headers = {
             'X-Application-Name': app_name,
             'X-Client-Version': version,
             'User-Agent': app_name + '/' + version,
             'Accept': 'application/json+nxentity, */*'
         }
-        self.chunk_size = chunk_size
         self.schemas = kwargs.get('schemas', '*')
         self.repository = kwargs.pop('repository', 'default')
         self._session = requests.session()
