@@ -211,7 +211,7 @@ class API(APIEndpoint):
                 for rend in req['contextParameters']['renditions']]
 
     def follow_transition(self, uid, name):
-        # type: (Text, Text) -> None
+        # type: (Text, Text) -> Dict[Text, Any]
         """
         Follow a lifecycle transition.
 
@@ -219,7 +219,7 @@ class API(APIEndpoint):
         :param name: the name of the transition
         """
         params = {'value': name}
-        self.operations.execute(
+        return self.operations.execute(
             command='Document.FollowLifecycleTransition',
             input_obj=uid, params=params)
 
@@ -270,7 +270,7 @@ class API(APIEndpoint):
             command='Document.Lock', input_obj=uid)
 
     def move(self, uid, dst, name=None):
-        # type: (Text, Text, Optional[Text]) -> None
+        # type: (Text, Text, Optional[Text]) -> Dict[Text, Any]
         """
         Move a document and eventually rename it.
 
@@ -281,7 +281,7 @@ class API(APIEndpoint):
         params = {'target': dst}
         if name:
             params['name'] = name
-        self.operations.execute(
+        return self.operations.execute(
             command='Document.Move', input_obj=uid, params=params)
 
     def query(self, opts=None):
@@ -317,11 +317,31 @@ class API(APIEndpoint):
         self.operations.execute(
             command='Document.RemovePermission', input_obj=uid, params=params)
 
+    def trash(self, uid):
+        # type: (Text) -> Dict[Text, Any]
+        """
+        Trash the document.
+
+        :param uid: the uid of the document
+        """
+        return self.operations.execute(
+            command='Document.Trash', input_obj=uid)
+
     def unlock(self, uid):
         # type: (Text) -> Dict[Text, Any]
         """ Unlock a document. """
         return self.operations.execute(
             command='Document.Unlock', input_obj=uid)
+
+    def untrash(self, uid):
+        # type: (Text) -> Dict[Text, Any]
+        """
+        Untrash the document.
+
+        :param uid: the uid of the document
+        """
+        return self.operations.execute(
+            command='Document.Untrash', input_obj=uid)
 
     def workflows(self, document):
         # type: (Document) -> Union[Workflow, List[Workflow]]

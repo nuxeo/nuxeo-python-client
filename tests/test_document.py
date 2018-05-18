@@ -82,6 +82,25 @@ def test_document_move(server):
     assert not server.documents.exists(path=doc.path)
 
 
+def test_document_trash(server):
+    doc = Document(
+        name=pytest.ws_python_test_name,
+        type='File',
+        properties={
+            'dc:title': 'bar.txt',
+        })
+    doc = server.documents.create(
+        doc, parent_path=pytest.ws_root_path)
+    try:
+        assert not doc.isTrashed
+        doc.trash()
+        assert doc.isTrashed
+        doc.untrash()
+        assert not doc.isTrashed
+    finally:
+        doc.delete()
+
+
 def test_follow_transition(server):
     doc = Document(
         name=pytest.ws_python_test_name,
