@@ -9,6 +9,12 @@ Release date: ``2018-05-xx``
 -`NXPY-58 <https://jira.nuxeo.com/browse/NXPY-58>`__: Handle operation's parameter of type 'long'
 -`NXPY-63 <https://jira.nuxeo.com/browse/NXPY-63>`__: Add multiblob example
 
+Technical changes
+~~~~~~~~~~~~~~~~~
+
+-  Added ``Batch.attach()``
+-  Added ``Batch.execute()``
+
 
 2.0.0
 -----

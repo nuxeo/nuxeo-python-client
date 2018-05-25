@@ -30,14 +30,10 @@ class Doc(object):
                 blob = BufferBlob(
                     data='foo {}'.format(idx),
                     name='foo-{}.txt'.format(idx))
-                blob = batch.upload(blob)
-                if idx == 0:
-                    self.doc.properties['file:content'] = blob
-                elif idx == 1:
-                    self.doc.properties['files:files'] = [blob]
-                else:
-                    self.doc.properties['files:files'].append(blob)
-            self.doc.save()
+                batch.upload(blob)
+
+            batch.attach(pytest.ws_root_path + '/' +
+                         pytest.ws_python_test_name)
         return self.doc
 
     def __exit__(self, *args):
@@ -68,16 +64,9 @@ def test_document_get_blob(server):
 
     number = 4
     with Doc(server, blobs=number) as doc:
-        for idx in range(1, number):
-            if idx == 0:
-                xpath = 'file:content'
-            else:
-                xpath = 'files:files/{}/file'.format(idx - 1)
-            blob = server.operations.execute(
-                command='Document.GetBlob',  # Alias: Blob.Get
-                input_obj='doc:' + doc.uid,
-                json=False,
-                xpath=xpath)
+        for idx in range(0, number):
+            xpath = 'files:files/{}/file'.format(idx)
+            blob = doc.fetch_blob(xpath)
             assert blob == 'foo {}'.format(idx)
 
 

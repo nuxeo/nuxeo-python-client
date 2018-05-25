@@ -179,7 +179,33 @@ class Batch(Model):
         :param kwargs: the upload settings
         :return: the blob info
         """
-        return self.service.upload(self, blob, **kwargs)
+        blob = self.service.upload(self, blob, **kwargs)
+        self.blobs[self._upload_idx] = blob
+        self._upload_idx += 1
+        return blob
+
+    def execute(self, operation, file_idx=None, params=None):
+        # type: (Text, int, Dict[Text, Any]) -> Any
+        """
+        Execute an operation on this batch.
+
+        :param operation: operation to execute
+        :param file_idx: target file of the operation
+        :param params: parameters of the operation
+        :return: the output of the operation
+        """
+        return self.service.execute(self, operation, file_idx, params)
+
+    def attach(self, doc, file_idx=None):
+        # type: (Text) -> Any
+        """
+        Attach one or all files of this batch to a document.
+
+        :param doc: document to attach
+        :param file_idx: target file
+        :return: the output of the attach operation
+        """
+        return self.service.attach(self, doc, file_idx)
 
 
 class Blob(Model):
