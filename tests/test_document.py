@@ -59,12 +59,12 @@ def test_document_create(server):
     assert not server.documents.exists(doc.uid)
 
 
-def test_document_get_blob(server):
+def test_document_get_blobs(server):
     """ Fetch all blobs of a given document. """
 
     number = 4
     with Doc(server, blobs=number) as doc:
-        for idx in range(0, number):
+        for idx in range(number):
             xpath = 'files:files/{}/file'.format(idx)
             blob = doc.fetch_blob(xpath)
             assert blob == 'foo {}'.format(idx)
