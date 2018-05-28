@@ -22,7 +22,6 @@ def test_document_fetch_by_property_params_validation(server):
     operation = server.operations.new('Document.FetchByProperty')
     operation.params = {'property': 'dc:title'}
 
-    assert not server.operations.ops
     with pytest.raises(BadQuery):
         operation.execute(check_params=True)
     assert server.operations.ops
