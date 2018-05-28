@@ -189,8 +189,8 @@ is available at `www.nuxeo.com <http://www.nuxeo.com/>`__.
 .. |Build Status| image:: https://qa.nuxeo.org/jenkins/buildStatus/icon?job=Client/nuxeo-python-client-master&style=flat
    :target: https://qa.nuxeo.org/jenkins/job/Client/job/nuxeo-python-client-master/
 
-.. |Coverage| image:: https://sonarcloud.io/api/badges/measure?key=org.nuxeo:nuxeo-python-client&metric=coverage
+.. |Coverage| image:: https://sonarcloud.io/api/project_badges/measure?project=org.nuxeo:nuxeo-python-client&metric=coverage
    :target: https://sonarcloud.io/dashboard?id=org.nuxeo%3Anuxeo-python-client
 
-.. |Lines of code| image:: https://sonarcloud.io/api/badges/measure?key=org.nuxeo:nuxeo-python-client&metric=ncloc
+.. |Lines of code| image:: https://sonarcloud.io/api/project_badges/measure?project=org.nuxeo:nuxeo-python-client&metric=ncloc
    :target: https://sonarcloud.io/dashboard?id=org.nuxeo%3Anuxeo-python-client
