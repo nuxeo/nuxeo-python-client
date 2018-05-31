@@ -91,13 +91,16 @@ class NuxeoClient(object):
     def query(
         self,
         query,  # type: Text
-        params=None,  # type: Dict[Text, Text]
+        params=None,  # type: Dict[Text, Any]
     ):
         """
         Query the server with the specified NXQL query.
         Additional qery parameters can be set via the `params` argument:
 
             >>> nuxeo.client.query('SQL query', params={'properties': '*'})
+
+        You can find what parameters to tweak under the `Repository.Query`
+        operation details.
         """
 
         data = {'query': query}

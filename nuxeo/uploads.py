@@ -206,6 +206,39 @@ class API(APIEndpoint):
                     blob.name, data, path, chunked, index, headers)
                 index += 1
 
-        batch._upload_idx += 1
         response.batch_id = batch.uid
         return response
+
+    def execute(self, batch, operation, file_idx=None, params=None):
+        # type: (Batch, Text, Optional[int], Optional[Dict[Text,Any]]) -> Any
+        """
+        Execute an operation with the batch or one of its files as an input.
+
+        :param batch: input for the operation
+        :param operation: operation to execute
+        :param file_idx: if not None, sole input of the operation
+        :param params: parameters for the operation
+        :return: the output of the operation
+        """
+        path = '{}/{}'.format(self.endpoint, batch.uid)
+        if file_idx is not None:
+            path = '{}/{}'.format(path, file_idx)
+
+        path = '{}/execute/{}'.format(path, operation)
+
+        return self.client.request('POST', path, data={'params': params})
+
+    def attach(self, batch, doc, file_idx=None):
+        # type: (Batch, Text, Optional[int]) -> Any
+        """
+        Attach one or all files of a batch to a document.
+
+        :param batch: batch to attach
+        :param doc: document to attach
+        :param file_idx: if not None, only this file will be attached
+        :return: the output of the attach operation
+        """
+        params = {'document': doc}
+        if file_idx is None and batch._upload_idx > 1:
+            params['xpath'] = 'files:files'
+        return self.execute(batch, 'Blob.Attach', file_idx, params)

@@ -3,7 +3,41 @@ from __future__ import unicode_literals
 
 import pytest
 
-from nuxeo.models import Document
+from nuxeo.models import BufferBlob, Document
+
+
+class Doc(object):
+
+    def __init__(self, server, blobs=0):
+        self.server = server
+        self.blobs = blobs
+
+    def __enter__(self):
+        doc = Document(
+            name=pytest.ws_python_test_name,
+            type='File',
+            properties={
+                'dc:title': 'bar.txt',
+            }
+        )
+        self.doc = self.server.documents.create(
+            doc, parent_path=pytest.ws_root_path)
+
+        if self.blobs:
+            # Upload several blobs for one document
+            batch = self.server.uploads.batch()
+            for idx in range(self.blobs):
+                blob = BufferBlob(
+                    data='foo {}'.format(idx),
+                    name='foo-{}.txt'.format(idx))
+                batch.upload(blob)
+
+            batch.attach(pytest.ws_root_path + '/' +
+                         pytest.ws_python_test_name)
+        return self.doc
+
+    def __exit__(self, *args):
+        self.doc.delete()
 
 
 def test_document_create(server):
@@ -23,6 +57,17 @@ def test_document_create(server):
     finally:
         doc.delete()
     assert not server.documents.exists(doc.uid)
+
+
+def test_document_get_blobs(server):
+    """ Fetch all blobs of a given document. """
+
+    number = 4
+    with Doc(server, blobs=number) as doc:
+        for idx in range(number):
+            xpath = 'files:files/{}/file'.format(idx)
+            blob = doc.fetch_blob(xpath)
+            assert blob == 'foo {}'.format(idx)
 
 
 def test_document_list_update(server):
