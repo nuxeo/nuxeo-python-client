@@ -1,21 +1,21 @@
 Changelog
 =========
 
-dev
----
+2.0.1
+-----
 
-Release date: ``2018-xx-xx``
+Release date: ``2018-05-31``
 
--`NXPY-58 <https://jira.nuxeo.com/browse/NXPY-58>`__: Handle operation's parameter of type 'long'
--`NXPY-63 <https://jira.nuxeo.com/browse/NXPY-63>`__: Add mutliblob facilities and tests
+- `NXPY-58 <https://jira.nuxeo.com/browse/NXPY-58>`__: Modify the client to fit in Nuxeo Drive
+-`NXPY-63 <https://jira.nuxeo.com/browse/NXPY-63>`__: Handle multiblob uploads to a single document
 
 Technical changes
 ~~~~~~~~~~~~~~~~~
 
 -  Added ``Batch.attach()``
 -  Added ``Batch.execute()``
+-  Added nuxeo/uploads.py::\ ``attach()``
 -  Added nuxeo/uploads.py::\ ``execute()``
-
 
 2.0.0
 -----

@@ -45,9 +45,12 @@ PARAM_TYPES = {
 
 class API(APIEndpoint):
     """ Endpoint for operations. """
+
+    # Operations cache
+    ops = {}  # type: Dict[Text, Any]
+
     def __init__(self, client, endpoint='site/automation', headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        self.ops = {}  # type: Dict[Text, Any]
         headers = headers or {}
         headers.update({
             'Content-Type': 'application/json+nxrequest',
