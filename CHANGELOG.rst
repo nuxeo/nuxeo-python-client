@@ -1,10 +1,10 @@
 Changelog
 =========
 
-dev
----
+2.0.1
+-----
 
-Release date: ``2018-05-xx``
+Release date: ``2018-05-31``
 
 - `NXPY-58 <https://jira.nuxeo.com/browse/NXPY-58>`__: Modify the client to fit in Nuxeo Drive
 
