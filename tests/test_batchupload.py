@@ -98,6 +98,23 @@ def test_empty_file(chunked, server):
     batch.upload(BufferBlob(data='', name='Test.txt'), chunked=chunked)
 
 
+def test_execute(server):
+    server.client.set(schemas=['dublincore', 'file'])
+    doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
+    try:
+        batch = get_batch(server)
+        assert not doc.properties['file:content']
+        batch.execute('Blob.AttachOnDocument', file_idx=0,
+                      params={'document': pytest.ws_root_path + '/Document'})
+        doc = server.documents.get(path=pytest.ws_root_path + '/Document')
+        assert doc.properties['file:content']
+        blob = doc.fetch_blob()
+        assert isinstance(blob, bytes)
+        assert blob == b'data'
+    finally:
+        doc.delete()
+
+
 def test_fetch(server):
     batch = get_batch(server)
     blob = batch.get(0)
