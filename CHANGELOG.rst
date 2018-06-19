@@ -1,6 +1,15 @@
 Changelog
 =========
 
+dev
+---
+
+Technical changes
+-----------------
+
+- Removed compat.py::\ `get_error_message()`
+
+
 2.0.1
 -----
 

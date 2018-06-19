@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from nuxeo.compat import get_bytes, get_error_message, text
+from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 
@@ -61,7 +61,7 @@ def test_bogus_converter(server):
     with Doc(server, with_blob=True) as doc:
         with pytest.raises(BadQuery) as e:
             doc.convert({'converter': 'converterthatdoesntexist'})
-        msg = get_error_message(e.value)
+        msg = e.value.args[0]
         assert msg == 'Converter converterthatdoesntexist is not registered'
 
 
