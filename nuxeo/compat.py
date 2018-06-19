@@ -39,17 +39,6 @@ def get_bytes(data):
     return data
 
 
-def get_error_message(exc):
-    # type: (HTTPError) -> Text
-    """
-    Get error message from an HTTPError.
-
-    :param exc: the HTTPError
-    :return: The text of the message
-    """
-    return get_text(getattr(exc, 'message', exc.args[0]))
-
-
 def get_text(data):
     # type: (Union[Text, bytes]) -> Text
     """
