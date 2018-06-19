@@ -295,7 +295,6 @@ class NuxeoClient(object):
                            else HTTPError)
 
             error = error_class.parse(error_data)
-        logger.error(error)
         return error
 
 

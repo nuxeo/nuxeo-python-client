@@ -61,7 +61,7 @@ class HTTPError(NuxeoError):
 
     def __repr__(self):
         # type: () -> Text
-        return '%s(%r), error: %s, server trace: %r' % (
+        return '%s(%d), error: %s, server trace: %s' % (
             type(self).__name__, self.status, self.message, self.stacktrace)
 
     def __str__(self):
