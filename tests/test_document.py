@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.compat import get_bytes
 from nuxeo.models import BufferBlob, Document
 
 
@@ -67,7 +68,7 @@ def test_document_get_blobs(server):
         for idx in range(number):
             xpath = 'files:files/{}/file'.format(idx)
             blob = doc.fetch_blob(xpath)
-            assert blob == 'foo {}'.format(idx)
+            assert blob == get_bytes('foo {}'.format(idx))
 
 
 def test_document_list_update(server):
