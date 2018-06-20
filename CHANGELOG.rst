@@ -4,6 +4,10 @@ Changelog
 dev
 ---
 
+Release date: ``2018-06-xx``
+
+- `NXPY-65 <https://jira.nuxeo.com/browse/NXPY-65>`__: Fix bytes <> str warnings
+
 Technical changes
 -----------------
 

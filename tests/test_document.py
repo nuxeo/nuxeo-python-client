@@ -60,6 +60,22 @@ def test_document_create(server):
     assert not server.documents.exists(doc.uid)
 
 
+def test_document_create_bytes_warning(server):
+    """ Running "python3 -bb -m pytest -W error test..." will fail:
+        BytesWarning: str() on a bytes instance
+    """
+    name = 'File.txt'
+    properties={'dc:title': name, 'note:note': b'some content'}
+    document = None
+    try:
+        document = server.operations.execute(
+            command='Document.Create', input_obj='doc:' + pytest.ws_root_path,
+            type='Note', name=name, properties=properties)
+    finally:
+        if document:
+            server.documents.delete(document['uid'])
+
+
 def test_document_get_blobs(server):
     """ Fetch all blobs of a given document. """
 

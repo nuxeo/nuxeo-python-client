@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from collections import Sequence
 
 from . import constants
-from .compat import long, text
+from .compat import get_text, long, text
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery, CorruptedFile
 from .models import Blob, Operation
@@ -240,8 +240,9 @@ class API(APIEndpoint):
                 continue
 
             # v can only be a dict
-            data['params'][k] = '\n'.join(['{}={}'.format(name, value)
-                                           for name, value in v.items()])
+            contents = ['{}={}'.format(name, get_text(value))
+                        for name, value in v.items()]
+            data['params'][k] = '\n'.join(contents)
 
         return data
 
