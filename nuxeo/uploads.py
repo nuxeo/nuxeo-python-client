@@ -1,10 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from nuxeo.exceptions import UploadError
-from .compat import quote, text, get_bytes
+from .compat import get_bytes, quote, text
 from .constants import CHUNK_LIMIT, MAX_RETRY, UPLOAD_CHUNK_SIZE
 from .endpoint import APIEndpoint
+from .exceptions import UploadError
 from .models import Batch, Blob
 from .utils import SwapAttr
 
