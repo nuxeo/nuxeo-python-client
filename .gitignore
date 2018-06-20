@@ -29,4 +29,5 @@ htmlcov
 lextab.py
 target
 venv
+.vscode
 yacctab.py
