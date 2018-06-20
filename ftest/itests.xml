@@ -19,6 +19,8 @@
       <echo level="info">PATH detected by Ant = ${env.PATH}</echo>
       <echo level="info">SERVER_URL environment variable = ${env.SERVER_URL}</echo>
       <exec executable="python" failonerror="true">
+        <arg value="-bb" />
+        <arg value="-Wall" />
         <arg value="-m" />
         <arg value="pytest" />
         <arg value="--cov-report=xml" />
