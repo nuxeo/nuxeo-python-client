@@ -157,6 +157,16 @@ Tests can be launched without a server with Maven and pytest:
 
     $ mvn -f ftest/pom.xml clean verify
 
+Deploying
+~~~~~~~~~
+
+For the maintainer, the command to distribute the module is:
+
+::
+
+    $ python3 -m pip install wheel
+    $ python3 setup.py sdist bdist_wheel upload
+
 Reporting Issues
 ~~~~~~~~~~~~~~~~
 
