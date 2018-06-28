@@ -7,6 +7,7 @@ dev
 Release date: ``2018-06-xx``
 
 - `NXPY-65 <https://jira.nuxeo.com/browse/NXPY-65>`__: Fix bytes <> str warnings
+- `NXPY-67 <https://jira.nuxeo.com/browse/NXPY-67>`__: Fix Python 3.7 DeprecationWarning with ABCs
 
 Technical changes
 -----------------

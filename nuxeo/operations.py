@@ -1,7 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from collections import Sequence
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
 
 from . import constants
 from .compat import get_text, long, text
