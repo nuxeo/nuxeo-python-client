@@ -1,10 +1,10 @@
 Changelog
 =========
 
-dev
----
+2.0.2
+-----
 
-Release date: ``2018-06-xx``
+Release date: ``2018-06-28``
 
 - `NXPY-64 <https://jira.nuxeo.com/browse/NXPY-64>`__: Distribute a wheel on PyPi
 - `NXPY-65 <https://jira.nuxeo.com/browse/NXPY-65>`__: Fix bytes <> str warnings
