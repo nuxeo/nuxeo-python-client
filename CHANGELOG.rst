@@ -1,6 +1,19 @@
 Changelog
 =========
 
+2.0.3
+-----
+
+Release date: ``2018-??-??``
+
+- `NXPY-69 <https://jira.nuxeo.com/browse/NXPY-69>`__: Split the get_digester() function in two
+
+Technical changes
+-----------------
+
+- Added utils.py::\ `get_digest_algorithm()`
+- Added utils.py::\ `get_digest_hash()`
+
 2.0.2
 -----
 
