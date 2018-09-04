@@ -11,7 +11,7 @@ try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
         from _hashlib import HASH
-        from typing import Any, Dict, Text, Type, Union
+        from typing import Any, Dict, Optional, Text, Type, Union
 except ImportError:
     pass
 
@@ -31,19 +31,10 @@ WIN32_PATCHED_MIME_TYPES = {
 }
 
 
-def get_digester(digest):
-    # type: (Text) -> Union[HASH, None]
-    """
-    Get the digester corresponding to the given hash.
+def get_digest_algorithm(digest):
+    # type: (Text) -> Optional[Text]
 
-    To choose the digester used by the server, see
-    https://doc.nuxeo.com/nxdoc/file-storage-configuration/#configuring-the-default-blobprovider
-
-    :param digest: the hash
-    :return: the digester function
-    """
-
-    # Available alogrithms
+    # Available algorithms
     digesters = {
         32: 'md5',
         40: 'sha1',
@@ -59,13 +50,37 @@ def get_digester(digest):
     except (TypeError, ValueError):
         return None
 
+    return digesters.get(len(digest), None)
+
+
+def get_digest_hash(algorithm):
+    # type: (Text) -> Optional[HASH]
+
     # Retrieve the hashlib function for the given digest, None if not found
-    func = getattr(hashlib, digesters.get(len(digest), ''), None)
+    func = getattr(hashlib, algorithm, None)
+
+    return func() if func else None
+
+
+def get_digester(digest):
+    # type: (Text) -> Optional[HASH]
+    """
+    Get the digester corresponding to the given hash.
+
+    To choose the digester used by the server, see
+    https://doc.nuxeo.com/nxdoc/file-storage-configuration/#configuring-the-default-blobprovider
+
+    :param digest: the hash
+    :return: the digester function
+    """
+
+    algo = get_digest_algorithm(digest)
+    func = get_digest_hash(algo) if algo else None
+
     if not func:
         logger.error('No valid hash algorithm found for digest %r', digest)
-        return None
 
-    return func()
+    return func
 
 
 def guess_mimetype(filename):
