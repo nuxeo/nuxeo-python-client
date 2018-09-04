@@ -4,7 +4,7 @@ Changelog
 2.0.3
 -----
 
-Release date: ``2018-??-??``
+Release date: ``2018-09-04``
 
 - `NXPY-69 <https://jira.nuxeo.com/browse/NXPY-69>`__: Split the get_digester() function in two
 

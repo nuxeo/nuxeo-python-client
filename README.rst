@@ -13,9 +13,9 @@ Getting Started
 
 The installation is as simple as:
 
-::
+.. code:: shell
 
-    $ pip install --upgrade nuxeo
+    python -m pip install --upgrade nuxeo
 
 Then, use the following ``import`` statement to have access to the Nuxeo
 API:
@@ -135,11 +135,11 @@ See our `contribution documentation <https://doc.nuxeo.com/x/VIZH>`__.
 Setup
 ~~~~~
 
-::
+.. code:: shell
 
-    $ git clone https://github.com/nuxeo/nuxeo-python-client
-    $ cd nuxeo-python-client
-    $ python setup.py develop
+    git clone https://github.com/nuxeo/nuxeo-python-client
+    cd nuxeo-python-client
+    python setup.py develop
 
 Test
 ~~~~
@@ -147,25 +147,25 @@ Test
 A Nuxeo Platform instance needs to be running on
 ``http://localhost:8080/nuxeo`` for the tests to be run, and then:
 
-::
+.. code:: shell
 
-    $ python setup.py test
+    python setup.py test
 
 Tests can be launched without a server with Maven and pytest:
 
-::
+.. code:: shell
 
-    $ mvn -f ftest/pom.xml clean verify
+    mvn -f ftest/pom.xml clean verify
 
 Deploying
 ~~~~~~~~~
 
 For the maintainer, the command to distribute the module is:
 
-::
+.. code:: shell
 
-    $ python3 -m pip install wheel
-    $ python3 setup.py sdist bdist_wheel upload
+    python3 -m pip install wheel
+    python3 setup.py sdist bdist_wheel upload
 
 Reporting Issues
 ~~~~~~~~~~~~~~~~
