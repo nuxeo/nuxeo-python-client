@@ -18,20 +18,7 @@
       <property name="env.SERVER_URL" value="" />
       <echo level="info">PATH detected by Ant = ${env.PATH}</echo>
       <echo level="info">SERVER_URL environment variable = ${env.SERVER_URL}</echo>
-      <exec executable="python" failonerror="true">
-        <arg value="-bb" />
-        <arg value="-Wall" />
-        <arg value="-m" />
-        <arg value="pytest" />
-        <arg value="--cov-report=xml" />
-        <arg value="--cov-config=../.coveragerc" />
-        <arg value="--cov=nuxeo" />
-        <arg value="--showlocals" />
-        <arg value="--exitfirst" />
-        <arg value="--no-print-logs" />
-        <arg value="--log-level=CRITICAL" />
-        <arg value="../tests" />
-      </exec>
+      <exec executable="tox" failonerror="true"/>
       <echo level="info">################### Ended Nuxeo Python Client functional tests ###################</echo>
     </target>
 </project>
