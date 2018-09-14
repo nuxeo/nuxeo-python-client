@@ -149,9 +149,10 @@ A Nuxeo Platform instance needs to be running on
 
 .. code:: shell
 
-    python setup.py test
+    python -m pip install --user tox
+    tox
 
-Tests can be launched without a server with Maven and pytest:
+Tests can be launched without a server with Maven and tox:
 
 .. code:: shell
 

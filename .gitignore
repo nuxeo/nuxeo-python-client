@@ -9,6 +9,7 @@
 .cache/
 .classpath
 .coverage
+coverage*
 .eggs
 .idea
 .project
@@ -16,6 +17,7 @@
 .pytest_cache
 .ropeproject
 .settings
+.tox
 ENV
 MANIFEST
 bin
