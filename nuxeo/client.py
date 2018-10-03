@@ -59,7 +59,7 @@ class NuxeoClient(object):
             'X-Application-Name': app_name,
             'X-Client-Version': version,
             'User-Agent': app_name + '/' + version,
-            'Accept': 'application/json+nxentity, */*'
+            'Accept': 'application/json, */*'
         }
         self.schemas = kwargs.get('schemas', '*')
         self.repository = kwargs.pop('repository', 'default')
