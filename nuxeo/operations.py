@@ -56,7 +56,7 @@ class API(APIEndpoint):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         headers = headers or {}
         headers.update({
-            'Content-Type': 'application/json+nxrequest',
+            'Content-Type': 'application/json',
             'X-NXproperties': '*'
         })
         super(API, self).__init__(
