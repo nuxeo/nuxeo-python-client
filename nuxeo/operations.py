@@ -238,6 +238,10 @@ class API(APIEndpoint):
             if v is None:
                 continue
 
+            if k == 'context' and v is not None:
+                data['context'] = v
+                continue
+
             if k != 'properties':
                 data['params'][k] = v
                 continue
