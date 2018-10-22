@@ -231,6 +231,8 @@ class API(APIEndpoint):
         return command, input_obj, params, context
 
     def build_payload(self, params, context):
+        # type: (Dict[Text, Any], Dict[Text, Any]) -> Dict[Text, Any]
+        """ Create sanitized operation payload. """
         data = {'params': self.sanitize(params)}  # type: Dict[Text, Any]
         clean_context = self.sanitize(context)  # type: Dict[Text, Any]
         if clean_context:
