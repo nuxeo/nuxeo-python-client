@@ -1,18 +1,28 @@
 Changelog
 =========
 
+2.0.4
+-----
+
+Release date: ``2018-10-24``
+
+- `NXPY-71 <https://jira.nuxeo.com/browse/NXPY-71>`__: Use tox to test the client on Python 2 and 3
+- `NXPY-72 <https://jira.nuxeo.com/browse/NXPY-72>`__: Rely only on ``application/json`` content type
+- `NXPY-74 <https://jira.nuxeo.com/browse/NXPY-74>`__: Add ``context`` as a property of Operation class
+
+
 2.0.3
 -----
 
 Release date: ``2018-09-04``
 
-- `NXPY-69 <https://jira.nuxeo.com/browse/NXPY-69>`__: Split the get_digester() function in two
+- `NXPY-69 <https://jira.nuxeo.com/browse/NXPY-69>`__: Split the ``get_digester()`` function in two
 
 Technical changes
 -----------------
 
-- Added utils.py::\ `get_digest_algorithm()`
-- Added utils.py::\ `get_digest_hash()`
+- Added utils.py::\ ``get_digest_algorithm()``
+- Added utils.py::\ ``get_digest_hash()``
 
 2.0.2
 -----
@@ -26,7 +36,7 @@ Release date: ``2018-06-28``
 Technical changes
 -----------------
 
-- Removed compat.py::\ `get_error_message()`
+- Removed compat.py::\ ``get_error_message()``
 
 2.0.1
 -----
