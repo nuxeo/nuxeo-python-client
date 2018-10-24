@@ -641,6 +641,7 @@ class Operation(Model):
         'command': None,
         'input_obj': None,
         'params': {},
+        'context': None,
         'progress': 0,
     }
     service = None  # type: OperationsAPI

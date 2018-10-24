@@ -170,7 +170,7 @@ class API(APIEndpoint):
         check_suspended = kwargs.pop('check_suspended', None)
         enrichers = kwargs.pop('enrichers', None)
 
-        command, input_obj, params = self.get_attributes(operation, **kwargs)
+        command, input_obj, params, context = self.get_attributes(operation, **kwargs)
 
         if kwargs.pop('check_params', constants.CHECK_PARAMS):
             self.check_params(command, params)
@@ -187,7 +187,7 @@ class API(APIEndpoint):
         if void_op:
             headers['X-NXVoidOperation'] = 'true'
 
-        data = self.get_params(params)
+        data = self.build_payload(params, context)
 
         if input_obj:
             if isinstance(input_obj, list):
@@ -221,33 +221,48 @@ class API(APIEndpoint):
         if operation:
             command = operation.command
             input_obj = operation.input_obj
+            context = operation.context
             params = operation.params
         else:
             command = kwargs.pop('command', None)
             input_obj = kwargs.pop('input_obj', None)
+            context = kwargs.pop('context', None)
             params = kwargs.pop('params', kwargs)
-        return command, input_obj, params
+        return command, input_obj, params, context
+
+    def build_payload(self, params, context):
+        # type: (Dict[Text, Any], Dict[Text, Any]) -> Dict[Text, Any]
+        """ Create sanitized operation payload. """
+        data = {'params': self.sanitize(params)}  # type: Dict[Text, Any]
+        clean_context = self.sanitize(context)  # type: Dict[Text, Any]
+        if clean_context:
+            data['context'] = clean_context
+
+        return data
 
     @staticmethod
-    def get_params(params):
+    def sanitize(obj):
         # type: (Dict[Text, Any]) -> Dict[Text, Any]
-        """ Get the operation parameters. """
-        data = {'params': {}}  # type: Dict[Text, Any]
+        """ Sanitize the operation parameters. """
+        if not obj:
+            return {}
 
-        for k, v in params.items():
+        clean_obj = {}  # type: Dict[Text, Any]
+
+        for k, v in obj.items():
             if v is None:
                 continue
 
             if k != 'properties':
-                data['params'][k] = v
+                clean_obj[k] = v
                 continue
 
             # v can only be a dict
             contents = ['{}={}'.format(name, get_text(value))
                         for name, value in v.items()]
-            data['params'][k] = '\n'.join(contents)
+            clean_obj[k] = '\n'.join(contents)
 
-        return data
+        return clean_obj
 
     def new(self, command, **kwargs):
         # type: (Text, Any) -> Operation

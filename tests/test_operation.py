@@ -58,3 +58,11 @@ def test_params_setter(server):
     assert params['param1'] == 'bar'
     assert params['param2'] == 'bar'
     assert params['param3'] == 'plop'
+
+
+def test_context_setter(server):
+    operation = server.operations.new('Noop')
+    operation.context = {'currentDocument': 'foo'}
+    with pytest.raises(HTTPError):
+        operation.execute()
+    assert operation.context['currentDocument'] == 'foo'
