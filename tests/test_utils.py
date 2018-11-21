@@ -28,7 +28,97 @@ def test_get_digester(hash, digester):
         assert get_digester(hash).name == digester
 
 
-def test_guess_mimetype():
+@pytest.mark.parametrize(
+    "name, mime",
+    [
+        # Text
+        ("foo.txt", "text/plain"),
+        ("foo.html", "text/html"),
+        ("foo.css", "text/css"),
+        ("foo.csv", "text/csv"),
+        ("foo.js", "application/javascript"),
+        # Image
+        ("foo.jpg", "image/jpeg"),
+        ("foo.jpeg", "image/jpeg"),
+        ("foo.png", "image/png"),
+        ("foo.gif", "image/gif"),
+        ("foo.bmp", ("image/x-ms-bmp", "image/bmp")),
+        ("foo.tiff", "image/tiff"),
+        ("foo.ico", ("image/x-icon", "image/vnd.microsoft.icon")),
+        # Audio
+        ("foo.mp3", "audio/mpeg"),
+        ("foo.vma", ("audio/x-ms-wma", "application/octet-stream")),
+        ("foo.wav", ("audio/x-wav", "audio/wav")),
+        # Video
+        ("foo.mpeg", "video/mpeg"),
+        ("foo.mp4", "video/mp4"),
+        ("foo.mov", "video/quicktime"),
+        ("foo.wmv", ("video/x-ms-wmv", "application/octet-stream")),
+        ("foo.avi", ("video/x-msvideo", "video/avi")),
+        # Office
+        ("foo.doc", "application/msword"),
+        ("foo.xls", "application/vnd.ms-excel"),
+        ("foo.ppt", "application/vnd.ms-powerpoint"),
+        # PDF
+        ("foo.pdf", "application/pdf"),
+        # Unknown
+        ("foo.unknown", "application/octet-stream"),
+        ("foo.rvt", "application/octet-stream"),
+        # Cases badly handled by Windows
+        # See /NXP-11660 http://bugs.python.org/issue15207
+        ("foo.xml", ("text/xml", "application/xml")),
+        ("foo.svg", ("image/svg+xml", "application/octet-stream", "image/svg+xml")),
+        ("foo.flv", ("application/octet-stream", "video/x-flv")),
+        (
+            "foo.docx",
+            (
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/octet-stream",
+            ),
+        ),
+        (
+            "foo.xlsx",
+            (
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/octet-stream",
+            ),
+        ),
+        (
+            "foo.pptx",
+            (
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "application/x-mspowerpoint.12",
+                "application/octet-stream",
+            ),
+        ),
+        (
+            "foo.odt",
+            ("application/vnd.oasis.opendocument.text", "application/octet-stream"),
+        ),
+        (
+            "foo.ods",
+            (
+                "application/vnd.oasis.opendocument.spreadsheet",
+                "application/octet-stream",
+            ),
+        ),
+        (
+            "foo.odp",
+            (
+                "application/vnd.oasis.opendocument.presentation",
+                "application/octet-stream",
+            ),
+        ),
+    ],
+)
+def test_guess_mimetype(name, mime):
+    if isinstance(mime, tuple):
+        assert guess_mimetype(name) in mime
+    else:
+        assert guess_mimetype(name) == mime
+
+
+def test_guess_mimetype_patch():
     """ Test WIN32_PATCHED_MIME_TYPES. """
 
     with SwapAttr(sys, 'platform', 'win32'):
