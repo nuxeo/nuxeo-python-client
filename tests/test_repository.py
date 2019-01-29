@@ -69,7 +69,7 @@ def test_convert(server):
     with Doc(server, with_blob=True) as doc:
         try:
             res = doc.convert({'format': 'html'})
-            assert b'<html>' in res
+            assert b'<html' in res
             assert b'foo' in res
         except UnavailableConvertor:
             pass
@@ -79,7 +79,7 @@ def test_convert_given_converter(server):
     with Doc(server, with_blob=True) as doc:
         try:
             res = doc.convert({'converter': 'office2html'})
-            assert b'<html>' in res
+            assert b'<html' in res
             assert b'foo' in res
         except UnavailableConvertor:
             pass
