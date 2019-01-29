@@ -8,8 +8,8 @@ from .models import Directory, DirectoryEntry
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, Text, Optional, Union
-        from .client import NuxeoClient
+        from typing import Any, Dict, Text, Optional, Union  # noqa
+        from .client import NuxeoClient  # noqa
 except ImportError:
     pass
 

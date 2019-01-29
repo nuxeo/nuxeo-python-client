@@ -4,16 +4,16 @@ from __future__ import unicode_literals
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Text, Type, Union
-        from requests import HTTPError
+        from typing import Text, Type, Union  # noqa
+        from requests import HTTPError  # noqa
 except ImportError:
     pass
 
 try:
     from urllib.parse import quote, urlencode
 except ImportError:
-    from urllib2 import quote
-    from urllib import urlencode
+    from urllib2 import quote  # noqa
+    from urllib import urlencode  # noqa
 
 try:
     long = long

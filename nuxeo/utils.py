@@ -10,8 +10,8 @@ import hashlib
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from _hashlib import HASH
-        from typing import Any, Dict, Optional, Text, Type, Union
+        from _hashlib import HASH  # noqa
+        from typing import Any, Dict, Optional, Text, Type, Union  # noqa
 except ImportError:
     pass
 

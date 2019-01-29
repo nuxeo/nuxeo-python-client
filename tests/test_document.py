@@ -33,8 +33,8 @@ class Doc(object):
                     name='foo-{}.txt'.format(idx))
                 batch.upload(blob)
 
-            batch.attach(pytest.ws_root_path + '/' +
-                         pytest.ws_python_test_name)
+            path = pytest.ws_root_path + '/' + pytest.ws_python_test_name
+            batch.attach(path)
         return self.doc
 
     def __exit__(self, *args):
@@ -65,7 +65,7 @@ def test_document_create_bytes_warning(server):
         BytesWarning: str() on a bytes instance
     """
     name = 'File.txt'
-    properties={'dc:title': name, 'note:note': b'some content'}
+    properties = {'dc:title': name, 'note:note': b'some content'}
     document = None
     try:
         document = server.operations.execute(

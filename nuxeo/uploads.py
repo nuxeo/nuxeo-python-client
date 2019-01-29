@@ -11,9 +11,9 @@ from .utils import SwapAttr
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Tuple, Union
-        from .client import NuxeoClient
-        OptInt = Optional[int]
+        from typing import Any, Dict, List, Optional, Text, Tuple, Union  # noqa
+        from .client import NuxeoClient  # noqa
+        OptInt = Optional[int]  # noqa
 except ImportError:
     pass
 
@@ -152,8 +152,8 @@ class API(APIEndpoint):
             index = int(info.uploadedChunkIds[-1]) + 1
         else:  # It's a new upload
             chunk_size = UPLOAD_CHUNK_SIZE
-            chunk_count = (blob.size // chunk_size +
-                           (blob.size % chunk_size > 0))
+            chunk_count = (blob.size // chunk_size
+                           + (blob.size % chunk_size > 0))
             index = 0
 
         return chunk_size, chunk_count, index, info

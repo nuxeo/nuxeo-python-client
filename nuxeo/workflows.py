@@ -8,10 +8,10 @@ from .utils import SwapAttr
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Union
-        from .client import NuxeoClient
-        from .models import Document
-        from .tasks import API as TasksAPI
+        from typing import Any, Dict, List, Optional, Text, Union  # noqa
+        from .client import NuxeoClient  # noqa
+        from .models import Document  # noqa
+        from .tasks import API as TasksAPI  # noqa
 except ImportError:
     pass
 

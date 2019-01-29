@@ -89,7 +89,7 @@ def find_duplicates_in_folder(folder):
 
 
 def find_duplicates_of_uid(uid):
-    if not re.match('^[a-fA-F\d]{8}-[a-fA-F\d]{4}-[a-fA-F\d]{4}-[a-fA-F\d]{4}-[a-fA-F\d]{12}$', uid):
+    if not re.match(r'^[a-fA-F\d]{8}-[a-fA-F\d]{4}-[a-fA-F\d]{4}-[a-fA-F\d]{4}-[a-fA-F\d]{12}$', uid):
         color_print('Not a valid uid.', BColors.FAIL)
     else:
         try:
