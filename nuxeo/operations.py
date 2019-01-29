@@ -16,9 +16,9 @@ from .utils import get_digester
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from requests import Response
-        from typing import Any, Dict, Optional, Text, Tuple, Type
-        from .client import NuxeoClient
+        from requests import Response  # noqa
+        from typing import Any, Dict, Optional, Text, Tuple, Type  # noqa
+        from .client import NuxeoClient  # noqa
 except ImportError:
     pass
 

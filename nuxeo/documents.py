@@ -10,10 +10,10 @@ from .workflows import API as WorkflowsAPI
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Union
-        from .client import NuxeoClient
-        from .models import Blob, Workflow
-        from .operations import API as OperationsAPI
+        from typing import Any, Dict, List, Optional, Text, Union  # noqa
+        from .client import NuxeoClient  # noqa
+        from .models import Blob, Workflow  # noqa
+        from .operations import API as OperationsAPI  # noqa
 except ImportError:
     pass
 

@@ -6,7 +6,7 @@ from .compat import text
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, Optional, Text
+        from typing import Any, Dict, Optional, Text  # noqa
 except ImportError:
     pass
 

@@ -8,8 +8,8 @@ from .compat import get_bytes
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Text
-        from requests import Request
+        from typing import Text  # noqa
+        from requests import Request  # noqa
 except ImportError:
     pass
 
