@@ -109,7 +109,7 @@ def test_convert_xpath(server):
     with Doc(server, with_blob=True) as doc:
         try:
             res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
-            assert b'<html>' in res
+            assert b'<html' in res
             assert b'foo' in res
         except UnavailableConvertor:
             pass
