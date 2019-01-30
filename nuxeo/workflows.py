@@ -10,7 +10,7 @@ try:
     if TYPE_CHECKING:
         from typing import Any, Dict, List, Optional, Text, Union  # noqa
         from .client import NuxeoClient  # noqa
-        from .models import Document  # noqa
+        from .models import Document, Task  # noqa
         from .tasks import API as TasksAPI  # noqa
 except ImportError:
     pass
