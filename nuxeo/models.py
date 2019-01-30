@@ -197,7 +197,7 @@ class Batch(Model):
         return self.service.execute(self, operation, file_idx, params)
 
     def attach(self, doc, file_idx=None):
-        # type: (Text) -> Any
+        # type: (Text, Optional[int]) -> Any
         """
         Attach one or all files of this batch to a document.
 
@@ -630,8 +630,8 @@ class Group(Model):
         return self.groupname
 
     def delete(self):
-        """ Delete the group. """
         # type: () -> None
+        """ Delete the group. """
         self.service.delete(self.uid)
 
 
