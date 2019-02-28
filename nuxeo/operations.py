@@ -35,6 +35,7 @@ PARAM_TYPES = {
     'int': ((int,), 0),
     'integer': ((int,), 0),
     'long': ((int, long), 0),
+    'list': ((list,), None),
     'map': ((dict,), None),
     'object': ((object,), None),
     'properties': ((dict,), None),

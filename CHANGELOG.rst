@@ -10,6 +10,7 @@ Release date: ``2019-xx-xx``
 - `NXPY-81 <https://jira.nuxeo.com/browse/NXPY-81>`__: Fix flake8 errors and add flake8 to the CI
 - `NXPY-82 <https://jira.nuxeo.com/browse/NXPY-82>`__: Fix ``test_convert_xpath()``
 - `NXPY-83 <https://jira.nuxeo.com/browse/NXPY-83>`__: Fix ``test_convert()`` and ``test_convert_given_converter()``
+- `NXPY-84 <https://jira.nuxeo.com/browse/NXPY-84>`__: Handle ``list`` type in operation parameters
 
 2.0.4
 -----

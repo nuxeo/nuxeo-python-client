@@ -3,8 +3,10 @@ from __future__ import unicode_literals
 
 import pytest
 
+import nuxeo.constants
 from nuxeo.compat import get_bytes
 from nuxeo.models import BufferBlob, Document
+from nuxeo.utils import SwapAttr
 
 
 class Doc(object):
@@ -180,3 +182,10 @@ def test_follow_transition(server):
         assert doc.state == 'project'
     finally:
         doc.delete()
+
+
+def test_add_permission(server):
+    users = ["Administrator"]
+    with SwapAttr(nuxeo.constants, 'CHECK_PARAMS', True), Doc(server) as doc:
+        # NXPY-84: here we should not fail with KeyError: 'list' in check_params()
+        doc.add_permission({"permission": "ReadWrite", "users": users})
