@@ -170,6 +170,17 @@ class Batch(Model):
         self.blobs[file_idx] = blob
         return blob
 
+    def get_uploader(self, blob, **kwargs):
+        # type: (Blob, Any) -> Blob
+        """
+        Get an uploader for blob.
+
+        :param blob: the blob to upload
+        :param kwargs: the upload settings
+        :return: the uploader
+        """
+        return self.service.get_uploader(self, blob, **kwargs)
+
     def upload(self, blob, **kwargs):
         # type: (Blob, Any) -> Blob
         """
@@ -179,10 +190,7 @@ class Batch(Model):
         :param kwargs: the upload settings
         :return: the blob info
         """
-        blob = self.service.upload(self, blob, **kwargs)
-        self.blobs[self._upload_idx] = blob
-        self._upload_idx += 1
-        return blob
+        return self.service.upload(self, blob, **kwargs)
 
     def execute(self, operation, file_idx=None, params=None):
         # type: (Text, int, Dict[Text, Any]) -> Any
