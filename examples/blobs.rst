@@ -43,3 +43,57 @@ command with the same batch and blob.
     operation.execute()
 
 
+**Advanced upload**
+
+If you are uploading a really big file, you might want to have more control over the upload.
+For this purpose, you can use an ``Uploader`` object.
+
+There are two ways to execute code in between the chunk uploads.
+First, a callback can be passed to the uploader.
+It is nice for small additions, maybe updating a variable or logging something, but cannot control the flow of the upload.
+
+.. code:: python
+
+    import logging
+    from nuxeo.models import Document, FileBlob
+    from nuxeo.exceptions import UploadError
+
+    def log_progress(uploader):
+        logging.info(f"Uploading part nº{uploader.index}")
+
+    # Create a batch
+    batch = nuxeo.uploads.batch()
+
+    # Create and upload a blob
+    blob = FileBlob('/path/to/file')
+
+    uploader = batch.get_uploader(blob, chunked=True, callback=log_progress)
+    try:
+        uploader.upload()
+    except UploadError:
+        # Handle error
+
+Otherwise, you can upload using a generator:
+
+.. code:: python
+
+    from nuxeo.models import Document, FileBlob
+    from nuxeo.exceptions import UploadError
+
+    # Create a batch
+    batch = nuxeo.uploads.batch()
+
+    # Create and upload a blob
+    blob = FileBlob('/path/to/file')
+
+    uploader = batch.get_uploader(blob, chunked=True)
+    try:
+        for _ in uploader.iter_upload():
+            logging.info(f"Uploading part nº{uploader.index}")
+    except UploadError:
+        index = uploader.index
+        chunk_count = uploader.chunk_count
+        logging.info(f"Uploaded {index} chunks of {chunk_count} for file {uploader.blob.name}")
+
+        # You can start from where it stopped by
+        # calling uploader.upload(generate=True) again

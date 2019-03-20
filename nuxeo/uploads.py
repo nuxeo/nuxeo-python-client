@@ -11,7 +11,7 @@ from .utils import SwapAttr
 try:
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Tuple, Union  # noqa
+        from typing import Any, Dict, Callable, List, Generator, Optional, Text, Tuple, Union  # noqa
         from .client import NuxeoClient  # noqa
         OptInt = Optional[int]  # noqa
 except ImportError:
@@ -158,8 +158,8 @@ class API(APIEndpoint):
 
         return chunk_size, chunk_count, index, info
 
-    def upload(self, batch, blob, chunked=False, limit=CHUNK_LIMIT):
-        # type: (Batch, Blob, bool, int) -> Blob
+    def upload(self, batch, blob, chunked=False, limit=CHUNK_LIMIT, callback=None):
+        # type: (Batch, Blob, bool, int, Callable) -> Blob
         """
         Upload a blob.
 
@@ -172,42 +172,9 @@ class API(APIEndpoint):
         :param limit: if blob is bigger, send in chunks
         :return: uploaded blob details
         """
-        chunked = (chunked or blob.size > limit) and blob.size > 0
-        response = None
-
-        headers = self.headers
-        headers.update({
-            'Cache-Control': 'no-cache',
-            'X-File-Name': quote(get_bytes(blob.name)),
-            'X-File-Size': text(blob.size),
-            'X-File-Type': blob.mimetype,
-            'Content-Length': text(blob.size),
-        })
-
-        path = '{}/{}'.format(batch.batchId, batch._upload_idx)
-
-        if chunked:
-            chunk_size, chunk_count, index, info = self.state(path, blob)
-
-            headers.update({
-                'X-Upload-Type': 'chunked',
-                'X-Upload-Chunk-Count': text(chunk_count),
-                'Content-Length': text(chunk_size)
-            })
-        else:
-            chunk_size, chunk_count, index = blob.size or None, 1, 0
-
-        with blob as source:
-            if index:
-                source.seek(index * chunk_size)
-            while index < chunk_count:
-                data = source.read(chunk_size) if chunk_size else source.read()
-                response = self.send_data(
-                    blob.name, data, path, chunked, index, headers)
-                index += 1
-
-        response.batch_id = batch.uid
-        return response
+        uploader = self.get_uploader(batch, blob, chunked, limit, callback)
+        uploader.upload()
+        return uploader.response
 
     def execute(self, batch, operation, file_idx=None, params=None):
         # type: (Batch, Text, Optional[int], Optional[Dict[Text,Any]]) -> Any
@@ -242,3 +209,110 @@ class API(APIEndpoint):
         if file_idx is None and batch._upload_idx > 1:
             params['xpath'] = 'files:files'
         return self.execute(batch, 'Blob.Attach', file_idx, params)
+
+    def get_uploader(self, batch, blob, chunked=False, limit=CHUNK_LIMIT, callback=None):
+        # type: (Batch, Blob, bool, int, Callable) -> Uploader
+        """
+        Get an upload helper for blob.
+
+        Can be used to upload a new blob or resume
+        the upload of a chunked blob.
+
+        :param batch: batch of the upload
+        :param blob: blob to upload
+        :param chunked: if True, send in chunks
+        :param limit: if blob is bigger, send in chunks
+        :return: uploaded blob details
+        """
+
+        chunked = chunked or blob.size > limit
+        return Uploader(self, batch, blob, chunked, callback)
+
+
+class Uploader:
+    """ Helper for uploads """
+    def __init__(self, service, batch, blob, chunked, callback=None):
+        # type: (API, Batch, Blob, bool, Callable) -> None
+        self.service = service
+        self.batch = batch
+        self.blob = blob
+        self.chunked = chunked
+        self.callback = callback
+        self.headers = service.headers.copy()
+        self.response = None
+
+        self.init()
+
+    def init(self):
+        # type: () -> None
+        """ Compute the headers, the path, the chunking info, etc. """
+        self.chunked = self.chunked and self.blob.size > 0
+
+        self.headers.update({
+            'Cache-Control': 'no-cache',
+            'X-File-Name': quote(get_bytes(self.blob.name)),
+            'X-File-Size': text(self.blob.size),
+            'X-File-Type': self.blob.mimetype,
+            'Content-Length': text(self.blob.size),
+        })
+
+        self.path = '{}/{}'.format(self.batch.batchId, self.batch._upload_idx)
+
+        if self.chunked:
+            chunk_size, chunk_count, index, info = self.service.state(self.path, self.blob)
+
+            self.headers.update({
+                'X-Upload-Type': 'chunked',
+                'X-Upload-Chunk-Count': text(chunk_count),
+                'Content-Length': text(chunk_size)
+            })
+        else:
+            chunk_size, chunk_count, index = self.blob.size or None, 1, 0
+
+        self.chunk_size = chunk_size
+        self.chunk_count = chunk_count
+        self.index = index
+
+    def upload(self):
+        # type: () -> None
+        """ Upload the file. """
+        for _ in self.iter_upload():
+            pass
+
+    def iter_upload(self):
+        # type: () -> Generator
+        """
+        Get a generator to upload the file.
+
+        If the `Uploader` has a callback, it is run after each chunk upload.
+        The method will yield after the callback step. It yields the uploader
+        itself since it contains all relevant data.
+        """
+        with self.blob as src:
+            # Seek to the right position if the upload is starting
+            if self.chunk_size:
+                src.seek(self.index * self.chunk_size)
+
+            while self.index < self.chunk_count:
+                # Read a chunk of data
+                data = src.read(self.chunk_size) if self.chunk_size else src.read()
+                # Upload it
+                self.response = self.service.send_data(
+                    self.blob.name, data, self.path, self.chunked, self.index, self.headers)
+                # Keep track of the current index
+                self.index += 1
+                # Call the callback if it exists
+                if callable(self.callback):
+                    self.callback(self)
+                # Yield to the upper scope
+                yield self
+
+        self._update_batch()
+
+    def _update_batch(self):
+        """ Add the uploaded blob info to the batch. """
+        if self.index == self.chunk_count:
+            # All the parts have been uploaded, update the attributes
+            self.response.batch_id = self.batch.uid
+            self.batch.blobs[self.batch._upload_idx] = self.response
+            self.batch._upload_idx += 1
