@@ -288,8 +288,6 @@ class Uploader:
         The method will yield after the callback step. It yields the uploader
         itself since it contains all relevant data.
         """
-        self._update_batch()
-
         with self.blob as src:
             # Seek to the right position if the upload is starting
             if self.chunk_size:
@@ -308,6 +306,8 @@ class Uploader:
                     self.callback(self)
                 # Yield to the upper scope
                 yield self
+
+        self._update_batch()
 
     def _update_batch(self):
         """ Add the uploaded blob info to the batch. """
