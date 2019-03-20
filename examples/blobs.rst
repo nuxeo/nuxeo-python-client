@@ -88,7 +88,7 @@ Otherwise, you can upload using a generator:
 
     uploader = batch.get_uploader(blob, chunked=True)
     try:
-        for _ in uploader.upload(generate=True):
+        for _ in uploader.iter_upload():
             logging.info(f"Uploading part nº{uploader.index}")
     except UploadError:
         index = uploader.index

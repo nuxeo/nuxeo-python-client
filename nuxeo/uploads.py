@@ -172,8 +172,7 @@ class API(APIEndpoint):
         :param limit: if blob is bigger, send in chunks
         :return: uploaded blob details
         """
-        chunked = chunked or blob.size > limit
-        uploader = Uploader(self, batch, blob, chunked, callback)
+        uploader = self.get_uploader(batch, blob, chunked, limit, callback)
         uploader.upload()
         return uploader.response
 
@@ -274,29 +273,27 @@ class Uploader:
         self.chunk_count = chunk_count
         self.index = index
 
-    def upload(self, generate=False):
-        # type: (Optional[bool]) -> Optional[Generator]
+    def upload(self):
+        # type: () -> None
+        """ Upload the file. """
+        for _ in self.iter_upload():
+            pass
+
+    def iter_upload(self):
+        # type: () -> Generator
         """
-        Upload the file.
+        Get a generator to upload the file.
 
         If the `Uploader` has a callback, it is run after each chunk upload.
-
-        If `generate` is True, the method will yield after the callback step.
-        To complete the entire file upload, the generator should be consumed
-        in a `for .. in ..` loop or until it raises `StopIteration`.
-        The generator yields the uploader itself since it contains all relevant data.
-
+        The method will yield after the callback step. It yields the uploader
+        itself since it contains all relevant data.
         """
-
-        if self.index == self.chunk_count:
-            # All the parts have been uploaded, update the attributes
-            self.response.batch_id = self.batch.uid
-            self.batch.blobs[self.batch._upload_idx] = self.response
-            self.batch._upload_idx += 1
+        self._update_batch()
 
         with self.blob as src:
             # Seek to the right position if the upload is starting
-            src.seek(self.index * self.chunk_size)
+            if self.chunk_size:
+                src.seek(self.index * self.chunk_size)
 
             while self.index < self.chunk_count:
                 # Read a chunk of data
@@ -309,6 +306,13 @@ class Uploader:
                 # Call the callback if it exists
                 if callable(self.callback):
                     self.callback(self)
-                # Yield to the upper scope if the "generate" mode is on
-                if generate:
-                    yield self
+                # Yield to the upper scope
+                yield self
+
+    def _update_batch(self):
+        """ Add the uploaded blob info to the batch. """
+        if self.index == self.chunk_count:
+            # All the parts have been uploaded, update the attributes
+            self.response.batch_id = self.batch.uid
+            self.batch.blobs[self.batch._upload_idx] = self.response
+            self.batch._upload_idx += 1
