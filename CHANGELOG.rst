@@ -16,7 +16,7 @@ Release date: ``2019-xx-xx``
 Technical changes
 -----------------
 
-- Added ``Batch.get_uplaoder()``
+- Added ``Batch.get_uploader()``
 - Added nuxeo/uploads.py::\ ``API.get_uploader()``
 - Added ``callback`` keyword argument to nuxeo/uploads.py::\ ``API.upload()``
 - Added nuxeo/uploads.py::\ ``Uploader``
