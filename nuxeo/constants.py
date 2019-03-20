@@ -4,9 +4,6 @@ from __future__ import unicode_literals
 # Force parameters verification for all operations
 CHECK_PARAMS = False
 
-# Maximum file size before enforcing chunk upload
-CHUNK_LIMIT = 10 * 1024 * 1024  # 10 Mio
-
 # Chunk size to download files
 CHUNK_SIZE = 8192  # 8 Kio
 
@@ -25,4 +22,4 @@ DEFAULT_APP_NAME = 'Python client'
 MAX_RETRY = 3
 
 # Size of chunks for the upload
-UPLOAD_CHUNK_SIZE = 256 * 1024  # 256 Kio
+UPLOAD_CHUNK_SIZE = 20 * 1024 * 1024  # 20 Mio

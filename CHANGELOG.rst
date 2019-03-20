@@ -18,8 +18,12 @@ Technical changes
 
 - Added ``Batch.get_uploader()``
 - Added nuxeo/uploads.py::\ ``API.get_uploader()``
+- Added `chunk_size` keyword argument to nuxeo/uploads.py::\ ``API.upload()``
+- Added `chunk_size` keyword argument to nuxeo/uploads.py::\ ``API.state()``
+- Removed `chunk_limit` keyword argument from nuxeo/uploads.py::\ ``API.upload()``
 - Added ``callback`` keyword argument to nuxeo/uploads.py::\ ``API.upload()``
 - Added nuxeo/uploads.py::\ ``Uploader``
+- Added ``UploadError.info``
 
 2.0.4
 -----
