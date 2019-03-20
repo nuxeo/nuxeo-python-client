@@ -174,7 +174,7 @@ def test_upload(chunked, server):
     try:
         blob = FileBlob(file_in, mimetype='application/octet-stream')
         assert repr(blob)
-        batch.upload(blob, chunked=chunked)
+        assert batch.upload(blob, chunked=chunked)
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': pytest.ws_root_path + '/Document'}
         operation.input_obj = batch.get(0)
@@ -197,6 +197,62 @@ def test_upload(chunked, server):
                 pass
 
 
+def test_get_uploader(server):
+    def callback(*args):
+        assert args
+
+    batch = server.uploads.batch()
+    file_in = 'test_in'
+    with open(file_in, 'wb') as f:
+        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+
+    try:
+        blob = FileBlob(file_in, mimetype='application/octet-stream')
+        uploader = batch.get_uploader(
+            blob, chunked=True, chunk_size=256 * 1024, callback=callback
+        )
+        for idx, _ in enumerate(uploader.iter_upload(), 1):
+            assert idx == uploader.index
+
+        assert batch.get(0)
+    finally:
+        try:
+            os.remove(file_in)
+        except OSError:
+            pass
+
+
+def test_uploaderror(server):
+    batch = server.uploads.batch()
+    file_in = 'test_in'
+    with open(file_in, 'wb') as f:
+        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+
+    try:
+        blob = FileBlob(file_in, mimetype='application/octet-stream')
+        assert repr(blob)
+        uploader = batch.get_uploader(blob, chunked=True, chunk_size=256 * 1024)
+        gen = uploader.iter_upload()
+
+        next(gen)
+        next(gen)
+        uploader.index -= 1
+        with pytest.raises(UploadError) as e:
+            next(gen)
+        assert e.value
+        assert "already exists" in e.value.info.message
+        uploader.index += 1
+
+        for _ in uploader.iter_upload():
+            pass
+
+    finally:
+        try:
+            os.remove(file_in)
+        except OSError:
+            pass
+
+
 def test_upload_retry(server):
     close_server = threading.Event()
     with SwapAttr(server.client, 'host', 'http://localhost:8081/nuxeo/'):
@@ -214,7 +270,7 @@ def test_upload_retry(server):
                 with open(file_in, 'wb') as f:
                     f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
                 blob = FileBlob(file_in, mimetype='application/octet-stream')
-                batch.upload(blob, chunked=True)
+                batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 close_server.set()  # release server block
 
         finally:
@@ -242,9 +298,9 @@ def test_upload_resume(server):
                     f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
                 blob = FileBlob(file_in, mimetype='application/octet-stream')
                 with pytest.raises(UploadError) as e:
-                    batch.upload(blob, chunked=True)
+                    batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 assert text(e.value)
-                batch.upload(blob, chunked=True)
+                batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 close_server.set()  # release server block
 
         finally:

@@ -114,16 +114,19 @@ class UploadError(NuxeoError):
     """
     Exception thrown when an upload fails even after retries.
     """
-    def __init__(self, name, chunk=None):
-        # type: (Text, Optional[int]) -> None
+    def __init__(self, name, chunk=None, info=None):
+        # type: (Text, Optional[int], Optional[HTTPError]) -> None
         self.name = name
         self.chunk = chunk
+        self.info = info
 
     def __repr__(self):
         # type: () -> Text
         err = 'UploadError: unable to upload file {!r}'.format(self.name)
         if self.chunk:
             err = '{} (failed at chunk {})'.format(err, self.chunk)
+        if self.info:
+            err = '{} (source: {})'.format(err, self.info)
         return err
 
     def __str__(self):
