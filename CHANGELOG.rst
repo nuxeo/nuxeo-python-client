@@ -11,6 +11,7 @@ Release date: ``2019-xx-xx``
 - `NXPY-82 <https://jira.nuxeo.com/browse/NXPY-82>`__: Fix ``test_convert_xpath()``
 - `NXPY-83 <https://jira.nuxeo.com/browse/NXPY-83>`__: Fix ``test_convert()`` and ``test_convert_given_converter()``
 - `NXPY-84 <https://jira.nuxeo.com/browse/NXPY-84>`__: Handle ``list`` type in operation parameters
+- `NXPY-86 <https://jira.nuxeo.com/browse/NXPY-86>`__: Fix directories API
 - `NXPY-87 <https://jira.nuxeo.com/browse/NXPY-87>`__: Add an upload helper to control the chunk uploads
 
 Technical changes

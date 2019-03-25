@@ -393,14 +393,14 @@ class Directory(Model):
         """ Save a modified entry of the directory. """
         return self.service.put(entry, dir_name=self.uid)
 
-    def delete(self, entry=None):
+    def delete(self, entry):
         # type: (Text) -> None
         """
-        Delete the directory or one of its entries.
+        Delete one of the directory's entries.
 
-        :param entry: if specified, the entry to delete
+        :param entry: the entry to delete
         """
-        self.service.delete(self.uid, dir_entry=entry)
+        self.service.delete(self.uid, entry)
 
     def exists(self, entry):
         # type: (Text) -> bool
