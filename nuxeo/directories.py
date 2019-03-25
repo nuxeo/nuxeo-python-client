@@ -41,19 +41,14 @@ class API(APIEndpoint):
             return entries
         return Directory(directoryName=dir_name, entries=entries, service=self)
 
-    def post(
-        self,
-        resource=None,  # type: Union[Directory, DirectoryEntry]
-        dir_name=None,  # type: Optional[Text]
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> resource
+    def post(self, resource=None, dir_name=None, **kwargs):
+        # type: (DirectoryEntry, Text, Any) -> DirectoryEntry
         """
-        Create a directory or an entry.
+        Create a directory entry.
 
-        :param resource: the directory/entry to create
+        :param resource: the entry to create
         :param dir_name: the name of the directory
-        :return: the created directory/entry
+        :return: the created entry
         """
         if dir_name:
             if not isinstance(resource, DirectoryEntry):
@@ -63,12 +58,8 @@ class API(APIEndpoint):
 
     create = post  # Alias for clarity
 
-    def put(
-        self,
-        resource,  # type: Union[Directory, DirectoryEntry]
-        dir_name,  # type: Text
-    ):
-        # type: (...) -> resource
+    def put(self, resource, dir_name):
+        # type: (DirectoryEntry, Text) -> DirectoryEntry
         """
         Update an entry.
 
@@ -79,17 +70,15 @@ class API(APIEndpoint):
         path = '{}/{}'.format(dir_name, resource.uid)
         return super(API, self).put(resource, path=path)
 
-    def delete(self, dir_name, dir_entry=None):
-        # type: (Text, Optional[Text]) -> None
+    def delete(self, dir_name, dir_entry):
+        # type: (Text, Text) -> None
         """
-        Delete a directory or an entry.
+        Delete a directory entry.
 
         :param dir_name: the name of the directory
         :param dir_entry: the name of the entry
         """
-        path = dir_name
-        if dir_entry:
-            path = '{}/{}'.format(path, dir_entry)
+        path = '{}/{}'.format(dir_name, dir_entry)
         super(API, self).delete(path)
 
     def exists(self, dir_name, dir_entry=None):
