@@ -11,6 +11,7 @@ from requests.exceptions import ConnectionError
 from nuxeo import constants
 from nuxeo.auth import TokenAuth
 from nuxeo.compat import get_bytes, long, text
+from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 from nuxeo.utils import SwapAttr
@@ -149,6 +150,12 @@ def test_file_out(server):
 
 def test_get_operations(server):
     assert server.operations
+
+
+def test_post_default(server):
+    api = APIEndpoint(server.client, "wrong_endpoint")
+    res = api.post({}, default={"response": "noerror"})
+    assert res == {"response": "noerror"}
 
 
 def test_query(server):
