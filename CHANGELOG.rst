@@ -4,7 +4,7 @@ Changelog
 2.0.5
 -----
 
-Release date: ``2019-xx-xx``
+Release date: ``2019-03-28``
 
 - `NXPY-80 <https://jira.nuxeo.com/browse/NXPY-80>`__: Stick with pytest < 4 to prevent internal error due to the use of deprecated ``pytest_namespace``
 - `NXPY-81 <https://jira.nuxeo.com/browse/NXPY-81>`__: Fix flake8 errors and add flake8 to the CI
