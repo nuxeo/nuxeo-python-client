@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.0.6
+-----
+
+Release date: ``2019-XX-XX``
+
+- `NXPY-88 <https://jira.nuxeo.com/browse/NXPY-88>`__: Pass the file descriptor to Requests when doing a simple upload
+
 2.0.5
 -----
 

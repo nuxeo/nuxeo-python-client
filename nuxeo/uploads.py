@@ -10,8 +10,9 @@ from .utils import SwapAttr
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
-        from typing import Any, Dict, Callable, List, Generator, Optional, Text, Tuple, Union  # noqa
+        from typing import Any, BinaryIO, Callable, Dict, List, Generator, Optional, Text, Tuple, Union  # noqa
         from .client import NuxeoClient  # noqa
         OptInt = Optional[int]  # noqa
 except ImportError:
@@ -88,7 +89,7 @@ class API(APIEndpoint):
     def send_data(
         self,
         name,  # type: Text
-        data,  # type: Union[Text, bytes]
+        data,  # type: Union[BinaryIO, Text, bytes]
         path,  # type: Text
         chunked,  # type: bool
         index,  # type: int
@@ -315,8 +316,8 @@ class Uploader:
                 src.seek(self.index * self.chunk_size)
 
             while self.index < self.chunk_count:
-                # Read a chunk of data
-                data = src.read(self.chunk_size) if self.chunk_size else src.read()
+                # Read a chunk of data, or use the file descriptor
+                data = src.read(self.chunk_size) if self.chunked else src
                 # Upload it
                 self.response = self.service.send_data(
                     self.blob.name, data, self.path, self.chunked, self.index, self.headers
