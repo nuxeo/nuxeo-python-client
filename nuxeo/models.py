@@ -299,6 +299,8 @@ class BufferBlob(Blob):
         return self.stringio
 
     def __enter__(self):
+        if not self.buffer:
+            return None
         self.stringio = StringIO(self.buffer)
         return self.stringio
 

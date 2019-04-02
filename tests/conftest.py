@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 import logging
-import socket
 
 import os
 import pytest
@@ -29,14 +28,7 @@ def pytest_namespace():
 
 
 @pytest.fixture(scope='function', autouse=True)
-def cleanup(request, server):
-    try:
-        docs = server.documents.get_children(path=pytest.ws_root_path)
-        for doc in docs:
-            doc.delete()
-    except (HTTPError, socket.timeout):
-        pass
-
+def server_log(request, server):
     msg = ('>>> testing: {}.{}'.format(
         request.module.__name__, request.function.__name__))
     server.operations.execute(command='Log', level='warn', message=msg)
