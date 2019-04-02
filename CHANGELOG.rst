@@ -7,6 +7,7 @@ Changelog
 Release date: ``2019-XX-XX``
 
 - `NXPY-88 <https://jira.nuxeo.com/browse/NXPY-88>`__: Pass the file descriptor to Requests when doing a simple upload
+- `NXPY-89 <https://jira.nuxeo.com/browse/NXPY-89>`__: Add ``repr(Uploader)`` to ease debug
 
 2.0.5
 -----
