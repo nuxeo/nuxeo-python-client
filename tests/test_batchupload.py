@@ -211,6 +211,7 @@ def test_get_uploader(server):
         uploader = batch.get_uploader(
             blob, chunked=True, chunk_size=256 * 1024, callback=callback
         )
+        assert str(uploader)
         for idx, _ in enumerate(uploader.iter_upload(), 1):
             assert idx == uploader.index
 

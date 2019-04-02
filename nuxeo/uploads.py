@@ -264,6 +264,19 @@ class Uploader:
 
         self.init()
 
+    def __repr__(self):
+        # type: () -> Text
+        return "<{} blob={!r}, chunked={!r}, chunk_size={!r}>".format(
+            type(self).__name__,
+            self.blob,
+            self.chunked,
+            self.chunk_size,
+        )
+
+    def __str__(self):
+        # type: () -> Text
+        return repr(self)
+
     def init(self):
         # type: () -> None
         """ Compute the headers, the path, the chunking info, etc. """
