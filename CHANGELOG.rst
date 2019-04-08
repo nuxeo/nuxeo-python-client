@@ -8,6 +8,15 @@ Release date: ``2019-XX-XX``
 
 - `NXPY-88 <https://jira.nuxeo.com/browse/NXPY-88>`__: Pass the file descriptor to Requests when doing a simple upload
 - `NXPY-89 <https://jira.nuxeo.com/browse/NXPY-89>`__: Add ``repr(Uploader)`` to ease debug
+- `NXPY-90 <https://jira.nuxeo.com/browse/NXPY-90>`__: Do not open file descriptor on empty file
+
+Technical changes
+-----------------
+
+- Added ``Uploader.is_complete()``
+- Removed ``chunked`` argument from ``Uploader.__init__()``
+- Removed ``Uploader.init()``
+- Added nuxeo/uploads.py::\ ``ChunkUploader``
 
 2.0.5
 -----
