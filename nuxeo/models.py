@@ -290,6 +290,7 @@ class BufferBlob(Blob):
         """
         super(BufferBlob, self).__init__(**kwargs)
         self.buffer = data
+        self.size = len(self.buffer)
         self.mimetype = 'application/octet-stream'
 
     @property

@@ -165,6 +165,9 @@ def test_operation(server):
 
 @pytest.mark.parametrize('chunked', [False, True])
 def test_upload(chunked, server):
+    def callback(*args):
+        assert args
+
     batch = server.uploads.batch()
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:
@@ -174,7 +177,7 @@ def test_upload(chunked, server):
     try:
         blob = FileBlob(file_in, mimetype='application/octet-stream')
         assert repr(blob)
-        assert batch.upload(blob, chunked=chunked)
+        assert batch.upload(blob, chunked=chunked, callback=callback)
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': pytest.ws_root_path + '/Document'}
         operation.input_obj = batch.get(0)
