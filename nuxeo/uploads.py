@@ -251,7 +251,7 @@ class API(APIEndpoint):
         return Uploader(self, batch, blob, chunk_size, callback)
 
 
-class Uploader:
+class Uploader(object):
     """ Helper for uploads """
     chunked = False
 
