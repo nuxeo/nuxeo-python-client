@@ -140,6 +140,9 @@ def test_document_move(server):
     try:
         doc.move(pytest.ws_root_path + '/Test', 'new name')
         assert doc.path == pytest.ws_root_path + '/Test/new name'
+        children = server.documents.get_children(folder.uid)
+        assert len(children) == 1
+        assert children[0].uid == doc.uid
     finally:
         doc.delete()
         folder.delete()

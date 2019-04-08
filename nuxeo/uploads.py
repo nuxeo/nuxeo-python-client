@@ -245,7 +245,7 @@ class API(APIEndpoint):
         :param callback: if not None, it is executed between each chunk
         :return: uploaded blob details
         """
-        chunked = chunked and self.blob.size > self.chunk_size
+        chunked = chunked and blob.size > chunk_size
         if chunked:
             return ChunkUploader(self, batch, blob, chunk_size, callback)
         return Uploader(self, batch, blob, chunk_size, callback)
@@ -292,7 +292,7 @@ class Uploader:
         return repr(self)
 
     def is_complete(self):
-        return getattr(self, "_completed", default=False)
+        return getattr(self, "_completed", False)
 
     def upload(self):
         # type: () -> None
@@ -322,9 +322,9 @@ class ChunkUploader(Uploader):
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
         # type: (API, Batch, Blob, int, Callable) -> None
-        super().__init__(service, batch, blob, chunk_size, callback=callback)
+        super(ChunkUploader, self).__init__(service, batch, blob, chunk_size, callback=callback)
         chunk_size, chunk_count, index, info = self.service.state(
-            self.path, self.blob, self.chunk_size
+            self.path, self.blob, chunk_size
         )
         self.headers.update({
             'X-Upload-Type': 'chunked',
