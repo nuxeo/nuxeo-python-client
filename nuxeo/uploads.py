@@ -12,8 +12,10 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, BinaryIO, Callable, Dict, List, Generator, Optional, Text, Tuple, Union  # noqa
+        from typing import Any, BinaryIO, Callable, Dict, List, Generator, Optional, Set, Text, Tuple, Union  # noqa
         from .client import NuxeoClient  # noqa
+        from .models import BufferBlob, FileBlob  # noqa
+        ActualBlob = Union[BufferBlob, FileBlob]  # noqa
         OptInt = Optional[int]  # noqa
 except ImportError:
     pass
@@ -130,7 +132,7 @@ class API(APIEndpoint):
         return response
 
     def state(self, path, blob, chunk_size=UPLOAD_CHUNK_SIZE):
-        # type: (Text, Blob, int) -> Tuple[OptInt, OptInt, OptInt, Blob]
+        # type: (Text, ActualBlob, int) -> Tuple[OptInt, OptInt, Set, Blob]
         """
         Get the state of a blob.
 
@@ -153,20 +155,18 @@ class API(APIEndpoint):
 
         if info:
             chunk_count = int(info.chunkCount)
-            size = int(info.uploadedSize)
-            index = int(info.uploadedChunkIds[-1]) + 1
+            uploaded_chunks = set(info.uploadedChunkIds)
         else:  # It's a new upload
-            size = chunk_size
-            chunk_count = (blob.size // size
-                           + (blob.size % size > 0))
-            index = 0
+            chunk_count = (blob.size // chunk_size
+                           + (blob.size % chunk_size > 0))
+            uploaded_chunks = set()
 
-        return size, chunk_count, index, info
+        return chunk_count, uploaded_chunks, info
 
     def upload(
         self,
         batch,  # type: Batch
-        blob,  # type: Blob
+        blob,  # type: ActualBlob
         chunked=False,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
         callback=None,  # type: Callable
@@ -185,9 +185,9 @@ class API(APIEndpoint):
         :param callback: if not None, it is executed between each chunk
         :return: uploaded blob details
         """
-        uploader = self.get_uploader(batch, blob, chunked, chunk_size, callback)
+        uploader = self.get_uploader(batch, blob, chunked, chunk_size, callback=callback)
         uploader.upload()
-        return uploader.response
+        return uploader.blob
 
     def execute(self, batch, operation, file_idx=None, params=None):
         # type: (Batch, Text, Optional[int], Optional[Dict[Text,Any]]) -> Any
@@ -226,7 +226,7 @@ class API(APIEndpoint):
     def get_uploader(
         self,
         batch,  # type: Batch
-        blob,  # type: Blob
+        blob,  # type: ActualBlob
         chunked=False,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
         callback=None,  # type: Callable
@@ -256,7 +256,7 @@ class Uploader(object):
     chunked = False
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
-        # type: (API, Batch, Blob, int, Callable) -> None
+        # type: (API, Batch, ActualBlob, int, Callable) -> None
         self.service = service
         self.batch = batch
         self.blob = blob
@@ -264,10 +264,8 @@ class Uploader(object):
         self.callback = callback
         self.headers = service.headers.copy()
 
-        self.response = None
         self.chunk_size = self.blob.size or None
         self.chunk_count = 1
-        self.index = 0
         self.path = '{}/{}'.format(self.batch.batchId, self.batch._upload_idx)
 
         self.headers.update({
@@ -292,27 +290,33 @@ class Uploader(object):
         return repr(self)
 
     def is_complete(self):
+        # type: () -> bool
         return getattr(self, "_completed", False)
+
+    def process(self, response):
+        # type: (Blob) -> None
+        self.blob.fileIdx = response.fileIdx
 
     def upload(self):
         # type: () -> None
         """ Upload the file. """
         with self.blob as src:
             data = src if self.blob.size else None
-            self.response = self.service.send_data(
-                self.blob.name, data, self.path, self.chunked, self.index, self.headers
-            )
+            self.process(self.service.send_data(
+                self.blob.name, data, self.path, self.chunked, 0, self.headers
+            ))
             if callable(self.callback):
                 self.callback(self)
             setattr(self, "_completed", True)
         self._update_batch()
 
     def _update_batch(self):
+        # type: () -> None
         """ Add the uploaded blob info to the batch. """
         if self.is_complete():
             # All the parts have been uploaded, update the attributes
-            self.response.batch_id = self.batch.uid
-            self.batch.blobs[self.batch._upload_idx] = self.response
+            self.blob.batch_id = self.batch.uid
+            self.batch.blobs[self.batch._upload_idx] = self.blob
             self.batch._upload_idx += 1
 
 
@@ -321,9 +325,9 @@ class ChunkUploader(Uploader):
     chunked = True
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
-        # type: (API, Batch, Blob, int, Callable) -> None
+        # type: (API, Batch, ActualBlob, int, Callable) -> None
         super(ChunkUploader, self).__init__(service, batch, blob, chunk_size, callback=callback)
-        chunk_size, chunk_count, index, info = self.service.state(
+        chunk_count, uploaded_chunks, info = self.service.state(
             self.path, self.blob, chunk_size
         )
         self.headers.update({
@@ -334,10 +338,21 @@ class ChunkUploader(Uploader):
 
         self.chunk_size = chunk_size
         self.chunk_count = chunk_count
-        self.index = index
+        self.blob.uploadedChunkIds = uploaded_chunks
+        self.blob.chunkCount = chunk_count
+        self._to_upload = set()
+        self._compute_chunks_left()
+
+    def _compute_chunks_left(self):
+        # type: () -> None
+        """ Compare the set of uploaded chunks with the final list. """
+        if self.is_complete():
+            return
+        self._to_upload = set(range(self.chunk_count)) - set(self.blob.uploadedChunkIds)
 
     def is_complete(self):
-        return self.index == self.chunk_count
+        # type: () -> bool
+        return len(self.blob.uploadedChunkIds) == self.chunk_count
 
     def iter_upload(self):
         # type: () -> Generator
@@ -349,18 +364,22 @@ class ChunkUploader(Uploader):
         itself since it contains all relevant data.
         """
         with self.blob as src:
-            # Seek to the right position if the upload is starting
-            src.seek(self.index * self.chunk_size)
 
-            while self.index < self.chunk_count:
-                # Read a chunk of data, or use the file descriptor
+            while self._to_upload:
+                # Get the index of a chunk to upload
+                index = self._to_upload.pop()
+                # Seek to the right position
+                src.seek(index * self.chunk_size)
+                # Read a chunk of data
                 data = src.read(self.chunk_size)
                 # Upload it
-                self.response = self.service.send_data(
-                    self.blob.name, data, self.path, self.chunked, self.index, self.headers
-                )
-                # Keep track of the current index
-                self.index += 1
+                self.process(self.service.send_data(
+                    self.blob.name, data, self.path, self.chunked, index, self.headers
+                ))
+                # If the set of chunks to upload is empty, check whether
+                # the server has received all of them.
+                if not self._to_upload:
+                    self._compute_chunks_left()
                 # Call the callback if it exists
                 if callable(self.callback):
                     self.callback(self)
@@ -368,6 +387,11 @@ class ChunkUploader(Uploader):
                 yield self
 
         self._update_batch()
+
+    def process(self, response):
+        # type: (Blob) -> None
+        super(ChunkUploader, self).process(response)
+        self.blob.uploadedChunkIds = response.uploadedChunkIds
 
     def upload(self):
         # type: () -> None
