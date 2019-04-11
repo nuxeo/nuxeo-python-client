@@ -216,7 +216,7 @@ def test_get_uploader(server):
         )
         assert str(uploader)
         for idx, _ in enumerate(uploader.iter_upload(), 1):
-            assert idx == uploader.index
+            assert idx == len(uploader.blob.uploadedChunkIds)
 
         assert batch.get(0)
     finally:
@@ -240,12 +240,13 @@ def test_uploaderror(server):
 
         next(gen)
         next(gen)
-        uploader.index -= 1
+        backup = uploader._to_upload
+        uploader._to_upload = {0}
         with pytest.raises(UploadError) as e:
             next(gen)
         assert e.value
         assert "already exists" in e.value.info.message
-        uploader.index += 1
+        uploader._to_upload = backup
 
         for _ in uploader.iter_upload():
             pass
