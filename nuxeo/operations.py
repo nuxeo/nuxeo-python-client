@@ -285,7 +285,7 @@ class API(APIEndpoint):
         :return:
         """
         digest = kwargs.pop('digest', None)
-        digester = get_digester(digest)
+        digester = get_digester(digest) if digest else None
 
         unlock_path = kwargs.pop('unlock_path', None)
         lock_path = kwargs.pop('lock_path', None)
@@ -296,7 +296,7 @@ class API(APIEndpoint):
         if use_lock:
             locker = unlock_path(path)
         try:
-            with open(path, 'wb') as f:
+            with open(path, 'ab') as f:
                 chunk_size = kwargs.get('chunk_size', self.client.chunk_size)
                 for chunk in resp.iter_content(chunk_size=chunk_size):
                     # Check if synchronization thread was suspended
@@ -312,8 +312,8 @@ class API(APIEndpoint):
                 lock_path(path, locker)
 
         if digester:
-            actual_digest = digester.hexdigest()
-            if digest != actual_digest:
-                raise CorruptedFile(path, digest, actual_digest)
+            computed_digest = digester.hexdigest()
+            if digest != computed_digest:
+                raise CorruptedFile(path, digest, computed_digest)
 
         return path
