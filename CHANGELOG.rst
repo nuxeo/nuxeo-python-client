@@ -20,6 +20,7 @@ Technical changes
 - Removed ``Uploader.index``
 - Removed ``Uploader.init()``
 - Removed ``Uploader.response``
+- Renamed nuxeo/operations.py::\ ``API.save_to_file()`` ``check_suspended`` keyword argument to ``callback``
 - Added nuxeo/uploads.py::\ ``ChunkUploader``
 - Changed nuxeo/uploads.py::\ ``API.state()`` return value ``index`` (int) to ``uploaded_chunks`` (set)
 

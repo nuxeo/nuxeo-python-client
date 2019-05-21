@@ -168,7 +168,7 @@ class API(APIEndpoint):
         :return: the result of the execution
         """
         json = kwargs.pop('json', True)
-        check_suspended = kwargs.pop('check_suspended', None)
+        callback = kwargs.pop('callback', None)
         enrichers = kwargs.pop('enrichers', None)
 
         command, input_obj, params, context = self.get_attributes(operation, **kwargs)
@@ -202,7 +202,7 @@ class API(APIEndpoint):
         # Save to a file, part by part of chunk_size
         if file_out:
             return self.save_to_file(operation, resp, file_out,
-                                     check_suspended=check_suspended, **kwargs)
+                                     callback=callback, **kwargs)
 
         # It is likely a JSON response we do not want to save to a file
         if operation:
@@ -289,7 +289,7 @@ class API(APIEndpoint):
 
         unlock_path = kwargs.pop('unlock_path', None)
         lock_path = kwargs.pop('lock_path', None)
-        check_suspended = kwargs.pop('check_suspended', None)
+        callback = kwargs.pop('callback', None)
         use_lock = callable(unlock_path) and callable(lock_path)
         locker = None
 
@@ -300,8 +300,8 @@ class API(APIEndpoint):
                 chunk_size = kwargs.get('chunk_size', self.client.chunk_size)
                 for chunk in resp.iter_content(chunk_size=chunk_size):
                     # Check if synchronization thread was suspended
-                    if callable(check_suspended):
-                        check_suspended('File download: %s' % path)
+                    if callable(callback):
+                        callback(path)
                     if operation:
                         operation.progress += chunk_size
                     f.write(chunk)

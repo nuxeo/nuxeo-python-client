@@ -127,7 +127,7 @@ def test_file_out(server):
     from logging import getLogger
     log = getLogger(__name__)
 
-    def check_suspended(msg):
+    def callback(msg):
         log.info('Check suspended: %s', msg)
 
     def unlock_path(path):
@@ -138,7 +138,7 @@ def test_file_out(server):
         log.info('Lock path: %s, %s', path, locker)
 
     file_out = operation.execute(
-        file_out='test', check_suspended=check_suspended,
+        file_out='test', callback=callback,
         lock_path=lock_path, unlock_path=unlock_path)
 
     with open(file_out) as f:
