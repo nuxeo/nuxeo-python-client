@@ -7,7 +7,7 @@ import time
 import pytest
 
 from nuxeo.compat import get_bytes, text
-from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
+from nuxeo.exceptions import BadQuery, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 
 
@@ -217,13 +217,16 @@ def test_locking(server):
     with Doc(server) as doc:
         assert not doc.fetch_lock_status()
         assert not doc.is_locked()
+
         doc.lock()
         status = doc.fetch_lock_status()
         assert status['lockOwner'] == 'Administrator'
         assert 'lockCreated' in status
         assert doc.is_locked()
-        with pytest.raises(HTTPError):
-            doc.lock()
+
+        # Double locking with the same user should work if the server has NXP-24359
+        doc.lock()
+
         doc.unlock()
         assert not doc.is_locked()
 
