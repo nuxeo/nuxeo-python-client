@@ -64,7 +64,7 @@ to use a specific instance, you can specify the ``base_url`` like so:
     nuxeo = Nuxeo(
         host='http://demo.nuxeo.com/nuxeo/',
         auth=('Administrator', 'Administrator')
-        )
+    )
 
 Download/Upload Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -149,7 +149,7 @@ A Nuxeo Platform instance needs to be running on
 
 .. code:: shell
 
-    python -m pip install --user tox
+    python -m pip install -U --user tox
     tox
 
 Tests can be launched without a server with Maven and tox:
@@ -157,6 +157,31 @@ Tests can be launched without a server with Maven and tox:
 .. code:: shell
 
     mvn -f ftest/pom.xml clean verify
+
+Sentry
+======
+
+We use Sentry to catch unhandled errors from tests.
+You can tweak it before running ``tox``.
+
+It can be disabled:
+
+.. code:: shell
+
+    export SKIP_SENTRY=1
+
+You can also customize the Sentry DSN for your own team:
+
+.. code:: shell
+
+    export SENTRY_DSN="XXX"
+
+And customize the Sentry environment too:
+
+.. code:: shell
+
+    # Note that the default value is "testing"
+    export SENTRY_ENV="testing"
 
 Deploying
 ~~~~~~~~~
@@ -172,7 +197,7 @@ Reporting Issues
 ~~~~~~~~~~~~~~~~
 
 You can follow the developments in the Nuxeo Python Client project of
-our JIRA bug tracker: https://jira.nuxeo.com/browse/NXPY.
+our JIRA bug tracker: `NXPY <https://jira.nuxeo.com/browse/NXPY>`__.
 
 You can report issues on
 `answers.nuxeo.com <http://answers.nuxeo.com>`__.

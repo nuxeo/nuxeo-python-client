@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import sys
 
 import pytest
+from sentry_sdk import configure_scope
 
 from nuxeo.utils import SwapAttr, get_digester, guess_mimetype
 
@@ -22,10 +23,12 @@ from nuxeo.utils import SwapAttr, get_digester, guess_mimetype
     ('dead', None),
 ])
 def test_get_digester(hash, digester):
-    if not digester:
-        assert not get_digester(hash)
-    else:
+    if digester:
         assert get_digester(hash).name == digester
+    else:
+        with configure_scope() as scope:
+            scope._should_capture = False
+            assert not get_digester(hash)
 
 
 @pytest.mark.parametrize(

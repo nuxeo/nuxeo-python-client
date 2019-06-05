@@ -11,6 +11,7 @@ Release date: ``2019-XX-XX``
 - `NXPY-90 <https://jira.nuxeo.com/browse/NXPY-90>`__: Do not open file descriptor on empty file
 - `NXPY-91 <https://jira.nuxeo.com/browse/NXPY-91>`__: Make uploads rely on server info for missing chunks
 - `NXPY-94 <https://jira.nuxeo.com/browse/NXPY-94>`__: Force write of file to disk
+- `NXPY-95 <https://jira.nuxeo.com/browse/NXPY-95>`__: Use Sentry in tests
 
 Technical changes
 -----------------
