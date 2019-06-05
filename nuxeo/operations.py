@@ -1,5 +1,6 @@
 # coding: utf-8
 from __future__ import unicode_literals
+from os import fsync
 
 try:
     from collections.abc import Sequence
@@ -307,6 +308,10 @@ class API(APIEndpoint):
                     f.write(chunk)
                     if digester:
                         digester.update(chunk)
+
+                # Force write of file to disk
+                f.flush()
+                fsync(f)
         finally:
             if use_lock:
                 lock_path(path, locker)
