@@ -182,7 +182,7 @@ def test_server_info(server):
     # Force the call
     server.client._server_info = None
     assert server.client.server_info(force=True)
-    assert server.client.server_info() == server.client.server_info(force=True)
+    assert server.client.server_info() is server.client.server_info()
 
     # Bad call
     server.client._server_info = None

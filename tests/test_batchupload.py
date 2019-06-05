@@ -11,6 +11,8 @@ from nuxeo.exceptions import (CorruptedFile, HTTPError,
                               InvalidBatch, UploadError)
 from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
+from sentry_sdk import configure_scope
+
 from .server import Server
 
 new_doc = Document(
@@ -84,7 +86,8 @@ def test_digester(hash, is_valid, server):
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
-            with pytest.raises(CorruptedFile) as e:
+            with pytest.raises(CorruptedFile) as e, configure_scope() as scope:
+                scope._should_capture = False
                 operation.execute(file_out=file_out, digest=hash)
             assert text(e.value)
     finally:
