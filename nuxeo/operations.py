@@ -311,7 +311,7 @@ class API(APIEndpoint):
 
                 # Force write of file to disk
                 f.flush()
-                fsync(f)
+                fsync(f.fileno())
         finally:
             if use_lock:
                 lock_path(path, locker)
