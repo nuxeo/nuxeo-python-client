@@ -172,8 +172,7 @@ def test_query_empty(server):
 
 def test_server_info(server):
     # At start, no server information
-    with pytest.raises(AttributeError):
-        server.client._server_info
+    server.client._server_info is None
 
     # First call
     assert server.client.server_info()
@@ -184,6 +183,11 @@ def test_server_info(server):
     assert server.client.server_info(force=True)
     assert server.client.server_info() is server.client.server_info()
 
+    # If the sentinel value is not None, then the call should be made to the server
+    info = server.client.server_info()
+    server.client._server_info = {}
+    assert server.client.server_info() is not info
+
     # Bad call
     server.client._server_info = None
     with SwapAttr(server.client, 'host', 'http://example.org/'):
@@ -191,6 +195,7 @@ def test_server_info(server):
 
 
 def test_server_version(server):
+    server.client._server_info = None
     assert server.client.server_version
     assert str(server.client)
 

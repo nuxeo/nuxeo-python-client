@@ -71,6 +71,9 @@ class NuxeoClient(object):
         self.client_kwargs = kwargs
         atexit.register(self.on_exit)
 
+        # Cache for the server information
+        self._server_info = None
+
         # Ensure the host is well formatted
         if not self.host.endswith('/'):
             self.host += '/'
@@ -260,13 +263,13 @@ class NuxeoClient(object):
         :param bool force: Force information renewal.
         """
 
-        if force or not getattr(self, '_server_info', None):
+        if force or self._server_info is None:
             response = self.request('GET', 'json/cmis', default={})
             if isinstance(response, requests.Response):
                 info = response.json()['default']
             else:
                 info = response
-            setattr(self, '_server_info', info)
+            self._server_info = info
         return self._server_info
 
     @property
