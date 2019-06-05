@@ -12,6 +12,7 @@ Release date: ``2019-XX-XX``
 - `NXPY-91 <https://jira.nuxeo.com/browse/NXPY-91>`__: Make uploads rely on server info for missing chunks
 - `NXPY-94 <https://jira.nuxeo.com/browse/NXPY-94>`__: Force write of file to disk
 - `NXPY-95 <https://jira.nuxeo.com/browse/NXPY-95>`__: Use Sentry in tests
+- `NXPY-96 <https://jira.nuxeo.com/browse/NXPY-96>`__: Fix tests execution not failing when it should do (+ clean-up)
 
 Technical changes
 -----------------
