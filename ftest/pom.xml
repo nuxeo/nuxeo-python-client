@@ -74,8 +74,8 @@
                 <target>cleanup-environment</target>
               </targets>
               <createSummary>true</createSummary>
-              <reportsDirectory>${project.build.directory}/js-reports</reportsDirectory>
-              <summaryFile>${project.build.directory}/js-reports/js-summary.xml</summaryFile>
+              <reportsDirectory>${project.build.directory}/nxtools-reports</reportsDirectory>
+              <summaryFile>${project.build.directory}/nxtools-reports/nxtools-summary.xml</summaryFile>
             </configuration>
           </execution>
         </executions>
