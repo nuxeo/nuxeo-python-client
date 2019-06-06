@@ -13,6 +13,7 @@ from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
 from sentry_sdk import configure_scope
 
+from .constants import WORKSPACE_ROOT
 from .server import Server
 
 new_doc = Document(
@@ -73,16 +74,16 @@ def test_data():
 ])
 def test_digester(hash, is_valid, server):
     file_out = 'test_out'
-    doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         batch = get_batch(server)
         operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': pytest.ws_root_path + '/Document'}
+        operation.params = {'document': WORKSPACE_ROOT + '/Document'}
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
 
         operation = server.operations.new('Blob.Get')
-        operation.input_obj = pytest.ws_root_path + '/Document'
+        operation.input_obj = WORKSPACE_ROOT + '/Document'
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
@@ -103,13 +104,13 @@ def test_empty_file(chunked, server):
 
 def test_execute(server):
     server.client.set(schemas=['dublincore', 'file'])
-    doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         batch = get_batch(server)
         assert not doc.properties['file:content']
         batch.execute('Blob.AttachOnDocument', file_idx=0,
-                      params={'document': pytest.ws_root_path + '/Document'})
-        doc = server.documents.get(path=pytest.ws_root_path + '/Document')
+                      params={'document': WORKSPACE_ROOT + '/Document'})
+        doc = server.documents.get(path=WORKSPACE_ROOT + '/Document')
         assert doc.properties['file:content']
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
@@ -150,14 +151,14 @@ def test_operation(server):
     batch = get_batch(server)
     server.client.set(schemas=['dublincore', 'file'])
     doc = server.documents.create(
-        new_doc, parent_path=pytest.ws_root_path)
+        new_doc, parent_path=WORKSPACE_ROOT)
     try:
         assert not doc.properties['file:content']
         operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': pytest.ws_root_path + '/Document'}
+        operation.params = {'document': WORKSPACE_ROOT + '/Document'}
         operation.input_obj = batch.get(0)
         operation.execute()
-        doc = server.documents.get(path=pytest.ws_root_path + '/Document')
+        doc = server.documents.get(path=WORKSPACE_ROOT + '/Document')
         assert doc.properties['file:content']
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
@@ -176,23 +177,23 @@ def test_upload(chunked, server):
     with open(file_in, 'wb') as f:
         f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
 
-    doc = server.documents.create(new_doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         blob = FileBlob(file_in, mimetype='application/octet-stream')
         assert repr(blob)
         assert batch.upload(blob, chunked=chunked, callback=callback)
         operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': pytest.ws_root_path + '/Document'}
+        operation.params = {'document': WORKSPACE_ROOT + '/Document'}
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
 
         operation = server.operations.new('Document.Fetch')
-        operation.params = {'value': pytest.ws_root_path + '/Document'}
+        operation.params = {'value': WORKSPACE_ROOT + '/Document'}
         info = operation.execute()
         digest = info['properties']['file:content']['digest']
 
         operation = server.operations.new('Blob.Get')
-        operation.input_obj = pytest.ws_root_path + '/Document'
+        operation.input_obj = WORKSPACE_ROOT + '/Document'
         file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
         doc.delete()

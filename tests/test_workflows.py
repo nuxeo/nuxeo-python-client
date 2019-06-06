@@ -9,8 +9,10 @@ from nuxeo.compat import text
 from nuxeo.exceptions import BadQuery, HTTPError
 from nuxeo.models import Document, Task, User
 
+from .constants import WORKSPACE_NAME, WORKSPACE_ROOT
+
 document = Document(
-    name=pytest.ws_python_test_name,
+    name=WORKSPACE_NAME,
     type='File',
     properties={
         'dc:title': 'bar.txt',
@@ -48,7 +50,7 @@ def test_basic_workflow(tasks, workflows, server):
             'password': 'Test'
         })
     user = server.users.create(user)
-    doc = server.documents.create(document, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
         workflow = workflows.start('SerialDocumentReview', doc)
         assert workflow
@@ -107,7 +109,7 @@ def test_get_workflows(tasks, workflows):
 
 
 def test_fetch_graph(server, workflows):
-    doc = server.documents.create(document, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
         options = {
             'attachedDocumentIds': doc.uid,
