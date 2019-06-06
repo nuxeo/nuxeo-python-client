@@ -14,19 +14,6 @@ logging.basicConfig(format='%(module)-14s %(levelname).1s %(message)s',
                     level=logging.DEBUG)
 
 
-def pytest_namespace():
-    """
-    This namespace is used to store global variables for
-    tests. They can be accessed with `pytest.<variable_name>`
-    e.g. `pytest.ws_root_path`
-    """
-    return {
-        'ws_root_path': '/default-domain/workspaces',
-        'ws_python_test_name': 'ws-python-tests',
-        'ws_python_tests_path': '/default-domain/workspaces/ws-python-tests',
-    }
-
-
 @pytest.fixture(scope='function', autouse=True)
 def server_log(request, server):
     msg = ('>>> testing: {}.{}'.format(

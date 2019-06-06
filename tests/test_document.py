@@ -1,12 +1,12 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import pytest
-
 import nuxeo.constants
 from nuxeo.compat import get_bytes
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import SwapAttr
+
+from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
 
 
 class Doc(object):
@@ -17,14 +17,14 @@ class Doc(object):
 
     def __enter__(self):
         doc = Document(
-            name=pytest.ws_python_test_name,
+            name=WORKSPACE_NAME,
             type='File',
             properties={
                 'dc:title': 'bar.txt',
             }
         )
         self.doc = self.server.documents.create(
-            doc, parent_path=pytest.ws_root_path)
+            doc, parent_path=WORKSPACE_ROOT)
 
         if self.blobs:
             # Upload several blobs for one document
@@ -35,7 +35,7 @@ class Doc(object):
                     name='foo-{}.txt'.format(idx))
                 batch.upload(blob)
 
-            path = pytest.ws_root_path + '/' + pytest.ws_python_test_name
+            path = WORKSPACE_TEST
             batch.attach(path)
         return self.doc
 
@@ -71,7 +71,7 @@ def test_document_create_bytes_warning(server):
     document = None
     try:
         document = server.operations.execute(
-            command='Document.Create', input_obj='doc:' + pytest.ws_root_path,
+            command='Document.Create', input_obj='doc:' + WORKSPACE_ROOT,
             type='Note', name=name, properties=properties)
     finally:
         if document:
@@ -103,8 +103,8 @@ def test_document_list_update(server):
             'dc:title': 'ws-js-tests2',
         })
 
-    doc1 = server.documents.create(new_doc1, parent_path=pytest.ws_root_path)
-    doc2 = server.documents.create(new_doc2, parent_path=pytest.ws_root_path)
+    doc1 = server.documents.create(new_doc1, parent_path=WORKSPACE_ROOT)
+    doc2 = server.documents.create(new_doc2, parent_path=WORKSPACE_ROOT)
     desc = 'sample description'
     res = server.operations.execute(
         command='Document.Update',
@@ -123,7 +123,7 @@ def test_document_list_update(server):
 
 def test_document_move(server):
     doc = Document(
-        name=pytest.ws_python_test_name,
+        name=WORKSPACE_NAME,
         type='File',
         properties={
             'dc:title': 'bar.txt',
@@ -135,11 +135,11 @@ def test_document_move(server):
         properties={
             'dc:title': 'Test'
         })
-    doc = server.documents.create(doc, parent_path=pytest.ws_root_path)
-    folder = server.documents.create(folder, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
+    folder = server.documents.create(folder, parent_path=WORKSPACE_ROOT)
     try:
-        doc.move(pytest.ws_root_path + '/Test', 'new name')
-        assert doc.path == pytest.ws_root_path + '/Test/new name'
+        doc.move(WORKSPACE_ROOT + '/Test', 'new name')
+        assert doc.path == WORKSPACE_ROOT + '/Test/new name'
         children = server.documents.get_children(folder.uid)
         assert len(children) == 1
         assert children[0].uid == doc.uid
@@ -151,13 +151,13 @@ def test_document_move(server):
 
 def test_document_trash(server):
     doc = Document(
-        name=pytest.ws_python_test_name,
+        name=WORKSPACE_NAME,
         type='File',
         properties={
             'dc:title': 'bar.txt',
         })
     doc = server.documents.create(
-        doc, parent_path=pytest.ws_root_path)
+        doc, parent_path=WORKSPACE_ROOT)
     try:
         assert not doc.isTrashed
         doc.trash()
@@ -170,13 +170,13 @@ def test_document_trash(server):
 
 def test_follow_transition(server):
     doc = Document(
-        name=pytest.ws_python_test_name,
+        name=WORKSPACE_NAME,
         type='File',
         properties={
             'dc:title': 'bar.txt',
         })
     doc = server.documents.create(
-        doc, parent_path=pytest.ws_root_path)
+        doc, parent_path=WORKSPACE_ROOT)
     try:
         assert doc.state == 'project'
         doc.follow_transition('approve')

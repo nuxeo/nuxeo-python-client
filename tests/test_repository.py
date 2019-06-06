@@ -10,6 +10,8 @@ from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import BadQuery, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 
+from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
+
 
 class Doc(object):
 
@@ -19,14 +21,14 @@ class Doc(object):
 
     def __enter__(self):
         doc = Document(
-            name=pytest.ws_python_test_name,
+            name=WORKSPACE_NAME,
             type='File',
             properties={
                 'dc:title': 'bar.txt',
             }
         )
         self.doc = self.server.documents.create(
-            doc, parent_path=pytest.ws_root_path)
+            doc, parent_path=WORKSPACE_ROOT)
 
         if self.blob:
             blob = BufferBlob(
@@ -117,21 +119,21 @@ def test_convert_xpath(server):
 
 def test_create_doc_and_delete(server):
     doc = Document(
-        name=pytest.ws_python_test_name,
+        name=WORKSPACE_NAME,
         type='Workspace',
         properties={
             'dc:title': 'foo',
         })
-    doc = server.documents.create(doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
         assert isinstance(doc, Document)
-        assert doc.path == pytest.ws_python_tests_path
+        assert doc.path == WORKSPACE_TEST
         assert doc.type == 'Workspace'
         assert doc.get('dc:title') == 'foo'
-        assert server.documents.exists(path=pytest.ws_python_tests_path)
+        assert server.documents.exists(path=WORKSPACE_TEST)
     finally:
         doc.delete()
-    assert not server.documents.exists(path=pytest.ws_python_tests_path)
+    assert not server.documents.exists(path=WORKSPACE_TEST)
 
 
 def test_create_doc_with_space_and_delete(server):
@@ -141,10 +143,10 @@ def test_create_doc_with_space_and_delete(server):
         properties={
             'dc:title': 'My domain',
         })
-    doc = server.documents.create(doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
         assert isinstance(doc, Document)
-        server.documents.get(path=pytest.ws_root_path + '/my domain')
+        server.documents.get(path=WORKSPACE_ROOT + '/my domain')
     finally:
         doc.delete()
 
@@ -190,7 +192,7 @@ def test_fetch_rendition(server):
     with Doc(server, with_blob=True) as doc:
         res = doc.fetch_rendition('xmlExport')
         assert b'<?xml version="1.0" encoding="UTF-8"?>' in res
-        path = '<path>' + pytest.ws_python_tests_path[1:] + '</path>'
+        path = '<path>' + WORKSPACE_TEST[1:] + '</path>'
         assert get_bytes(path) in res
 
 
@@ -308,19 +310,19 @@ def test_query_missing_args(server):
 
 def test_update_doc_and_delete(server):
     doc = Document(
-        name=pytest.ws_python_test_name,
+        name=WORKSPACE_NAME,
         type='Workspace',
         properties={
             'dc:title': 'foo',
         })
-    doc = server.documents.create(doc, parent_path=pytest.ws_root_path)
+    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     assert doc
     try:
         uid = doc.uid
         path = doc.path
         doc.set({'dc:title': 'bar'})
         doc.save()
-        doc = server.documents.get(path=pytest.ws_python_tests_path)
+        doc = server.documents.get(path=WORKSPACE_TEST)
         assert isinstance(doc, Document)
         assert doc.uid == uid
         assert doc.path == path
