@@ -122,7 +122,7 @@ class API(APIEndpoint):
         adapter = 'blob/{}/@convert'.format(xpath)
         if ('converter' not in options
                 and 'type' not in options
-                and'format' not in options):
+                and 'format' not in options):
             raise BadQuery(
                 'One of (converter, type, format) is mandatory in options')
 

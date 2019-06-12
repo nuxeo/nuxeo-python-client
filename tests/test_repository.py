@@ -156,9 +156,15 @@ def test_fetch_acls(server):
         acls = doc.fetch_acls()
         assert len(acls) == 1
         assert acls[0]['name'] == 'inherited'
+
         aces = list(sorted(acls[0]['aces'], key=operator.itemgetter('id')))
+        # 2 on Jenkins, 3 locally ...
+        assert len(aces) in (2, 3)
         assert aces[0]['id'] == 'Administrator:Everything:true:::'
-        assert aces[-1]['id'] == 'members:Read:true:::'
+        assert aces[1]['id'] == 'members:Read:true:::'
+        if len(aces) == 3:
+            # Starts with username, hard to guess
+            assert aces[2]['id'].endswith(':ReadWrite:true:::')
 
 
 def test_fetch_audit(server):
