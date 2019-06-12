@@ -116,20 +116,22 @@ class API(APIEndpoint):
         server_error = None
         for _ in range(MAX_RETRY):
             try:
-                response = super(API, self).post(
+                return super(API, self).post(
                     resource=data,
                     path=path,
                     raw=True,
                     headers=headers
                 )
-                if response:
-                    break
             except HTTPError as e:
                 server_error = e
-        else:
-            chunk = index if chunked else None
+
+        chunk = index if chunked else None
+        try:
             raise UploadError(name, chunk=chunk, info=server_error)
-        return response
+        finally:
+            # Explicitly break a reference cycle
+            server_error = None
+            del server_error
 
     def state(self, path, blob, chunk_size=UPLOAD_CHUNK_SIZE):
         # type: (Text, ActualBlob, int) -> Tuple[OptInt, OptInt, Set, Blob]

@@ -171,27 +171,30 @@ def test_query_empty(server):
 
 
 def test_server_info(server):
+    server_info = server.client.server_info
+
     # At start, no server information
-    server.client._server_info is None
+    assert server.client._server_info is None
 
     # First call
-    assert server.client.server_info()
-    assert isinstance(server.client.server_info(), dict)
+    assert server_info()
+    assert isinstance(server_info(), dict)
 
     # Force the call
     server.client._server_info = None
-    assert server.client.server_info(force=True)
-    assert server.client.server_info() is server.client.server_info()
+    assert server_info() is server_info()
+    assert server_info() is not server_info(force=True)
 
-    # If the sentinel value is not None, then the call should be made to the server
-    info = server.client.server_info()
+    # If the sentinel value is not None, then the call should _not_ be made to the server
+    info = server_info()
     server.client._server_info = {}
-    assert server.client.server_info() is not info
+    assert server_info() is not info
+    assert server_info() == {}
 
     # Bad call
     server.client._server_info = None
-    with SwapAttr(server.client, 'host', 'http://example.org/'):
-        assert not server.client.server_info()
+    with SwapAttr(server.client, 'host', 'http://example-42.org/'):
+        assert not server_info()
 
 
 def test_server_version(server):
@@ -201,7 +204,7 @@ def test_server_version(server):
 
     # Bad call
     server.client._server_info = None
-    with SwapAttr(server.client, 'host', 'http://example.org/'):
+    with SwapAttr(server.client, 'host', 'http://example-42.org/'):
         assert not server.client.server_version
 
 

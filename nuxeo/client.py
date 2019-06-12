@@ -190,6 +190,7 @@ class NuxeoClient(object):
                 url, headers, kwargs.get('params', data if not raw else {}),
                 self._session.cookies))
 
+        exc = None
         try:
             resp = self._session.request(
                 method, url, headers=headers,
@@ -200,13 +201,21 @@ class NuxeoClient(object):
                 raise self._handle_error(exc)
             resp = default
         else:
-            content_size = resp.headers.get('content-length', self.chunk_size)
-            if int(content_size) <= self.chunk_size:
-                content = resp.text
-            else:
-                content = '<Too much data to display>'
-            logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
-                url, content, self._session.cookies))
+            # No need to load chardet and the whole encoding detection
+            # mecanism if we are not in debug mode.
+            # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
+            if logger.getEffectiveLevel() <= logging.DEBUG:
+                content_size = resp.headers.get('content-length', self.chunk_size)
+                if int(content_size) <= self.chunk_size:
+                    content = resp.text
+                else:
+                    content = '<Too much data to display>'
+                logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
+                    url, content, self._session.cookies))
+        finally:
+            # Explicitly break a reference cycle
+            exc = None
+            del exc
 
         return resp
 
