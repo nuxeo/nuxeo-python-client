@@ -4,7 +4,7 @@ Changelog
 2.1.1
 -----
 
-Release date: ``2019-xx-xx``
+Release date: ``2019-06-13``
 
 - `NXPY-97 <https://jira.nuxeo.com/browse/NXPY-97>`__: Remove usage of pytest_namespace to allow using pytest > 4
 - `NXPY-100 <https://jira.nuxeo.com/browse/NXPY-100>`__: Improve memory consumption
