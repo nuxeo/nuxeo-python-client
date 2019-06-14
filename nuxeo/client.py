@@ -201,17 +201,9 @@ class NuxeoClient(object):
                 raise self._handle_error(exc)
             resp = default
         else:
-            # No need to load chardet and the whole encoding detection
-            # mecanism if we are not in debug mode.
-            # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
+            # No need to do more work if nobody will see it
             if logger.getEffectiveLevel() <= logging.DEBUG:
-                content_size = resp.headers.get('content-length', self.chunk_size)
-                if int(content_size) <= self.chunk_size:
-                    content = resp.text
-                else:
-                    content = '<Too much data to display>'
-                logger.debug('Response from {!r}: {!r} with cookies {!r}'.format(
-                    url, content, self._session.cookies))
+                self._log_response(resp)
         finally:
             # Explicitly break a reference cycle
             exc = None
@@ -308,6 +300,31 @@ class NuxeoClient(object):
 
             error = error_class.parse(error_data)
         return error
+
+    def _log_response(self, response):
+        # type: (requests.Response) -> None
+        """
+        Log the server's response based on its content type.
+
+        :param response: The server's response to handle
+        """
+
+        content_type = response.headers.get('content-type', 'application/octet-stream')
+
+        if not response.content:
+            # response.content is empty when *void_op* is True,
+            # meaning we do not want to get back what we sent
+            # or the operation does not return anything by default
+            content = '<void operation>'
+        elif 'application/octet-stream' in content_type:
+            content = '<binary data>'
+        elif 'application/json' in content_type or content_type.startswith('text/'):
+            content = response.content.decode('utf-8', errors="replace")
+        else:
+            content = '<not yet handled, content-type={!r}>'.format(content_type)
+
+        logger.debug('Response from {!r}: {!r} with headers {!r} and cookies {!r}'.format(
+            response.url, content, response.headers, self._session.cookies))
 
 
 class Nuxeo(object):
