@@ -191,8 +191,8 @@ class API(APIEndpoint):
         uploader.upload()
         return uploader.blob
 
-    def execute(self, batch, operation, file_idx=None, params=None):
-        # type: (Batch, Text, Optional[int], Optional[Dict[Text,Any]]) -> Any
+    def execute(self, batch, operation, file_idx=None, params=None, void_op=True):
+        # type: (Batch, Text, Optional[int], Optional[Dict[Text,Any]], bool) -> Any
         """
         Execute an operation with the batch or one of its files as an input.
 
@@ -200,6 +200,8 @@ class API(APIEndpoint):
         :param operation: operation to execute
         :param file_idx: if not None, sole input of the operation
         :param params: parameters for the operation
+        :param void_op: if True, the body of the response
+        from the server will be empty
         :return: the output of the operation
         """
         path = '{}/{}'.format(self.endpoint, batch.uid)
@@ -208,7 +210,11 @@ class API(APIEndpoint):
 
         path = '{}/execute/{}'.format(path, operation)
 
-        return self.client.request('POST', path, data={'params': params})
+        headers = {}
+        if void_op:
+            headers = {'X-NXVoidOperation': 'true'}
+
+        return self.client.request('POST', path, data={'params': params}, headers=headers or None)
 
     def attach(self, batch, doc, file_idx=None):
         # type: (Batch, Text, Optional[int]) -> Any
