@@ -315,7 +315,7 @@ class NuxeoClient(object):
             # response.content is empty when *void_op* is True,
             # meaning we do not want to get back what we sent
             # or the operation does not return anything by default
-            content = '<void operation>'
+            content = '<no content>'
         elif 'application/octet-stream' in content_type:
             content = '<binary data>'
         elif 'application/json' in content_type or content_type.startswith('text/'):
