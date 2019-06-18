@@ -203,7 +203,7 @@ class NuxeoClient(object):
         else:
             # No need to do more work if nobody will see it
             if logger.getEffectiveLevel() <= logging.DEBUG:
-                self._log_response(resp)
+                self._log_response(resp, self.chunk_size)
         finally:
             # Explicitly break a reference cycle
             exc = None
@@ -301,15 +301,20 @@ class NuxeoClient(object):
             error = error_class.parse(error_data)
         return error
 
-    def _log_response(self, response):
-        # type: (requests.Response) -> None
+    @staticmethod
+    def _log_response(response, limit_size):
+        # type: (requests.Response, int) -> None
         """
         Log the server's response based on its content type.
 
         :param response: The server's response to handle
+        :param limit_size: Maximum size to not overflow when printing raw content
+        of the response
         """
 
-        content_type = response.headers.get('content-type', 'application/octet-stream')
+        headers = response.headers
+        content_type = headers.get('content-type', 'application/octet-stream')
+        content = '<not yet handled, content-type={!r}>'.format(content_type)
 
         if not response.content:
             # response.content is empty when *void_op* is True,
@@ -319,12 +324,16 @@ class NuxeoClient(object):
         elif 'application/octet-stream' in content_type:
             content = '<binary data>'
         elif 'application/json' in content_type or content_type.startswith('text/'):
-            content = response.content.decode('utf-8', errors="replace")
-        else:
-            content = '<not yet handled, content-type={!r}>'.format(content_type)
+            content_size = int(headers.get('content-length', 0))
+            content = '<too much data to display ({:,} bytes)>'.format(content_size)
+            if content_size <= limit_size:
+                # Do not use response.text as it will load the chardet module and its
+                # heavy encoding detection mecanism. The server will only return UTF-8.
+                # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
+                content = response.content.decode('utf-8', errors='replace')
 
         logger.debug('Response from {!r}: {!r} with headers {!r} and cookies {!r}'.format(
-            response.url, content, response.headers, self._session.cookies))
+            response.url, content, headers, response.cookies))
 
 
 class Nuxeo(object):
