@@ -13,7 +13,7 @@ from .auth import TokenAuth
 from .compat import text
 from .constants import (CHUNK_SIZE, DEFAULT_API_PATH, DEFAULT_APP_NAME,
                         DEFAULT_URL)
-from .exceptions import BadQuery, HTTPError, Unauthorized
+from .exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from .utils import json_helper
 
 try:
@@ -26,6 +26,14 @@ except ImportError:
     pass
 
 logger = logging.getLogger(__name__)
+
+
+# Custom exception to raise based on the HTTP status code
+# (default will be HTTPError)
+HTTP_ERROR = {
+    requests.codes.forbidden: Forbidden,
+    requests.codes.unauthorized: Unauthorized,
+}
 
 
 class NuxeoClient(object):
@@ -294,11 +302,8 @@ class NuxeoClient(object):
                 error_data = {'status': error.response.status_code,
                               'message': error.response.content}
 
-            error_class = (Unauthorized
-                           if error_data.get('status') in (401, 403)
-                           else HTTPError)
-
-            error = error_class.parse(error_data)
+            error_cls = HTTP_ERROR.get(error_data.get('status'), HTTPError)
+            error = error_cls.parse(error_data)
         return error
 
     @staticmethod

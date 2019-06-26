@@ -9,11 +9,14 @@ Release date: ``2019-xx-xx``
 - `NXPY-102 <https://jira.nuxeo.com/browse/NXPY-102>`__: Set Upload operations to void operations
 - `NXPY-103 <https://jira.nuxeo.com/browse/NXPY-103>`__: Launch flake8 on actual client data
 - `NXPY-104 <https://jira.nuxeo.com/browse/NXPY-104>`__: Do not log server response based on content length but content type
+- `NXPY-105 <https://jira.nuxeo.com/browse/NXPY-105>`__: Make a diffrence between HTTP 401 and 403 errors
 
 Technical changes
 -----------------
 
-- Added `void_op=True` keyword argument to nuxeo/uploads.py::\ ``API.execute()``
+- Added nuxeo/client.py::\ ``HTTP_ERROR``
+- Added nuxeo/exceptions.py::\ ``Forbidden``
+- Added ``void_op=True`` keyword argument to nuxeo/uploads.py::\ ``API.execute()``
 
 2.1.1
 -----
