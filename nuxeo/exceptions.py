@@ -80,12 +80,16 @@ class HTTPError(NuxeoError):
         return model
 
 
+class Forbidden(HTTPError):
+    """ Exception thrown when the HTTPError code is 403. """
+
+
 class InvalidBatch(NuxeoError):
     """ Exception thrown when accessing inexistant or deleted batches. """
 
 
 class Unauthorized(HTTPError):
-    """ Exception thrown when the HTTPError code is 401 or 403. """
+    """ Exception thrown when the HTTPError code is 401. """
 
 
 class UnavailableConvertor(NuxeoError):

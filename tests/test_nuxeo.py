@@ -12,7 +12,7 @@ from nuxeo import constants
 from nuxeo.auth import TokenAuth
 from nuxeo.compat import get_bytes, long, text
 from nuxeo.endpoint import APIEndpoint
-from nuxeo.exceptions import BadQuery, HTTPError, Unauthorized
+from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 from nuxeo.utils import SwapAttr
 
@@ -141,11 +141,13 @@ def test_file_out(server):
         file_out='test', callback=callback,
         lock_path=lock_path, unlock_path=unlock_path)
 
-    with open(file_out) as f:
-        file_content = json.loads(f.read())
-        resp_content = operation.execute()
-        assert file_content == resp_content
-    os.remove(file_out)
+    try:
+        with open(file_out) as f:
+            file_content = json.loads(f.read())
+            resp_content = operation.execute()
+            assert file_content == resp_content
+    finally:
+        os.remove(file_out)
 
 
 def test_get_operations(server):
@@ -252,7 +254,7 @@ def test_server_reachable(server):
 @pytest.mark.skipif(
     requests.__version__ < '2.12.2',
     reason='Requests >= 2.12.2 required for auth unicode support.')
-def test_unauthorized(server):
+def test_forbidden(server):
     username = 'ミカエル'
     password = 'test'
     user = server.users.create(
@@ -261,6 +263,24 @@ def test_unauthorized(server):
             'password': password
         }))
 
+    auth = server.client.auth
+    server.client.auth = (get_bytes(username), password)
+    try:
+        with pytest.raises(Forbidden) as e:
+            server.users.create(
+                User(properties={
+                    'username': 'another_one',
+                    'password': 'test'
+                }))
+        assert text(e.value)
+    finally:
+        server.client.auth = auth
+        user.delete()
+
+
+def test_unauthorized(server):
+    username = 'alice'
+    password = 'test'
     auth = server.client.auth
     server.client.auth = (get_bytes(username), password)
     try:
@@ -273,4 +293,3 @@ def test_unauthorized(server):
         assert text(e.value)
     finally:
         server.client.auth = auth
-        user.delete()
