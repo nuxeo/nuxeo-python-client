@@ -1,10 +1,10 @@
 Changelog
 =========
 
-2.1.2
+2.2.0
 -----
 
-Release date: ``2019-xx-xx``
+Release date: ``2019-06-27``
 
 - `NXPY-102 <https://jira.nuxeo.com/browse/NXPY-102>`__: Set Upload operations to void operations
 - `NXPY-103 <https://jira.nuxeo.com/browse/NXPY-103>`__: Launch flake8 on actual client data
