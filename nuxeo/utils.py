@@ -78,7 +78,7 @@ def get_digester(digest):
     func = get_digest_hash(algo) if algo else None
 
     if not func:
-        logger.error('No valid hash algorithm found for digest %r', digest)
+        logger.warning('No valid hash algorithm found for digest %r', digest)
 
     return func
 
