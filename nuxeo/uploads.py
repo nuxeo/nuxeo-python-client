@@ -272,6 +272,7 @@ class Uploader(object):
         self.callback = callback
         self.headers = service.headers.copy()
 
+        self.blob.uploadType = 'chunked' if self.chunked else 'normal'
         self.chunk_size = self.blob.size or None
         self.chunk_count = 1
         self.path = '{}/{}'.format(self.batch.batchId, self.batch._upload_idx)
@@ -304,6 +305,7 @@ class Uploader(object):
     def process(self, response):
         # type: (Blob) -> None
         self.blob.fileIdx = response.fileIdx
+        self.blob.uploadedSize = int(response.uploadedSize)
 
     def upload(self):
         # type: () -> None
@@ -372,25 +374,30 @@ class ChunkUploader(Uploader):
         itself since it contains all relevant data.
         """
         with self.blob as src:
-
             while self._to_upload:
                 # Get the index of a chunk to upload
                 index = self._to_upload.pop()
+
                 # Seek to the right position
                 src.seek(index * self.chunk_size)
+
                 # Read a chunk of data
                 data = src.read(self.chunk_size)
+
                 # Upload it
                 self.process(self.service.send_data(
                     self.blob.name, data, self.path, self.chunked, index, self.headers
                 ))
+
                 # If the set of chunks to upload is empty, check whether
                 # the server has received all of them.
                 if not self._to_upload:
                     self._compute_chunks_left()
+
                 # Call the callback if it exists
                 if callable(self.callback):
                     self.callback(self)
+
                 # Yield to the upper scope
                 yield self
 
@@ -398,8 +405,10 @@ class ChunkUploader(Uploader):
 
     def process(self, response):
         # type: (Blob) -> None
-        super(ChunkUploader, self).process(response)
-        self.blob.uploadedChunkIds = response.uploadedChunkIds
+        self.blob.fileIdx = response.fileIdx
+        uploaded_chunks = response.uploadedChunkIds
+        self.blob.uploadedChunkIds = uploaded_chunks
+        self.blob.uploadedSize = len(uploaded_chunks) * self.chunk_size
 
     def upload(self):
         # type: () -> None
