@@ -169,19 +169,38 @@ def test_operation(server):
 
 @pytest.mark.parametrize('chunked', [False, True])
 def test_upload(chunked, server):
-    def callback(*args):
-        assert args
+    def callback(upload):
+        assert upload
+        assert isinstance(upload.blob.uploadedChunkIds, list)
+        assert isinstance(upload.blob.uploadedSize, int)
+
+        if not chunked:
+            assert upload.blob.uploadedSize == file_size
+            assert upload.blob.uploadType == 'normal'
+        else:
+            # In chunked mode, we should have 1024, 2048, 3072 and 4096 respectively
+            sizes = {
+                1: 1024,
+                2: 1024 * 2,
+                3: 1024 * 3,
+                4: 1024 * 4,
+            }
+            assert upload.blob.uploadedSize == sizes[len(upload.blob.uploadedChunkIds)]
+            assert upload.blob.uploadType == 'chunked'
 
     batch = server.uploads.batch()
+
+    chunk_size = 1024
+    file_size = 4096 if chunked else 1024
     file_in, file_out = 'test_in', 'test_out'
     with open(file_in, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+        f.write(b'\x00' * file_size)
 
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         blob = FileBlob(file_in, mimetype='application/octet-stream')
         assert repr(blob)
-        assert batch.upload(blob, chunked=chunked, callback=callback)
+        assert batch.upload(blob, chunked=chunked, callback=callback, chunk_size=chunk_size)
         operation = server.operations.new('Blob.AttachOnDocument')
         operation.params = {'document': WORKSPACE_ROOT + '/Document'}
         operation.input_obj = batch.get(0)

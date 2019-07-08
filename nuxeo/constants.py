@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 CHECK_PARAMS = False
 
 # Chunk size to download files
-CHUNK_SIZE = 8192  # 8 Kio
+CHUNK_SIZE = 8192  # 8 KiB
 
 # API paths
 DEFAULT_API_PATH = 'api/v1'
@@ -22,4 +22,4 @@ DEFAULT_APP_NAME = 'Python client'
 MAX_RETRY = 3
 
 # Size of chunks for the upload
-UPLOAD_CHUNK_SIZE = 20 * 1024 * 1024  # 20 Mio
+UPLOAD_CHUNK_SIZE = 20 * 1024 * 1024  # 20 MiB

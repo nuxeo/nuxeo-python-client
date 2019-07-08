@@ -8,17 +8,17 @@ You can always get the latest version of this module at:
 If that URL should fail, try contacting the author.
 
 Contributors:
-    Antoine Taillefer <ataillefer@nuxeo.com>
+    Antoine Taillefer
     Rémi Cattiau
     Mickaël Schoentgen <mschoentgen@nuxeo.com>
-    Léa Klein <lklein@nuxeo.com>
+    Léa Klein
     and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
 from __future__ import unicode_literals
 
 
 __author__ = 'Nuxeo'
-__version__ = '2.2.1'
+__version__ = '2.2.2'
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 

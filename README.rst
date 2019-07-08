@@ -73,10 +73,10 @@ In the `nuxeo/constants.py <nuxeo/constants.py>`__ file, you have several consta
 used throughout the client that you can change to fit your needs. Some of them are:
 
 -  ``CHECK_PARAMS`` (False by default), to check operation's parameters for each and every HTTP calls.
--  ``CHUNK_LIMIT`` (10 Mio by default), the size above which the upload will automatically be chunked.
--  ``CHUNK_SIZE`` (8 Kio by default), the size of the chunks when downloading.
+-  ``CHUNK_LIMIT`` (10 MiB by default), the size above which the upload will automatically be chunked.
+-  ``CHUNK_SIZE`` (8 KiB by default), the size of the chunks when downloading.
 -  ``MAX_RETRY`` (3 by default), the number of retries for the upload of a given blob/chunk.
--  ``UPLOAD_CHUNK_SIZE`` (256 Kio by default), the size of the chunks when uploading.
+-  ``UPLOAD_CHUNK_SIZE`` (20 MiB by default), the size of the chunks when uploading.
 
 
 Run NXQL Queries

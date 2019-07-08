@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.2.2
+-----
+
+Release date: ``2019-xx-xx``
+
+- `NXPY-112 <https://jira.nuxeo.com/browse/NXPY-112>`__: Update uploadedSize on each and every upload iteration
+
 2.2.1
 -----
 
