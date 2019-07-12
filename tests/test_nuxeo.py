@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 import os
 
 import pytest
@@ -11,6 +12,7 @@ from requests.exceptions import ConnectionError
 from nuxeo import constants
 from nuxeo.auth import TokenAuth
 from nuxeo.compat import get_bytes, long, text
+from nuxeo.constants import MAX_RETRY, RETRY_METHODS
 from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
@@ -170,6 +172,20 @@ def test_query_empty(server):
     params = {'properties': '*'}
     search = server.client.query(query, params=params)
     assert not search.get('entries')
+
+
+@pytest.mark.parametrize('method', RETRY_METHODS)
+def test_max_retry(caplog, retry_server, method):
+    caplog.set_level(logging.WARNING)
+    session = retry_server.client._session
+
+    with pytest.raises(requests.exceptions.ConnectionError):
+        session.request(method, 'http://example.42.org')
+
+    for retry_number, record in enumerate(caplog.records, 1):
+        assert record.levelname == 'WARNING'
+        text = 'Retrying (Retry(total={}'.format(MAX_RETRY - retry_number)
+        assert text in record.message
 
 
 def test_server_info(server):

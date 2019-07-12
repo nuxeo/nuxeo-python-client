@@ -7,8 +7,21 @@ Changelog
 Release date: ``2019-xx-xx``
 
 - `NXPY-112 <https://jira.nuxeo.com/browse/NXPY-112>`__: Update uploadedSize on each and every upload iteration
+- `NXPY-110 <https://jira.nuxeo.com/browse/NXPY-110>`__: Max retries for all connections
 - `NXPY-113 <https://jira.nuxeo.com/browse/NXPY-113>`__: Use ``requests.sessions.Session`` rather than the deprecated ``requests.session``
 - `NXPY-114 <https://jira.nuxeo.com/browse/NXPY-114>`__: Do not log the response of the CMIS endpoint
+
+Technical changes
+-----------------
+
+- Added ``NuxeoClient.disable_retry()``
+- Added ``NuxeoClient.enable_retry()``
+- Added ``NuxeoClient.retries``
+- Added nuxeo/constants.py::\ ``MAX_RETRY``
+- Added nuxeo/constants.py::\ ``RETRY_BACKOFF_FACTOR``
+- Added nuxeo/constants.py::\ ``RETRY_METHODS``
+- Added nuxeo/constants.py::\ ``RETRY_STATUS_CODES``
+- Changed nuxeo/exceptions.py::\ ``HTTPError`` to inherits from ``requests.exceptions.RetryError`` and ``NuxeoError``
 
 2.2.1
 -----

@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 import os
 
+import nuxeo.constants
+
 
 def setup_sentry():
     """ Setup Sentry. """
@@ -27,3 +29,6 @@ def setup_sentry():
 
 
 setup_sentry()
+
+# Speed-up testing by drastically reducing the backoff factor for retries
+nuxeo.constants.RETRY_BACKOFF_FACTOR = 0.01

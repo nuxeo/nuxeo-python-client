@@ -45,4 +45,16 @@ def server():
                    auth=('Administrator', 'Administrator'),
                    cookies=cookies)
     server.client.set(schemas=['dublincore'])
+
+    # We do not need the retry feature in tests as it breaks too many uploads tests.
+    # But we will test that particular feature in one specific test.
+    server.client.disable_retry()
+
     return server
+
+
+@pytest.fixture(scope='function')
+def retry_server(server):
+    server.client.enable_retry()
+    yield server
+    server.client.disable_retry()

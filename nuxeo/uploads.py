@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from .compat import get_bytes, quote, text
-from .constants import MAX_RETRY, UPLOAD_CHUNK_SIZE
+from .constants import UPLOAD_CHUNK_SIZE
 from .endpoint import APIEndpoint
 from .exceptions import HTTPError, UploadError
 from .models import Batch, Blob
@@ -113,25 +113,19 @@ class API(APIEndpoint):
         if chunked:
             headers['X-Upload-Chunk-Index'] = text(index)
 
-        server_error = None
-        for _ in range(MAX_RETRY):
-            try:
-                return super(API, self).post(
-                    resource=data,
-                    path=path,
-                    raw=True,
-                    headers=headers
-                )
-            except HTTPError as e:
-                server_error = e
-
-        chunk = index if chunked else None
         try:
-            raise UploadError(name, chunk=chunk, info=server_error)
+            return super(API, self).post(
+                resource=data,
+                path=path,
+                raw=True,
+                headers=headers
+            )
+        except HTTPError as e:
+            raise UploadError(name, chunk=index if chunked else None, info=e)
         finally:
             # Explicitly break a reference cycle
-            server_error = None
-            del server_error
+            e = None
+            del e
 
     def state(self, path, blob, chunk_size=UPLOAD_CHUNK_SIZE):
         # type: (Text, ActualBlob, int) -> Tuple[OptInt, OptInt, Set, Blob]
