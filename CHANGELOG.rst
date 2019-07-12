@@ -7,6 +7,7 @@ Changelog
 Release date: ``2019-xx-xx``
 
 - `NXPY-112 <https://jira.nuxeo.com/browse/NXPY-112>`__: Update uploadedSize on each and every upload iteration
+- `NXPY-114 <https://jira.nuxeo.com/browse/NXPY-114>`__: Do not log the response of the CMIS endpoint
 
 2.2.1
 -----

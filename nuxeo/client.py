@@ -321,7 +321,11 @@ class NuxeoClient(object):
         content_type = headers.get('content-type', 'application/octet-stream')
         content = '<not yet handled, content-type={!r}>'.format(content_type)
 
-        if not response.content:
+        if response.url.endswith('json/cmis'):
+            # This endpoint returns too many information and pollute logs.
+            # Besides contents of this call are stored into the .server_info attr.
+            content = '<CMIS details saved into the *server_info* attr>'
+        elif not response.content:
             # response.content is empty when *void_op* is True,
             # meaning we do not want to get back what we sent
             # or the operation does not return anything by default
