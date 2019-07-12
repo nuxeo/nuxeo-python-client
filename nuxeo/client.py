@@ -71,7 +71,7 @@ class NuxeoClient(object):
         }
         self.schemas = kwargs.get('schemas', '*')
         self.repository = kwargs.pop('repository', 'default')
-        self._session = requests.session()
+        self._session = requests.sessions.Session()
         cookies = kwargs.pop('cookies', None)
         if cookies:
             self._session.cookies = cookies
