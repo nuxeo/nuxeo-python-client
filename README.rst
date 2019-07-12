@@ -75,7 +75,7 @@ used throughout the client that you can change to fit your needs. Some of them a
 -  ``CHECK_PARAMS`` (False by default), to check operation's parameters for each and every HTTP calls.
 -  ``CHUNK_LIMIT`` (10 MiB by default), the size above which the upload will automatically be chunked.
 -  ``CHUNK_SIZE`` (8 KiB by default), the size of the chunks when downloading.
--  ``MAX_RETRY`` (3 by default), the number of retries for the upload of a given blob/chunk.
+-  ``MAX_RETRY`` (5 by default), the number of retries for connection error on any HTTP call.
 -  ``UPLOAD_CHUNK_SIZE`` (20 MiB by default), the size of the chunks when uploading.
 
 

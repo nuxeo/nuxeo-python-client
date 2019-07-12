@@ -18,8 +18,19 @@ Default value for the:
 """
 DEFAULT_APP_NAME = 'Python client'
 
-# Retries for each upload/chunk upload before abandoning
-MAX_RETRY = 3
+# Retries for each HTTP call on conection error
+MAX_RETRY = 5
+
+# Backoff factor between each retry
+# Ex: with 0.2 then sleep() will sleep for [0.2s, 0.4s, 0.8s, ...] between retries
+# Ex: with 1 then sleep() will sleep for [1s, 2s, 4s, ...] between retries
+RETRY_BACKOFF_FACTOR = 1
+
+# HTTP methods we want to handle in retries
+RETRY_METHODS = frozenset(['GET', 'POST', 'PUT', 'DELETE'])
+
+# HTTP status code to handle for retries
+RETRY_STATUS_CODES = [429, 500, 503, 504]
 
 # Size of chunks for the upload
 UPLOAD_CHUNK_SIZE = 20 * 1024 * 1024  # 20 MiB

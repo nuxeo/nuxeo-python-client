@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from requests.exceptions import RetryError
+
 from .compat import text
 
 try:
@@ -46,7 +48,7 @@ class CorruptedFile(NuxeoError):
         return repr(self)
 
 
-class HTTPError(NuxeoError):
+class HTTPError(RetryError, NuxeoError):
     """ Exception thrown when the server returns an error. """
     _valid_properties = {
         'status': None,

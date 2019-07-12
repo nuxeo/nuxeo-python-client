@@ -4,15 +4,25 @@ from __future__ import unicode_literals
 import atexit
 import json
 import logging
+from urllib3.util.retry import Retry
 
 import requests
+from requests.adapters import HTTPAdapter
 
 from . import (__version__, directories, documents, groups,
                operations, tasks, uploads, users, workflows)
 from .auth import TokenAuth
 from .compat import text
-from .constants import (CHUNK_SIZE, DEFAULT_API_PATH, DEFAULT_APP_NAME,
-                        DEFAULT_URL)
+from .constants import (
+    CHUNK_SIZE,
+    DEFAULT_API_PATH,
+    DEFAULT_APP_NAME,
+    DEFAULT_URL,
+    MAX_RETRY,
+    RETRY_BACKOFF_FACTOR,
+    RETRY_METHODS,
+    RETRY_STATUS_CODES,
+)
 from .exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from .utils import json_helper
 
@@ -86,6 +96,16 @@ class NuxeoClient(object):
         if not self.host.endswith('/'):
             self.host += '/'
 
+        # The retry adapter
+        self.retries = Retry(
+            total=MAX_RETRY,
+            backoff_factor=RETRY_BACKOFF_FACTOR,
+            method_whitelist=RETRY_METHODS,
+            status_forcelist=RETRY_STATUS_CODES)
+
+        # Install the retries mecanism
+        self.enable_retry()
+
     def __repr__(self):
         # type: () -> Text
         fmt = '{name}<host={cls.host!r}, version={cls.server_version!r}>'
@@ -98,6 +118,21 @@ class NuxeoClient(object):
     def on_exit(self):
         # type: () -> None
         self._session.close()
+
+    def enable_retry(self):
+        # type: () -> None
+        """ Set a max retry for all connection errors with an adaptative backoff. """
+        self._session.mount('https://', HTTPAdapter(max_retries=self.retries))
+        self._session.mount('http://', HTTPAdapter(max_retries=self.retries))
+
+    def disable_retry(self):
+        # type: () -> None
+        """
+        Restore default mount points to disable the eventual retry
+        adapters set with .enable_retry().
+        """
+        self._session.mount('https://', HTTPAdapter())
+        self._session.mount('http://', HTTPAdapter())
 
     def query(
         self,

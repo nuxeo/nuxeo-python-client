@@ -249,7 +249,7 @@ def test_get_uploader(server):
             pass
 
 
-def test_uploaderror(server):
+def test_upload_error(server):
     batch = server.uploads.batch()
     file_in = 'test_in'
     with open(file_in, 'wb') as f:
@@ -281,8 +281,10 @@ def test_uploaderror(server):
             pass
 
 
-def test_upload_retry(server):
+def test_upload_retry(retry_server):
+    server = retry_server
     close_server = threading.Event()
+
     with SwapAttr(server.client, 'host', 'http://localhost:8081/nuxeo/'):
         try:
             serv = Server.upload_response_server(
@@ -316,7 +318,7 @@ def test_upload_resume(server):
                 wait_to_close_event=close_server,
                 port=8081,
                 requests_to_handle=20,
-                fail_args={'fail_at': 4, 'fail_number': 3}
+                fail_args={'fail_at': 4, 'fail_number': 1}
             )
             file_in = 'test_in'
 
