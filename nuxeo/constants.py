@@ -30,5 +30,9 @@ RETRY_METHODS = frozenset(["GET", "POST", "PUT", "DELETE"])
 # HTTP status code to handle for retries
 RETRY_STATUS_CODES = [429, 500, 503, 504]
 
+# Connection and read timeout, in seconds
+TIMEOUT_CONNECT = 5
+TIMEOUT_READ = 30
+
 # Size of chunks for the upload
 UPLOAD_CHUNK_SIZE = 20 * 1024 * 1024  # 20 MiB

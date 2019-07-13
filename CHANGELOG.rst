@@ -8,6 +8,7 @@ Release date: ``2019-xx-xx``
 
 - `NXPY-112 <https://jira.nuxeo.com/browse/NXPY-112>`__: Update uploadedSize on each and every upload iteration
 - `NXPY-110 <https://jira.nuxeo.com/browse/NXPY-110>`__: Max retries for all connections
+- `NXPY-111 <https://jira.nuxeo.com/browse/NXPY-111>`__: Add timeouts handling
 - `NXPY-113 <https://jira.nuxeo.com/browse/NXPY-113>`__: Use ``requests.sessions.Session`` rather than the deprecated ``requests.session``
 - `NXPY-114 <https://jira.nuxeo.com/browse/NXPY-114>`__: Do not log the response of the CMIS endpoint
 - `NXPY-117 <https://jira.nuxeo.com/browse/NXPY-117>`__: Use black for a one-shot big clean-up
@@ -22,6 +23,8 @@ Technical changes
 - Added nuxeo/constants.py::\ ``RETRY_BACKOFF_FACTOR``
 - Added nuxeo/constants.py::\ ``RETRY_METHODS``
 - Added nuxeo/constants.py::\ ``RETRY_STATUS_CODES``
+- Added nuxeo/constants.py::\ ``TIMEOUT_CONNECT``
+- Added nuxeo/constants.py::\ ``TIMEOUT_READ``
 - Changed nuxeo/exceptions.py::\ ``HTTPError`` to inherits from ``requests.exceptions.RetryError`` and ``NuxeoError``
 
 2.2.1

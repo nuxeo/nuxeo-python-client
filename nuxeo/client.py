@@ -31,6 +31,8 @@ from .constants import (
     RETRY_BACKOFF_FACTOR,
     RETRY_METHODS,
     RETRY_STATUS_CODES,
+    TIMEOUT_CONNECT,
+    TIMEOUT_READ,
 )
 from .exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from .utils import json_helper
@@ -81,6 +83,9 @@ class NuxeoClient(object):
         self.host = host
         self.api_path = api_path
         self.chunk_size = chunk_size
+
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = (TIMEOUT_CONNECT, TIMEOUT_READ)
 
         version = kwargs.pop("version", "")
         app_name = kwargs.pop("app_name", DEFAULT_APP_NAME)
