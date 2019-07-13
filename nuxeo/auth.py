@@ -7,6 +7,7 @@ from .compat import get_bytes
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Text  # noqa
         from requests import Request  # noqa
@@ -23,7 +24,7 @@ class TokenAuth(AuthBase):
 
     def __eq__(self, other):
         # type: (object) -> bool
-        return self.token == getattr(other, 'token', None)
+        return self.token == getattr(other, "token", None)
 
     def __ne__(self, other):
         # type: (object) -> bool
@@ -31,5 +32,5 @@ class TokenAuth(AuthBase):
 
     def __call__(self, r):
         # type: (Request) -> Request
-        r.headers[get_bytes('X-Authentication-Token')] = self.token
+        r.headers[get_bytes("X-Authentication-Token")] = self.token
         return r

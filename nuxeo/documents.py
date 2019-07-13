@@ -9,6 +9,7 @@ from .workflows import API as WorkflowsAPI
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Any, Dict, List, Optional, Text, Union  # noqa
         from .client import NuxeoClient  # noqa
@@ -20,6 +21,7 @@ except ImportError:
 
 class API(APIEndpoint):
     """ Endpoint for documents. """
+
     def __init__(
         self,
         client,  # type: NuxeoClient
@@ -32,7 +34,8 @@ class API(APIEndpoint):
         self.operations = operations
         self.workflows_api = workflows
         super(API, self).__init__(
-            client, endpoint=endpoint, cls=Document, headers=headers)
+            client, endpoint=endpoint, cls=Document, headers=headers
+        )
 
     def get(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> Document
@@ -56,7 +59,8 @@ class API(APIEndpoint):
         :return: the created document
         """
         return super(API, self).post(
-            document, path=self._path(uid=parent_id, path=parent_path))
+            document, path=self._path(uid=parent_id, path=parent_path)
+        )
 
     create = post  # Alias for clarity
 
@@ -68,8 +72,7 @@ class API(APIEndpoint):
         :param document: the document to update
         :return: the updated document
         """
-        return super(API, self).put(
-            document, path=self._path(uid=document.uid))
+        return super(API, self).put(document, path=self._path(uid=document.uid))
 
     def delete(self, document_id):
         # type: (Text) -> None
@@ -106,7 +109,8 @@ class API(APIEndpoint):
         :param params: the permissions to add
         """
         self.operations.execute(
-            command='Document.AddPermission', input_obj=uid, params=params)
+            command="Document.AddPermission", input_obj=uid, params=params
+        )
 
     def convert(self, uid, options):
         # type: (Text, Dict[Text, Text]) -> Union[Text, Dict[Text, Any]]
@@ -118,22 +122,23 @@ class API(APIEndpoint):
                         or converter for the blob
         :return: the response from the server
         """
-        xpath = options.pop('xpath', 'blobholder:0')
-        adapter = 'blob/{}/@convert'.format(xpath)
-        if ('converter' not in options
-                and 'type' not in options
-                and 'format' not in options):
-            raise BadQuery(
-                'One of (converter, type, format) is mandatory in options')
+        xpath = options.pop("xpath", "blobholder:0")
+        adapter = "blob/{}/@convert".format(xpath)
+        if (
+            "converter" not in options
+            and "type" not in options
+            and "format" not in options
+        ):
+            raise BadQuery("One of (converter, type, format) is mandatory in options")
 
         try:
             return super(API, self).get(
-                path=self._path(uid=uid), params=options,
-                adapter=adapter, raw=True)
+                path=self._path(uid=uid), params=options, adapter=adapter, raw=True
+            )
         except HTTPError as e:
-            if 'is not registered' in e.message:
+            if "is not registered" in e.message:
                 raise BadQuery(e.message)
-            if 'is not available' in e.message:
+            if "is not available" in e.message:
                 raise UnavailableConvertor(options)
             raise e
 
@@ -146,9 +151,9 @@ class API(APIEndpoint):
         :return: the ACLs
         """
         req = super(API, self).get(
-            path=self._path(uid=uid), cls=dict, headers=self.headers,
-            enrichers=['acls'])
-        return req['contextParameters']['acls']
+            path=self._path(uid=uid), cls=dict, headers=self.headers, enrichers=["acls"]
+        )
+        return req["contextParameters"]["acls"]
 
     def fetch_audit(self, uid):
         # type: (Text) -> Dict[Text, Any]
@@ -158,8 +163,7 @@ class API(APIEndpoint):
         :param uid: the uid of the document
         :return: the audit
         """
-        return super(API, self).get(
-            self._path(uid=uid), adapter='audit', cls=dict)
+        return super(API, self).get(self._path(uid=uid), adapter="audit", cls=dict)
 
     def fetch_lock_status(self, uid):
         # type: (Text) -> Dict[Text, Any]
@@ -170,14 +174,10 @@ class API(APIEndpoint):
         :return: the lock status
         """
         headers = self.headers or {}
-        headers.update({'fetch-document': 'lock'})
-        req = super(API, self).get(
-            path=self._path(uid=uid), cls=dict, headers=headers)
-        if 'lockOwner' in req:
-            return {
-                'lockCreated': req['lockOwner'],
-                'lockOwner': req['lockOwner']
-            }
+        headers.update({"fetch-document": "lock"})
+        req = super(API, self).get(path=self._path(uid=uid), cls=dict, headers=headers)
+        if "lockOwner" in req:
+            return {"lockCreated": req["lockOwner"], "lockOwner": req["lockOwner"]}
         else:
             return {}
 
@@ -190,9 +190,8 @@ class API(APIEndpoint):
         :param name: the name of the rendition
         :return: the corresponding rendition
         """
-        adapter = 'rendition/{}'.format(name)
-        return super(API, self).get(
-            path=self._path(uid=uid), raw=True, adapter=adapter)
+        adapter = "rendition/{}".format(name)
+        return super(API, self).get(path=self._path(uid=uid), raw=True, adapter=adapter)
 
     def fetch_renditions(self, uid):
         # type: (Text) -> List[Union[Text, bytes]]
@@ -203,12 +202,10 @@ class API(APIEndpoint):
         :return: the renditions
         """
         headers = self.headers or {}
-        headers.update({'enrichers-document': 'renditions'})
+        headers.update({"enrichers-document": "renditions"})
 
-        req = super(API, self).get(
-            path=self._path(uid=uid), cls=dict, headers=headers)
-        return [rend['name']
-                for rend in req['contextParameters']['renditions']]
+        req = super(API, self).get(path=self._path(uid=uid), cls=dict, headers=headers)
+        return [rend["name"] for rend in req["contextParameters"]["renditions"]]
 
     def follow_transition(self, uid, name):
         # type: (Text, Text) -> Dict[Text, Any]
@@ -218,12 +215,12 @@ class API(APIEndpoint):
         :param uid: the uid of the target document
         :param name: the name of the transition
         """
-        params = {'value': name}
+        params = {"value": name}
         return self.operations.execute(
-            command='Document.FollowLifecycleTransition',
-            input_obj=uid, params=params)
+            command="Document.FollowLifecycleTransition", input_obj=uid, params=params
+        )
 
-    def fetch_blob(self, uid=None, path=None, xpath='blobholder:0'):
+    def fetch_blob(self, uid=None, path=None, xpath="blobholder:0"):
         # type: (Optional[Text], Optional[Text], Text) -> Blob
         """
         Get the blob of a document.
@@ -233,9 +230,10 @@ class API(APIEndpoint):
         :param xpath: the xpath of the blob
         :return: the blob
         """
-        adapter = 'blob/{}'.format(xpath)
+        adapter = "blob/{}".format(xpath)
         return super(API, self).get(
-            path=self._path(uid=uid, path=path), raw=True, adapter=adapter)
+            path=self._path(uid=uid, path=path), raw=True, adapter=adapter
+        )
 
     def get_children(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> List[Document]
@@ -247,7 +245,8 @@ class API(APIEndpoint):
         :return: the document children
         """
         return super(API, self).get(
-            path=self._path(uid=uid, path=path), adapter='children')
+            path=self._path(uid=uid, path=path), adapter="children"
+        )
 
     def has_permission(self, uid, permission):
         # type: (Text, Text) -> bool
@@ -259,15 +258,17 @@ class API(APIEndpoint):
         :return: True if the document has it, False otherwise
         """
         req = super(API, self).get(
-            path=self._path(uid=uid), cls=dict, headers=self.headers,
-            enrichers=['permissions'])
-        return permission in req['contextParameters']['permissions']
+            path=self._path(uid=uid),
+            cls=dict,
+            headers=self.headers,
+            enrichers=["permissions"],
+        )
+        return permission in req["contextParameters"]["permissions"]
 
     def lock(self, uid):
         # type: (Text) -> Dict[Text, Any]
         """ Lock a document. """
-        return self.operations.execute(
-            command='Document.Lock', input_obj=uid)
+        return self.operations.execute(command="Document.Lock", input_obj=uid)
 
     def move(self, uid, dst, name=None):
         # type: (Text, Text, Optional[Text]) -> Dict[Text, Any]
@@ -278,11 +279,12 @@ class API(APIEndpoint):
         :param dst: the destination
         :param name: the new name
         """
-        params = {'target': dst}
+        params = {"target": dst}
         if name:
-            params['name'] = name
+            params["name"] = name
         return self.operations.execute(
-            command='Document.Move', input_obj=uid, params=params)
+            command="Document.Move", input_obj=uid, params=params
+        )
 
     def query(self, opts=None):
         # type: (Optional[Dict[Text, Text]]) -> Dict[Text, Any]
@@ -293,17 +295,18 @@ class API(APIEndpoint):
         :return: the corresponding documents
         """
         opts = opts or {}
-        if 'query' in opts:
-            query = 'NXQL'
-        elif 'pageProvider' in opts:
-            query = opts['pageProvider']
+        if "query" in opts:
+            query = "NXQL"
+        elif "pageProvider" in opts:
+            query = opts["pageProvider"]
         else:
-            raise BadQuery('Need either a pageProvider or a query')
+            raise BadQuery("Need either a pageProvider or a query")
 
-        path = 'query/{}'.format(query)
+        path = "query/{}".format(query)
         res = super(API, self).get(path=path, params=opts, cls=dict)
-        res['entries'] = [Document.parse(entry, service=self)
-                          for entry in res['entries']]
+        res["entries"] = [
+            Document.parse(entry, service=self) for entry in res["entries"]
+        ]
         return res
 
     def remove_permission(self, uid, params):
@@ -315,7 +318,8 @@ class API(APIEndpoint):
         :param params: the permission to remove
         """
         self.operations.execute(
-            command='Document.RemovePermission', input_obj=uid, params=params)
+            command="Document.RemovePermission", input_obj=uid, params=params
+        )
 
     def trash(self, uid):
         # type: (Text) -> Dict[Text, Any]
@@ -324,14 +328,12 @@ class API(APIEndpoint):
 
         :param uid: the uid of the document
         """
-        return self.operations.execute(
-            command='Document.Trash', input_obj=uid)
+        return self.operations.execute(command="Document.Trash", input_obj=uid)
 
     def unlock(self, uid):
         # type: (Text) -> Dict[Text, Any]
         """ Unlock a document. """
-        return self.operations.execute(
-            command='Document.Unlock', input_obj=uid)
+        return self.operations.execute(command="Document.Unlock", input_obj=uid)
 
     def untrash(self, uid):
         # type: (Text) -> Dict[Text, Any]
@@ -340,21 +342,20 @@ class API(APIEndpoint):
 
         :param uid: the uid of the document
         """
-        return self.operations.execute(
-            command='Document.Untrash', input_obj=uid)
+        return self.operations.execute(command="Document.Untrash", input_obj=uid)
 
     def workflows(self, document):
         # type: (Document) -> Union[Workflow, List[Workflow]]
         """ Get the workflows of a document. """
-        path = 'id/{}/@workflow'.format(document.uid)
+        path = "id/{}/@workflow".format(document.uid)
 
-        with SwapAttr(self.workflows_api, 'endpoint', self.endpoint):
+        with SwapAttr(self.workflows_api, "endpoint", self.endpoint):
             return super(WorkflowsAPI, self.workflows_api).get(path=path)
 
     def _path(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> Text
         if uid:
-            path = 'repo/{}/id/{}'.format(self.client.repository, uid)
+            path = "repo/{}/id/{}".format(self.client.repository, uid)
         elif path:
-            path = 'repo/{}/path{}'.format(self.client.repository, path)
+            path = "repo/{}/path{}".format(self.client.repository, path)
         return path

@@ -12,9 +12,22 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, BinaryIO, Callable, Dict, List, Generator, Optional, Set, Text, Tuple, Union  # noqa
+        from typing import (
+            Any,
+            BinaryIO,
+            Callable,
+            Dict,
+            List,
+            Generator,
+            Optional,
+            Set,
+            Text,
+            Tuple,
+            Union,
+        )  # noqa
         from .client import NuxeoClient  # noqa
         from .models import BufferBlob, FileBlob  # noqa
+
         ActualBlob = Union[BufferBlob, FileBlob]  # noqa
         OptInt = Optional[int]  # noqa
 except ImportError:
@@ -23,10 +36,10 @@ except ImportError:
 
 class API(APIEndpoint):
     """ Endpoint for uploads. """
-    def __init__(self, client, endpoint='upload', headers=None):
+
+    def __init__(self, client, endpoint="upload", headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        super(API, self).__init__(
-            client, endpoint=endpoint, cls=Blob, headers=headers)
+        super(API, self).__init__(client, endpoint=endpoint, cls=Blob, headers=headers)
 
     def get(self, batch_id, file_idx=None):
         # type: (Text, Optional[int]) -> Union[List[Blob], Blob]
@@ -42,7 +55,7 @@ class API(APIEndpoint):
         """
         path = batch_id
         if file_idx is not None:
-            path = '{}/{}'.format(path, file_idx)
+            path = "{}/{}".format(path, file_idx)
 
         resource = super(API, self).get(path=path)
 
@@ -60,7 +73,7 @@ class API(APIEndpoint):
 
         :return: the created batch
         """
-        response = self.client.request('POST', self.endpoint)
+        response = self.client.request("POST", self.endpoint)
         return Batch.parse(response.json(), service=self)
 
     batch = post  # Alias for clarity
@@ -81,11 +94,11 @@ class API(APIEndpoint):
         :param file_idx: the index of the blob
         """
         if file_idx is not None:
-            target = '{}/{}'.format(batch_id, file_idx)
+            target = "{}/{}".format(batch_id, file_idx)
             super(API, self).delete(target)
         else:
             target = batch_id
-            with SwapAttr(self, '_cls', Batch):
+            with SwapAttr(self, "_cls", Batch):
                 super(API, self).delete(target)
 
     def send_data(
@@ -111,14 +124,11 @@ class API(APIEndpoint):
         :return: the blob info
         """
         if chunked:
-            headers['X-Upload-Chunk-Index'] = text(index)
+            headers["X-Upload-Chunk-Index"] = text(index)
 
         try:
             return super(API, self).post(
-                resource=data,
-                path=path,
-                raw=True,
-                headers=headers
+                resource=data, path=path, raw=True, headers=headers
             )
         except HTTPError as e:
             raise UploadError(name, chunk=index if chunked else None, info=e)
@@ -153,8 +163,7 @@ class API(APIEndpoint):
             chunk_count = int(info.chunkCount)
             uploaded_chunks = set(info.uploadedChunkIds)
         else:  # It's a new upload
-            chunk_count = (blob.size // chunk_size
-                           + (blob.size % chunk_size > 0))
+            chunk_count = blob.size // chunk_size + (blob.size % chunk_size > 0)
             uploaded_chunks = set()
 
         return chunk_count, uploaded_chunks, info
@@ -181,7 +190,9 @@ class API(APIEndpoint):
         :param callback: if not None, it is executed between each chunk
         :return: uploaded blob details
         """
-        uploader = self.get_uploader(batch, blob, chunked, chunk_size, callback=callback)
+        uploader = self.get_uploader(
+            batch, blob, chunked, chunk_size, callback=callback
+        )
         uploader.upload()
         return uploader.blob
 
@@ -198,17 +209,19 @@ class API(APIEndpoint):
         from the server will be empty
         :return: the output of the operation
         """
-        path = '{}/{}'.format(self.endpoint, batch.uid)
+        path = "{}/{}".format(self.endpoint, batch.uid)
         if file_idx is not None:
-            path = '{}/{}'.format(path, file_idx)
+            path = "{}/{}".format(path, file_idx)
 
-        path = '{}/execute/{}'.format(path, operation)
+        path = "{}/execute/{}".format(path, operation)
 
         headers = {}
         if void_op:
-            headers = {'X-NXVoidOperation': 'true'}
+            headers = {"X-NXVoidOperation": "true"}
 
-        return self.client.request('POST', path, data={'params': params}, headers=headers or None)
+        return self.client.request(
+            "POST", path, data={"params": params}, headers=headers or None
+        )
 
     def attach(self, batch, doc, file_idx=None):
         # type: (Batch, Text, Optional[int]) -> Any
@@ -220,10 +233,10 @@ class API(APIEndpoint):
         :param file_idx: if not None, only this file will be attached
         :return: the output of the attach operation
         """
-        params = {'document': doc}
+        params = {"document": doc}
         if file_idx is None and batch._upload_idx > 1:
-            params['xpath'] = 'files:files'
-        return self.execute(batch, 'Blob.Attach', file_idx, params)
+            params["xpath"] = "files:files"
+        return self.execute(batch, "Blob.Attach", file_idx, params)
 
     def get_uploader(
         self,
@@ -255,6 +268,7 @@ class API(APIEndpoint):
 
 class Uploader(object):
     """ Helper for uploads """
+
     chunked = False
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
@@ -266,26 +280,25 @@ class Uploader(object):
         self.callback = callback
         self.headers = service.headers.copy()
 
-        self.blob.uploadType = 'chunked' if self.chunked else 'normal'
+        self.blob.uploadType = "chunked" if self.chunked else "normal"
         self.chunk_size = self.blob.size or None
         self.chunk_count = 1
-        self.path = '{}/{}'.format(self.batch.batchId, self.batch._upload_idx)
+        self.path = "{}/{}".format(self.batch.batchId, self.batch._upload_idx)
 
-        self.headers.update({
-            'Cache-Control': 'no-cache',
-            'X-File-Name': quote(get_bytes(self.blob.name)),
-            'X-File-Size': text(self.blob.size),
-            'X-File-Type': self.blob.mimetype,
-            'Content-Length': text(self.blob.size),
-        })
+        self.headers.update(
+            {
+                "Cache-Control": "no-cache",
+                "X-File-Name": quote(get_bytes(self.blob.name)),
+                "X-File-Size": text(self.blob.size),
+                "X-File-Type": self.blob.mimetype,
+                "Content-Length": text(self.blob.size),
+            }
+        )
 
     def __repr__(self):
         # type: () -> Text
         return "<{} blob={!r}, chunked={!r}, chunk_size={!r}>".format(
-            type(self).__name__,
-            self.blob,
-            self.chunked,
-            self.chunk_size,
+            type(self).__name__, self.blob, self.chunked, self.chunk_size
         )
 
     def __str__(self):
@@ -306,9 +319,11 @@ class Uploader(object):
         """ Upload the file. """
         with self.blob as src:
             data = src if self.blob.size else None
-            self.process(self.service.send_data(
-                self.blob.name, data, self.path, self.chunked, 0, self.headers
-            ))
+            self.process(
+                self.service.send_data(
+                    self.blob.name, data, self.path, self.chunked, 0, self.headers
+                )
+            )
             if callable(self.callback):
                 self.callback(self)
             setattr(self, "_completed", True)
@@ -326,19 +341,24 @@ class Uploader(object):
 
 class ChunkUploader(Uploader):
     """ Helper for chunked uploads """
+
     chunked = True
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
         # type: (API, Batch, ActualBlob, int, Callable) -> None
-        super(ChunkUploader, self).__init__(service, batch, blob, chunk_size, callback=callback)
+        super(ChunkUploader, self).__init__(
+            service, batch, blob, chunk_size, callback=callback
+        )
         chunk_count, uploaded_chunks, info = self.service.state(
             self.path, self.blob, chunk_size
         )
-        self.headers.update({
-            'X-Upload-Type': 'chunked',
-            'X-Upload-Chunk-Count': text(chunk_count),
-            'Content-Length': text(chunk_size)
-        })
+        self.headers.update(
+            {
+                "X-Upload-Type": "chunked",
+                "X-Upload-Chunk-Count": text(chunk_count),
+                "Content-Length": text(chunk_size),
+            }
+        )
 
         self.chunk_size = chunk_size
         self.chunk_count = chunk_count
@@ -379,9 +399,16 @@ class ChunkUploader(Uploader):
                 data = src.read(self.chunk_size)
 
                 # Upload it
-                self.process(self.service.send_data(
-                    self.blob.name, data, self.path, self.chunked, index, self.headers
-                ))
+                self.process(
+                    self.service.send_data(
+                        self.blob.name,
+                        data,
+                        self.path,
+                        self.chunked,
+                        index,
+                        self.headers,
+                    )
+                )
 
                 # If the set of chunks to upload is empty, check whether
                 # the server has received all of them.

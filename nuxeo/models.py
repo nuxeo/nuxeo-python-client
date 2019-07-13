@@ -10,6 +10,7 @@ from .utils import guess_mimetype
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Any, BinaryIO, Dict, List, Optional, Text, Union  # noqa
         from io import FileIO  # noqa
@@ -25,11 +26,13 @@ try:
 except ImportError:
     pass
 
-""" Base classes """
+
+# Base classes
 
 
 class Model(object):
     """ Base class for all entities. """
+
     _valid_properties = {}  # type: Dict[Text, Any]
     service = None  # type: APIEndpoint
     uid = None  # type: Text
@@ -40,22 +43,22 @@ class Model(object):
 
     def __repr__(self):
         # type: () -> Text
-        attrs = ', '.join('{}={!r}'.format(
-            attr, getattr(self, attr.replace('-', '_'), None))
-            for attr in sorted(self._valid_properties))
-        return '<{} {}>'.format(self.__class__.__name__, attrs)
+        attrs = ", ".join(
+            "{}={!r}".format(attr, getattr(self, attr.replace("-", "_"), None))
+            for attr in sorted(self._valid_properties)
+        )
+        return "<{} {}>".format(self.__class__.__name__, attrs)
 
     def as_dict(self):
         # type: () -> Dict[Text, Any]
         """ Returns a dict representation of the resource. """
         result = {}
         for key in self._valid_properties:
-            val = getattr(self, key.replace('-', '_'))
+            val = getattr(self, key.replace("-", "_"))
             if val is None:
                 continue
             # Parse lists of objects
-            elif (isinstance(val, list) and len(val) > 0
-                  and isinstance(val[0], Model)):
+            elif isinstance(val, list) and len(val) > 0 and isinstance(val[0], Model):
                 val = [item.as_dict() for item in val]
 
             result[key] = val
@@ -68,11 +71,11 @@ class Model(object):
         model = cls()
 
         if service:
-            setattr(model, 'service', service)
+            setattr(model, "service", service)
 
         for key, val in json.items():
             if key in cls._valid_properties:
-                key = key.replace('-', '_')
+                key = key.replace("-", "_")
                 setattr(model, key, val)
         return model
 
@@ -83,7 +86,6 @@ class Model(object):
 
 
 class RefreshableModel(Model):
-
     def load(self, model=None):
         # type: (Optional[Union[Model, Dict[Text, Any]]]) -> None
         """
@@ -99,27 +101,27 @@ class RefreshableModel(Model):
             model = self.service.get(self.uid)
 
         if isinstance(model, dict):
+
             def get_prop(obj, key):
                 return obj.get(key)
+
         else:
+
             def get_prop(obj, key):
                 return getattr(obj, key)
 
         for key in self._valid_properties:
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, get_prop(model, key))
 
 
-""" Entities """
+# Entities
 
 
 class Batch(Model):
     """ Upload batch. """
 
-    _valid_properties = {
-        'batchId': None,
-        'dropped': None,
-    }
+    _valid_properties = {"batchId": None, "dropped": None}
     service = None  # type: UploadsAPI
 
     def __init__(self, **kwargs):
@@ -164,8 +166,7 @@ class Batch(Model):
         :return: the corresponding blob
         """
         if self.batchId is None:
-            raise InvalidBatch(
-                'Cannot fetch blob for inexistant/deleted batch.')
+            raise InvalidBatch("Cannot fetch blob for inexistant/deleted batch.")
         blob = self.service.get(self.uid, file_idx=file_idx)
         self.blobs[file_idx] = blob
         return blob
@@ -220,15 +221,15 @@ class Blob(Model):
     """ Blob superclass used for metadata. """
 
     _valid_properties = {
-        'uploaded': 'true',
-        'name': None,
-        'uploadType': None,
-        'size': 0,
-        'uploadedSize': 0,
-        'fileIdx': None,
-        'mimetype': None,
-        'uploadedChunkIds': [],
-        'chunkCount': 0
+        "uploaded": "true",
+        "name": None,
+        "uploadType": None,
+        "size": 0,
+        "uploadedSize": 0,
+        "fileIdx": None,
+        "mimetype": None,
+        "uploadedChunkIds": [],
+        "chunkCount": 0,
     }
     service = None  # type: UploadsAPI
 
@@ -236,12 +237,12 @@ class Blob(Model):
         # type: (Any) -> None
         super(Blob, self).__init__(**kwargs)
         for key, default in Blob._valid_properties.items():
-            if key == 'uploaded':
-                val = kwargs.get(key, 'true') == 'true'
-            elif key == 'size':
+            if key == "uploaded":
+                val = kwargs.get(key, "true") == "true"
+            elif key == "size":
                 val = kwargs.get(key, 0)
-            elif key == 'uploadedSize':
-                val = kwargs.get(key, kwargs.get('size', 0))
+            elif key == "uploadedSize":
+                val = kwargs.get(key, kwargs.get("size", 0))
             else:
                 val = kwargs.get(key, default)
             setattr(self, key, val)
@@ -253,7 +254,7 @@ class Blob(Model):
         model = cls()
 
         if service:
-            setattr(model, 'service', service)
+            setattr(model, "service", service)
 
         for key, val in json.items():
             if key in cls._valid_properties:
@@ -266,10 +267,7 @@ class Blob(Model):
     def to_json(self):
         # type: () -> Dict[Text, Text]
         """ Return a JSON object used during the upload. """
-        return {
-            'upload-batch': self.batch_id,
-            'upload-fileId': text(self.fileIdx),
-        }
+        return {"upload-batch": self.batch_id, "upload-fileId": text(self.fileIdx)}
 
 
 class BufferBlob(Blob):
@@ -291,7 +289,7 @@ class BufferBlob(Blob):
         super(BufferBlob, self).__init__(**kwargs)
         self.buffer = data
         self.size = len(self.buffer)
-        self.mimetype = 'application/octet-stream'
+        self.mimetype = "application/octet-stream"
 
     @property
     def data(self):
@@ -331,8 +329,7 @@ class FileBlob(Blob):
         self.path = path
         self.name = os.path.basename(self.path)
         self.size = os.path.getsize(self.path)
-        self.mimetype = (self.mimetype
-                         or guess_mimetype(self.path))  # type: Text
+        self.mimetype = self.mimetype or guess_mimetype(self.path)  # type: Text
 
     @property
     def data(self):
@@ -347,7 +344,7 @@ class FileBlob(Blob):
         return self.fd
 
     def __enter__(self):
-        self.fd = open(self.path, 'rb')
+        self.fd = open(self.path, "rb")
         return self.fd
 
     def __exit__(self, *args):
@@ -357,10 +354,11 @@ class FileBlob(Blob):
 
 class Directory(Model):
     """ Directory. """
+
     _valid_properties = {
-        'entity-type': 'directory',
-        'directoryName': None,
-        'entries': []
+        "entity-type": "directory",
+        "directoryName": None,
+        "entries": [],
     }
     service = None  # type: DirectoriesAPI
 
@@ -368,7 +366,7 @@ class Directory(Model):
         # type: (Any) -> None
         super(Directory, self).__init__(**kwargs)
         for key, default in Directory._valid_properties.items():
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
     @property
@@ -418,10 +416,11 @@ class Directory(Model):
 
 class DirectoryEntry(Model):
     """ Directory entry. """
+
     _valid_properties = {
-        'entity-type': 'directoryEntry',
-        'directoryName': None,
-        'properties': {},
+        "entity-type": "directoryEntry",
+        "directoryName": None,
+        "properties": {},
     }
     service = None  # type: DirectoriesAPI
 
@@ -429,13 +428,13 @@ class DirectoryEntry(Model):
         # type: (Any) -> None
         super(DirectoryEntry, self).__init__(**kwargs)
         for key, default in DirectoryEntry._valid_properties.items():
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
         # type: () -> Text
-        return self.properties['id']
+        return self.properties["id"]
 
     def save(self):
         # type: () -> DirectoryEntry
@@ -450,26 +449,27 @@ class DirectoryEntry(Model):
 
 class Document(RefreshableModel):
     """ Document. """
+
     _valid_properties = {
-        'entity-type': 'document',
-        'repository': 'default',
-        'name': None,
-        'uid': None,
-        'path': None,
-        'type': None,
-        'state': None,
-        'parentRef': None,
-        'versionLabel': None,
-        'isCheckedOut': False,
-        'isTrashed': False,
-        'isVersion': False,
-        'isProxy': False,
-        'title': None,
-        'lastModified': None,
-        'properties': {},
-        'facets': [],
-        'changeToken': None,
-        'contextParameters': {},
+        "entity-type": "document",
+        "repository": "default",
+        "name": None,
+        "uid": None,
+        "path": None,
+        "type": None,
+        "state": None,
+        "parentRef": None,
+        "versionLabel": None,
+        "isCheckedOut": False,
+        "isTrashed": False,
+        "isVersion": False,
+        "isProxy": False,
+        "title": None,
+        "lastModified": None,
+        "properties": {},
+        "facets": [],
+        "changeToken": None,
+        "contextParameters": {},
     }
     service = None  # type: DocumentsAPI
 
@@ -477,7 +477,7 @@ class Document(RefreshableModel):
         # type: (Any) -> None
         super(Document, self).__init__(**kwargs)
         for key, default in Document._valid_properties.items():
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
     @property
@@ -520,7 +520,7 @@ class Document(RefreshableModel):
         """ Fetch audit for current document. """
         return self.service.fetch_audit(self.uid)
 
-    def fetch_blob(self, xpath='blobholder:0'):
+    def fetch_blob(self, xpath="blobholder:0"):
         # type: (Text) -> Blob
         """
         Retrieve one of the blobs attached to the document.
@@ -619,12 +619,13 @@ class Document(RefreshableModel):
 
 class Group(Model):
     """ User group. """
+
     _valid_properties = {
-        'entity-type': 'group',
-        'groupname': None,
-        'grouplabel': None,
-        'memberUsers': [],
-        'memberGroups': [],
+        "entity-type": "group",
+        "groupname": None,
+        "grouplabel": None,
+        "memberUsers": [],
+        "memberGroups": [],
     }
     service = None  # type: GroupsAPI
 
@@ -632,7 +633,7 @@ class Group(Model):
         # type: (Any) -> None
         super(Group, self).__init__(**kwargs)
         for key, default in Group._valid_properties.items():
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
     @property
@@ -648,12 +649,13 @@ class Group(Model):
 
 class Operation(Model):
     """ Automation operation. """
+
     _valid_properties = {
-        'command': None,
-        'input_obj': None,
-        'params': {},
-        'context': None,
-        'progress': 0,
+        "command": None,
+        "input_obj": None,
+        "params": {},
+        "context": None,
+        "progress": 0,
     }
     service = None  # type: OperationsAPI
 
@@ -671,22 +673,23 @@ class Operation(Model):
 
 class Task(RefreshableModel):
     """ Workflow task. """
+
     _valid_properties = {
-        'entity-type': 'task',
-        'id': None,
-        'name': None,
-        'workflowInstanceId': None,
-        'workflowModelName': None,
-        'state': None,
-        'directive': None,
-        'created': None,
-        'dueDate': None,
-        'nodeName': None,
-        'targetDocumentIds': [],
-        'actors': [],
-        'comments': [],
-        'variables': {},
-        'taskInfo': {},
+        "entity-type": "task",
+        "id": None,
+        "name": None,
+        "workflowInstanceId": None,
+        "workflowModelName": None,
+        "state": None,
+        "directive": None,
+        "created": None,
+        "dueDate": None,
+        "nodeName": None,
+        "targetDocumentIds": [],
+        "actors": [],
+        "comments": [],
+        "variables": {},
+        "taskInfo": {},
     }
     service = None  # type: TasksAPI
 
@@ -694,7 +697,7 @@ class Task(RefreshableModel):
         # type: (Any) -> None
         super(Task, self).__init__(**kwargs)
         for key, default in Task._valid_properties.items():
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
     @property
@@ -706,31 +709,33 @@ class Task(RefreshableModel):
         # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> None
         """ Complete the action of a task. """
         updated_task = self.service.complete(
-            self, action, variables=variables, comment=comment)
+            self, action, variables=variables, comment=comment
+        )
         self.load(updated_task)
 
     def delegate(self, actors, comment=None):
         # type: (Text, Optional[Text]) -> None
         """ Delegate the task to someone else. """
-        self.service.transfer(self, 'delegate', actors, comment=comment)
+        self.service.transfer(self, "delegate", actors, comment=comment)
         self.load()
 
     def reassign(self, actors, comment=None):
         # type: (Text, Optional[Text]) -> None
         """ Reassign the task to someone else. """
-        self.service.transfer(self, 'reassign', actors, comment=comment)
+        self.service.transfer(self, "reassign", actors, comment=comment)
         self.load()
 
 
 class User(RefreshableModel):
     """ User. """
+
     _valid_properties = {
-        'entity-type': 'user',
-        'id': None,
-        'properties': {},
-        'extendedGroups': [],
-        'isAdministrator': False,
-        'isAnonymous': False,
+        "entity-type": "user",
+        "id": None,
+        "properties": {},
+        "extendedGroups": [],
+        "isAdministrator": False,
+        "isAnonymous": False,
     }
     service = None  # type: UsersAPI
 
@@ -738,7 +743,7 @@ class User(RefreshableModel):
         # type: (Any) -> None
         super(User, self).__init__(**kwargs)
         for key, default in User._valid_properties.items():
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
     @property
@@ -753,7 +758,7 @@ class User(RefreshableModel):
 
         :param password: New password to set
         """
-        self.properties['password'] = password
+        self.properties["password"] = password
         self.save()
 
     def delete(self):
@@ -764,17 +769,18 @@ class User(RefreshableModel):
 
 class Workflow(Model):
     """ Workflow. """
+
     _valid_properties = {
-        'entity-type': 'workflow',
-        'id': None,
-        'name': None,
-        'title': None,
-        'state': None,
-        'workflowModelName': None,
-        'initiator': None,
-        'attachedDocumentIds': [],
-        'variables': {},
-        'graphResource': None,
+        "entity-type": "workflow",
+        "id": None,
+        "name": None,
+        "title": None,
+        "state": None,
+        "workflowModelName": None,
+        "initiator": None,
+        "attachedDocumentIds": [],
+        "variables": {},
+        "graphResource": None,
     }
     service = None  # type: WorkflowsAPI
 
@@ -782,7 +788,7 @@ class Workflow(Model):
         # type: (Any) -> None
         super(Workflow, self).__init__(**kwargs)
         for key, default in Workflow._valid_properties.items():
-            key = key.replace('-', '_')
+            key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
     @property

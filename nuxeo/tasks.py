@@ -8,6 +8,7 @@ from .models import Task
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Any, Dict, List, Optional, Text, Union  # noqa
         from .client import NuxeoClient  # noqa
@@ -18,14 +19,13 @@ except ImportError:
 
 class API(APIEndpoint):
     """ Endpoint for tasks. """
-    def __init__(self, client, endpoint='task', headers=None):
+
+    def __init__(self, client, endpoint="task", headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        super(API, self).__init__(
-            client, endpoint=endpoint, cls=Task, headers=headers)
+        super(API, self).__init__(client, endpoint=endpoint, cls=Task, headers=headers)
 
     def get(
-        self,
-        options=None,  # type: Optional[Union[Dict[Text, Any], Text]]
+        self, options=None  # type: Optional[Union[Dict[Text, Any], Text]]
     ):
         # type: (...) -> Union[Task, List[Task]]
         """
@@ -70,7 +70,7 @@ class API(APIEndpoint):
         if variables:
             task.variables.update(variables)
 
-        request_path = '{}/{}'.format(task.uid, action)
+        request_path = "{}/{}".format(task.uid, action)
         return super(API, self).put(task, path=request_path)
 
     def transfer(self, task, transfer, actors, comment=None):
@@ -84,17 +84,16 @@ class API(APIEndpoint):
         :param comment: a comment
         :return:
         """
-        if transfer == 'delegate':
-            actors_type = 'delegatedActors'
-        elif transfer == 'reassign':
-            actors_type = 'actors'
+        if transfer == "delegate":
+            actors_type = "delegatedActors"
+        elif transfer == "reassign":
+            actors_type = "actors"
         else:
-            raise BadQuery(
-                'Task transfer must be either delegate or reassign.')
+            raise BadQuery("Task transfer must be either delegate or reassign.")
 
         params = {actors_type: actors}
         if comment:
-            params['comment'] = comment
+            params["comment"] = comment
 
-        request_path = '{}/{}'.format(task.uid, transfer)
+        request_path = "{}/{}".format(task.uid, transfer)
         super(API, self).put(None, path=request_path, params=params)

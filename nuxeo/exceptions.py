@@ -7,6 +7,7 @@ from .compat import text
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Any, Dict, Optional, Text  # noqa
 except ImportError:
@@ -39,8 +40,7 @@ class CorruptedFile(NuxeoError):
 
     def __repr__(self):
         # type: () -> Text
-        err = ('CorruptedFile {!r}: server digest '
-               'is {!r}, local digest is {!r}')
+        err = "CorruptedFile {!r}: server digest " "is {!r}, local digest is {!r}"
         return err.format(self.filename, self.server_digest, self.local_digest)
 
     def __str__(self):
@@ -50,11 +50,8 @@ class CorruptedFile(NuxeoError):
 
 class HTTPError(RetryError, NuxeoError):
     """ Exception thrown when the server returns an error. """
-    _valid_properties = {
-        'status': None,
-        'message': None,
-        'stacktrace': None
-    }
+
+    _valid_properties = {"status": None, "message": None, "stacktrace": None}
 
     def __init__(self, **kwargs):
         # type: (Any) -> None
@@ -63,8 +60,12 @@ class HTTPError(RetryError, NuxeoError):
 
     def __repr__(self):
         # type: () -> Text
-        return '%s(%d), error: %r, server trace: %r' % (
-            type(self).__name__, self.status, self.message, self.stacktrace)
+        return "%s(%d), error: %r, server trace: %r" % (
+            type(self).__name__,
+            self.status,
+            self.message,
+            self.stacktrace,
+        )
 
     def __str__(self):
         # type: () -> Text
@@ -101,6 +102,7 @@ class UnavailableConvertor(NuxeoError):
 
     :param options: options passed to the conversion request
     """
+
     def __init__(self, options):
         # type: (Dict[Text, Any]) -> None
         self.options = options
@@ -108,8 +110,9 @@ class UnavailableConvertor(NuxeoError):
 
     def __repr__(self):
         # type: () -> Text
-        return ('UnavailableConvertor: conversion with options {!r}'
-                ' is not available').format(self.options)
+        return (
+            "UnavailableConvertor: conversion with options {!r}" " is not available"
+        ).format(self.options)
 
     def __str__(self):
         # type: () -> Text
@@ -120,6 +123,7 @@ class UploadError(NuxeoError):
     """
     Exception thrown when an upload fails even after retries.
     """
+
     def __init__(self, name, chunk=None, info=None):
         # type: (Text, Optional[int], Optional[HTTPError]) -> None
         self.name = name
@@ -128,11 +132,11 @@ class UploadError(NuxeoError):
 
     def __repr__(self):
         # type: () -> Text
-        err = 'UploadError: unable to upload file {!r}'.format(self.name)
+        err = "UploadError: unable to upload file {!r}".format(self.name)
         if self.chunk:
-            err = '{} (failed at chunk {})'.format(err, self.chunk)
+            err = "{} (failed at chunk {})".format(err, self.chunk)
         if self.info:
-            err = '{} (source: {})'.format(err, self.info)
+            err = "{} (source: {})".format(err, self.info)
         return err
 
     def __str__(self):

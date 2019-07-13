@@ -14,31 +14,21 @@ from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
 
 
 class Doc(object):
-
     def __init__(self, server, with_blob=False):
         self.server = server
         self.blob = with_blob
 
     def __enter__(self):
         doc = Document(
-            name=WORKSPACE_NAME,
-            type='File',
-            properties={
-                'dc:title': 'bar.txt',
-            }
+            name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}
         )
-        self.doc = self.server.documents.create(
-            doc, parent_path=WORKSPACE_ROOT)
+        self.doc = self.server.documents.create(doc, parent_path=WORKSPACE_ROOT)
 
         if self.blob:
-            blob = BufferBlob(
-                data='foo',
-                name='foo.txt',
-                mimetype='text/plain'
-            )
+            blob = BufferBlob(data="foo", name="foo.txt", mimetype="text/plain")
             batch = self.server.uploads.batch()
             blob = batch.upload(blob)
-            self.doc.properties['file:content'] = blob
+            self.doc.properties["file:content"] = blob
             self.doc.save()
         return self.doc
 
@@ -48,31 +38,31 @@ class Doc(object):
 
 def test_add_remove_permission(server):
     with Doc(server) as doc:
-        doc.add_permission({'username': 'members', 'permission': 'Write'})
+        doc.add_permission({"username": "members", "permission": "Write"})
         acls = doc.fetch_acls()
         assert len(acls) == 2
-        assert acls[0]['name'] == 'local'
-        assert acls[0]['aces'][0]['id'] == 'members:Write:true:Administrator::'
-        doc.remove_permission({'id': 'members:Write:true:Administrator::'})
+        assert acls[0]["name"] == "local"
+        assert acls[0]["aces"][0]["id"] == "members:Write:true:Administrator::"
+        doc.remove_permission({"id": "members:Write:true:Administrator::"})
         acls = doc.fetch_acls()
         assert len(acls) == 1
-        assert acls[0]['name'] == 'inherited'
+        assert acls[0]["name"] == "inherited"
 
 
 def test_bogus_converter(server):
     with Doc(server, with_blob=True) as doc:
         with pytest.raises(BadQuery) as e:
-            doc.convert({'converter': 'converterthatdoesntexist'})
+            doc.convert({"converter": "converterthatdoesntexist"})
         msg = e.value.args[0]
-        assert msg == 'Converter converterthatdoesntexist is not registered'
+        assert msg == "Converter converterthatdoesntexist is not registered"
 
 
 def test_convert(server):
     with Doc(server, with_blob=True) as doc:
         try:
-            res = doc.convert({'format': 'html'})
-            assert b'<html' in res
-            assert b'foo' in res
+            res = doc.convert({"format": "html"})
+            assert b"<html" in res
+            assert b"foo" in res
         except UnavailableConvertor:
             pass
 
@@ -80,9 +70,9 @@ def test_convert(server):
 def test_convert_given_converter(server):
     with Doc(server, with_blob=True) as doc:
         try:
-            res = doc.convert({'converter': 'office2html'})
-            assert b'<html' in res
-            assert b'foo' in res
+            res = doc.convert({"converter": "office2html"})
+            assert b"<html" in res
+            assert b"foo" in res
         except UnavailableConvertor:
             pass
 
@@ -96,40 +86,38 @@ def test_convert_missing_args(server):
 def test_convert_unavailable(server, monkeypatch):
     def raise_convert(api, uid, options):
         raise UnavailableConvertor(options)
-    monkeypatch.setattr('nuxeo.documents.API.convert', raise_convert)
+
+    monkeypatch.setattr("nuxeo.documents.API.convert", raise_convert)
 
     with Doc(server, with_blob=True) as doc:
         with pytest.raises(UnavailableConvertor) as e:
-            doc.convert({'converter': 'office2html'})
+            doc.convert({"converter": "office2html"})
         assert text(e.value)
         msg = e.value.message
-        assert msg.startswith('UnavailableConvertor: conversion with options')
-        assert msg.endswith('is not available')
+        assert msg.startswith("UnavailableConvertor: conversion with options")
+        assert msg.endswith("is not available")
 
 
 def test_convert_xpath(server):
     with Doc(server, with_blob=True) as doc:
         try:
-            res = doc.convert({'xpath': 'file:content', 'type': 'text/html'})
-            assert b'<html' in res
-            assert b'foo' in res
+            res = doc.convert({"xpath": "file:content", "type": "text/html"})
+            assert b"<html" in res
+            assert b"foo" in res
         except UnavailableConvertor:
             pass
 
 
 def test_create_doc_and_delete(server):
     doc = Document(
-        name=WORKSPACE_NAME,
-        type='Workspace',
-        properties={
-            'dc:title': 'foo',
-        })
+        name=WORKSPACE_NAME, type="Workspace", properties={"dc:title": "foo"}
+    )
     doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
         assert isinstance(doc, Document)
         assert doc.path == WORKSPACE_TEST
-        assert doc.type == 'Workspace'
-        assert doc.get('dc:title') == 'foo'
+        assert doc.type == "Workspace"
+        assert doc.get("dc:title") == "foo"
         assert server.documents.exists(path=WORKSPACE_TEST)
     finally:
         doc.delete()
@@ -138,15 +126,12 @@ def test_create_doc_and_delete(server):
 
 def test_create_doc_with_space_and_delete(server):
     doc = Document(
-        name='my domain',
-        type='Workspace',
-        properties={
-            'dc:title': 'My domain',
-        })
+        name="my domain", type="Workspace", properties={"dc:title": "My domain"}
+    )
     doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
         assert isinstance(doc, Document)
-        server.documents.get(path=WORKSPACE_ROOT + '/my domain')
+        server.documents.get(path=WORKSPACE_ROOT + "/my domain")
     finally:
         doc.delete()
 
@@ -155,16 +140,16 @@ def test_fetch_acls(server):
     with Doc(server) as doc:
         acls = doc.fetch_acls()
         assert len(acls) == 1
-        assert acls[0]['name'] == 'inherited'
+        assert acls[0]["name"] == "inherited"
 
-        aces = list(sorted(acls[0]['aces'], key=operator.itemgetter('id')))
+        aces = list(sorted(acls[0]["aces"], key=operator.itemgetter("id")))
         # 2 on Jenkins, 3 locally ...
         assert len(aces) in (2, 3)
-        assert aces[0]['id'] == 'Administrator:Everything:true:::'
-        assert aces[1]['id'] == 'members:Read:true:::'
+        assert aces[0]["id"] == "Administrator:Everything:true:::"
+        assert aces[1]["id"] == "members:Read:true:::"
         if len(aces) == 3:
             # Starts with username, hard to guess
-            assert aces[2]['id'].endswith(':ReadWrite:true:::')
+            assert aces[2]["id"].endswith(":ReadWrite:true:::")
 
 
 def test_fetch_audit(server):
@@ -173,52 +158,52 @@ def test_fetch_audit(server):
         time.sleep(1)
 
         audit = doc.fetch_audit()
-        if not audit['entries']:
-            pytest.xfail('No enough time for the Audit Log.')
+        if not audit["entries"]:
+            pytest.xfail("No enough time for the Audit Log.")
 
-        assert len(audit['entries']) == 1
-        entry = audit['entries'][0]
+        assert len(audit["entries"]) == 1
+        entry = audit["entries"][0]
         assert entry
-        assert entry['eventId'] == 'documentCreated'
-        assert entry['entity-type'] == 'logEntry'
-        assert entry['docType'] == doc.type
-        assert entry['docPath'] == doc.path
+        assert entry["eventId"] == "documentCreated"
+        assert entry["entity-type"] == "logEntry"
+        assert entry["docType"] == doc.type
+        assert entry["docPath"] == doc.path
 
 
 def test_fetch_blob(server):
     with Doc(server, with_blob=True) as doc:
-        assert doc.fetch_blob() == b'foo'
+        assert doc.fetch_blob() == b"foo"
 
 
 def test_fetch_non_existing(server):
-    assert not server.documents.exists(path='/zone51')
+    assert not server.documents.exists(path="/zone51")
 
 
 def test_fetch_rendition(server):
     with Doc(server, with_blob=True) as doc:
-        res = doc.fetch_rendition('xmlExport')
+        res = doc.fetch_rendition("xmlExport")
         assert b'<?xml version="1.0" encoding="UTF-8"?>' in res
-        path = '<path>' + WORKSPACE_TEST[1:] + '</path>'
+        path = "<path>" + WORKSPACE_TEST[1:] + "</path>"
         assert get_bytes(path) in res
 
 
 def test_fetch_renditions(server):
     with Doc(server, with_blob=True) as doc:
         res = doc.fetch_renditions()
-        assert 'thumbnail' in res
-        assert 'xmlExport' in res
-        assert 'zipExport' in res
+        assert "thumbnail" in res
+        assert "xmlExport" in res
+        assert "zipExport" in res
 
 
 def test_fetch_root(server):
-    root = server.documents.get(path='/')
+    root = server.documents.get(path="/")
     assert isinstance(root, Document)
 
 
 def test_has_permission(server):
     with Doc(server) as doc:
-        assert doc.has_permission('Write')
-        assert not doc.has_permission('Foo')
+        assert doc.has_permission("Write")
+        assert not doc.has_permission("Foo")
 
 
 def test_locking(server):
@@ -228,8 +213,8 @@ def test_locking(server):
 
         doc.lock()
         status = doc.fetch_lock_status()
-        assert status['lockOwner'] == 'Administrator'
-        assert 'lockCreated' in status
+        assert status["lockOwner"] == "Administrator"
+        assert "lockCreated" in status
         assert doc.is_locked()
 
         # Double locking with the same user should work if the server has NXP-24359
@@ -240,73 +225,79 @@ def test_locking(server):
 
 
 def test_page_provider(server):
-    doc = server.documents.get(path='/default-domain')
-    docs = server.documents.query({
-        'pageProvider': 'CURRENT_DOC_CHILDREN',
-        'queryParams': [doc.uid]
-    })
-    assert docs['numberOfPages'] == 1
-    assert docs['resultsCount'] == 3
-    assert docs['currentPageSize'] == 3
-    assert not docs['currentPageIndex']
-    assert len(docs['entries']) == 3
+    doc = server.documents.get(path="/default-domain")
+    docs = server.documents.query(
+        {"pageProvider": "CURRENT_DOC_CHILDREN", "queryParams": [doc.uid]}
+    )
+    assert docs["numberOfPages"] == 1
+    assert docs["resultsCount"] == 3
+    assert docs["currentPageSize"] == 3
+    assert not docs["currentPageIndex"]
+    assert len(docs["entries"]) == 3
 
 
 def test_page_provider_pagination(server):
-    doc = server.documents.get(path='/default-domain')
-    docs = server.documents.query({
-        'pageProvider': 'document_content',
-        'queryParams': [doc.uid],
-        'pageSize': 1,
-        'currentPageIndex': 0,
-        'sortBy': 'dc:title',
-        'sortOrder': 'asc'
-    })
-    assert docs['currentPageSize'] == 1
-    assert not docs['currentPageIndex']
-    assert docs['isNextPageAvailable']
-    assert len(docs['entries']) == 1
-    assert isinstance(docs['entries'][0], Document)
-    assert docs['entries'][0].title
-    docs = server.documents.query({
-        'pageProvider': 'document_content',
-        'queryParams': [doc.uid],
-        'pageSize': 1,
-        'currentPageIndex': 1,
-        'sortBy': 'dc:title',
-        'sortOrder': 'asc'
-    })
-    assert docs['currentPageSize'] == 1
-    assert docs['currentPageIndex'] == 1
-    assert docs['isNextPageAvailable']
-    assert len(docs['entries']) == 1
-    assert isinstance(docs['entries'][0], Document)
-    assert docs['entries'][0].title == 'Templates'
-    docs = server.documents.query({
-        'pageProvider': 'document_content',
-        'queryParams': [doc.uid],
-        'pageSize': 1,
-        'currentPageIndex': 2,
-        'sortBy': 'dc:title',
-        'sortOrder': 'asc'
-    })
-    assert docs['currentPageSize'] == 1
-    assert docs['currentPageIndex'] == 2
-    assert not docs['isNextPageAvailable']
-    assert len(docs['entries']) == 1
-    assert isinstance(docs['entries'][0], Document)
-    assert docs['entries'][0].title
+    doc = server.documents.get(path="/default-domain")
+    docs = server.documents.query(
+        {
+            "pageProvider": "document_content",
+            "queryParams": [doc.uid],
+            "pageSize": 1,
+            "currentPageIndex": 0,
+            "sortBy": "dc:title",
+            "sortOrder": "asc",
+        }
+    )
+    assert docs["currentPageSize"] == 1
+    assert not docs["currentPageIndex"]
+    assert docs["isNextPageAvailable"]
+    assert len(docs["entries"]) == 1
+    assert isinstance(docs["entries"][0], Document)
+    assert docs["entries"][0].title
+    docs = server.documents.query(
+        {
+            "pageProvider": "document_content",
+            "queryParams": [doc.uid],
+            "pageSize": 1,
+            "currentPageIndex": 1,
+            "sortBy": "dc:title",
+            "sortOrder": "asc",
+        }
+    )
+    assert docs["currentPageSize"] == 1
+    assert docs["currentPageIndex"] == 1
+    assert docs["isNextPageAvailable"]
+    assert len(docs["entries"]) == 1
+    assert isinstance(docs["entries"][0], Document)
+    assert docs["entries"][0].title == "Templates"
+    docs = server.documents.query(
+        {
+            "pageProvider": "document_content",
+            "queryParams": [doc.uid],
+            "pageSize": 1,
+            "currentPageIndex": 2,
+            "sortBy": "dc:title",
+            "sortOrder": "asc",
+        }
+    )
+    assert docs["currentPageSize"] == 1
+    assert docs["currentPageIndex"] == 2
+    assert not docs["isNextPageAvailable"]
+    assert len(docs["entries"]) == 1
+    assert isinstance(docs["entries"][0], Document)
+    assert docs["entries"][0].title
 
 
 def test_query(server):
-    docs = server.documents.query({
-        'query': "SELECT * FROM Document WHERE ecm:primaryType = 'Domain'"})
-    assert docs['numberOfPages'] == 1
-    assert docs['resultsCount'] == 1
-    assert docs['currentPageSize'] == 1
-    assert not docs['currentPageIndex']
-    assert len(docs['entries']) == 1
-    assert isinstance(docs['entries'][0], Document)
+    docs = server.documents.query(
+        {"query": "SELECT * FROM Document WHERE ecm:primaryType = 'Domain'"}
+    )
+    assert docs["numberOfPages"] == 1
+    assert docs["resultsCount"] == 1
+    assert docs["currentPageSize"] == 1
+    assert not docs["currentPageIndex"]
+    assert len(docs["entries"]) == 1
+    assert isinstance(docs["entries"][0], Document)
 
 
 def test_query_missing_args(server):
@@ -316,23 +307,20 @@ def test_query_missing_args(server):
 
 def test_update_doc_and_delete(server):
     doc = Document(
-        name=WORKSPACE_NAME,
-        type='Workspace',
-        properties={
-            'dc:title': 'foo',
-        })
+        name=WORKSPACE_NAME, type="Workspace", properties={"dc:title": "foo"}
+    )
     doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     assert doc
     try:
         uid = doc.uid
         path = doc.path
-        doc.set({'dc:title': 'bar'})
+        doc.set({"dc:title": "bar"})
         doc.save()
         doc = server.documents.get(path=WORKSPACE_TEST)
         assert isinstance(doc, Document)
         assert doc.uid == uid
         assert doc.path == path
-        assert doc.get('dc:title') == 'bar'
+        assert doc.get("dc:title") == "bar"
     finally:
         doc.delete()
 

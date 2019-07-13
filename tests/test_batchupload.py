@@ -7,8 +7,7 @@ import os
 import pytest
 
 from nuxeo.compat import text
-from nuxeo.exceptions import (CorruptedFile, HTTPError,
-                              InvalidBatch, UploadError)
+from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, UploadError
 from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
 from sentry_sdk import configure_scope
@@ -16,13 +15,7 @@ from sentry_sdk import configure_scope
 from .constants import WORKSPACE_ROOT
 from .server import Server
 
-new_doc = Document(
-    name='Document',
-    type='File',
-    properties={
-        'dc:title': 'foo',
-    }
-)
+new_doc = Document(name="Document", type="File", properties={"dc:title": "foo"})
 
 
 def get_batch(server):
@@ -30,7 +23,7 @@ def get_batch(server):
     assert batch
     assert repr(batch)
     assert not server.uploads.get(batch.uid)
-    blob = BufferBlob(data='data', name='Test.txt', mimetype='text/plain')
+    blob = BufferBlob(data="data", name="Test.txt", mimetype="text/plain")
     assert repr(blob)
     batch.upload(blob)
     assert batch.uid
@@ -49,13 +42,13 @@ def test_cancel(server):
 
 
 def test_data():
-    blob = BufferBlob(data='data', name='Test.txt', mimetype='text/plain')
+    blob = BufferBlob(data="data", name="Test.txt", mimetype="text/plain")
     with blob:
         assert blob.data
 
-    test = 'test_file'
-    with open(test, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+    test = "test_file"
+    with open(test, "wb") as f:
+        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
     try:
         blob = FileBlob(test)
         with blob:
@@ -64,26 +57,29 @@ def test_data():
         os.remove(test)
 
 
-@pytest.mark.parametrize('hash, is_valid', [
-    # Raises CorruptedFile
-    ('0' * 32, False),
-    # Bypasses checksum validation
-    (None, True),
-    ('', True),
-    ('foo', True),
-])
+@pytest.mark.parametrize(
+    "hash, is_valid",
+    [
+        # Raises CorruptedFile
+        ("0" * 32, False),
+        # Bypasses checksum validation
+        (None, True),
+        ("", True),
+        ("foo", True),
+    ],
+)
 def test_digester(hash, is_valid, server):
-    file_out = 'test_out'
+    file_out = "test_out"
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         batch = get_batch(server)
-        operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': WORKSPACE_ROOT + '/Document'}
+        operation = server.operations.new("Blob.AttachOnDocument")
+        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
 
-        operation = server.operations.new('Blob.Get')
-        operation.input_obj = WORKSPACE_ROOT + '/Document'
+        operation = server.operations.new("Blob.Get")
+        operation.input_obj = WORKSPACE_ROOT + "/Document"
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
@@ -96,25 +92,28 @@ def test_digester(hash, is_valid, server):
         os.remove(file_out)
 
 
-@pytest.mark.parametrize('chunked', [False, True])
+@pytest.mark.parametrize("chunked", [False, True])
 def test_empty_file(chunked, server):
     batch = server.uploads.batch()
-    batch.upload(BufferBlob(data='', name='Test.txt'), chunked=chunked)
+    batch.upload(BufferBlob(data="", name="Test.txt"), chunked=chunked)
 
 
 def test_execute(server):
-    server.client.set(schemas=['dublincore', 'file'])
+    server.client.set(schemas=["dublincore", "file"])
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         batch = get_batch(server)
-        assert not doc.properties['file:content']
-        batch.execute('Blob.AttachOnDocument', file_idx=0,
-                      params={'document': WORKSPACE_ROOT + '/Document'})
-        doc = server.documents.get(path=WORKSPACE_ROOT + '/Document')
-        assert doc.properties['file:content']
+        assert not doc.properties["file:content"]
+        batch.execute(
+            "Blob.AttachOnDocument",
+            file_idx=0,
+            params={"document": WORKSPACE_ROOT + "/Document"},
+        )
+        doc = server.documents.get(path=WORKSPACE_ROOT + "/Document")
+        assert doc.properties["file:content"]
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
-        assert blob == b'data'
+        assert blob == b"data"
     finally:
         doc.delete()
 
@@ -123,13 +122,13 @@ def test_fetch(server):
     batch = get_batch(server)
     blob = batch.get(0)
     assert not blob.fileIdx
-    assert blob.uploadType == 'normal'
-    assert blob.name == 'Test.txt'
+    assert blob.uploadType == "normal"
+    assert blob.name == "Test.txt"
     assert blob.size == 4
 
     blob = batch.blobs[0]
     assert not blob.fileIdx
-    assert blob.uploadType == 'normal'
+    assert blob.uploadType == "normal"
     assert blob.uploaded
     assert blob.uploadedSize == 4
     batch.delete(0)
@@ -137,37 +136,36 @@ def test_fetch(server):
 
 
 def test_mimetype():
-    test = 'test.bmp'
-    with open(test, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+    test = "test.bmp"
+    with open(test, "wb") as f:
+        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
     try:
         blob = FileBlob(test)
-        assert blob.mimetype in ['image/bmp', 'image/x-ms-bmp']
+        assert blob.mimetype in ["image/bmp", "image/x-ms-bmp"]
     finally:
         os.remove(test)
 
 
 def test_operation(server):
     batch = get_batch(server)
-    server.client.set(schemas=['dublincore', 'file'])
-    doc = server.documents.create(
-        new_doc, parent_path=WORKSPACE_ROOT)
+    server.client.set(schemas=["dublincore", "file"])
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
-        assert not doc.properties['file:content']
-        operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': WORKSPACE_ROOT + '/Document'}
+        assert not doc.properties["file:content"]
+        operation = server.operations.new("Blob.AttachOnDocument")
+        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
         operation.input_obj = batch.get(0)
         operation.execute()
-        doc = server.documents.get(path=WORKSPACE_ROOT + '/Document')
-        assert doc.properties['file:content']
+        doc = server.documents.get(path=WORKSPACE_ROOT + "/Document")
+        assert doc.properties["file:content"]
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
-        assert blob == b'data'
+        assert blob == b"data"
     finally:
         doc.delete()
 
 
-@pytest.mark.parametrize('chunked', [False, True])
+@pytest.mark.parametrize("chunked", [False, True])
 def test_upload(chunked, server):
     def callback(upload):
         assert upload
@@ -176,43 +174,40 @@ def test_upload(chunked, server):
 
         if not chunked:
             assert upload.blob.uploadedSize == file_size
-            assert upload.blob.uploadType == 'normal'
+            assert upload.blob.uploadType == "normal"
         else:
             # In chunked mode, we should have 1024, 2048, 3072 and 4096 respectively
-            sizes = {
-                1: 1024,
-                2: 1024 * 2,
-                3: 1024 * 3,
-                4: 1024 * 4,
-            }
+            sizes = {1: 1024, 2: 1024 * 2, 3: 1024 * 3, 4: 1024 * 4}
             assert upload.blob.uploadedSize == sizes[len(upload.blob.uploadedChunkIds)]
-            assert upload.blob.uploadType == 'chunked'
+            assert upload.blob.uploadType == "chunked"
 
     batch = server.uploads.batch()
 
     chunk_size = 1024
     file_size = 4096 if chunked else 1024
-    file_in, file_out = 'test_in', 'test_out'
-    with open(file_in, 'wb') as f:
-        f.write(b'\x00' * file_size)
+    file_in, file_out = "test_in", "test_out"
+    with open(file_in, "wb") as f:
+        f.write(b"\x00" * file_size)
 
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
-        blob = FileBlob(file_in, mimetype='application/octet-stream')
+        blob = FileBlob(file_in, mimetype="application/octet-stream")
         assert repr(blob)
-        assert batch.upload(blob, chunked=chunked, callback=callback, chunk_size=chunk_size)
-        operation = server.operations.new('Blob.AttachOnDocument')
-        operation.params = {'document': WORKSPACE_ROOT + '/Document'}
+        assert batch.upload(
+            blob, chunked=chunked, callback=callback, chunk_size=chunk_size
+        )
+        operation = server.operations.new("Blob.AttachOnDocument")
+        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
         operation.input_obj = batch.get(0)
         operation.execute(void_op=True)
 
-        operation = server.operations.new('Document.Fetch')
-        operation.params = {'value': WORKSPACE_ROOT + '/Document'}
+        operation = server.operations.new("Document.Fetch")
+        operation.params = {"value": WORKSPACE_ROOT + "/Document"}
         info = operation.execute()
-        digest = info['properties']['file:content']['digest']
+        digest = info["properties"]["file:content"]["digest"]
 
-        operation = server.operations.new('Blob.Get')
-        operation.input_obj = WORKSPACE_ROOT + '/Document'
+        operation = server.operations.new("Blob.Get")
+        operation.input_obj = WORKSPACE_ROOT + "/Document"
         file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
         doc.delete()
@@ -228,12 +223,12 @@ def test_get_uploader(server):
         assert args
 
     batch = server.uploads.batch()
-    file_in = 'test_in'
-    with open(file_in, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+    file_in = "test_in"
+    with open(file_in, "wb") as f:
+        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
     try:
-        blob = FileBlob(file_in, mimetype='application/octet-stream')
+        blob = FileBlob(file_in, mimetype="application/octet-stream")
         uploader = batch.get_uploader(
             blob, chunked=True, chunk_size=256 * 1024, callback=callback
         )
@@ -251,12 +246,12 @@ def test_get_uploader(server):
 
 def test_upload_error(server):
     batch = server.uploads.batch()
-    file_in = 'test_in'
-    with open(file_in, 'wb') as f:
-        f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
+    file_in = "test_in"
+    with open(file_in, "wb") as f:
+        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
     try:
-        blob = FileBlob(file_in, mimetype='application/octet-stream')
+        blob = FileBlob(file_in, mimetype="application/octet-stream")
         assert repr(blob)
         uploader = batch.get_uploader(blob, chunked=True, chunk_size=256 * 1024)
         gen = uploader.iter_upload()
@@ -285,21 +280,21 @@ def test_upload_retry(retry_server):
     server = retry_server
     close_server = threading.Event()
 
-    with SwapAttr(server.client, 'host', 'http://localhost:8081/nuxeo/'):
+    with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
         try:
             serv = Server.upload_response_server(
                 wait_to_close_event=close_server,
                 port=8081,
                 requests_to_handle=20,
-                fail_args={'fail_at': 4, 'fail_number': 1}
+                fail_args={"fail_at": 4, "fail_number": 1},
             )
-            file_in = 'test_in'
+            file_in = "test_in"
 
             with serv:
                 batch = server.uploads.batch()
-                with open(file_in, 'wb') as f:
-                    f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
-                blob = FileBlob(file_in, mimetype='application/octet-stream')
+                with open(file_in, "wb") as f:
+                    f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+                blob = FileBlob(file_in, mimetype="application/octet-stream")
                 batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 close_server.set()  # release server block
 
@@ -312,21 +307,21 @@ def test_upload_retry(retry_server):
 
 def test_upload_resume(server):
     close_server = threading.Event()
-    with SwapAttr(server.client, 'host', 'http://localhost:8081/nuxeo/'):
+    with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
         try:
             serv = Server.upload_response_server(
                 wait_to_close_event=close_server,
                 port=8081,
                 requests_to_handle=20,
-                fail_args={'fail_at': 4, 'fail_number': 1}
+                fail_args={"fail_at": 4, "fail_number": 1},
             )
-            file_in = 'test_in'
+            file_in = "test_in"
 
             with serv:
                 batch = server.uploads.batch()
-                with open(file_in, 'wb') as f:
-                    f.write(b'\x00' + os.urandom(1024 * 1024) + b'\x00')
-                blob = FileBlob(file_in, mimetype='application/octet-stream')
+                with open(file_in, "wb") as f:
+                    f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+                blob = FileBlob(file_in, mimetype="application/octet-stream")
                 with pytest.raises(UploadError) as e:
                     batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 assert text(e.value)
@@ -342,6 +337,6 @@ def test_upload_resume(server):
 
 def test_wrong_batch_id(server):
     batch = server.uploads.batch()
-    batch.uid = '1234'
+    batch.uid = "1234"
     with pytest.raises(HTTPError):
         batch.get(0)

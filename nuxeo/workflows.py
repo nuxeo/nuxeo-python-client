@@ -7,6 +7,7 @@ from .utils import SwapAttr
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Any, Dict, List, Optional, Text, Union  # noqa
         from .client import NuxeoClient  # noqa
@@ -18,17 +19,19 @@ except ImportError:
 
 class API(APIEndpoint):
     """ Endpoint for workflows. """
+
     def __init__(
         self,
         client,  # type: NuxeoClient
         tasks,  # type: TasksAPI
-        endpoint='workflow',  # type: Text
-        headers=None  # type: Optional[Dict[Text, Text]]
+        endpoint="workflow",  # type: Text
+        headers=None,  # type: Optional[Dict[Text, Text]]
     ):
         # type: (...) -> None
         self.tasks_api = tasks
         super(API, self).__init__(
-            client, endpoint=endpoint, cls=Workflow, headers=headers)
+            client, endpoint=endpoint, cls=Workflow, headers=headers
+        )
 
     def get(self, workflow_id=None):
         # type: (Optional[Text]) -> Workflow
@@ -55,19 +58,16 @@ class API(APIEndpoint):
         :param options: options for the workflow
         :return: the created workflow
         """
-        data = {
-            'workflowModelName': model,
-            'entity-type': 'workflow'
-        }
+        data = {"workflowModelName": model, "entity-type": "workflow"}
         options = options or {}
-        if 'attachedDocumentIds' in options:
-            data['attachedDocumentIds'] = options['attachedDocumentIds']
-        if 'variables' in options:
-            data['variables'] = options['variables']
+        if "attachedDocumentIds" in options:
+            data["attachedDocumentIds"] = options["attachedDocumentIds"]
+        if "variables" in options:
+            data["variables"] = options["variables"]
 
         if document:
-            path = 'id/{}/@workflow'.format(document.uid)
-            with SwapAttr(self, 'endpoint', self.client.api_path):
+            path = "id/{}/@workflow".format(document.uid)
+            with SwapAttr(self, "endpoint", self.client.api_path):
                 workflow = super(API, self).post(data, path=path)
         else:
             workflow = super(API, self).post(data)
@@ -96,7 +96,7 @@ class API(APIEndpoint):
         :param workflow: the worklow to get the graph from
         :return: the graph
         """
-        request_path = '{}/graph'.format(workflow.uid)
+        request_path = "{}/graph".format(workflow.uid)
         return super(API, self).get(path=request_path)
 
     def started(self, model):
@@ -107,7 +107,7 @@ class API(APIEndpoint):
         :param model: the workflow model
         :return: the started workflows
         """
-        return super(API, self).get(params={'workflowModelName': model})
+        return super(API, self).get(params={"workflowModelName": model})
 
     def tasks(self, workflow):
         # type: (Workflow) -> List[Task]
