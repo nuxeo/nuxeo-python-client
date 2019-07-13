@@ -8,15 +8,13 @@ CHECK_PARAMS = False
 CHUNK_SIZE = 8192  # 8 KiB
 
 # API paths
-DEFAULT_API_PATH = 'api/v1'
-DEFAULT_URL = 'http://localhost:8080/nuxeo/'
+DEFAULT_API_PATH = "api/v1"
+DEFAULT_URL = "http://localhost:8080/nuxeo/"
 
-"""
-Default value for the:
-    - 'X-Application-Name' HTTP header
-    - 'applicationName' URL parameter
-"""
-DEFAULT_APP_NAME = 'Python client'
+# Default value for the:
+#   - 'X-Application-Name' HTTP header
+#   - 'applicationName' URL parameter
+DEFAULT_APP_NAME = "Python client"
 
 # Retries for each HTTP call on conection error
 MAX_RETRY = 5
@@ -27,7 +25,7 @@ MAX_RETRY = 5
 RETRY_BACKOFF_FACTOR = 1
 
 # HTTP methods we want to handle in retries
-RETRY_METHODS = frozenset(['GET', 'POST', 'PUT', 'DELETE'])
+RETRY_METHODS = frozenset(["GET", "POST", "PUT", "DELETE"])
 
 # HTTP status code to handle for retries
 RETRY_STATUS_CODES = [429, 500, 503, 504]

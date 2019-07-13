@@ -8,20 +8,23 @@ from sentry_sdk import configure_scope
 from nuxeo.utils import SwapAttr, get_digester, guess_mimetype
 
 
-@pytest.mark.parametrize('hash, digester', [
-    # Known algos
-    ('0' * 32, 'md5'),
-    ('0' * 40, 'sha1'),
-    ('0' * 56, 'sha224'),
-    ('0' * 64, 'sha256'),
-    ('0' * 96, 'sha384'),
-    ('0' * 128, 'sha512'),
-    # Other
-    (None, None),
-    ('', None),
-    ('foo', None),
-    ('dead', None),
-])
+@pytest.mark.parametrize(
+    "hash, digester",
+    [
+        # Known algos
+        ("0" * 32, "md5"),
+        ("0" * 40, "sha1"),
+        ("0" * 56, "sha224"),
+        ("0" * 64, "sha256"),
+        ("0" * 96, "sha384"),
+        ("0" * 128, "sha512"),
+        # Other
+        (None, None),
+        ("", None),
+        ("foo", None),
+        ("dead", None),
+    ],
+)
 def test_get_digester(hash, digester):
     if digester:
         assert get_digester(hash).name == digester
@@ -124,5 +127,5 @@ def test_guess_mimetype(name, mime):
 def test_guess_mimetype_patch():
     """ Test WIN32_PATCHED_MIME_TYPES. """
 
-    with SwapAttr(sys, 'platform', 'win32'):
-        assert guess_mimetype('foo.ppt')
+    with SwapAttr(sys, "platform", "win32"):
+        assert guess_mimetype("foo.ppt")

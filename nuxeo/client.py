@@ -9,8 +9,17 @@ from urllib3.util.retry import Retry
 import requests
 from requests.adapters import HTTPAdapter
 
-from . import (__version__, directories, documents, groups,
-               operations, tasks, uploads, users, workflows)
+from . import (
+    __version__,
+    directories,
+    documents,
+    groups,
+    operations,
+    tasks,
+    uploads,
+    users,
+    workflows,
+)
 from .auth import TokenAuth
 from .compat import text
 from .constants import (
@@ -28,9 +37,11 @@ from .utils import json_helper
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Any, Dict, Optional, Text, Tuple, Type, Union  # noqa
         from requests.auth import AuthBase  # noqa
+
         AuthType = Optional[Union[Tuple[Text, Text], AuthBase]]
 except ImportError:
     pass
@@ -71,18 +82,18 @@ class NuxeoClient(object):
         self.api_path = api_path
         self.chunk_size = chunk_size
 
-        version = kwargs.pop('version', '')
-        app_name = kwargs.pop('app_name', DEFAULT_APP_NAME)
+        version = kwargs.pop("version", "")
+        app_name = kwargs.pop("app_name", DEFAULT_APP_NAME)
         self.headers = {
-            'X-Application-Name': app_name,
-            'X-Client-Version': version,
-            'User-Agent': app_name + '/' + version,
-            'Accept': 'application/json, */*'
+            "X-Application-Name": app_name,
+            "X-Client-Version": version,
+            "User-Agent": app_name + "/" + version,
+            "Accept": "application/json, */*",
         }
-        self.schemas = kwargs.get('schemas', '*')
-        self.repository = kwargs.pop('repository', 'default')
+        self.schemas = kwargs.get("schemas", "*")
+        self.repository = kwargs.pop("repository", "default")
         self._session = requests.sessions.Session()
-        cookies = kwargs.pop('cookies', None)
+        cookies = kwargs.pop("cookies", None)
         if cookies:
             self._session.cookies = cookies
         self._session.stream = True
@@ -93,22 +104,23 @@ class NuxeoClient(object):
         self._server_info = None
 
         # Ensure the host is well formatted
-        if not self.host.endswith('/'):
-            self.host += '/'
+        if not self.host.endswith("/"):
+            self.host += "/"
 
         # The retry adapter
         self.retries = Retry(
             total=MAX_RETRY,
             backoff_factor=RETRY_BACKOFF_FACTOR,
             method_whitelist=RETRY_METHODS,
-            status_forcelist=RETRY_STATUS_CODES)
+            status_forcelist=RETRY_STATUS_CODES,
+        )
 
         # Install the retries mecanism
         self.enable_retry()
 
     def __repr__(self):
         # type: () -> Text
-        fmt = '{name}<host={cls.host!r}, version={cls.server_version!r}>'
+        fmt = "{name}<host={cls.host!r}, version={cls.server_version!r}>"
         return fmt.format(name=type(self).__name__, cls=self)
 
     def __str__(self):
@@ -122,8 +134,8 @@ class NuxeoClient(object):
     def enable_retry(self):
         # type: () -> None
         """ Set a max retry for all connection errors with an adaptative backoff. """
-        self._session.mount('https://', HTTPAdapter(max_retries=self.retries))
-        self._session.mount('http://', HTTPAdapter(max_retries=self.retries))
+        self._session.mount("https://", HTTPAdapter(max_retries=self.retries))
+        self._session.mount("http://", HTTPAdapter(max_retries=self.retries))
 
     def disable_retry(self):
         # type: () -> None
@@ -131,8 +143,8 @@ class NuxeoClient(object):
         Restore default mount points to disable the eventual retry
         adapters set with .enable_retry().
         """
-        self._session.mount('https://', HTTPAdapter())
-        self._session.mount('http://', HTTPAdapter())
+        self._session.mount("https://", HTTPAdapter())
+        self._session.mount("http://", HTTPAdapter())
 
     def query(
         self,
@@ -149,12 +161,12 @@ class NuxeoClient(object):
         operation details.
         """
 
-        data = {'query': query}
+        data = {"query": query}
         if params:
             data.update(params)
 
-        url = self.api_path + '/search/lang/NXQL/execute'
-        return self.request('GET', url, params=data).json()
+        url = self.api_path + "/search/lang/NXQL/execute"
+        return self.request("GET", url, params=data).json()
 
     def set(self, repository=None, schemas=None):
         # type: (Optional[Text], Optional[Text]) -> NuxeoClient
@@ -168,7 +180,7 @@ class NuxeoClient(object):
 
         if schemas:
             if isinstance(schemas, list):
-                schemas = ','.join(schemas)
+                schemas = ",".join(schemas)
             self.schemas = schemas
 
         return self
@@ -195,28 +207,34 @@ class NuxeoClient(object):
                :func:`requests.request`
         :return: the HTTP response
         """
-        if method not in ('GET', 'HEAD', 'POST', 'PUT',
-                          'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'):
-            raise BadQuery('method parameter is not a valid HTTP method.')
+        if method not in (
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "DELETE",
+            "CONNECT",
+            "OPTIONS",
+            "TRACE",
+        ):
+            raise BadQuery("method parameter is not a valid HTTP method.")
 
         # Construct the full URL without double slashes
-        url = self.host + path.lstrip('/')
-        if 'adapter' in kwargs:
-            url = '{}/@{}'.format(url, kwargs.pop('adapter'))
+        url = self.host + path.lstrip("/")
+        if "adapter" in kwargs:
+            url = "{}/@{}".format(url, kwargs.pop("adapter"))
 
         kwargs.update(self.client_kwargs)
 
         headers = headers or {}
-        if 'Content-Type' not in headers:
-            headers['Content-Type'] = kwargs.pop(
-                'content_type', 'application/json')
-        headers.update({
-            'X-NXDocumentProperties': self.schemas,
-            'X-NXRepository': self.repository
-        })
-        enrichers = kwargs.pop('enrichers', None)
+        if "Content-Type" not in headers:
+            headers["Content-Type"] = kwargs.pop("content_type", "application/json")
+        headers.update(
+            {"X-NXDocumentProperties": self.schemas, "X-NXRepository": self.repository}
+        )
+        enrichers = kwargs.pop("enrichers", None)
         if enrichers:
-            headers['X-NXenrichers.document'] = ', '.join(enrichers)
+            headers["X-NXenrichers.document"] = ", ".join(enrichers)
 
         headers.update(self.headers)
 
@@ -225,19 +243,22 @@ class NuxeoClient(object):
 
         # Set the default value to `object` to allow someone
         # to set `default` to `None`.
-        default = kwargs.pop('default', object)
+        default = kwargs.pop("default", object)
 
         logger.debug(
-            ('Calling {!r} with headers={!r}, '
-             'params={!r} and cookies={!r}').format(
-                url, headers, kwargs.get('params', data if not raw else {}),
-                self._session.cookies))
+            ("Calling {!r} with headers={!r}, " "params={!r} and cookies={!r}").format(
+                url,
+                headers,
+                kwargs.get("params", data if not raw else {}),
+                self._session.cookies,
+            )
+        )
 
         exc = None
         try:
             resp = self._session.request(
-                method, url, headers=headers,
-                auth=self.auth, data=data, **kwargs)
+                method, url, headers=headers, auth=self.auth, data=data, **kwargs
+            )
             resp.raise_for_status()
         except Exception as exc:
             if default is object:
@@ -274,16 +295,16 @@ class NuxeoClient(object):
         """
 
         parameters = {
-            'deviceId': device_id,
-            'applicationName': app_name,
-            'permission': permission,
-            'revoke': text(revoke).lower(),
+            "deviceId": device_id,
+            "applicationName": app_name,
+            "permission": permission,
+            "revoke": text(revoke).lower(),
         }
         if device:
-            parameters['deviceDescription'] = device
+            parameters["deviceDescription"] = device
 
-        path = 'authentication/token'
-        token = self.request('GET', path, params=parameters).text
+        path = "authentication/token"
+        token = self.request("GET", path, params=parameters).text
 
         # Use the (potentially re-newed) token from now on
         if not revoke:
@@ -293,7 +314,7 @@ class NuxeoClient(object):
     def is_reachable(self):
         # type: () -> bool
         """ Check if the Nuxeo Platform is reachable. """
-        response = self.request('GET', 'runningstatus', default=False)
+        response = self.request("GET", "runningstatus", default=False)
         if isinstance(response, requests.Response):
             return response.ok
         else:
@@ -308,9 +329,9 @@ class NuxeoClient(object):
         """
 
         if force or self._server_info is None:
-            response = self.request('GET', 'json/cmis', default={})
+            response = self.request("GET", "json/cmis", default={})
             if isinstance(response, requests.Response):
-                info = response.json()['default']
+                info = response.json()["default"]
             else:
                 info = response
             self._server_info = info
@@ -320,7 +341,7 @@ class NuxeoClient(object):
     def server_version(self):
         # type: () -> Text
         """ Return the server version. """
-        return self.server_info().get('productVersion', '')
+        return self.server_info().get("productVersion", "")
 
     @staticmethod
     def _handle_error(error):
@@ -334,10 +355,12 @@ class NuxeoClient(object):
             try:
                 error_data = error.response.json()
             except ValueError:
-                error_data = {'status': error.response.status_code,
-                              'message': error.response.content}
+                error_data = {
+                    "status": error.response.status_code,
+                    "message": error.response.content,
+                }
 
-            error_cls = HTTP_ERROR.get(error_data.get('status'), HTTPError)
+            error_cls = HTTP_ERROR.get(error_data.get("status"), HTTPError)
             error = error_cls.parse(error_data)
         return error
 
@@ -353,31 +376,34 @@ class NuxeoClient(object):
         """
 
         headers = response.headers
-        content_type = headers.get('content-type', 'application/octet-stream')
-        content = '<not yet handled, content-type={!r}>'.format(content_type)
+        content_type = headers.get("content-type", "application/octet-stream")
+        content = "<not yet handled, content-type={!r}>".format(content_type)
 
-        if response.url.endswith('json/cmis'):
+        if response.url.endswith("json/cmis"):
             # This endpoint returns too many information and pollute logs.
             # Besides contents of this call are stored into the .server_info attr.
-            content = '<CMIS details saved into the *server_info* attr>'
+            content = "<CMIS details saved into the *server_info* attr>"
         elif not response.content:
             # response.content is empty when *void_op* is True,
             # meaning we do not want to get back what we sent
             # or the operation does not return anything by default
-            content = '<no content>'
-        elif 'application/octet-stream' in content_type:
-            content = '<binary data>'
-        elif 'application/json' in content_type or content_type.startswith('text/'):
-            content_size = int(headers.get('content-length', 0))
-            content = '<too much data to display ({:,} bytes)>'.format(content_size)
+            content = "<no content>"
+        elif "application/octet-stream" in content_type:
+            content = "<binary data>"
+        elif "application/json" in content_type or content_type.startswith("text/"):
+            content_size = int(headers.get("content-length", 0))
+            content = "<too much data to display ({:,} bytes)>".format(content_size)
             if content_size <= limit_size:
                 # Do not use response.text as it will load the chardet module and its
                 # heavy encoding detection mecanism. The server will only return UTF-8.
                 # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
-                content = response.content.decode('utf-8', errors='replace')
+                content = response.content.decode("utf-8", errors="replace")
 
-        logger.debug('Response from {!r}: {!r} with headers {!r} and cookies {!r}'.format(
-            response.url, content, headers, response.cookies))
+        logger.debug(
+            "Response from {!r}: {!r} with headers {!r} and cookies {!r}".format(
+                response.url, content, headers, response.cookies
+            )
+        )
 
 
 class Nuxeo(object):
@@ -390,6 +416,7 @@ class Nuxeo(object):
     :param client: the client class
     :param kwargs: any other argument to forward to every requests calls
     """
+
     def __init__(
         self,
         auth=None,  # type: Optional[Tuple[Text, Text]]
@@ -400,12 +427,14 @@ class Nuxeo(object):
         **kwargs  # type: Any
     ):
         # type: (...) -> None
-        if requests.__version__ < '2.12.2':
+        if requests.__version__ < "2.12.2":
             from warnings import warn
-            warn('Requests >= 2.12.2 required for auth unicode support.')
 
-        self.client = client(auth, host=host, app_name=app_name,
-                             version=version, **kwargs)
+            warn("Requests >= 2.12.2 required for auth unicode support.")
+
+        self.client = client(
+            auth, host=host, app_name=app_name, version=version, **kwargs
+        )
         self.operations = operations.API(self.client)
         self.directories = directories.API(self.client)
         self.groups = groups.API(self.client)
@@ -413,5 +442,4 @@ class Nuxeo(object):
         self.uploads = uploads.API(self.client)
         self.users = users.API(self.client)
         self.workflows = workflows.API(self.client, self.tasks)
-        self.documents = documents.API(
-            self.client, self.operations, self.workflows)
+        self.documents = documents.API(self.client, self.operations, self.workflows)

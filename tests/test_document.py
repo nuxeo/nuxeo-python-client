@@ -10,29 +10,23 @@ from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
 
 
 class Doc(object):
-
     def __init__(self, server, blobs=0):
         self.server = server
         self.blobs = blobs
 
     def __enter__(self):
         doc = Document(
-            name=WORKSPACE_NAME,
-            type='File',
-            properties={
-                'dc:title': 'bar.txt',
-            }
+            name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}
         )
-        self.doc = self.server.documents.create(
-            doc, parent_path=WORKSPACE_ROOT)
+        self.doc = self.server.documents.create(doc, parent_path=WORKSPACE_ROOT)
 
         if self.blobs:
             # Upload several blobs for one document
             batch = self.server.uploads.batch()
             for idx in range(self.blobs):
                 blob = BufferBlob(
-                    data='foo {}'.format(idx),
-                    name='foo-{}.txt'.format(idx))
+                    data="foo {}".format(idx), name="foo-{}.txt".format(idx)
+                )
                 batch.upload(blob)
 
             path = WORKSPACE_TEST
@@ -45,18 +39,17 @@ class Doc(object):
 
 def test_document_create(server):
     doc = Document(
-        type='File',
-        name='日本.txt',
-        properties={'dc:title': '日本.txt',
-                    'dc:description': 'ру́сский'}
+        type="File",
+        name="日本.txt",
+        properties={"dc:title": "日本.txt", "dc:description": "ру́сский"},
     )
-    doc = server.documents.create(doc, parent_path='/')
+    doc = server.documents.create(doc, parent_path="/")
     try:
-        assert doc.entity_type == 'document'
-        assert doc.type == 'File'
-        assert doc.title == '日本.txt'
-        assert doc.get('dc:title') == doc.properties['dc:title'] == '日本.txt'
-        assert doc.properties['dc:description'] == 'ру́сский'
+        assert doc.entity_type == "document"
+        assert doc.type == "File"
+        assert doc.title == "日本.txt"
+        assert doc.get("dc:title") == doc.properties["dc:title"] == "日本.txt"
+        assert doc.properties["dc:description"] == "ру́сский"
     finally:
         doc.delete()
     assert not server.documents.exists(doc.uid)
@@ -66,16 +59,20 @@ def test_document_create_bytes_warning(server):
     """ Running "python3 -bb -m pytest -W error test..." will fail:
         BytesWarning: str() on a bytes instance
     """
-    name = 'File.txt'
-    properties = {'dc:title': name, 'note:note': b'some content'}
+    name = "File.txt"
+    properties = {"dc:title": name, "note:note": b"some content"}
     document = None
     try:
         document = server.operations.execute(
-            command='Document.Create', input_obj='doc:' + WORKSPACE_ROOT,
-            type='Note', name=name, properties=properties)
+            command="Document.Create",
+            input_obj="doc:" + WORKSPACE_ROOT,
+            type="Note",
+            name=name,
+            properties=properties,
+        )
     finally:
         if document:
-            server.documents.delete(document['uid'])
+            server.documents.delete(document["uid"])
 
 
 def test_document_get_blobs(server):
@@ -84,62 +81,47 @@ def test_document_get_blobs(server):
     number = 4
     with Doc(server, blobs=number) as doc:
         for idx in range(number):
-            xpath = 'files:files/{}/file'.format(idx)
+            xpath = "files:files/{}/file".format(idx)
             blob = doc.fetch_blob(xpath)
-            assert blob == get_bytes('foo {}'.format(idx))
+            assert blob == get_bytes("foo {}".format(idx))
 
 
 def test_document_list_update(server):
     new_doc1 = Document(
-        name='ws-js-tests1',
-        type='Workspace',
-        properties={
-            'dc:title': 'ws-js-tests1',
-        })
+        name="ws-js-tests1", type="Workspace", properties={"dc:title": "ws-js-tests1"}
+    )
     new_doc2 = Document(
-        name='ws-js-tests2',
-        type='Workspace',
-        properties={
-            'dc:title': 'ws-js-tests2',
-        })
+        name="ws-js-tests2", type="Workspace", properties={"dc:title": "ws-js-tests2"}
+    )
 
     doc1 = server.documents.create(new_doc1, parent_path=WORKSPACE_ROOT)
     doc2 = server.documents.create(new_doc2, parent_path=WORKSPACE_ROOT)
-    desc = 'sample description'
+    desc = "sample description"
     res = server.operations.execute(
-        command='Document.Update',
-        params={'properties': {'dc:description': desc}},
-        input_obj=[doc1.path, doc2.path])
+        command="Document.Update",
+        params={"properties": {"dc:description": desc}},
+        input_obj=[doc1.path, doc2.path],
+    )
 
-    assert res['entity-type'] == 'documents'
-    assert len(res['entries']) == 2
-    assert res['entries'][0]['path'] == doc1.path
-    assert res['entries'][0]['properties']['dc:description'] == desc
-    assert res['entries'][1]['path'] == doc2.path
-    assert res['entries'][1]['properties']['dc:description'] == desc
+    assert res["entity-type"] == "documents"
+    assert len(res["entries"]) == 2
+    assert res["entries"][0]["path"] == doc1.path
+    assert res["entries"][0]["properties"]["dc:description"] == desc
+    assert res["entries"][1]["path"] == doc2.path
+    assert res["entries"][1]["properties"]["dc:description"] == desc
     doc1.delete()
     doc2.delete()
 
 
 def test_document_move(server):
-    doc = Document(
-        name=WORKSPACE_NAME,
-        type='File',
-        properties={
-            'dc:title': 'bar.txt',
-        })
+    doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
     assert repr(doc)
-    folder = Document(
-        name='Test',
-        type='Folder',
-        properties={
-            'dc:title': 'Test'
-        })
+    folder = Document(name="Test", type="Folder", properties={"dc:title": "Test"})
     doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     folder = server.documents.create(folder, parent_path=WORKSPACE_ROOT)
     try:
-        doc.move(WORKSPACE_ROOT + '/Test', 'new name')
-        assert doc.path == WORKSPACE_ROOT + '/Test/new name'
+        doc.move(WORKSPACE_ROOT + "/Test", "new name")
+        assert doc.path == WORKSPACE_ROOT + "/Test/new name"
         children = server.documents.get_children(folder.uid)
         assert len(children) == 1
         assert children[0].uid == doc.uid
@@ -150,14 +132,8 @@ def test_document_move(server):
 
 
 def test_document_trash(server):
-    doc = Document(
-        name=WORKSPACE_NAME,
-        type='File',
-        properties={
-            'dc:title': 'bar.txt',
-        })
-    doc = server.documents.create(
-        doc, parent_path=WORKSPACE_ROOT)
+    doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
+    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
         assert not doc.isTrashed
         doc.trash()
@@ -169,26 +145,20 @@ def test_document_trash(server):
 
 
 def test_follow_transition(server):
-    doc = Document(
-        name=WORKSPACE_NAME,
-        type='File',
-        properties={
-            'dc:title': 'bar.txt',
-        })
-    doc = server.documents.create(
-        doc, parent_path=WORKSPACE_ROOT)
+    doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
+    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
-        assert doc.state == 'project'
-        doc.follow_transition('approve')
-        assert doc.state == 'approved'
-        doc.follow_transition('backToProject')
-        assert doc.state == 'project'
+        assert doc.state == "project"
+        doc.follow_transition("approve")
+        assert doc.state == "approved"
+        doc.follow_transition("backToProject")
+        assert doc.state == "project"
     finally:
         doc.delete()
 
 
 def test_add_permission(server):
     users = ["Administrator"]
-    with SwapAttr(nuxeo.constants, 'CHECK_PARAMS', True), Doc(server) as doc:
+    with SwapAttr(nuxeo.constants, "CHECK_PARAMS", True), Doc(server) as doc:
         # NXPY-84: here we should not fail with KeyError: 'list' in check_params()
         doc.add_permission({"permission": "ReadWrite", "users": users})

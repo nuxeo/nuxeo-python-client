@@ -9,6 +9,7 @@ import hashlib
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from _hashlib import HASH  # noqa
         from typing import Any, Dict, Optional, Text, Type, Union  # noqa
@@ -18,16 +19,15 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 WIN32_PATCHED_MIME_TYPES = {
-    'image/pjpeg': 'image/jpeg',
-    'image/x-png': 'image/png',
-    'image/bmp': 'image/x-ms-bmp',
-    'audio/x-mpg': 'audio/mpeg',
-    'video/x-mpeg2a': 'video/mpeg',
-    'application/x-javascript': 'application/javascript',
-    'application/x-msexcel': 'application/vnd.ms-excel',
-    'application/x-mspowerpoint': 'application/vnd.ms-powerpoint',
-    'application/x-mspowerpoint.12':
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    "image/pjpeg": "image/jpeg",
+    "image/x-png": "image/png",
+    "image/bmp": "image/x-ms-bmp",
+    "audio/x-mpg": "audio/mpeg",
+    "video/x-mpeg2a": "video/mpeg",
+    "application/x-javascript": "application/javascript",
+    "application/x-msexcel": "application/vnd.ms-excel",
+    "application/x-mspowerpoint": "application/vnd.ms-powerpoint",
+    "application/x-mspowerpoint.12": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 }
 
 
@@ -36,12 +36,12 @@ def get_digest_algorithm(digest):
 
     # Available algorithms
     digesters = {
-        32: 'md5',
-        40: 'sha1',
-        56: 'sha224',
-        64: 'sha256',
-        96: 'sha384',
-        128: 'sha512',
+        32: "md5",
+        40: "sha1",
+        56: "sha224",
+        64: "sha256",
+        96: "sha384",
+        128: "sha512",
     }
 
     # Ensure the digest is hexadecimal
@@ -78,7 +78,7 @@ def get_digester(digest):
     func = get_digest_hash(algo) if algo else None
 
     if not func:
-        logger.warning('No valid hash algorithm found for digest %r', digest)
+        logger.warning("No valid hash algorithm found for digest %r", digest)
 
     return func
 
@@ -88,13 +88,13 @@ def guess_mimetype(filename):
     """ Guess the mimetype of a given file. """
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type:
-        if sys.platform == 'win32':
+        if sys.platform == "win32":
             # Patch bad Windows MIME types
             # See http://bugs.python.org/issue15207 and NXP-11660
             mime_type = WIN32_PATCHED_MIME_TYPES.get(mime_type, mime_type)
         return mime_type
 
-    return 'application/octet-stream'
+    return "application/octet-stream"
 
 
 def json_helper(obj):

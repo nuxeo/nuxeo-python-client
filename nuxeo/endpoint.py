@@ -7,6 +7,7 @@ from .exceptions import BadQuery, HTTPError
 
 try:
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from typing import Any, Dict, Optional, Text, Type, Union  # noqa
         from .client import NuxeoClient  # noqa
@@ -39,7 +40,7 @@ class APIEndpoint(object):
         """
         self.client = client
         if endpoint:
-            self.endpoint = '{}/{}'.format(client.api_path, endpoint)
+            self.endpoint = "{}/{}".format(client.api_path, endpoint)
         else:
             self.endpoint = client.api_path
         self.headers = headers or {}
@@ -72,9 +73,9 @@ class APIEndpoint(object):
             cls = self._cls
 
         if path:
-            endpoint = '{}/{}'.format(endpoint, path)
+            endpoint = "{}/{}".format(endpoint, path)
 
-        response = self.client.request('GET', endpoint, **kwargs)
+        response = self.client.request("GET", endpoint, **kwargs)
 
         if isinstance(response, Response):
             if raw or response.status_code == 204:
@@ -86,8 +87,8 @@ class APIEndpoint(object):
         if cls is dict:
             return json
 
-        if not single and isinstance(json, dict) and 'entries' in json:
-            json = json['entries']
+        if not single and isinstance(json, dict) and "entries" in json:
+            json = json["entries"]
 
         if isinstance(json, list):
             return [cls.parse(resource, service=self) for resource in json]
@@ -108,16 +109,16 @@ class APIEndpoint(object):
             if isinstance(resource, self._cls):
                 resource = resource.as_dict()
             else:
-                raise BadQuery(
-                    'Data must be a Model object or a dictionary.')
+                raise BadQuery("Data must be a Model object or a dictionary.")
 
         endpoint = self.endpoint
 
         if path:
-            endpoint = '{}/{}'.format(endpoint, path)
+            endpoint = "{}/{}".format(endpoint, path)
 
         response = self.client.request(
-            'POST', endpoint, data=resource, raw=raw, **kwargs)
+            "POST", endpoint, data=resource, raw=raw, **kwargs
+        )
 
         if isinstance(response, dict):
             return response
@@ -133,11 +134,11 @@ class APIEndpoint(object):
         :return: the modified resource
         """
 
-        endpoint = '{}/{}'.format(self.endpoint, path or resource.uid)
+        endpoint = "{}/{}".format(self.endpoint, path or resource.uid)
 
         data = resource.as_dict() if resource else resource
 
-        response = self.client.request('PUT', endpoint, data=data, **kwargs)
+        response = self.client.request("PUT", endpoint, data=data, **kwargs)
 
         if resource:
             return self._cls.parse(response.json(), service=self)
@@ -150,8 +151,8 @@ class APIEndpoint(object):
         :param resource_id: the resource ID to be deleted
         """
 
-        endpoint = '{}/{}'.format(self.endpoint, resource_id)
-        self.client.request('DELETE', endpoint)
+        endpoint = "{}/{}".format(self.endpoint, resource_id)
+        self.client.request("DELETE", endpoint)
 
     def exists(self, path):
         # type: (Text) -> bool
@@ -161,10 +162,10 @@ class APIEndpoint(object):
         :param path: the endpoint (URL path) for the request
         :return: True if it exists, else False
         """
-        endpoint = '{}/{}'.format(self.endpoint, path)
+        endpoint = "{}/{}".format(self.endpoint, path)
 
         try:
-            self.client.request('GET', endpoint)
+            self.client.request("GET", endpoint)
             return True
         except HTTPError as e:
             if e.status != 404:

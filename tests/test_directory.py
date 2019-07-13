@@ -13,36 +13,36 @@ def test_create_wrong_arguments(directory):
 
 
 def test_crud(directory):
-    new_entry = DirectoryEntry(properties={'id': 'foo', 'label': 'Foo'})
+    new_entry = DirectoryEntry(properties={"id": "foo", "label": "Foo"})
     entry = directory.create(new_entry)
     try:
-        assert entry.entity_type == 'directoryEntry'
-        assert entry.directoryName == 'nature'
-        assert entry.properties['id'] == 'foo'
-        assert entry.uid == 'foo'
-        assert entry.properties['label'] == 'Foo'
+        assert entry.entity_type == "directoryEntry"
+        assert entry.directoryName == "nature"
+        assert entry.properties["id"] == "foo"
+        assert entry.uid == "foo"
+        assert entry.properties["label"] == "Foo"
         assert repr(entry)
 
-        entry.properties['label'] = 'Test'
+        entry.properties["label"] = "Test"
         entry.save()
-        entry = directory.get('foo')
-        assert entry.properties['label'] == 'Test'
+        entry = directory.get("foo")
+        assert entry.properties["label"] == "Test"
 
-        entry.properties['label'] = 'Foo'
+        entry.properties["label"] = "Foo"
         directory.save(entry)
-        entry = directory.get('foo')
-        assert entry.properties['label'] == 'Foo'
+        entry = directory.get("foo")
+        assert entry.properties["label"] == "Foo"
     finally:
         entry.delete()
 
 
 def test_fetch(directory):
-    entry = directory.get('article')
-    assert entry.entity_type == 'directoryEntry'
-    assert entry.directoryName == 'nature'
-    assert entry.properties['id'] == 'article'
-    assert entry.uid == 'article'
-    assert entry.properties['label'] == 'label.directories.nature.article'
+    entry = directory.get("article")
+    assert entry.entity_type == "directoryEntry"
+    assert entry.directoryName == "nature"
+    assert entry.properties["id"] == "article"
+    assert entry.uid == "article"
+    assert entry.properties["label"] == "label.directories.nature.article"
 
 
 def test_fetch_all(directory):
@@ -53,4 +53,4 @@ def test_fetch_all(directory):
 
 
 def test_fetch_unknown(directory):
-    assert not directory.exists('Abitbol')
+    assert not directory.exists("Abitbol")
