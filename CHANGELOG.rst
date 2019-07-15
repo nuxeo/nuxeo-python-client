@@ -14,6 +14,7 @@ Release date: ``2019-xx-xx``
 - `NXPY-117 <https://jira.nuxeo.com/browse/NXPY-117>`__: Use black for a one-shot big clean-up
 - `NXPY-118 <https://jira.nuxeo.com/browse/NXPY-118>`__: Missing status code from ``Forbidden`` and ``Unauthorized`` exceptions
 - `NXPY-119 <https://jira.nuxeo.com/browse/NXPY-119>`__: Remove the requests warning
+- `NXPY-120 <https://jira.nuxeo.com/browse/NXPY-120>`__: Add a test for unavailable converters
 
 Technical changes
 -----------------

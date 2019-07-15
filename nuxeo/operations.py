@@ -127,7 +127,7 @@ class API(APIEndpoint):
                     types = ", ".join(types[:-1]) + " or " + types[-1]
                 else:
                     types = types[0]
-                err = "parameter {}={!r} should be of type {}" " (current is {})"
+                err = "parameter {}={!r} should be of type {} (current is {})"
                 raise BadQuery(err.format(name, value, types, type(value).__name__))
 
         # Check for required parameters.  As of now, `parameters` may contain

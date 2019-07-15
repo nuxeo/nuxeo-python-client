@@ -15,6 +15,3 @@ exclude_lines =
 
     # Not covered because of interpreter shutdown
     self._session.close()
-
-    # Using a custom method to override this line in documents.py::convert()
-    if 'is not available' in e.message:
