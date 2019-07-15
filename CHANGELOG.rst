@@ -13,6 +13,7 @@ Release date: ``2019-xx-xx``
 - `NXPY-114 <https://jira.nuxeo.com/browse/NXPY-114>`__: Do not log the response of the CMIS endpoint
 - `NXPY-117 <https://jira.nuxeo.com/browse/NXPY-117>`__: Use black for a one-shot big clean-up
 - `NXPY-118 <https://jira.nuxeo.com/browse/NXPY-118>`__: Missing status code from ``Forbidden`` and ``Unauthorized`` exceptions
+- `NXPY-119 <https://jira.nuxeo.com/browse/NXPY-119>`__: Remove the requests warning
 
 Technical changes
 -----------------

@@ -10,7 +10,6 @@ exclude_lines =
 
     # Others
     except NameError:
-    if requests.__version__ < '2.12.2':
     raise NotImplementedError()
     raise e
 
