@@ -432,11 +432,6 @@ class Nuxeo(object):
         **kwargs  # type: Any
     ):
         # type: (...) -> None
-        if requests.__version__ < "2.12.2":
-            from warnings import warn
-
-            warn("Requests >= 2.12.2 required for auth unicode support.")
-
         self.client = client(
             auth, host=host, app_name=app_name, version=version, **kwargs
         )
