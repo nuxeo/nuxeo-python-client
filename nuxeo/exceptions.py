@@ -51,12 +51,18 @@ class CorruptedFile(NuxeoError):
 class HTTPError(RetryError, NuxeoError):
     """ Exception thrown when the server returns an error. """
 
-    _valid_properties = {"status": None, "message": None, "stacktrace": None}
+    _valid_properties = {"status": -1, "message": None, "stacktrace": None}
 
     def __init__(self, **kwargs):
         # type: (Any) -> None
         for key, default in HTTPError._valid_properties.items():
-            setattr(self, key, kwargs.get(key, default))
+            if key == "status":
+                # Use the subclass value, if defined
+                value = getattr(self, key, kwargs.get(key, default))
+            else:
+                value = kwargs.get(key, default)
+
+            setattr(self, key, value)
 
     def __repr__(self):
         # type: () -> Text
@@ -86,6 +92,8 @@ class HTTPError(RetryError, NuxeoError):
 class Forbidden(HTTPError):
     """ Exception thrown when the HTTPError code is 403. """
 
+    status = 403
+
 
 class InvalidBatch(NuxeoError):
     """ Exception thrown when accessing inexistant or deleted batches. """
@@ -93,6 +101,8 @@ class InvalidBatch(NuxeoError):
 
 class Unauthorized(HTTPError):
     """ Exception thrown when the HTTPError code is 401. """
+
+    status = 401
 
 
 class UnavailableConvertor(NuxeoError):

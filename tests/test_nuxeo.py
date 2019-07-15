@@ -297,7 +297,7 @@ def test_forbidden(server):
             server.users.create(
                 User(properties={"username": "another_one", "password": "test"})
             )
-        assert text(e.value)
+        assert text(e.value).startswith("Forbidden(403)")
     finally:
         server.client.auth = auth
         user.delete()
@@ -313,6 +313,6 @@ def test_unauthorized(server):
             server.users.create(
                 User(properties={"username": "another_one", "password": "test"})
             )
-        assert text(e.value)
+        assert text(e.value).startswith("Unauthorized(401)")
     finally:
         server.client.auth = auth
