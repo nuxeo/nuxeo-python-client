@@ -12,6 +12,7 @@ Release date: ``2019-xx-xx``
 - `NXPY-113 <https://jira.nuxeo.com/browse/NXPY-113>`__: Use ``requests.sessions.Session`` rather than the deprecated ``requests.session``
 - `NXPY-114 <https://jira.nuxeo.com/browse/NXPY-114>`__: Do not log the response of the CMIS endpoint
 - `NXPY-117 <https://jira.nuxeo.com/browse/NXPY-117>`__: Use black for a one-shot big clean-up
+- `NXPY-118 <https://jira.nuxeo.com/browse/NXPY-118>`__: Missing status code from ``Forbidden`` and ``Unauthorized`` exceptions
 
 Technical changes
 -----------------
