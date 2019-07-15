@@ -7,7 +7,7 @@ import time
 import pytest
 
 from nuxeo.compat import get_bytes, text
-from nuxeo.exceptions import BadQuery, UnavailableConvertor
+from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
@@ -55,6 +55,21 @@ def test_bogus_converter(server):
             doc.convert({"converter": "converterthatdoesntexist"})
         msg = e.value.args[0]
         assert msg == "Converter converterthatdoesntexist is not registered"
+
+
+def test_unavailable_converter(monkeypatch, server):
+    converter = "converterthatisunvailable"
+
+    def get(*args, **kwargs):
+        """Mimic the error message when a converter is not available."""
+        raise HTTPError(message="{} is not available".format(converter))
+
+    with Doc(server, with_blob=True) as doc:
+        monkeypatch.setattr("nuxeo.endpoint.APIEndpoint.get", get)
+        with pytest.raises(UnavailableConvertor) as e:
+            doc.convert({"converter": converter})
+        assert isinstance(e.value, UnavailableConvertor)
+        assert str(e.value).startswith("UnavailableConvertor: conversion with options")
 
 
 def test_convert(server):

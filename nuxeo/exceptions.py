@@ -40,7 +40,7 @@ class CorruptedFile(NuxeoError):
 
     def __repr__(self):
         # type: () -> Text
-        err = "CorruptedFile {!r}: server digest " "is {!r}, local digest is {!r}"
+        err = "CorruptedFile {!r}: server digest is {!r}, local digest is {!r}"
         return err.format(self.filename, self.server_digest, self.local_digest)
 
     def __str__(self):
@@ -121,7 +121,7 @@ class UnavailableConvertor(NuxeoError):
     def __repr__(self):
         # type: () -> Text
         return (
-            "UnavailableConvertor: conversion with options {!r}" " is not available"
+            "UnavailableConvertor: conversion with options {!r} is not available"
         ).format(self.options)
 
     def __str__(self):
