@@ -15,6 +15,7 @@ Release date: ``2019-xx-xx``
 - `NXPY-118 <https://jira.nuxeo.com/browse/NXPY-118>`__: Missing status code from ``Forbidden`` and ``Unauthorized`` exceptions
 - `NXPY-119 <https://jira.nuxeo.com/browse/NXPY-119>`__: Remove the requests warning
 - `NXPY-120 <https://jira.nuxeo.com/browse/NXPY-120>`__: Add a test for unavailable converters
+- `NXPY-121 <https://jira.nuxeo.com/browse/NXPY-121>`__: Do not log the response of the automation endpoint
 
 Technical changes
 -----------------
