@@ -384,7 +384,11 @@ class NuxeoClient(object):
         content_type = headers.get("content-type", "application/octet-stream")
         content = "<not yet handled, content-type={!r}>".format(content_type)
 
-        if response.url.endswith("json/cmis"):
+        if response.url.endswith("site/automation"):
+            # This endpoint returns too many information and pollute logs.
+            # Besides contents of this call are stored into the .operations attr.
+            content = "<Automation details saved into the *operations* attr>"
+        elif response.url.endswith("json/cmis"):
             # This endpoint returns too many information and pollute logs.
             # Besides contents of this call are stored into the .server_info attr.
             content = "<CMIS details saved into the *server_info* attr>"
