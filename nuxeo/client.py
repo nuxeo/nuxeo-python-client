@@ -84,9 +84,6 @@ class NuxeoClient(object):
         self.api_path = api_path
         self.chunk_size = chunk_size
 
-        if "timeout" not in kwargs:
-            kwargs["timeout"] = (TIMEOUT_CONNECT, TIMEOUT_READ)
-
         version = kwargs.pop("version", "")
         app_name = kwargs.pop("app_name", DEFAULT_APP_NAME)
         self.headers = {
@@ -230,6 +227,9 @@ class NuxeoClient(object):
             url = "{}/@{}".format(url, kwargs.pop("adapter"))
 
         kwargs.update(self.client_kwargs)
+
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = (TIMEOUT_CONNECT, TIMEOUT_READ)
 
         headers = headers or {}
         if "Content-Type" not in headers:
