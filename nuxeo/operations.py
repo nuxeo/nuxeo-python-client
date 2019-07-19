@@ -165,10 +165,13 @@ class API(APIEndpoint):
         json = kwargs.pop("json", True)
         callback = kwargs.pop("callback", None)
         enrichers = kwargs.pop("enrichers", None)
+        check_params = kwargs.pop("check_params", constants.CHECK_PARAMS)
+        default = kwargs.pop("default", object)
+        timeout = kwargs.pop("timeout", object)
 
         command, input_obj, params, context = self.get_attributes(operation, **kwargs)
 
-        if kwargs.pop("check_params", constants.CHECK_PARAMS):
+        if check_params:
             self.check_params(command, params)
 
         url = "site/automation/{}".format(command)
@@ -196,8 +199,8 @@ class API(APIEndpoint):
             data=data,
             headers=headers,
             enrichers=enrichers,
-            default=kwargs.get("default", object),
-            timeout=kwargs.get("timeout", object),
+            default=default,
+            timeout=timeout,
         )
 
         # Save to a file, part by part of chunk_size
