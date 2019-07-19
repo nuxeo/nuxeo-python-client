@@ -197,6 +197,7 @@ class API(APIEndpoint):
             headers=headers,
             enrichers=enrichers,
             default=kwargs.get("default", object),
+            timeout=kwargs.get("timeout", object),
         )
 
         # Save to a file, part by part of chunk_size
