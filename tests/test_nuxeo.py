@@ -7,7 +7,7 @@ import os
 
 import pytest
 import requests
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, ReadTimeout
 
 from nuxeo import constants
 from nuxeo.auth import TokenAuth
@@ -164,6 +164,23 @@ def test_file_out(server):
 
 def test_get_operations(server):
     assert server.operations
+
+
+def test_operation_default(server):
+    operation = server.operations.new("Document.GetChild")
+    operation.params = {"name": "workspaces"}
+    operation.input_obj = "/default-domain"
+
+    operation.execute(check_params=True, default=0)
+
+
+def test_operation_timeout(server):
+    operation = server.operations.new("Document.GetChild")
+    operation.params = {"name": "workspaces"}
+    operation.input_obj = "/default-domain"
+
+    with pytest.raises(ReadTimeout):
+        operation.execute(check_params=True, timeout=0.0001)
 
 
 def test_post_default(server):

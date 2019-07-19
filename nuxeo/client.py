@@ -228,7 +228,9 @@ class NuxeoClient(object):
 
         kwargs.update(self.client_kwargs)
 
-        if "timeout" not in kwargs:
+        # Set the default value to `object` to allow someone
+        # to set `timeout` to `None`.
+        if kwargs.get("timeout", object) is object:
             kwargs["timeout"] = (TIMEOUT_CONNECT, TIMEOUT_READ)
 
         headers = headers or {}
