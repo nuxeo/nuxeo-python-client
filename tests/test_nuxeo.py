@@ -174,13 +174,14 @@ def test_operation_default(server):
     operation.execute(check_params=True, default=0)
 
 
-def test_operation_timeout(server):
-    operation = server.operations.new("Document.GetChild")
-    operation.params = {"name": "workspaces"}
-    operation.input_obj = "/default-domain"
-
+def test_operation_command(server):
     with pytest.raises(ReadTimeout):
-        operation.execute(check_params=True, timeout=0.0001)
+        server.operations.execute(
+            command="NuxeoDrive.CreateFile",
+            parentId="",
+            check_params=True,
+            timeout=0.0001,
+        )
 
 
 def test_post_default(server):
