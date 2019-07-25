@@ -174,13 +174,10 @@ def test_operation_default(server):
     operation.execute(check_params=True, default=0)
 
 
-def test_operation_command(server):
+def test_operation_command_with_timeout(server):
     with pytest.raises(ReadTimeout):
         server.operations.execute(
-            command="NuxeoDrive.CreateFile",
-            parentId="",
-            check_params=True,
-            timeout=0.0001,
+            command="Document.Create", type="File", check_params=True, timeout=0.0001
         )
 
 
