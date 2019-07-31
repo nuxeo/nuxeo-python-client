@@ -16,6 +16,7 @@ Release date: ``2019-xx-xx``
 - `NXPY-119 <https://jira.nuxeo.com/browse/NXPY-119>`__: Remove the requests warning
 - `NXPY-120 <https://jira.nuxeo.com/browse/NXPY-120>`__: Add a test for unavailable converters
 - `NXPY-121 <https://jira.nuxeo.com/browse/NXPY-121>`__: Do not log the response of the automation endpoint
+- `NXPY-123 <https://jira.nuxeo.com/browse/NXPY-123>`__: Pass the ``NXDRIVE_TEST_NUXEO_URL`` envar to tox
 
 Technical changes
 -----------------
