@@ -135,19 +135,20 @@ def test_file_out(server):
     operation.params = {"name": "workspaces"}
     operation.input_obj = "/default-domain"
 
-    from logging import getLogger
+    check_cb = check_lock = check_unlock = 0
 
-    log = getLogger(__name__)
-
-    def callback(msg):
-        log.info("Check suspended: %s", msg)
+    def callback(path):
+        nonlocal check_cb
+        check_cb += 1
 
     def unlock_path(path):
-        log.info("Unlock path: %s", path)
+        nonlocal check_unlock
+        check_unlock += 1
         return True
 
     def lock_path(path, locker):
-        log.info("Lock path: %s, %s", path, locker)
+        nonlocal check_lock
+        check_lock += 1
 
     file_out = operation.execute(
         file_out="test", callback=callback, lock_path=lock_path, unlock_path=unlock_path
@@ -160,6 +161,42 @@ def test_file_out(server):
             assert file_content == resp_content
     finally:
         os.remove(file_out)
+
+    # Check callback and lock/unlock calls are unique
+    assert check_cb == 1
+    assert check_lock == 1
+    assert check_unlock == 1
+
+
+def test_file_out_several_callbacks(server):
+    operation = server.operations.new("Document.GetChild")
+    operation.params = {"name": "workspaces"}
+    operation.input_obj = "/default-domain"
+
+    check1 = check2 = 0
+
+    def callback1(path):
+        nonlocal check1
+        check1 += 1
+
+    def callback2(path):
+        nonlocal check2
+        check2 += 1
+
+    callbacks = (callback1, callback2)
+    file_out = operation.execute(file_out="test", callback=callbacks)
+
+    try:
+        with open(file_out) as f:
+            file_content = json.loads(f.read())
+            resp_content = operation.execute()
+            assert file_content == resp_content
+    finally:
+        os.remove(file_out)
+
+    # Check callbacks calls are unique
+    assert check1 == 1
+    assert check2 == 1
 
 
 def test_get_operations(server):

@@ -174,7 +174,7 @@ class API(APIEndpoint):
         blob,  # type: ActualBlob
         chunked=False,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
-        callback=None,  # type: Callable
+        callback=None,  # type: Union[Callable, Tuple[Callable]]
     ):
         # type: (...) -> Blob
         """
@@ -187,7 +187,8 @@ class API(APIEndpoint):
         :param blob: blob to upload
         :param chunked: if True, send in chunks
         :param chunk_size: if blob is bigger, send in chunks of this size
-        :param callback: if not None, it is executed between each chunk
+        :param callback: if not None, they are executed between each chunk.
+          It is either a single callable or a tuple of callables (tuple is used to keep order).
         :return: uploaded blob details
         """
         uploader = self.get_uploader(
@@ -244,7 +245,7 @@ class API(APIEndpoint):
         blob,  # type: ActualBlob
         chunked=False,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
-        callback=None,  # type: Callable
+        callback=None,  # type: Union[Callable, Tuple[Callable]]
     ):
         # type: (...) -> Uploader
         """
@@ -257,7 +258,8 @@ class API(APIEndpoint):
         :param blob: blob to upload
         :param chunked: if True, send in chunks
         :param chunk_size: if blob is bigger, send in chunks of this size
-        :param callback: if not None, it is executed between each chunk
+        :param callback: if not None, they are executed between each chunk.
+          It is either a single callable or a tuple of callables (tuple is used to keep order).
         :return: uploaded blob details
         """
         chunked = chunked and blob.size > chunk_size
@@ -272,13 +274,18 @@ class Uploader(object):
     chunked = False
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
-        # type: (API, Batch, ActualBlob, int, Callable) -> None
+        # type: (API, Batch, ActualBlob, int, Union[Callable, Tuple[Callable]]) -> None
         self.service = service
         self.batch = batch
         self.blob = blob
         self.chunk_size = chunk_size
-        self.callback = callback
         self.headers = service.headers.copy()
+
+        # Several callbacks are accepted
+        if callback and isinstance(callback, (tuple, list, set)):
+            self.callback = tuple(cb for cb in callback if callable(cb))
+        else:
+            self.callback = tuple([callback] if callable(callback) else [])
 
         self.blob.uploadType = "chunked" if self.chunked else "normal"
         self.chunk_size = self.blob.size or None
@@ -324,8 +331,8 @@ class Uploader(object):
                     self.blob.name, data, self.path, self.chunked, 0, self.headers
                 )
             )
-            if callable(self.callback):
-                self.callback(self)
+            for callback in self.callback:
+                callback(self)
             setattr(self, "_completed", True)
         self._update_batch()
 
@@ -345,7 +352,7 @@ class ChunkUploader(Uploader):
     chunked = True
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
-        # type: (API, Batch, ActualBlob, int, Callable) -> None
+        # type: (API, Batch, ActualBlob, int, Union[Callable, Tuple[Callable]]) -> None
         super(ChunkUploader, self).__init__(
             service, batch, blob, chunk_size, callback=callback
         )
@@ -383,8 +390,8 @@ class ChunkUploader(Uploader):
         """
         Get a generator to upload the file.
 
-        If the `Uploader` has a callback, it is run after each chunk upload.
-        The method will yield after the callback step. It yields the uploader
+        If the `Uploader` has callback(s), they are run after each chunk upload.
+        The method will yield after the callbacks step. It yields the uploader
         itself since it contains all relevant data.
         """
         with self.blob as src:
@@ -415,9 +422,9 @@ class ChunkUploader(Uploader):
                 if not self._to_upload:
                     self._compute_chunks_left()
 
-                # Call the callback if it exists
-                if callable(self.callback):
-                    self.callback(self)
+                # Call the callback(s), if any
+                for callback in self.callback:
+                    callback(self)
 
                 # Yield to the upper scope
                 yield self

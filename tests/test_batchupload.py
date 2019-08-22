@@ -218,6 +218,69 @@ def test_upload(chunked, server):
                 pass
 
 
+@pytest.mark.parametrize("chunked", [False, True])
+def test_upload_several_callbacks(chunked, server):
+    check = 0
+
+    def callback1(upload):
+        nonlocal check
+        check += 1
+
+    def callback2(upload):
+        assert upload
+        assert isinstance(upload.blob.uploadedChunkIds, list)
+        assert isinstance(upload.blob.uploadedSize, int)
+
+        if not chunked:
+            assert upload.blob.uploadedSize == file_size
+            assert upload.blob.uploadType == "normal"
+        else:
+            # In chunked mode, we should have 1024, 2048, 3072 and 4096 respectively
+            sizes = {1: 1024, 2: 1024 * 2, 3: 1024 * 3, 4: 1024 * 4}
+            assert upload.blob.uploadedSize == sizes[len(upload.blob.uploadedChunkIds)]
+            assert upload.blob.uploadType == "chunked"
+
+    batch = server.uploads.batch()
+
+    chunk_size = 1024
+    file_size = 4096 if chunked else 1024
+    file_in, file_out = "test_in", "test_out"
+    with open(file_in, "wb") as f:
+        f.write(b"\x00" * file_size)
+
+    callbacks = [callback1, callback2, "callback3"]
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
+    try:
+        blob = FileBlob(file_in, mimetype="application/octet-stream")
+        assert repr(blob)
+        assert batch.upload(
+            blob, chunked=chunked, callback=callbacks, chunk_size=chunk_size
+        )
+        operation = server.operations.new("Blob.AttachOnDocument")
+        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
+        operation.input_obj = batch.get(0)
+        operation.execute(void_op=True)
+
+        operation = server.operations.new("Document.Fetch")
+        operation.params = {"value": WORKSPACE_ROOT + "/Document"}
+        info = operation.execute()
+        digest = info["properties"]["file:content"]["digest"]
+
+        operation = server.operations.new("Blob.Get")
+        operation.input_obj = WORKSPACE_ROOT + "/Document"
+        file_out = operation.execute(file_out=file_out, digest=digest)
+    finally:
+        doc.delete()
+        for file_ in (file_in, file_out):
+            try:
+                os.remove(file_)
+            except OSError:
+                pass
+
+    # Check the callback count (1 for not chucked)
+    assert check == 4 if chunked else 1
+
+
 def test_get_uploader(server):
     def callback(*args):
         assert args
