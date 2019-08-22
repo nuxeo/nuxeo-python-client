@@ -160,6 +160,7 @@ class API(APIEndpoint):
         :param file_out: if not None, path of the file
         where the response will be saved
         :param kwargs: any other parameter
+          *callback* is either a single callable or a tuple of callables.
         :return: the result of the execution
         """
         json = kwargs.pop("json", True)
@@ -295,9 +296,15 @@ class API(APIEndpoint):
 
         unlock_path = kwargs.pop("unlock_path", None)
         lock_path = kwargs.pop("lock_path", None)
-        callback = kwargs.pop("callback", None)
         use_lock = callable(unlock_path) and callable(lock_path)
         locker = None
+
+        # Several callbacks are accepted, tuple is used to keep order
+        callback = kwargs.pop("callback", None)
+        if callback and isinstance(callback, (tuple, list, set)):
+            callbacks = tuple(cb for cb in callback if callable(cb))
+        else:
+            callbacks = tuple([callback] if callable(callback) else [])
 
         if use_lock:
             locker = unlock_path(path)
@@ -306,7 +313,7 @@ class API(APIEndpoint):
                 chunk_size = kwargs.get("chunk_size", self.client.chunk_size)
                 for chunk in resp.iter_content(chunk_size=chunk_size):
                     # Check if synchronization thread was suspended
-                    if callable(callback):
+                    for callback in callbacks:
                         callback(path)
                     if operation:
                         operation.progress += chunk_size
