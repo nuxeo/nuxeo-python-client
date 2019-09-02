@@ -7,6 +7,7 @@ Changelog
 Release date: ``2019-xx-xx``
 
 - `NXPY-125 <https://jira.nuxeo.com/browse/NXPY-125>`__: Add a warning for Python 2 removal
+- `NXPY-130 <https://jira.nuxeo.com/browse/NXPY-130>`__: Expand the group examples to show subgroup handling
 
 Technical changes
 -----------------

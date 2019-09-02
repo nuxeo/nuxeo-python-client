@@ -65,10 +65,7 @@ Groups
 
 .. code:: python
 
-    new_group = Group(
-        groupname='foo',
-        grouplabel='Foo',
-    )
+    new_group = Group(groupname='foo', grouplabel='Foo')
     group = nuxeo.groups.create(new_group)
 
 **Modify a group**
@@ -85,3 +82,29 @@ Groups
 .. code:: python
 
     nuxeo.groups.delete('foo')
+
+**Subgroup**
+
+.. code:: python
+
+    # Create 2 groups
+    new_group1 = Group(groupname='ParentGroup', grouplabel='ParentGroup')
+    group1 = server.groups.create(new_group1)
+
+    new_group2 = Group(groupname='SubGroup', grouplabel='SubGroup')
+    group2 = server.groups.create(new_group2)
+
+    # Add group2 to subgroups of group1
+    group1.memberGroups = [group2.groupname]
+    group1.save()
+
+Alternatively, if the subgroup already exists, it is smaller to write:
+
+.. code:: python
+
+    new_group = Group(
+        groupname='ParentGroup',
+        grouplabel='ParentGroup',
+        memberGroups=['SubGroup'],
+    )
+    group = server.groups.create(new_group1)
