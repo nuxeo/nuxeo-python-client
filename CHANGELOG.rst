@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2019-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-125 <https://jira.nuxeo.com/browse/NXPY-125>`__: Add a warning for Python 2 removal
 
 Technical changes
 -----------------
