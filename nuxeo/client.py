@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import atexit
 import json
 import logging
+import sys
 from urllib3.util.retry import Retry
 
 import requests
@@ -438,6 +439,18 @@ class Nuxeo(object):
         **kwargs  # type: Any
     ):
         # type: (...) -> None
+
+        if sys.version_info[:2] == (2, 7):
+            from warnings import warn
+
+            message = (
+                "Python 2.7 will reach the end of its life on January"
+                " 1st, 2020. Please upgrade your Python as Python 2.7"
+                " won't be maintained after that date."
+                " And so the Nuxeo Python client."
+            )
+            warn(message, DeprecationWarning, 2)
+
         self.client = client(
             auth, host=host, app_name=app_name, version=version, **kwargs
         )
