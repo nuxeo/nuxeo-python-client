@@ -34,6 +34,22 @@ def test_create_delete_group_dict(server):
         assert not server.groups.exists("plops")
 
 
+def test_create_delete_subgroup(server):
+    # Create 2 groups
+    group = Group(groupname="ParentGroup", grouplabel="ParentGroup Test")
+    group1 = server.groups.create(group)
+
+    group = Group(groupname="SubGroup", grouplabel="SubGroup Test")
+    group2 = server.groups.create(group)
+
+    # Add group2 to subgroups of group1
+    group1.memberGroups = [group2.groupname]
+    group1.save()
+
+    group2.delete()
+    group1.delete()
+
+
 def test_create_wrong_arguments(server):
     with pytest.raises(BadQuery):
         server.groups.create(1)
