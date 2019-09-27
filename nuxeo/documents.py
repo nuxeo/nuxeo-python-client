@@ -235,17 +235,18 @@ class API(APIEndpoint):
             path=self._path(uid=uid, path=path), raw=True, adapter=adapter
         )
 
-    def get_children(self, uid=None, path=None):
-        # type: (Optional[Text], Optional[Text]) -> List[Document]
+    def get_children(self, uid=None, path=None, enrichers=None):
+        # type: (Optional[Text], Optional[Text], Optional[List[str]]) -> List[Document]
         """
         Get the children of a document.
 
         :param uid: the uid of the document
         :param path: the path of the document
+        :param enrichers: additionnal details to fetch at the same time, e.g.: ["permissions"]
         :return: the document children
         """
         return super(API, self).get(
-            path=self._path(uid=uid, path=path), adapter="children"
+            path=self._path(uid=uid, path=path), enrichers=enrichers, adapter="children"
         )
 
     def has_permission(self, uid, permission):
