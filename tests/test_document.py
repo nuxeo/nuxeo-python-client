@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import nuxeo.constants
+import pytest
 from nuxeo.compat import get_bytes
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import SwapAttr
@@ -128,6 +129,25 @@ def test_document_move(server):
     finally:
         doc.delete()
         folder.delete()
+    assert not server.documents.exists(path=doc.path)
+
+
+def test_document_get_children_with_permissions(server):
+    doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
+    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
+    try:
+        # Without enrichers
+        children = server.documents.get_children(path="/")
+        assert len(children) == 1
+        with pytest.raises(KeyError):
+            assert "ReadWrite" in children[0].contextParameters["permissions"]
+
+        # With enrichers
+        children = server.documents.get_children(path="/", enrichers=["permissions"])
+        assert len(children) == 1
+        assert "ReadWrite" in children[0].contextParameters["permissions"]
+    finally:
+        doc.delete()
     assert not server.documents.exists(path=doc.path)
 
 
