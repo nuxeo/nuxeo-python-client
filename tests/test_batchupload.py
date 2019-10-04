@@ -22,11 +22,19 @@ def get_batch(server):
     batch = server.uploads.batch()
     assert batch
     assert repr(batch)
+    assert batch.uid
+    assert batch.upload_idx == 0
     assert not server.uploads.get(batch.uid)
+
     blob = BufferBlob(data="data", name="Test.txt", mimetype="text/plain")
     assert repr(blob)
     batch.upload(blob)
-    assert batch.uid
+    assert batch.upload_idx == 1
+
+    blob2 = BufferBlob(data="data2", name="Test2.txt", mimetype="text/plain")
+    batch.upload(blob2)
+    assert batch.upload_idx == 2
+
     return batch
 
 
@@ -120,19 +128,36 @@ def test_execute(server):
 
 def test_fetch(server):
     batch = get_batch(server)
+
     blob = batch.get(0)
     assert not blob.fileIdx
     assert blob.uploadType == "normal"
     assert blob.name == "Test.txt"
-    assert blob.size == 4
+    assert blob.size == 4  # "data"
 
     blob = batch.blobs[0]
-    assert not blob.fileIdx
+    assert blob.fileIdx == 0
     assert blob.uploadType == "normal"
     assert blob.uploaded
-    assert blob.uploadedSize == 4
+    assert blob.uploadedSize == 4  # "data"
+
     batch.delete(0)
     assert not batch.blobs[0]
+
+    blob = batch.get(1)
+    assert blob.fileIdx == 1
+    assert blob.uploadType == "normal"
+    assert blob.name == "Test2.txt"
+    assert blob.size == 5  # "data2"
+
+    blob = batch.blobs[1]
+    assert blob.fileIdx == 1
+    assert blob.uploadType == "normal"
+    assert blob.uploaded
+    assert blob.uploadedSize == 5  # "data2"
+
+    batch.delete(1)
+    assert not batch.blobs[1]
 
 
 def test_mimetype():
