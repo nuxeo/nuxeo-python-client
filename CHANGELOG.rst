@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2019-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-128 <https://jira.nuxeo.com/browse/NXPY-128>`__: Make ``Batch`` upload index public
 
 Technical changes
 -----------------

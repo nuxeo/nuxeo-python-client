@@ -129,7 +129,7 @@ class Batch(Model):
         super(Batch, self).__init__(**kwargs)
         self.batchId = None  # type: Text
         self.blobs = {}  # type: Dict[int, Blob]
-        self._upload_idx = 0
+        self.upload_idx = 0
         for key, default in Batch._valid_properties.items():
             setattr(self, key, kwargs.get(key, default))
 

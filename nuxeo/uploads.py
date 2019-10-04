@@ -235,7 +235,7 @@ class API(APIEndpoint):
         :return: the output of the attach operation
         """
         params = {"document": doc}
-        if file_idx is None and batch._upload_idx > 1:
+        if file_idx is None and batch.upload_idx > 1:
             params["xpath"] = "files:files"
         return self.execute(batch, "Blob.Attach", file_idx, params)
 
@@ -290,7 +290,7 @@ class Uploader(object):
         self.blob.uploadType = "chunked" if self.chunked else "normal"
         self.chunk_size = self.blob.size or None
         self.chunk_count = 1
-        self.path = "{}/{}".format(self.batch.batchId, self.batch._upload_idx)
+        self.path = "{}/{}".format(self.batch.batchId, self.batch.upload_idx)
 
         self.headers.update(
             {
@@ -342,8 +342,8 @@ class Uploader(object):
         if self.is_complete():
             # All the parts have been uploaded, update the attributes
             self.blob.batch_id = self.batch.uid
-            self.batch.blobs[self.batch._upload_idx] = self.blob
-            self.batch._upload_idx += 1
+            self.batch.blobs[self.batch.upload_idx] = self.blob
+            self.batch.upload_idx += 1
 
 
 class ChunkUploader(Uploader):
