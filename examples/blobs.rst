@@ -1,7 +1,9 @@
 Work with blobs
 ---------------
 
-**Add a Blob to a file**
+
+Add a Blob to a Document
+========================
 
 When uploading a blob, you can choose to do a chunked upload
 by passing ``chunked=True`` to the upload method. If the file
@@ -17,18 +19,18 @@ command with the same batch and blob.
 
     # Create a file
     new_file = Document(
-        name='foo',
-        type='File',
+        name="foo",
+        type="File",
         properties={
-            'dc:title': 'foo',
+            "dc:title": "foo",
         })
-    file = nuxeo.documents.create(new_file, parent_path='/')
+    file = nuxeo.documents.create(new_file, parent_path="/")
 
     # Create a batch
     batch = nuxeo.uploads.batch()
 
     # Create and upload a blob
-    blob = FileBlob('/path/to/file')
+    blob = FileBlob("/path/to/file")
     try:
         uploaded = batch.upload(blob, chunked=True)
     except UploadError:
@@ -37,13 +39,45 @@ command with the same batch and blob.
         # the same command
 
     # Attach it to the file
-    operation = nuxeo.operations.new('Blob.AttachOnDocument')
-    operation.params = {'document': '/foo'}
+    operation = nuxeo.operations.new("Blob.AttachOnDocument")
+    operation.params = {"document": file.path}
     operation.input_obj = uploaded
     operation.execute()
 
+Add Multiple Blobs to a Given Document
+======================================
 
-**Advanced upload**
+The snippet will create a document of type ``File`` and attach to it 3 text files.
+
+.. code:: python
+
+    from nuxeo.models import Document, FileBlob
+
+    # Create a document
+    new_file = Document(
+        name="foo.txt",
+        type="File",
+        properties={
+            "dc:title": "foo.txt",
+        })
+    file = nuxeo.documents.create(new_file, parent_path="/default-domain/workspaces")
+
+    # Create a batch
+    batch = nuxeo.uploads.batch()
+
+    # Here, loop over files to upload
+    for local_file in ("text1.txt", "text2.txt", "text3.txt"):
+        # Create a blob
+        blob = FileBlob(local_file)
+
+        # Upload the blob in chunks
+        batch.upload(blob, chunked=True)
+
+    # Attach all blobs to the file
+    batch.attach(file.path)
+
+Advanced Upload
+===============
 
 If you are uploading a really big file, you might want to have more control over the upload.
 For this purpose, you can use an ``Uploader`` object.
@@ -65,7 +99,7 @@ It is nice for small additions, maybe updating a variable or logging something, 
     batch = nuxeo.uploads.batch()
 
     # Create and upload a blob
-    blob = FileBlob('/path/to/file')
+    blob = FileBlob("/path/to/file")
 
     uploader = batch.get_uploader(blob, chunked=True, callback=log_progress)
     try:
@@ -84,7 +118,7 @@ Otherwise, you can upload using a generator:
     batch = nuxeo.uploads.batch()
 
     # Create and upload a blob
-    blob = FileBlob('/path/to/file')
+    blob = FileBlob("/path/to/file")
 
     uploader = batch.get_uploader(blob, chunked=True)
     try:
