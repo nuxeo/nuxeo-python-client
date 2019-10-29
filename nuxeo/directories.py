@@ -24,12 +24,13 @@ class API(APIEndpoint):
             client, endpoint=endpoint, cls=DirectoryEntry, headers=headers
         )
 
-    def get(self, dir_name, dir_entry=None):
-        # type: (Text, Optional[Text]) -> Union[Directory, DirectoryEntry]
+    def get(self, dir_name, dir_entry=None, **params):
+        # type: (Text, Optional[Text], Any) -> Union[Directory, DirectoryEntry]
         """
         Get the entries of a directory.
 
         If dir_entry is not None, return the corresponding entry.
+        Any additionnal arguments will be passed to the *params* parent's call.
 
         :param dir_name: the name of the directory
         :param dir_entry: the name of an entry
@@ -39,7 +40,7 @@ class API(APIEndpoint):
         if dir_entry:
             path = "{}/{}".format(path, dir_entry)
 
-        entries = super(API, self).get(path=path)
+        entries = super(API, self).get(path=path, params=params)
         if dir_entry:
             return entries
         return Directory(directoryName=dir_name, entries=entries, service=self)

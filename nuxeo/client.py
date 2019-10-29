@@ -158,7 +158,7 @@ class NuxeoClient(object):
         Query the server with the specified NXQL query.
         Additional qery parameters can be set via the `params` argument:
 
-            >>> nuxeo.client.query('SQL query', params={'properties': '*'})
+            >>> nuxeo.client.query('NXSQL query', params={'properties': '*'})
 
         You can find what parameters to tweak under the `Repository.Query`
         operation details.
