@@ -4,7 +4,7 @@ Changelog
 2.2.4
 -----
 
-Release date: ``2019-xx-xx``
+Release date: ``2019-10-29``
 
 - `NXPY-128 <https://jira.nuxeo.com/browse/NXPY-128>`__: Make ``Batch`` upload index public
 - `NXPY-135 <https://jira.nuxeo.com/browse/NXPY-135>`__: Expand the documentation on how to attach multiple blobs to a given document
