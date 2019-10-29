@@ -8,11 +8,12 @@ Release date: ``2019-xx-xx``
 
 - `NXPY-128 <https://jira.nuxeo.com/browse/NXPY-128>`__: Make ``Batch`` upload index public
 - `NXPY-135 <https://jira.nuxeo.com/browse/NXPY-135>`__: Expand the documentation on how to attach multiple blobs to a given document
+- `NXPY-136 <https://jira.nuxeo.com/browse/NXPY-136>`__: Allow additionnal parameters to ``Directories.get()``
 
 Technical changes
 -----------------
 
--
+- nuxeo/directories.py::\ ``API.get()`` now handles additionnal parameters
 
 2.2.3
 -----
