@@ -5,7 +5,6 @@ import operator
 import time
 
 import pytest
-
 from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
@@ -80,6 +79,11 @@ def test_convert(server):
             assert b"foo" in res
         except UnavailableConvertor:
             pass
+        except HTTPError as exc:
+            if "UnsupportedOperationException" in exc.message:
+                pytest.mark.xfail("No more converters (NXP-28123)")
+            else:
+                raise
 
 
 def test_convert_given_converter(server):
@@ -90,6 +94,11 @@ def test_convert_given_converter(server):
             assert b"foo" in res
         except UnavailableConvertor:
             pass
+        except HTTPError as exc:
+            if "UnsupportedOperationException" in exc.message:
+                pytest.mark.xfail("No more converters (NXP-28123)")
+            else:
+                raise
 
 
 def test_convert_missing_args(server):
