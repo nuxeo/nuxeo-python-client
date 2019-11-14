@@ -78,12 +78,7 @@ def test_convert(server):
             assert b"<html" in res
             assert b"foo" in res
         except UnavailableConvertor:
-            pass
-        except HTTPError as exc:
-            if "UnsupportedOperationException" in exc.message:
-                pytest.mark.xfail("No more converters (NXP-28123)")
-            else:
-                raise
+            pytest.mark.xfail("No more converters (NXP-28123)")
 
 
 def test_convert_given_converter(server):
@@ -93,12 +88,7 @@ def test_convert_given_converter(server):
             assert b"<html" in res
             assert b"foo" in res
         except UnavailableConvertor:
-            pass
-        except HTTPError as exc:
-            if "UnsupportedOperationException" in exc.message:
-                pytest.mark.xfail("No more converters (NXP-28123)")
-            else:
-                raise
+            pytest.mark.xfail("No more converters (NXP-28123)")
 
 
 def test_convert_missing_args(server):
@@ -129,7 +119,7 @@ def test_convert_xpath(server):
             assert b"<html" in res
             assert b"foo" in res
         except UnavailableConvertor:
-            pass
+            pytest.mark.xfail("No more converters (NXP-28123)")
 
 
 def test_create_doc_and_delete(server):

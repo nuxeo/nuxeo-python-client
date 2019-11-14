@@ -138,7 +138,10 @@ class API(APIEndpoint):
         except HTTPError as e:
             if "is not registered" in e.message:
                 raise BadQuery(e.message)
-            if "is not available" in e.message:
+            if (
+                "is not available" in e.message
+                or "UnsupportedOperationException" in e.message
+            ):
                 raise UnavailableConvertor(options)
             raise e
 
