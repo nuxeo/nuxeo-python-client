@@ -440,7 +440,7 @@ class Nuxeo(object):
     ):
         # type: (...) -> None
 
-        if sys.version_info[:2] == (2, 7):
+        if sys.version_info[:2] == (2, 7):  # pragma: no cover
             from warnings import warn
 
             message = (
