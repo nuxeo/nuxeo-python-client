@@ -119,7 +119,16 @@ class RefreshableModel(Model):
 class Batch(Model):
     """ Upload batch. """
 
-    _valid_properties = {"batchId": None, "blobs": {}, "dropped": None, "upload_idx": 0}
+    _valid_properties = {
+        "batchId": None,
+        "blobs": {},
+        "dropped": None,
+        "extraInfo": None,
+        "etag": None,
+        "multiPartUploadId": None,
+        "provider": None,
+        "upload_idx": 0,
+    }
     service = None  # type: UploadsAPI
 
     @property
@@ -204,6 +213,15 @@ class Batch(Model):
         :return: the output of the attach operation
         """
         return self.service.attach(self, doc, file_idx)
+
+    def complete(self):
+        # type: () -> Any
+        """
+        Complete a S3 Direct Upload.
+
+        :return: the output of the complete operation
+        """
+        return self.service.complete(self)
 
 
 class Blob(Model):

@@ -36,3 +36,6 @@ TIMEOUT_READ = 30
 
 # Size of chunks for the upload
 UPLOAD_CHUNK_SIZE = 20 * 1024 * 1024  # 20 MiB
+
+# Upload providers
+UP_AMAZON_S3 = "s3"

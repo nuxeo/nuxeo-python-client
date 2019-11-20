@@ -15,7 +15,16 @@ The installation is as simple as:
 
 .. code:: shell
 
-    python -m pip install --upgrade nuxeo
+    python -m pip install -U --user nuxeo
+
+The client can make use of the Amazon S3 provider, to install its requirements:
+
+.. code:: shell
+
+    python -m pip install -U --user nuxeo[s3]
+
+Import
+------
 
 Then, use the following ``import`` statement to have access to the Nuxeo
 API:

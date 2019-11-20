@@ -1,12 +1,12 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from .compat import get_bytes, quote, text
-from .constants import UPLOAD_CHUNK_SIZE
+from .compat import text
+from .constants import UPLOAD_CHUNK_SIZE, UP_AMAZON_S3
 from .endpoint import APIEndpoint
-from .exceptions import HTTPError, UploadError
+from .exceptions import HTTPError, InvalidUploadHandler, UploadError
 from .models import Batch, Blob
-from .utils import SwapAttr
+from .utils import SwapAttr, chunk_partition
 
 try:
     from typing import TYPE_CHECKING
@@ -18,9 +18,7 @@ try:
             Callable,
             Dict,
             List,
-            Generator,
             Optional,
-            Set,
             Text,
             Tuple,
             Union,
@@ -29,7 +27,6 @@ try:
         from .models import BufferBlob, FileBlob  # noqa
 
         ActualBlob = Union[BufferBlob, FileBlob]  # noqa
-        OptInt = Optional[int]  # noqa
 except ImportError:
     pass
 
@@ -40,6 +37,9 @@ class API(APIEndpoint):
     def __init__(self, client, endpoint="upload", headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         super(API, self).__init__(client, endpoint=endpoint, cls=Blob, headers=headers)
+
+        # Available upload handlers
+        self.__handlers = None  # type: Optional[List[str]]
 
     def get(self, batch_id, file_idx=None):
         # type: (Text, Optional[int]) -> Union[List[Blob], Blob]
@@ -66,14 +66,25 @@ class API(APIEndpoint):
             return []
         return resource
 
-    def post(self):
-        # type: () -> Batch
+    def post(self, handler=""):
+        # type: (Optional[Text]) -> Batch
         """
         Create a batch.
 
+        :param handler: the upload handler to use
         :return: the created batch
         """
-        response = self.client.request("POST", self.endpoint)
+        endpoint = self.endpoint
+        if handler:
+            handler = handler.lower()
+            handlers = self.handlers()
+            if handler in handlers:
+                if handler != "default":
+                    endpoint = "{}/new/{}".format(endpoint, handler)
+            else:
+                raise InvalidUploadHandler(handler, handlers)
+
+        response = self.client.request("POST", endpoint)
         return Batch.parse(response.json(), service=self)
 
     batch = post  # Alias for clarity
@@ -101,6 +112,25 @@ class API(APIEndpoint):
             with SwapAttr(self, "_cls", Batch):
                 super(API, self).delete(target)
 
+    def handlers(self, force=False):
+        # type: (Optional[bool]) -> List[str]
+        """
+        Get available upload handlers.
+
+        :param force: force refreshing the list
+        """
+        if self.__handlers is None or force:
+            endpoint = "{}/handlers".format(self.endpoint)
+            try:
+                response = self.client.request("GET", endpoint)
+                self.__handlers = [h for h in response.json()["handlers"][0].values()]
+            except Exception:
+                # This is not good, no handlers == no uploads!
+                # Return an empty list without modifying .__handlers
+                # to force a new HTTP call the next time.
+                return []
+        return self.__handlers
+
     def send_data(
         self,
         name,  # type: Text
@@ -109,11 +139,11 @@ class API(APIEndpoint):
         chunked,  # type: bool
         index,  # type: int
         headers,  # type: Dict[Text, Text]
+        data_len=0,  # type: Optional[int]
     ):
         # type: (...) -> Blob
         """
         Send data/chunks to the server.
-
 
         :param name: name of the file being uploaded
         :param data: data being sent
@@ -126,19 +156,18 @@ class API(APIEndpoint):
         if chunked:
             headers["X-Upload-Chunk-Index"] = text(index)
 
+        if data_len > 0:
+            headers["Content-Length"] = text(data_len)
+
         try:
             return super(API, self).post(
                 resource=data, path=path, raw=True, headers=headers
             )
         except HTTPError as e:
-            raise UploadError(name, chunk=index if chunked else None, info=e)
-        finally:
-            # Explicitly break a reference cycle
-            e = None
-            del e
+            raise UploadError(name, chunk=index if chunked else None, info=str(e))
 
     def state(self, path, blob, chunk_size=UPLOAD_CHUNK_SIZE):
-        # type: (Text, ActualBlob, int) -> Tuple[OptInt, OptInt, Set, Blob]
+        # type: (Text, ActualBlob, int) -> Tuple[int, List[int]]
         """
         Get the state of a blob.
 
@@ -153,20 +182,20 @@ class API(APIEndpoint):
         :param path: path for the request
         :param blob: the target blob
         :param chunk_size: the chunk size for new uploads
-        :return: the chunk size, chunk count, the index
-                 of the next blob to upload, and the
-                 response from the server
+        :return: a tuple of the chunk count and
+                 the set of uploaded chunk indexes
         """
         info = super(API, self).get(path, default=None)
 
         if info:
             chunk_count = int(info.chunkCount)
-            uploaded_chunks = set(info.uploadedChunkIds)
-        else:  # It's a new upload
-            chunk_count = blob.size // chunk_size + (blob.size % chunk_size > 0)
-            uploaded_chunks = set()
+            uploaded_chunks = [int(i) for i in info.uploadedChunkIds]
+        else:
+            # It's a new upload
+            chunk_count, _ = chunk_partition(blob.size, chunk_size)
+            uploaded_chunks = []
 
-        return chunk_count, uploaded_chunks, info
+        return chunk_count, uploaded_chunks
 
     def upload(
         self,
@@ -239,6 +268,33 @@ class API(APIEndpoint):
             params["xpath"] = "files:files"
         return self.execute(batch, "Blob.Attach", file_idx, params)
 
+    def complete(self, batch):
+        # type: () -> Any
+        """
+        Complete an upload.
+        This is a no-op when using the default upload provider.
+
+        :return: the output of the complete operation
+        """
+        if batch.provider == UP_AMAZON_S3:
+            blob = batch.blobs[0]
+            s3_info = batch.extraInfo
+            params = {
+                "name": blob.name,
+                "fileSize": blob.size,
+                "key": "{}/{}".format(s3_info["baseKey"].rstrip("/"), blob.name),
+                "bucket": s3_info["bucket"],
+                "etag": batch.etag,
+            }
+            endpoint = "{}/{}/{}/complete".format(
+                self.endpoint, batch.uid, batch.upload_idx - 1
+            )
+            return self.client.request("POST", endpoint, data=params)
+
+        # Doing a /complete with the default upload provider
+        # will end on a HTTP 409 Conflict error.
+        return None
+
     def get_uploader(
         self,
         batch,  # type: Batch
@@ -247,7 +303,7 @@ class API(APIEndpoint):
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
         callback=None,  # type: Union[Callable, Tuple[Callable]]
     ):
-        # type: (...) -> Uploader
+        # type: (...) -> "Uploader"
         """
         Get an upload helper for blob.
 
@@ -263,181 +319,16 @@ class API(APIEndpoint):
         :return: uploaded blob details
         """
         chunked = chunked and blob.size > chunk_size
-        if chunked:
-            return ChunkUploader(self, batch, blob, chunk_size, callback)
-        return Uploader(self, batch, blob, chunk_size, callback)
 
-
-class Uploader(object):
-    """ Helper for uploads """
-
-    chunked = False
-
-    def __init__(self, service, batch, blob, chunk_size, callback=None):
-        # type: (API, Batch, ActualBlob, int, Union[Callable, Tuple[Callable]]) -> None
-        self.service = service
-        self.batch = batch
-        self.blob = blob
-        self.chunk_size = chunk_size
-        self.headers = service.headers.copy()
-
-        # Several callbacks are accepted
-        if callback and isinstance(callback, (tuple, list, set)):
-            self.callback = tuple(cb for cb in callback if callable(cb))
+        if batch.provider == UP_AMAZON_S3:
+            if chunked:
+                from .handlers.s3 import ChunkUploaderS3 as cls
+            else:
+                from .handlers.s3 import UploaderS3 as cls
         else:
-            self.callback = tuple([callback] if callable(callback) else [])
+            if chunked:
+                from .handlers.default import ChunkUploader as cls
+            else:
+                from .handlers.default import Uploader as cls
 
-        self.blob.uploadType = "chunked" if self.chunked else "normal"
-        self.chunk_size = self.blob.size or None
-        self.chunk_count = 1
-        self.path = "{}/{}".format(self.batch.batchId, self.batch.upload_idx)
-
-        self.headers.update(
-            {
-                "Cache-Control": "no-cache",
-                "X-File-Name": quote(get_bytes(self.blob.name)),
-                "X-File-Size": text(self.blob.size),
-                "X-File-Type": self.blob.mimetype,
-                "Content-Length": text(self.blob.size),
-            }
-        )
-
-    def __repr__(self):
-        # type: () -> Text
-        return "<{} blob={!r}, chunked={!r}, chunk_size={!r}>".format(
-            type(self).__name__, self.blob, self.chunked, self.chunk_size
-        )
-
-    def __str__(self):
-        # type: () -> Text
-        return repr(self)
-
-    def is_complete(self):
-        # type: () -> bool
-        return getattr(self, "_completed", False)
-
-    def process(self, response):
-        # type: (Blob) -> None
-        self.blob.fileIdx = response.fileIdx
-        self.blob.uploadedSize = int(response.uploadedSize)
-
-    def upload(self):
-        # type: () -> None
-        """ Upload the file. """
-        with self.blob as src:
-            data = src if self.blob.size else None
-            self.process(
-                self.service.send_data(
-                    self.blob.name, data, self.path, self.chunked, 0, self.headers
-                )
-            )
-            for callback in self.callback:
-                callback(self)
-            setattr(self, "_completed", True)
-        self._update_batch()
-
-    def _update_batch(self):
-        # type: () -> None
-        """ Add the uploaded blob info to the batch. """
-        if self.is_complete():
-            # All the parts have been uploaded, update the attributes
-            self.blob.batch_id = self.batch.uid
-            self.batch.blobs[self.batch.upload_idx] = self.blob
-            self.batch.upload_idx += 1
-
-
-class ChunkUploader(Uploader):
-    """ Helper for chunked uploads """
-
-    chunked = True
-
-    def __init__(self, service, batch, blob, chunk_size, callback=None):
-        # type: (API, Batch, ActualBlob, int, Union[Callable, Tuple[Callable]]) -> None
-        super(ChunkUploader, self).__init__(
-            service, batch, blob, chunk_size, callback=callback
-        )
-        chunk_count, uploaded_chunks, info = self.service.state(
-            self.path, self.blob, chunk_size
-        )
-        self.headers.update(
-            {
-                "X-Upload-Type": "chunked",
-                "X-Upload-Chunk-Count": text(chunk_count),
-                "Content-Length": text(chunk_size),
-            }
-        )
-
-        self.chunk_size = chunk_size
-        self.chunk_count = chunk_count
-        self.blob.uploadedChunkIds = uploaded_chunks
-        self.blob.chunkCount = chunk_count
-        self._to_upload = set()
-        self._compute_chunks_left()
-
-    def _compute_chunks_left(self):
-        # type: () -> None
-        """ Compare the set of uploaded chunks with the final list. """
-        if self.is_complete():
-            return
-        self._to_upload = set(range(self.chunk_count)) - set(self.blob.uploadedChunkIds)
-
-    def is_complete(self):
-        # type: () -> bool
-        return len(self.blob.uploadedChunkIds) == self.chunk_count
-
-    def iter_upload(self):
-        # type: () -> Generator
-        """
-        Get a generator to upload the file.
-
-        If the `Uploader` has callback(s), they are run after each chunk upload.
-        The method will yield after the callbacks step. It yields the uploader
-        itself since it contains all relevant data.
-        """
-        with self.blob as src:
-            while self._to_upload:
-                # Get the index of a chunk to upload
-                index = self._to_upload.pop()
-
-                # Seek to the right position
-                src.seek(index * self.chunk_size)
-
-                # Read a chunk of data
-                data = src.read(self.chunk_size)
-
-                # Upload it
-                self.process(
-                    self.service.send_data(
-                        self.blob.name,
-                        data,
-                        self.path,
-                        self.chunked,
-                        index,
-                        self.headers,
-                    )
-                )
-
-                # If the set of chunks to upload is empty, check whether
-                # the server has received all of them.
-                if not self._to_upload:
-                    self._compute_chunks_left()
-
-                # Call the callback(s), if any
-                for callback in self.callback:
-                    callback(self)
-
-                # Yield to the upper scope
-                yield self
-
-        self._update_batch()
-
-    def process(self, response):
-        # type: (Blob) -> None
-        self.blob.fileIdx = response.fileIdx
-        uploaded_chunks = response.uploadedChunkIds
-        self.blob.uploadedChunkIds = uploaded_chunks
-        self.blob.uploadedSize = len(uploaded_chunks) * self.chunk_size
-
-    def upload(self):
-        # type: () -> None
-        list(self.iter_upload())
+        return cls(self, batch, blob, chunk_size, callback)

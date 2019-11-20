@@ -7,7 +7,13 @@ import os
 import pytest
 
 from nuxeo.compat import text
-from nuxeo.exceptions import CorruptedFile, HTTPError, InvalidBatch, UploadError
+from nuxeo.exceptions import (
+    CorruptedFile,
+    HTTPError,
+    InvalidBatch,
+    InvalidUploadHandler,
+    UploadError,
+)
 from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
 from sentry_sdk import configure_scope
@@ -36,6 +42,18 @@ def get_batch(server):
     assert batch.upload_idx == 2
 
     return batch
+
+
+def test_batch_handler_default(server):
+    server.uploads.batch(handler="default")
+
+
+def test_batch_handler_inexistant(server):
+    with pytest.raises(InvalidUploadHandler) as exc:
+        server.uploads.batch(handler="light")
+    error = text(exc.value)
+    assert "light" in error
+    assert "default" in error
 
 
 def test_cancel(server):
@@ -158,6 +176,34 @@ def test_fetch(server):
 
     batch.delete(1)
     assert not batch.blobs[1]
+
+
+def test_handlers(server):
+    server.uploads._API__handlers = None
+    handlers = server.uploads.handlers()
+    assert isinstance(handlers, list)
+    assert "default" in handlers
+
+    # Test the second call does not recall the endpoint, it is cached
+    assert server.uploads.handlers() is handlers
+
+    # Test forcing the recall to the endpoint
+    forced_handlers = server.uploads.handlers(force=True)
+    assert forced_handlers is not handlers
+
+
+def test_handlers_server_error(server):
+    def bad_request(*args, **kwargs):
+        raise HTTPError(500, "Server Error", "Mock'ed error")
+
+    with SwapAttr(server.client, "request", bad_request):
+        assert server.uploads.handlers(force=True) == []
+
+
+def test_handlers_custom(server):
+    server.uploads._API__handlers = ["custom"]
+    with pytest.raises(HTTPError):
+        server.uploads.batch(handler="custom")
 
 
 def test_mimetype():
@@ -347,11 +393,11 @@ def test_upload_error(server):
         next(gen)
         next(gen)
         backup = uploader._to_upload
-        uploader._to_upload = {0}
+        uploader._to_upload = [0]
         with pytest.raises(UploadError) as e:
             next(gen)
         assert e.value
-        assert "already exists" in e.value.info.message
+        assert "already exists" in e.value.info
         uploader._to_upload = backup
 
         for _ in uploader.iter_upload():
@@ -368,6 +414,10 @@ def test_upload_retry(retry_server):
     server = retry_server
     close_server = threading.Event()
 
+    file_in = "test_in"
+    with open(file_in, "wb") as f:
+        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+
     with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
         try:
             serv = Server.upload_response_server(
@@ -376,12 +426,9 @@ def test_upload_retry(retry_server):
                 requests_to_handle=20,
                 fail_args={"fail_at": 4, "fail_number": 1},
             )
-            file_in = "test_in"
 
             with serv:
                 batch = server.uploads.batch()
-                with open(file_in, "wb") as f:
-                    f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
                 blob = FileBlob(file_in, mimetype="application/octet-stream")
                 batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 close_server.set()  # release server block
@@ -394,27 +441,35 @@ def test_upload_retry(retry_server):
 
 
 def test_upload_resume(server):
-    close_server = threading.Event()
+    file_in = "test_in"
+    with open(file_in, "wb") as f:
+        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+
     with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
         try:
+            close_server = threading.Event()
             serv = Server.upload_response_server(
                 wait_to_close_event=close_server,
                 port=8081,
                 requests_to_handle=20,
                 fail_args={"fail_at": 4, "fail_number": 1},
             )
-            file_in = "test_in"
 
             with serv:
                 batch = server.uploads.batch()
-                with open(file_in, "wb") as f:
-                    f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
                 blob = FileBlob(file_in, mimetype="application/octet-stream")
                 with pytest.raises(UploadError) as e:
                     batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 assert text(e.value)
+
+                # Resume the upload
                 batch.upload(blob, chunked=True, chunk_size=256 * 1024)
-                close_server.set()  # release server block
+
+                # No-op
+                batch.complete()
+
+                # Release the server block
+                close_server.set()
 
         finally:
             try:
