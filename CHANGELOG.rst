@@ -10,6 +10,7 @@ Release date: ``2019-10-29``
 - `NXPY-135 <https://jira.nuxeo.com/browse/NXPY-135>`__: Expand the documentation on how to attach multiple blobs to a given document
 - `NXPY-136 <https://jira.nuxeo.com/browse/NXPY-136>`__: Allow additionnal parameters to ``Directories.get()``
 - `NXPY-137 <https://jira.nuxeo.com/browse/NXPY-137>`__: Fix failing test about converters
+- `NXPY-139 <https://jira.nuxeo.com/browse/NXPY-139>`__: Enhance tox.ini to use multiple specific testenvs
 
 Technical changes
 -----------------

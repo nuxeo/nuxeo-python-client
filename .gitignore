@@ -12,6 +12,7 @@
 coverage*
 .eggs
 .idea
+.mypy_cache
 .project
 .pydevproject
 .pytest_cache
