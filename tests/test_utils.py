@@ -3,9 +3,58 @@ from __future__ import unicode_literals
 import sys
 
 import pytest
+from nuxeo.constants import UP_AMAZON_S3
+from nuxeo.utils import (
+    SwapAttr,
+    chunk_partition,
+    get_digester,
+    guess_mimetype,
+    log_chunk_details,
+)
 from sentry_sdk import configure_scope
 
-from nuxeo.utils import SwapAttr, get_digester, guess_mimetype
+
+# File size units
+MIB = 1024 * 1024
+GIB = MIB * 1024
+TIB = GIB * 1024
+
+
+@pytest.mark.parametrize(
+    "file_size, desired_chunk_size, handler, chunk_count, chunk_size",
+    [
+        # Default handler
+        (20 * MIB, 20 * MIB, "default", 1, 20 * MIB),
+        (1024, 1, "", 1024, 1),
+        (1024, 0, "", 1024, 1),
+        (1024, -1, "", 1024, 1),
+        (20 * MIB, 20 * MIB, "", 1, 20 * MIB),
+        (40 * MIB, 20 * MIB, "", 2, 20 * MIB),
+        (6 * GIB, 23 * MIB, "", 268, 23 * MIB),
+        (TIB, 20 * MIB, "", 52429, 20 * MIB),
+        (TIB, MIB, "", 1048576, MIB),
+        # Test unknown upload handler
+        (42 * MIB, 42 * MIB, "light", 1, 42 * MIB),
+        # Amazon S3
+        (20 * MIB, 20 * MIB, UP_AMAZON_S3, 1, 20 * MIB),
+        (20 * MIB, 2 * MIB, UP_AMAZON_S3, 4, 5 * MIB),
+        (6 * GIB, 23 * MIB, UP_AMAZON_S3, 268, 23 * MIB),
+        (6 * GIB, 2 * MIB, UP_AMAZON_S3, 1229, 5 * MIB),
+        # Test min file size (5 MiB) and it will at upload
+        (4 * MIB, 5 * MIB, UP_AMAZON_S3, 1, 5 * MIB),
+        # [s3] Test max file size (160 TiB)
+        (160 * TIB, 20 * MIB, UP_AMAZON_S3, 10000, 160 * TIB // 9999),
+        # [s3] Test max chunk count (10,000)
+        (10000 * 20 * MIB, 5 * MIB, UP_AMAZON_S3, 10000, 10000 * 20 * MIB // 9999),
+    ],
+)
+def test_chunk_partition(
+    file_size, desired_chunk_size, handler, chunk_count, chunk_size
+):
+    assert chunk_partition(file_size, desired_chunk_size, handler) == (
+        chunk_count,
+        chunk_size,
+    )
 
 
 # We do not need to set-up a server and log the current test
@@ -133,3 +182,10 @@ def test_guess_mimetype_patch():
 
     with SwapAttr(sys, "platform", "win32"):
         assert guess_mimetype("foo.ppt")
+
+
+@pytest.mark.parametrize(
+    "chunk_count, chunk_size, uploaded_chunks", [(0, 0, 0), (1, 1024, 3)]
+)
+def test_log_chunk_details(chunk_count, chunk_size, uploaded_chunks):
+    log_chunk_details(chunk_count, chunk_size, uploaded_chunks)

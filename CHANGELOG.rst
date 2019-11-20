@@ -6,17 +6,33 @@ Changelog
 
 Release date: ``20xx-xx-xx``
 
-- `NXPY-68 <https://jira.nuxeo.com/browse/NXPY-68>`__: Add current_user() method to fetch current user details and validate credentials
+- `NXPY-68 <https://jira.nuxeo.com/browse/NXPY-68>`__: Add the ``users.current_user()`` method
+- `NXPY-138 <https://jira.nuxeo.com/browse/NXPY-138>`__: Add the Amazon S3 provider for uploads
 - `NXPY-143 <https://jira.nuxeo.com/browse/NXPY-143>`__: Remove duplicate constructors code in ``models.py``
 
 Technical changes
 -----------------
 
-- Added ``current_user()`` to nuxeo/users.py::\ ``API``
+- Added ``Batch.complete()``
+- Added ``Batch.extraInfo``
+- Added ``Batch.etag``
+- Added ``Batch.multiPartUploadId``
+- Added ``Batch.provider``
+- Added nuxeo/constants.py::\ ``UP_AMAZON_S3``
+- Added ``nuxeo.exceptions.InvalidUploadHandler``
+- Added ``nuxeo/handlers/default.py``
+- Added ``nuxeo/handlers/s3.py``
+- Added ``nuxeo.uploads.complete()``
+- Added ``nuxeo.uploads.handlers()``
+- Added ``handler=""`` keyword argument to ``nuxeo.uploads.post()``
+- Added ``data_len=0`` keyword argument to ``nuxeo.uploads.send_data()``
+- Added ``nuxeo.users.current_user()``
+- Added ``nuxeo.utils.chunk_partition()``
+- Added ``nuxeo.utils.log_chunk_details()``
 - Removed ``Batch.__init__()``
 - Removed ``Comment.__init__()``
-- Removed ``Directory.__init__()``
 - Removed ``DirectoryEntry.__init__()``
+- Removed ``Directory.__init__()``
 - Removed ``Document.__init__()``
 - Removed ``Group.__init__()``
 - Removed ``Operation.__init__()``

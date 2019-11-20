@@ -1,18 +1,19 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import hashlib
 import logging
 import mimetypes
 import sys
 
-import hashlib
+from nuxeo.constants import UP_AMAZON_S3
 
 try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
         from _hashlib import HASH  # noqa
-        from typing import Any, Dict, Optional, Text, Type, Union  # noqa
+        from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union  # noqa
 except ImportError:
     pass
 
@@ -29,6 +30,43 @@ WIN32_PATCHED_MIME_TYPES = {
     "application/x-mspowerpoint": "application/vnd.ms-powerpoint",
     "application/x-mspowerpoint.12": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 }
+
+
+def chunk_partition(file_size, desired_chunk_size, handler=""):
+    # type: (int, int, Optional[Text]) -> Tuple[int, int]
+    """Determine the chunk count and chunk size from
+    given *file_size* and *desired_chunk_size*.
+
+    There may be boundaries depending of the given upload *handler*.
+
+    :param file_size: the file size to upload (aka the blob)
+    :param desired_chunk_size: the desired chunk size
+    :param handler: the upload handler to use
+    :return: a tuple of the chunk count and chunk size
+    """
+
+    chunk_size_min = 1
+    chunk_count_max = None
+
+    # Amazon S3 has some limitations
+    if handler == UP_AMAZON_S3:
+        chunk_size_min = 1024 * 1024 * 5  # 5 MiB
+        chunk_count_max = 10000
+
+    # Unsure to have the minimum valid chunk size
+    chunk_size = max(chunk_size_min, desired_chunk_size)
+
+    # Compute the number of chunks
+    chunk_count = file_size // chunk_size + (file_size % chunk_size > 0)
+
+    # If the chunks count exceeds the maximum chunks count ...
+    if chunk_count_max and chunk_count > chunk_count_max:
+        # ... In that case, the chunk count will define the chunk size
+        return chunk_partition(
+            file_size, file_size // (chunk_count_max - 1), handler=handler
+        )
+
+    return chunk_count, chunk_size
 
 
 def get_digest_algorithm(digest):
@@ -100,6 +138,31 @@ def guess_mimetype(filename):
 def json_helper(obj):
     # type: (Any) -> Dict[Text, Any]
     return obj.to_json()
+
+
+def log_chunk_details(chunk_count, chunk_size, uploaded_chunks):
+    # type: (int, int, List[int]) -> None
+    """Simple helper to log an chunked upload details about chunks data.
+
+    :param chunk_count: the number of chunks
+    :param chunk_size: the size of each chunks
+    :param uploaded_chunks: the list of already uploaded chunks
+    """
+    if chunk_count <= 1 or logger.getEffectiveLevel() > logging.DEBUG:
+        return
+
+    uploaded_chunks_count = len(uploaded_chunks)
+    uploaded_data_length = chunk_size * uploaded_chunks_count
+    msg = (
+        "Computed chunks count is {:,d}"
+        "; chunks size is {:,d} bytes"
+        "; uploaded chunks count is {:,d}"
+        " => uploaded data so far is {:,d} bytes."
+    )
+    details = msg.format(
+        chunk_count, chunk_size, uploaded_chunks_count, uploaded_data_length
+    )
+    logger.debug(details)
 
 
 class SwapAttr(object):

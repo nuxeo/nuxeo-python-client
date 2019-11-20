@@ -131,3 +131,38 @@ Otherwise, you can upload using a generator:
 
         # You can start from where it stopped by
         # calling uploader.upload(generate=True) again
+
+
+Using Amazon S3 Direct Upload
+=============================
+
+You can use another upload handler than the default one.
+For instance, you can use the Amazon provider with its S3 Direct Upload.
+
+.. code:: python
+
+    from nuxeo.models import Document, FileBlob
+
+    # Create a document
+    new_file = Document(
+        name="foo.txt",
+        type="File",
+        properties={
+            "dc:title": "foo.txt",
+        })
+    file = nuxeo.documents.create(new_file, parent_path="/default-domain/workspaces")
+
+    # Create a batch using S3
+    batch = nuxeo.uploads.batch(handler="s3")
+
+    # Create a blob
+    blob = FileBlob("/path/to/file")
+
+    # Upload the blob in chunks
+    batch.upload(blob, chunked=True)
+
+    # Let's tell to the server that the S3 upload is finished and can be used
+    batch.complete()
+
+    # And attach the uploaded blob to the document
+    batch.attach(file.path)

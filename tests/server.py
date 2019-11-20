@@ -227,7 +227,8 @@ class Server(threading.Thread):
                 return None
 
             return self.server_sock.accept()[0]
-        except (select.error, socket.error):
+        except (select.error, socket.error, ValueError):
+            # ValueError: file descriptor cannot be a negative integer (-1)
             return None
 
     def __enter__(self):

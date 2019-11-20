@@ -9,7 +9,7 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Dict, Optional, Text  # noqa
+        from typing import Any, Dict, List, Optional, Text  # noqa
 except ImportError:
     pass
 
@@ -99,6 +99,24 @@ class InvalidBatch(NuxeoError):
     """ Exception thrown when accessing inexistant or deleted batches. """
 
 
+class InvalidUploadHandler(NuxeoError):
+    """ Exception thrown when trying to upload a blob using an invalid handler. """
+
+    def __init__(self, handler, handlers):
+        # type: (Text, List[Text]) -> None
+        self.handler = handler
+        self.handlers = tuple(handlers)
+
+    def __repr__(self):
+        # type: () -> Text
+        msg = "{}: the upload handler {!r} is not one of {}."
+        return msg.format(type(self).__name__, self.handler, self.handlers)
+
+    def __str__(self):
+        # type: () -> Text
+        return repr(self)
+
+
 class Unauthorized(HTTPError):
     """ Exception thrown when the HTTPError code is 401. """
 
@@ -135,7 +153,7 @@ class UploadError(NuxeoError):
     """
 
     def __init__(self, name, chunk=None, info=None):
-        # type: (Text, Optional[int], Optional[HTTPError]) -> None
+        # type: (Text, Optional[int], Optional[str]) -> None
         self.name = name
         self.chunk = chunk
         self.info = info
