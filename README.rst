@@ -118,6 +118,7 @@ main functions available:
 -  `Work with documents <examples/documents.rst>`__
 -  `Work with directories <examples/directories.rst>`__
 -  `Work with blobs <examples/blobs.rst>`__
+-  `Work with comments <examples/comments.rst>`__
 -  `Run requests <examples/requests.rst>`__
 -  `Helpers <examples/helpers.rst>`__
 -  `Useful snippets <examples/snippets.rst>`__
