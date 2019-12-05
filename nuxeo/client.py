@@ -12,6 +12,7 @@ from requests.adapters import HTTPAdapter
 
 from . import (
     __version__,
+    comments,
     directories,
     documents,
     groups,
@@ -454,6 +455,7 @@ class Nuxeo(object):
         self.client = client(
             auth, host=host, app_name=app_name, version=version, **kwargs
         )
+        self.comments = comments.API(self.client)
         self.operations = operations.API(self.client)
         self.directories = directories.API(self.client)
         self.groups = groups.API(self.client)
@@ -461,4 +463,6 @@ class Nuxeo(object):
         self.uploads = uploads.API(self.client)
         self.users = users.API(self.client)
         self.workflows = workflows.API(self.client, self.tasks)
-        self.documents = documents.API(self.client, self.operations, self.workflows)
+        self.documents = documents.API(
+            self.client, self.operations, self.workflows, self.comments
+        )

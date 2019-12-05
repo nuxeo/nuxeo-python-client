@@ -14,6 +14,7 @@ try:
     if TYPE_CHECKING:
         from typing import Any, BinaryIO, Dict, List, Optional, Text, Union  # noqa
         from io import FileIO  # noqa
+        from .comments import API as CommentsAPI  # noqa
         from .directories import API as DirectoriesAPI  # noqa
         from .documents import API as DocumentsAPI  # noqa
         from .endpoint import APIEndpoint  # noqa
@@ -308,6 +309,46 @@ class BufferBlob(Blob):
             self.stringio.close()
 
 
+class Comment(Model):
+    """ Comment. """
+
+    _valid_properties = {
+        "entity-type": "comment",
+        "id": None,
+        "parentId": None,
+        "author": None,
+        "text": None,
+        "creationDate": None,
+        "modificationDate": None,
+        "entityId": None,
+        "origin": None,
+        "entity": None,
+    }
+    service = None  # type: CommentsAPI
+
+    def __init__(self, **kwargs):
+        # type: (Any) -> None
+        super(Comment, self).__init__(**kwargs)
+        for key, default in Comment._valid_properties.items():
+            key = key.replace("-", "_")
+            setattr(self, key, kwargs.get(key, default))
+
+    @property
+    def uid(self):
+        # type: () -> Text
+        return self.id
+
+    def delete(self):
+        # type: () -> None
+        """ Delete the comment. """
+        self.service.delete(self.uid)
+
+    def save(self):
+        # type: () -> Comment
+        """ Save the entry. """
+        return self.service.put(self)
+
+
 class FileBlob(Blob):
     """
     File to upload to Nuxeo.
@@ -494,6 +535,23 @@ class Document(RefreshableModel):
         :param params: permission to add
         """
         return self.service.add_permission(self.uid, params)
+
+    def comment(self, text):
+        # type: (Text) -> Comment
+        """
+        Add a comment to the document.
+
+        :param text: the comment message
+        :return: a comment object
+        """
+        return self.service.comment(self.uid, text)
+
+    def comments(self, **params):
+        # type: (Any) -> List[Comment]
+        """Return the comments associated with the document.
+        Any additionnal arguments will be passed to the *params* parent's call.
+        """
+        return self.service.comments(self.uid, params=params)
 
     def convert(self, params):
         # type: (Dict[Text, Any]) -> Union[Dict[Text, Any], Text]

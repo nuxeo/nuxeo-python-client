@@ -1,6 +1,24 @@
 Changelog
 =========
 
+2.3.0
+-----
+
+Release date: ``2019-xx-xx``
+
+- `NXPY-141 <https://jira.nuxeo.com/browse/NXPY-141>`__: Add the Comments API
+
+Technical changes
+-----------------
+
+- Added nuxeo/comments.py
+- Added `comments` argument to nuxeo/documents.py::\ ``API.__init__()``
+- Added nuxeo/documents.py::\ ``API.comment_api`` attribute
+- Added nuxeo/models.py::\ ``Comment`` class
+- Added ``Document.comment()``
+- Added ``Document.comments()``
+- Added ``Nuxeo.comments``
+
 2.2.4
 -----
 

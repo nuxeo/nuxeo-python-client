@@ -1,9 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from .comments import API as CommentsAPI
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery, HTTPError, UnavailableConvertor
-from .models import Document
+from .models import Comment, Document
 from .utils import SwapAttr
 from .workflows import API as WorkflowsAPI
 
@@ -13,7 +14,7 @@ try:
     if TYPE_CHECKING:
         from typing import Any, Dict, List, Optional, Text, Union  # noqa
         from .client import NuxeoClient  # noqa
-        from .models import Blob, Workflow  # noqa
+        from .models import Blob, Comment, Workflow  # noqa
         from .operations import API as OperationsAPI  # noqa
 except ImportError:
     pass
@@ -27,11 +28,13 @@ class API(APIEndpoint):
         client,  # type: NuxeoClient
         operations,  # type: OperationsAPI
         workflows,  # type: WorkflowsAPI
+        comments,  # type: CommentsAPI
         endpoint=None,  # type: Text
         headers=None,  # type: Optional[Dict[Text, Text]]
     ):
         # type: (...) -> None
         self.operations = operations
+        self.comments_api = comments
         self.workflows_api = workflows
         super(API, self).__init__(
             client, endpoint=endpoint, cls=Document, headers=headers
@@ -111,6 +114,33 @@ class API(APIEndpoint):
         self.operations.execute(
             command="Document.AddPermission", input_obj=uid, params=params
         )
+
+    def comment(self, uid, text):
+        # type: (Text, Text) -> Comment
+        """
+        Add a new comment for a given document.
+
+        :param uid: the ID of the document
+        :param text: the content of the comment
+        :return: the comment
+        """
+        obj = Comment(parentId=uid, text=text)
+        return self.comments_api.post(obj)
+
+    def comments(self, uid, params=None):
+        # type: (Text, Any) -> List[Comment]
+        """
+        Get the comments of a document.
+
+        Any additionnal arguments will be passed to the *params* parent's call.
+
+        :param uid: the ID of the document
+        :return: the list of comments
+        """
+        path = "id/{}/@comment".format(uid)
+
+        with SwapAttr(self.comments_api, "endpoint", self.endpoint):
+            return super(CommentsAPI, self.comments_api).get(path=path, params=params)
 
     def convert(self, uid, options):
         # type: (Text, Dict[Text, Text]) -> Union[Text, Dict[Text, Any]]

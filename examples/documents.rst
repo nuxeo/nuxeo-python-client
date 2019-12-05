@@ -68,6 +68,21 @@ Manipulate documents
 
     doc.fetch_blob()
 
+**Add a comment to the document**
+
+.. code:: python
+
+    doc.comment('This is a comment')
+
+**Retrieve comments related to the document**
+
+.. code:: python
+
+    doc.comments()
+
+    # Partial list of comments
+    doc.comments(pageSize=5, currentPageIndex=0)
+
 **Convert a document main Blob to PDF**
 
 .. code:: python
