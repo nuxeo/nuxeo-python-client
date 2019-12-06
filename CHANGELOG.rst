@@ -4,7 +4,7 @@ Changelog
 2.3.0
 -----
 
-Release date: ``2019-xx-xx``
+Release date: ``2019-12-06``
 
 - `NXPY-131 <https://jira.nuxeo.com/browse/NXPY-131>`__: Make the HTTP response logging safer
 - `NXPY-141 <https://jira.nuxeo.com/browse/NXPY-141>`__: Add the Comments API
