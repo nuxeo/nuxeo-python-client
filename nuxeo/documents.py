@@ -139,8 +139,13 @@ class API(APIEndpoint):
         """
         path = "id/{}/@comment".format(uid)
 
+        # Adding "&fetch.comment=repliesSummary" to the URL to retrieve replies number as well
+        kwargs = {"fetch.comment": "repliesSummary"}
+        if isinstance(params, dict):
+            kwargs.update(params)
+
         with SwapAttr(self.comments_api, "endpoint", self.endpoint):
-            return super(CommentsAPI, self.comments_api).get(path=path, params=params)
+            return super(CommentsAPI, self.comments_api).get(path=path, params=kwargs)
 
     def convert(self, uid, options):
         # type: (Text, Dict[Text, Text]) -> Union[Text, Dict[Text, Any]]

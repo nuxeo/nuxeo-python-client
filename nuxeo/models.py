@@ -316,6 +316,7 @@ class Comment(Model):
         "entity-type": "comment",
         "id": None,
         "parentId": None,
+        "ancestorIds": [],
         "author": None,
         "text": None,
         "creationDate": None,
@@ -323,6 +324,8 @@ class Comment(Model):
         "entityId": None,
         "origin": None,
         "entity": None,
+        "numberOfReplies": 0,
+        "lastReplyDate": None,
     }
     service = None  # type: CommentsAPI
 
@@ -343,10 +346,35 @@ class Comment(Model):
         """ Delete the comment. """
         self.service.delete(self.uid)
 
-    def save(self):
-        # type: () -> Comment
-        """ Save the entry. """
-        return self.service.put(self)
+    def has_replies(self):
+        # type: () -> bool
+        """ Return True is the comment has at least one reply. """
+        return self.numberOfReplies > 0
+
+    def replies(self, **params):
+        # type: (Text, Any) -> List[Comment]
+        """
+        Get the replies of the comment.
+
+        Any additionnal arguments will be passed to the *params* parent's call.
+
+        :param uid: the ID of the comment
+        :return: the list of replies
+        """
+        return self.service.replies(self.uid, params=params)
+
+    def reply(self, text):
+        # type: (Text) -> Comment
+        """ Add a reply to the comment. """
+        # Add the reply
+        reply_comment = self.service.post(Comment(parentId=self.uid, text=text))
+
+        # Update comment attributes
+        self.numberOfReplies += 1
+        self.lastReplyDate = reply_comment.creationDate
+
+        # And return the reply
+        return reply_comment
 
 
 class FileBlob(Blob):
