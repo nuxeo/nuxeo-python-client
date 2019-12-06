@@ -274,9 +274,7 @@ class NuxeoClient(object):
                 raise self._handle_error(exc)
             resp = default
         else:
-            # No need to do more work if nobody will see it
-            if logger.getEffectiveLevel() <= logging.DEBUG:
-                self._log_response(resp, self.chunk_size)
+            self._log_response(resp, self.chunk_size)
         finally:
             # Explicitly break a reference cycle
             exc = None
@@ -384,11 +382,25 @@ class NuxeoClient(object):
         of the response
         """
 
+        # No need to do more work if nobody will see it
+        if logger.getEffectiveLevel() > logging.DEBUG:
+            return
+
         headers = response.headers
         content_type = headers.get("content-type", "application/octet-stream")
-        content = "<not yet handled, content-type={!r}>".format(content_type)
+        content_size = int(headers.get("content-length", 0))
 
-        if response.url.endswith("site/automation"):
+        if content_size <= 0:
+            # response.content is empty when *void_op* is True,
+            # meaning we do not want to get back what we sent
+            # or the operation does not return anything by default
+            content = "<no content>"
+        elif not content_type.startswith("text") and "json" not in content_type:
+            # The Content-Type is a binary one, but it does not contain JSON data
+            # Skipped binary types are everything but "text/xxx":
+            #   https://www.iana.org/assignments/media-types/media-types.xhtml
+            content = "<binary data ({:,} bytes)>".format(content_size)
+        elif response.url.endswith("site/automation"):
             # This endpoint returns too many information and pollute logs.
             # Besides contents of this call are stored into the .operations attr.
             content = "<Automation details saved into the *operations* attr>"
@@ -396,21 +408,22 @@ class NuxeoClient(object):
             # This endpoint returns too many information and pollute logs.
             # Besides contents of this call are stored into the .server_info attr.
             content = "<CMIS details saved into the *server_info* attr>"
-        elif not response.content:
-            # response.content is empty when *void_op* is True,
-            # meaning we do not want to get back what we sent
-            # or the operation does not return anything by default
-            content = "<no content>"
-        elif "application/octet-stream" in content_type:
-            content = "<binary data>"
-        elif "application/json" in content_type or content_type.startswith("text/"):
-            content_size = int(headers.get("content-length", 0))
-            content = "<too much data to display ({:,} bytes)>".format(content_size)
-            if content_size <= limit_size:
-                # Do not use response.text as it will load the chardet module and its
-                # heavy encoding detection mecanism. The server will only return UTF-8.
-                # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
+        elif content_size <= limit_size:
+            # At this point, we should only have text data not bigger than *limit_size*.
+            # Do not use response.text as it will load the chardet module and its
+            # heavy encoding detection mecanism. The server will only return UTF-8.
+            # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
+            try:
                 content = response.content.decode("utf-8", errors="replace")
+            except (MemoryError, OverflowError):
+                # OverflowError: join() result is too long (in requests.models.content)
+                # Still check for memory errors, this should never happen; or else,
+                # it should be painless.
+                content = "<no enough memory ({:,} bytes)>".format(content_size)
+        else:
+            # Here too, at this point, we should only have text data, but too much to display
+            # (maybe worth to remove that limit?)
+            content = "<too much text ({:,} bytes)>".format(content_size)
 
         logger.debug(
             "Response from {!r}: {!r} with headers {!r} and cookies {!r}".format(

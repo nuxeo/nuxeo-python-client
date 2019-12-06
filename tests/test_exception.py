@@ -1,6 +1,10 @@
 from nuxeo.exceptions import Forbidden, HTTPError, Unauthorized
 
 
+# We do not need to set-up a server and log the current test
+skip_logging = True
+
+
 def test_crafted_forbidden():
     exc = Forbidden()
     assert exc.status == 403
