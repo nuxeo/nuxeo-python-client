@@ -34,6 +34,7 @@ def test_crud(server):
 
         # Check the text has changed
         assert doc.comments()[0].text == "Comment modified"
+        assert doc.comments()[0].modificationDate is not None
 
         # Delete the comment
         comment.delete()
@@ -44,49 +45,48 @@ def test_crud(server):
         doc.delete()
 
 
-def test_document_comment(server):
-    """Test the Document.comment() method, it is a simple helper."""
+def test_reply(server):
     doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
-        # At first, the document has no comment
-        assert not doc.comments()
-
         # Create a comment for that document
-        doc.comment("This is my super comment")
+        new_comment = Comment(parentId=doc.uid, text="This is my comment")
+        comment = server.comments.create(new_comment)
 
-        # There is now 1 comment
-        comments = doc.comments()
-        assert len(comments) == 1
-        assert comments[0].text == "This is my super comment"
+        # Add a 1st reply to that comment
+        reply1 = comment.reply("This is my reply comment")
+        assert comment.has_replies()
 
-        # Delete the comment
-        server.comments.delete(comments[0].uid)
-    finally:
-        doc.delete()
+        # Check the comment has 1 reply (refetch it to ensure data is correct)
+        replies = server.comments.get(comment.uid)
+        assert replies.numberOfReplies == 1
+        assert replies.numberOfReplies == comment.numberOfReplies
+        assert replies.lastReplyDate == reply1.creationDate
 
+        # Add a 2nd reply to that comment
+        reply2 = comment.reply("This is another reply, yeah! ᕦ(ò_óˇ)ᕤ")
+        assert comment.numberOfReplies == 2
+        assert not reply2.has_replies()
 
-def test_get_params(server):
-    """Test GET parameters that allow to retrieve partial list of comments."""
-    doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
-    try:
-        # Create a bunch of comments for that document
-        for idx in range(8):
-            doc.comment("This is my comment n° {}".format(idx))
+        # And a reply to that 2nd reply
+        last_reply = reply2.reply(
+            "And a reply of the 2nd reply with \N{SNOWMAN}, boom!"
+        )
+        assert reply2.has_replies()
 
-        # Get maximum comments with default values
-        comments = doc.comments()
-        assert len(comments) == 8
+        # Check the comment has 2 direct replies
+        replies = server.comments.get(comment.uid)
+        assert replies.numberOfReplies == 2
+        assert replies.lastReplyDate == reply2.creationDate
 
-        # Page 1
-        comments = doc.comments(pageSize=5, currentPageIndex=0)
-        assert len(comments) == 5
+        # Check the 2nd reply has 1 reply
+        replies = server.comments.get(reply2.uid)
+        assert replies.numberOfReplies == 1
+        assert replies.lastReplyDate == last_reply.creationDate
 
-        # Page 2
-        comments = doc.comments(pageSize=5, currentPageIndex=1)
-        assert len(comments) == 3
-
-        # Page 3
-        comments = doc.comments(pageSize=5, currentPageIndex=2)
-        assert len(comments) == 0
+        # Test partial list
+        assert len(comment.replies()) == 2
+        assert len(comment.replies(pageSize=1, currentPageIndex=0)) == 1
+        assert len(comment.replies(pageSize=1, currentPageIndex=1)) == 1
+        assert len(comment.replies(pageSize=1, currentPageIndex=2)) == 0
     finally:
         doc.delete()

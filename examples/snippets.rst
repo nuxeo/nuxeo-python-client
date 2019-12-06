@@ -58,3 +58,23 @@ If you want to retrieve the audit logs starting from a specific
         'query': query
     }
     results = operation.execute()
+
+
+**Retrieving comments and replies of a document**
+
+If you want to retrieve and display all comments and their eventual
+replies of a given document:
+
+.. code:: python
+
+    def fmt_reply(comment, indent=0):
+        """Print the comment author, message and its eventual replies."""
+        print(" " * indent, comment.author, repr(comment.text))
+        if comment.has_replies():
+            for reply in comment.replies():
+                fmt_reply(reply, indent=indent + 2)
+
+
+    doc = nuxeo.documents.get(uid=uid, path=path)
+    for comment in doc.comments():
+        fmt_reply(comment)
