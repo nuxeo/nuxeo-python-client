@@ -17,6 +17,11 @@ logging.basicConfig(
 
 @pytest.fixture(scope="function", autouse=True)
 def server_log(request, server):
+    # To skip that fixture, define *skip_logging* at the top of the test file
+    should_log_to_server = getattr(request.module, "skip_logging", False)
+    if should_log_to_server:
+        return
+
     msg = ">>> testing: {}.{}".format(
         request.module.__name__, request.function.__name__
     )

@@ -8,6 +8,10 @@ from sentry_sdk import configure_scope
 from nuxeo.utils import SwapAttr, get_digester, guess_mimetype
 
 
+# We do not need to set-up a server and log the current test
+skip_logging = True
+
+
 @pytest.mark.parametrize(
     "hash, digester",
     [
