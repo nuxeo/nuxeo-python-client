@@ -6,12 +6,21 @@ Changelog
 
 Release date: ``20xx-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-143 <https://jira.nuxeo.com/browse/NXPY-143>`__: Remove duplicate constructors code in ``models.py``
 
 Technical changes
 -----------------
 
--
+- Removed ``Batch.__init__()``
+- Removed ``Comment.__init__()``
+- Removed ``Directory.__init__()``
+- Removed ``DirectoryEntry.__init__()``
+- Removed ``Document.__init__()``
+- Removed ``Group.__init__()``
+- Removed ``Operation.__init__()``
+- Removed ``Task.__init__()``
+- Removed ``User.__init__()``
+- Removed ``Workflow.__init__()``
 
 2.3.0
 -----

@@ -42,6 +42,11 @@ class Model(object):
         # type: (Optional[APIEndpoint], Any) -> None
         self.service = service
 
+        # Declare attributes
+        for key, default in type(self)._valid_properties.items():
+            key = key.replace("-", "_")
+            setattr(self, key, kwargs.get(key, default))
+
     def __repr__(self):
         # type: () -> Text
         attrs = ", ".join(
@@ -69,16 +74,8 @@ class Model(object):
     def parse(cls, json, service=None):
         # type: (Dict[Text, Any], Optional[APIEndpoint]) -> Model
         """ Parse a JSON object into a model instance. """
-        model = cls()
-
-        if service:
-            setattr(model, "service", service)
-
-        for key, val in json.items():
-            if key in cls._valid_properties:
-                key = key.replace("-", "_")
-                setattr(model, key, val)
-        return model
+        kwargs = {k: v for k, v in json.items()}
+        return cls(service=service, **kwargs)
 
     def save(self):
         # type: () -> None
@@ -122,17 +119,8 @@ class RefreshableModel(Model):
 class Batch(Model):
     """ Upload batch. """
 
-    _valid_properties = {"batchId": None, "dropped": None}
+    _valid_properties = {"batchId": None, "blobs": {}, "dropped": None, "upload_idx": 0}
     service = None  # type: UploadsAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Batch, self).__init__(**kwargs)
-        self.batchId = None  # type: Text
-        self.blobs = {}  # type: Dict[int, Blob]
-        self.upload_idx = 0
-        for key, default in Batch._valid_properties.items():
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
@@ -222,44 +210,24 @@ class Blob(Model):
     """ Blob superclass used for metadata. """
 
     _valid_properties = {
-        "uploaded": "true",
-        "name": None,
-        "uploadType": None,
-        "size": 0,
-        "uploadedSize": 0,
+        "chunkCount": 0,
         "fileIdx": None,
         "mimetype": None,
+        "name": None,
+        "size": 0,
+        "uploadType": None,
+        "uploaded": "true",
         "uploadedChunkIds": [],
-        "chunkCount": 0,
+        "uploadedSize": 0,
     }
     service = None  # type: UploadsAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Blob, self).__init__(**kwargs)
-        for key, default in Blob._valid_properties.items():
-            if key == "uploaded":
-                val = kwargs.get(key, "true") == "true"
-            elif key == "size":
-                val = kwargs.get(key, 0)
-            elif key == "uploadedSize":
-                val = kwargs.get(key, kwargs.get("size", 0))
-            else:
-                val = kwargs.get(key, default)
-            setattr(self, key, val)
 
     @classmethod
     def parse(cls, json, service=None):
         # type: (Dict[Text, Any], Optional[APIEndpoint]) -> Blob
         """ Parse a JSON object into a blob instance. """
-        model = cls()
-
-        if service:
-            setattr(model, "service", service)
-
-        for key, val in json.items():
-            if key in cls._valid_properties:
-                setattr(model, key, val)
+        kwargs = {k: v for k, v in json.items()}
+        model = cls(service=service, **kwargs)
 
         if model.uploaded and model.uploadedSize == 0:
             model.uploadedSize = model.size
@@ -313,28 +281,21 @@ class Comment(Model):
     """ Comment. """
 
     _valid_properties = {
-        "entity-type": "comment",
-        "id": None,
-        "parentId": None,
         "ancestorIds": [],
         "author": None,
-        "text": None,
         "creationDate": None,
-        "modificationDate": None,
-        "entityId": None,
-        "origin": None,
         "entity": None,
-        "numberOfReplies": 0,
+        "entity-type": "comment",
+        "entityId": None,
+        "id": None,
         "lastReplyDate": None,
+        "modificationDate": None,
+        "numberOfReplies": 0,
+        "origin": None,
+        "parentId": None,
+        "text": None,
     }
     service = None  # type: CommentsAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Comment, self).__init__(**kwargs)
-        for key, default in Comment._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
@@ -425,18 +386,11 @@ class Directory(Model):
     """ Directory. """
 
     _valid_properties = {
-        "entity-type": "directory",
         "directoryName": None,
         "entries": [],
+        "entity-type": "directory",
     }
     service = None  # type: DirectoriesAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Directory, self).__init__(**kwargs)
-        for key, default in Directory._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
@@ -487,18 +441,11 @@ class DirectoryEntry(Model):
     """ Directory entry. """
 
     _valid_properties = {
-        "entity-type": "directoryEntry",
         "directoryName": None,
+        "entity-type": "directoryEntry",
         "properties": {},
     }
     service = None  # type: DirectoriesAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(DirectoryEntry, self).__init__(**kwargs)
-        for key, default in DirectoryEntry._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
@@ -520,34 +467,27 @@ class Document(RefreshableModel):
     """ Document. """
 
     _valid_properties = {
-        "entity-type": "document",
-        "repository": "default",
-        "name": None,
-        "uid": None,
-        "path": None,
-        "type": None,
-        "state": None,
-        "parentRef": None,
-        "versionLabel": None,
-        "isCheckedOut": False,
-        "isTrashed": False,
-        "isVersion": False,
-        "isProxy": False,
-        "title": None,
-        "lastModified": None,
-        "properties": {},
-        "facets": [],
         "changeToken": None,
         "contextParameters": {},
+        "entity-type": "document",
+        "facets": [],
+        "isCheckedOut": False,
+        "isProxy": False,
+        "isTrashed": False,
+        "isVersion": False,
+        "lastModified": None,
+        "name": None,
+        "parentRef": None,
+        "path": None,
+        "properties": {},
+        "repository": "default",
+        "state": None,
+        "title": None,
+        "type": None,
+        "uid": None,
+        "versionLabel": None,
     }
     service = None  # type: DocumentsAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Document, self).__init__(**kwargs)
-        for key, default in Document._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def workflows(self):
@@ -708,19 +648,12 @@ class Group(Model):
 
     _valid_properties = {
         "entity-type": "group",
-        "groupname": None,
         "grouplabel": None,
-        "memberUsers": [],
+        "groupname": None,
         "memberGroups": [],
+        "memberUsers": [],
     }
     service = None  # type: GroupsAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Group, self).__init__(**kwargs)
-        for key, default in Group._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
@@ -738,18 +671,12 @@ class Operation(Model):
 
     _valid_properties = {
         "command": None,
+        "context": None,
         "input_obj": None,
         "params": {},
-        "context": None,
         "progress": 0,
     }
     service = None  # type: OperationsAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Operation, self).__init__(**kwargs)
-        for key, default in Operation._valid_properties.items():
-            setattr(self, key, kwargs.get(key, default))
 
     def execute(self, **kwargs):
         # type: (Any) -> Any
@@ -761,30 +688,23 @@ class Task(RefreshableModel):
     """ Workflow task. """
 
     _valid_properties = {
+        "actors": [],
+        "comments": [],
+        "created": None,
+        "directive": None,
+        "dueDate": None,
         "entity-type": "task",
         "id": None,
         "name": None,
+        "nodeName": None,
+        "state": None,
+        "targetDocumentIds": [],
+        "taskInfo": {},
+        "variables": {},
         "workflowInstanceId": None,
         "workflowModelName": None,
-        "state": None,
-        "directive": None,
-        "created": None,
-        "dueDate": None,
-        "nodeName": None,
-        "targetDocumentIds": [],
-        "actors": [],
-        "comments": [],
-        "variables": {},
-        "taskInfo": {},
     }
     service = None  # type: TasksAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Task, self).__init__(**kwargs)
-        for key, default in Task._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
@@ -817,20 +737,13 @@ class User(RefreshableModel):
 
     _valid_properties = {
         "entity-type": "user",
-        "id": None,
-        "properties": {},
         "extendedGroups": [],
+        "id": None,
         "isAdministrator": False,
         "isAnonymous": False,
+        "properties": {},
     }
     service = None  # type: UsersAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(User, self).__init__(**kwargs)
-        for key, default in User._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def uid(self):
@@ -857,25 +770,18 @@ class Workflow(Model):
     """ Workflow. """
 
     _valid_properties = {
-        "entity-type": "workflow",
-        "id": None,
-        "name": None,
-        "title": None,
-        "state": None,
-        "workflowModelName": None,
-        "initiator": None,
         "attachedDocumentIds": [],
-        "variables": {},
+        "entity-type": "workflow",
         "graphResource": None,
+        "id": None,
+        "initiator": None,
+        "name": None,
+        "state": None,
+        "title": None,
+        "variables": {},
+        "workflowModelName": None,
     }
     service = None  # type: WorkflowsAPI
-
-    def __init__(self, **kwargs):
-        # type: (Any) -> None
-        super(Workflow, self).__init__(**kwargs)
-        for key, default in Workflow._valid_properties.items():
-            key = key.replace("-", "_")
-            setattr(self, key, kwargs.get(key, default))
 
     @property
     def tasks(self):
