@@ -307,7 +307,7 @@ def test_query(server):
         {"query": "SELECT * FROM Document WHERE ecm:primaryType = 'Domain'"}
     )
     assert docs["numberOfPages"] == 1
-    assert docs["resultsCount"] == 1
+    assert docs["resultsCount"] > 0
     assert docs["currentPageSize"] == 1
     assert not docs["currentPageIndex"]
     assert len(docs["entries"]) == 1
