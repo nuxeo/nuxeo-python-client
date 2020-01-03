@@ -6,11 +6,13 @@ Changelog
 
 Release date: ``20xx-xx-xx``
 
+- `NXPY-68 <https://jira.nuxeo.com/browse/NXPY-68>`__: Add current_user() method to fetch current user details and validate credentials
 - `NXPY-143 <https://jira.nuxeo.com/browse/NXPY-143>`__: Remove duplicate constructors code in ``models.py``
 
 Technical changes
 -----------------
 
+- Added ``current_user()`` to nuxeo/users.py::\ ``API``
 - Removed ``Batch.__init__()``
 - Removed ``Comment.__init__()``
 - Removed ``Directory.__init__()``

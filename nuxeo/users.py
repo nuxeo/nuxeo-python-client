@@ -61,3 +61,17 @@ class API(APIEndpoint):
         :param user_id: the id of the user to delete
         """
         super(API, self).delete(user_id)
+
+    def current_user(self):
+        # type: () -> User
+        """
+        Get the current user details and validate the connection to the server at the same time.
+
+        :return User: user's details
+        """
+        details = self.client.request("POST", "site/automation/login").json()
+        return User(
+            extendedGroups=details["groups"],
+            id=details["username"],
+            isAdministrator=details["isAdministrator"],
+        )
