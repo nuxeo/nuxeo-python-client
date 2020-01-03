@@ -43,6 +43,14 @@ def test_create_wrong_arguments(server):
         server.users.create(1)
 
 
+def test_current_user(server):
+    user = server.users.current_user()
+    assert isinstance(user, User)
+    assert user.uid == "Administrator"
+    assert "administrators" in user.extendedGroups
+    assert user.isAdministrator
+
+
 def test_fetch(server):
     user = server.users.get("Administrator")
     assert user
