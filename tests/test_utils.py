@@ -14,6 +14,9 @@ from nuxeo.utils import (
 from sentry_sdk import configure_scope
 
 
+# We do not need to set-up a server and log the current test
+skip_logging = True
+
 # File size units
 MIB = 1024 * 1024
 GIB = MIB * 1024
@@ -55,10 +58,6 @@ def test_chunk_partition(
         chunk_count,
         chunk_size,
     )
-
-
-# We do not need to set-up a server and log the current test
-skip_logging = True
 
 
 @pytest.mark.parametrize(
