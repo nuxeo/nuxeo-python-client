@@ -15,3 +15,9 @@ exclude_lines =
 
     # Not covered because of interpreter shutdown
     self._session.close()
+
+[run]
+# Since coverage 5.0, there is an issue when using the --cov-append option.
+# Setting that option fixes the issue.
+# Source: https://github.com/nedbat/coveragepy/issues/883#issuecomment-570093918
+parallel = True
