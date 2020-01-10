@@ -1,10 +1,10 @@
 Changelog
 =========
 
-2.3.1
+2.4.0
 -----
 
-Release date: ``20xx-xx-xx``
+Release date: ``2020-01-10``
 
 - `NXPY-68 <https://jira.nuxeo.com/browse/NXPY-68>`__: Add the ``users.current_user()`` method
 - `NXPY-138 <https://jira.nuxeo.com/browse/NXPY-138>`__: Add the Amazon S3 provider for uploads
