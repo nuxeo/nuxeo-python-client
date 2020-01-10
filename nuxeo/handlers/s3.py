@@ -82,8 +82,8 @@ class ChunkUploaderS3(UploaderS3):
         # type: (Any, Any) -> None
 
         # Allow to use a custom *MaxParts* value, used in .state() (for tests)
-        # Must be 1 <= MaxParts <= 1000
-        self._max_parts = max(1, min(kwargs.pop("max_parts", 1000), 1000))
+        # 0 <= MaxParts <= 2,147,483,647 (default is 1,000)
+        self._max_parts = kwargs.pop("max_parts", 1000)
 
         super(ChunkUploaderS3, self).__init__(*args, **kwargs)
 
@@ -114,8 +114,12 @@ class ChunkUploaderS3(UploaderS3):
         """See .state()."""
 
         uploaded_chunks = []
-        part_number_marker = 0
+        data_packs = []
+        chunk_size = 0
         first = True
+
+        # 0 <= PartNumberMarker <= 2,147,483,647
+        part_number_marker = 0
 
         while "there are parts":
             info = self.s3_client.list_parts(
@@ -125,25 +129,30 @@ class ChunkUploaderS3(UploaderS3):
                 PartNumberMarker=part_number_marker,
                 MaxParts=self._max_parts,
             )
+
+            # Nothing was uploaded yet
+            if "Parts" not in info:
+                break
+
             for part in info["Parts"]:
                 # Save the part size based on the first recieved part data
                 if first:
-                    self.chunk_size = part["Size"]
+                    chunk_size = part["Size"]
                     first = False
 
                 index = part["PartNumber"]
-                self._data_packs.append({"ETag": part["ETag"], "PartNumber": index})
+                data_packs.append({"ETag": part["ETag"], "PartNumber": index})
                 uploaded_chunks.append(index)
 
+            # No more parts
             if not info["IsTruncated"]:
-                # No more parts
                 break
 
             # TODO: part not yet tested/covered. Will be done with NXPY-147.
-            # Next parts will start with that number
+            # Next parts batch will start with that number
             part_number_marker = info["NextPartNumberMarker"]
 
-        return uploaded_chunks
+        return chunk_size, uploaded_chunks, data_packs
 
     def state(self):
         # type: () -> Tuple[int, List]
@@ -162,7 +171,7 @@ class ChunkUploaderS3(UploaderS3):
 
         if self.batch.multiPartUploadId:
             try:
-                uploaded_chunks = self._state()
+                self.chunk_size, uploaded_chunks, self._data_packs = self._state()
             except Exception:
                 logger.warning("No multipart upload found with that ID", exc_info=True)
 
