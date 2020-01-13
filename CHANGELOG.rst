@@ -4,7 +4,7 @@ Changelog
 2.4.1
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2020-01-13``
 
 - `NXPY-149 <https://jira.nuxeo.com/browse/NXPY-149>`__: Add ``Batch.is_s3()`` helper
 
