@@ -1,6 +1,18 @@
 Changelog
 =========
 
+2.4.2
+-----
+
+Release date: ``2020-xx-xx``
+
+- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+
+Technical changes
+-----------------
+
+-
+
 2.4.1
 -----
 
