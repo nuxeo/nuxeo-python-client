@@ -46,7 +46,7 @@ def s3(aws_credentials):
 
 @pytest.fixture(scope="function")
 def batch(aws_pwd):
-    return Batch(
+    obj = Batch(
         **{
             "batchId": text(uuid4()),
             "provider": UP_AMAZON_S3,
@@ -62,6 +62,8 @@ def batch(aws_pwd):
             },
         }
     )
+    assert obj.is_s3()
+    return obj
 
 
 def test_upload_not_chunked(s3, batch, server):
@@ -181,10 +183,15 @@ def test_upload_chunked_resume(s3, batch, server):
         assert uploader._data_packs == []
         assert len(uploader.blob.uploadedChunkIds) == 0
 
+        iterator = uploader.iter_upload()
+
+        # Skip the first "yield" as it is done before uploading contents
+        next(iterator)
+
         # Upload 4 parts (out of 5) and then fail
         uploaded_parts = []
         for part in range(1, 5):
-            next(uploader.iter_upload())
+            next(iterator)
             uploaded_parts.append(part)
             assert uploader.blob.uploadedChunkIds == uploaded_parts
             assert len(uploader._data_packs) == len(uploaded_parts)
@@ -231,9 +238,15 @@ def test_upload_chunked_error(s3, batch, server):
         assert uploader.chunk_count == 2
         assert uploader._data_packs == []
         assert len(uploader.blob.uploadedChunkIds) == 0
+
+        iterator = uploader.iter_upload()
+
+        # Skip the first "yield" as it is done before uploading contents
+        next(iterator)
+
         with SwapAttr(uploader.s3_client, "upload_part", upload_part):
             with pytest.raises(UploadError):
-                next(uploader.iter_upload())
+                next(iterator)
         assert not uploader.is_complete()
 
         # Retry should work

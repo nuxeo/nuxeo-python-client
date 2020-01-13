@@ -216,9 +216,8 @@ class ChunkUploaderS3(UploaderS3):
         AWS credentials and the multipart upload ID.
         """
 
-        # Call the callback(s) now to allow the caller to save AWS credentials and upload ID
-        for callback in self.callback:
-            callback(self)
+        # Yield now to allow the caller to save AWS credentials and the MPU ID
+        yield self
 
         with self.blob as fd:
             while self._to_upload:

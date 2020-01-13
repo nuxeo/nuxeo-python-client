@@ -5,6 +5,7 @@ import os
 from io import StringIO
 
 from .compat import text
+from .constants import UP_AMAZON_S3
 from .exceptions import InvalidBatch
 from .utils import guess_mimetype
 
@@ -179,6 +180,11 @@ class Batch(Model):
         :return: the uploader
         """
         return self.service.get_uploader(self, blob, **kwargs)
+
+    def is_s3(self):
+        # type: () -> bool
+        """Return True if the upload provider is Amazon S3."""
+        return self.provider == UP_AMAZON_S3
 
     def upload(self, blob, **kwargs):
         # type: (Blob, Any) -> Blob
