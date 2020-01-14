@@ -184,6 +184,11 @@ def test_handlers(server):
     assert isinstance(handlers, list)
     assert "default" in handlers
 
+    if "s3" in handlers:
+        assert server.uploads.has_s3()
+    else:
+        assert not server.uploads.has_s3()
+
     # Test the second call does not recall the endpoint, it is cached
     assert server.uploads.handlers() is handlers
 
