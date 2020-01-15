@@ -4,7 +4,7 @@ Changelog
 2.4.2
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2020-01-15``
 
 - `NXPY-150 <https://jira.nuxeo.com/browse/NXPY-150>`__: Add ``nuxeo.uploads.has_s3()`` helper
 
