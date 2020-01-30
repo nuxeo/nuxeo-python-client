@@ -107,4 +107,4 @@ Alternatively, if the subgroup already exists, it is smaller to write:
         grouplabel='ParentGroup',
         memberGroups=['SubGroup'],
     )
-    group = server.groups.create(new_group1)
+    group = server.groups.create(new_group)
