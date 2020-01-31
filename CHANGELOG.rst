@@ -7,6 +7,7 @@ Changelog
 Release date: ``2020-xx-xx``
 
 - `NXPY-151 <https://jira.nuxeo.com/browse/NXPY-151>`__: Do not log the full exception when retrieving MPU parts
+- `NXPY-152 <https://jira.nuxeo.com/browse/NXPY-152>`__: Remove Uploader assert statements
 - `NXPY-153 <https://jira.nuxeo.com/browse/NXPY-153>`__: Do not yield one more time only for S3 uploads
 
 Technical changes

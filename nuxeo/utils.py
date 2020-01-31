@@ -140,8 +140,8 @@ def json_helper(obj):
     return obj.to_json()
 
 
-def log_chunk_details(chunk_count, chunk_size, uploaded_chunks):
-    # type: (int, int, List[int]) -> None
+def log_chunk_details(chunk_count, chunk_size, uploaded_chunks, blob_size):
+    # type: (int, int, List[int], int) -> None
     """Simple helper to log an chunked upload details about chunks data.
 
     :param chunk_count: the number of chunks
@@ -152,7 +152,7 @@ def log_chunk_details(chunk_count, chunk_size, uploaded_chunks):
         return
 
     uploaded_chunks_count = len(uploaded_chunks)
-    uploaded_data_length = chunk_size * uploaded_chunks_count
+    uploaded_data_length = min(blob_size, chunk_size * uploaded_chunks_count)
     msg = (
         "Computed chunks count is {:,d}"
         "; chunks size is {:,d} bytes"

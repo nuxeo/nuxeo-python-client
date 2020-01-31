@@ -91,10 +91,17 @@ class ChunkUploaderS3(UploaderS3):
         self._data_packs = []
 
         self.chunk_count, self.blob.uploadedChunkIds = self.state()
-        log_chunk_details(self.chunk_count, self.chunk_size, self.blob.uploadedChunkIds)
+        log_chunk_details(
+            self.chunk_count,
+            self.chunk_size,
+            self.blob.uploadedChunkIds,
+            self.blob.size,
+        )
 
         self.blob.chunkCount = self.chunk_count
-        self.blob.uploadedSize = len(self.blob.uploadedChunkIds) * self.chunk_size
+        self.blob.uploadedSize = min(
+            self.blob.size, len(self.blob.uploadedChunkIds) * self.chunk_size
+        )
 
         self._to_upload = []
         self._compute_chunks_left()
@@ -270,10 +277,6 @@ class ChunkUploaderS3(UploaderS3):
 
         # Save the ETag for the batch.complete() call
         self.batch.etag = response["ETag"]
-
-        assert self.blob.uploadedSize == self.blob.size, "{:,d} != {:,d}".format(
-            self.blob.uploadedSize, self.blob.size
-        )
 
         self._update_batch()
 
