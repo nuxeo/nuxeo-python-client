@@ -173,7 +173,7 @@ class ChunkUploaderS3(UploaderS3):
             try:
                 self.chunk_size, uploaded_chunks, self._data_packs = self._state()
             except Exception:
-                logger.warning("No multipart upload found with that ID", exc_info=True)
+                logger.warning("No multipart upload found with that ID")
 
         if uploaded_chunks is None:
             # It's a new upload
