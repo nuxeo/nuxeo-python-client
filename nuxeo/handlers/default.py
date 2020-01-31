@@ -117,10 +117,17 @@ class ChunkUploader(Uploader):
         self.chunk_count, self.blob.uploadedChunkIds = self.service.state(
             self.path, self.blob, chunk_size=self.chunk_size
         )
-        log_chunk_details(self.chunk_count, self.chunk_size, self.blob.uploadedChunkIds)
+        log_chunk_details(
+            self.chunk_count,
+            self.chunk_size,
+            self.blob.uploadedChunkIds,
+            self.blob.size,
+        )
 
         self.blob.chunkCount = self.chunk_count
-        self.blob.uploadedSize = len(self.blob.uploadedChunkIds) * self.chunk_size
+        self.blob.uploadedSize = min(
+            self.blob.size, len(self.blob.uploadedChunkIds) * self.chunk_size
+        )
 
         self.headers.update(
             {"X-Upload-Type": "chunked", "X-Upload-Chunk-Count": text(self.chunk_count)}
@@ -194,10 +201,6 @@ class ChunkUploader(Uploader):
 
                 # Yield to the upper scope
                 yield self
-
-        assert self.blob.uploadedSize == self.blob.size, "{:,d} != {:,d}".format(
-            self.blob.uploadedSize, self.blob.size
-        )
 
         self._update_batch()
 

@@ -184,7 +184,8 @@ def test_guess_mimetype_patch():
 
 
 @pytest.mark.parametrize(
-    "chunk_count, chunk_size, uploaded_chunks", [(0, 0, 0), (1, 1024, 3)]
+    "chunk_count, chunk_size, uploaded_chunks, blob_size",
+    [(0, 0, 0, 0), (1, 1024, 3, 1024)],
 )
-def test_log_chunk_details(chunk_count, chunk_size, uploaded_chunks):
-    log_chunk_details(chunk_count, chunk_size, uploaded_chunks)
+def test_log_chunk_details(chunk_count, chunk_size, uploaded_chunks, blob_size):
+    log_chunk_details(chunk_count, chunk_size, uploaded_chunks, blob_size)
