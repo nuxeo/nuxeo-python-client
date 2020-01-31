@@ -185,9 +185,6 @@ def test_upload_chunked_resume(s3, batch, server):
 
         iterator = uploader.iter_upload()
 
-        # Skip the first "yield" as it is done before uploading contents
-        next(iterator)
-
         # Upload 4 parts (out of 5) and then fail
         uploaded_parts = []
         for part in range(1, 5):
@@ -240,9 +237,6 @@ def test_upload_chunked_error(s3, batch, server):
         assert len(uploader.blob.uploadedChunkIds) == 0
 
         iterator = uploader.iter_upload()
-
-        # Skip the first "yield" as it is done before uploading contents
-        next(iterator)
 
         with SwapAttr(uploader.s3_client, "upload_part", upload_part):
             with pytest.raises(UploadError):
