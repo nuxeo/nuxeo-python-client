@@ -18,7 +18,7 @@ from __future__ import unicode_literals
 
 
 __author__ = "Nuxeo"
-__version__ = "2.4.3"
+__version__ = "2.4.4"
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 
