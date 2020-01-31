@@ -29,29 +29,33 @@ def aws_credentials(aws_pwd):
     """Mocked AWS Credentials for moto."""
     os.environ["AWS_ACCESS_KEY_ID"] = aws_pwd
     os.environ["AWS_SECRET_ACCESS_KEY"] = aws_pwd
-    os.environ["AWS_SECURITY_TOKEN"] = aws_pwd
     os.environ["AWS_SESSION_TOKEN"] = aws_pwd
 
 
 @pytest.fixture(scope="session")
-def s3(aws_credentials):
+def bucket():
+    return "nuxeo-app-transient-prod-testing"
+
+
+@pytest.fixture
+def s3(aws_credentials, bucket):
     with mock_s3():
-        s3 = boto3.client("s3", region_name="eu-west-1")
+        client = boto3.client("s3", region_name="eu-west-1")
 
         # Create a bucket
-        s3.create_bucket(Bucket="nuxeo-app-transient-prod-testing")
+        client.create_bucket(Bucket=bucket)
 
-        yield s3
+        yield client
 
 
-@pytest.fixture(scope="function")
-def batch(aws_pwd):
+@pytest.fixture
+def batch(aws_pwd, bucket):
     obj = Batch(
         **{
             "batchId": text(uuid4()),
             "provider": UP_AMAZON_S3,
             "extraInfo": {
-                "bucket": "nuxeo-app-transient-prod-testing",
+                "bucket": bucket,
                 "baseKey": "directupload/",
                 # "expiration": 1576685943000,
                 "useS3Accelerate": False,
@@ -66,7 +70,8 @@ def batch(aws_pwd):
     return obj
 
 
-def test_upload_not_chunked(s3, batch, server):
+@mock_s3
+def test_upload_not_chunked(batch, bucket, server):
     file_in = "test_in"
     with open(file_in, "wb") as f:
         f.write(os.urandom(1024 * 1024 * 5))
@@ -79,6 +84,10 @@ def test_upload_not_chunked(s3, batch, server):
     try:
         # Simulate a new single upload
         uploader = server.uploads.get_uploader(batch, blob, callback=callback)
+
+        # Create a bucket
+        uploader.s3_client.create_bucket(Bucket=bucket)
+
         assert uploader.chunk_count == 1
         uploader.upload()
         assert uploader.is_complete()
@@ -96,7 +105,8 @@ def test_upload_not_chunked(s3, batch, server):
             pass
 
 
-def test_upload_not_chunked_error(s3, batch, server):
+@mock_s3
+def test_upload_not_chunked_error(batch, bucket, server):
     file_in = "test_in"
     with open(file_in, "wb") as f:
         f.write(os.urandom(1024 * 1024 * 5))
@@ -108,6 +118,9 @@ def test_upload_not_chunked_error(s3, batch, server):
 
     # Simulate a single upload that failed
     uploader = server.uploads.get_uploader(batch, blob)
+
+    # Create a bucket
+    uploader.s3_client.create_bucket(Bucket=bucket)
 
     with SwapAttr(uploader.s3_client, "put_object", put_object):
         try:

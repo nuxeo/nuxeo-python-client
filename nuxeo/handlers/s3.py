@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 
-import boto3
+import boto3.session
 
 from .default import Uploader
 from ..constants import UP_AMAZON_S3
@@ -38,13 +38,18 @@ class UploaderS3(Uploader):
         s3_info = self.batch.extraInfo
         self.bucket = s3_info["bucket"]
         self.key = "{}/{}".format(s3_info["baseKey"].rstrip("/"), self.blob.name)
-        self.s3_client = s3_client or boto3.client(
-            "s3",
-            aws_access_key_id=s3_info["awsSecretKeyId"],
-            aws_secret_access_key=s3_info["awsSecretAccessKey"],
-            aws_session_token=s3_info["awsSessionToken"],
-            region_name=s3_info["region"],
-        )
+
+        if not s3_client:
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-multiprocessing
+            session = boto3.session.Session()
+            s3_client = session.client(
+                "s3",
+                aws_access_key_id=s3_info["awsSecretKeyId"],
+                aws_secret_access_key=s3_info["awsSecretAccessKey"],
+                aws_session_token=s3_info["awsSessionToken"],
+                region_name=s3_info["region"],
+            )
+        self.s3_client = s3_client
 
     def upload(self):
         # type: () -> None
