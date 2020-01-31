@@ -212,13 +212,7 @@ class ChunkUploaderS3(UploaderS3):
         If the `Uploader` has callback(s), they are run after each chunk upload.
         The method will yield after the callbacks step. It yields the uploader
         itself since it contains all relevant data.
-        The method will also yield before starting the upload to be able to store
-        AWS credentials and the multipart upload ID.
         """
-
-        # Yield now to allow the caller to save AWS credentials and the MPU ID
-        yield self
-
         with self.blob as fd:
             while self._to_upload:
                 # Get the index of a chunk to upload

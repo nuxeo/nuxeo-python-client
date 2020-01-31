@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-153 <https://jira.nuxeo.com/browse/NXPY-153>`__: Do not yield one more time only for S3 uploads
 
 Technical changes
 -----------------
