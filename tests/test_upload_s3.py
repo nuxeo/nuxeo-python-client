@@ -72,7 +72,7 @@ def batch(aws_pwd, bucket):
 
 @mock_s3
 def test_upload_not_chunked(tmp_path, batch, bucket, server):
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(os.urandom(1024 * 1024 * 5))
 
@@ -107,7 +107,7 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server):
 
 @mock_s3
 def test_upload_not_chunked_error(tmp_path, batch, bucket, server):
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(os.urandom(1024 * 1024 * 5))
 
@@ -135,7 +135,7 @@ def test_upload_not_chunked_error(tmp_path, batch, bucket, server):
 
 
 def test_upload_chunked(tmp_path, s3, batch, server):
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024 * 5) + b"\x00")
 
@@ -177,7 +177,7 @@ def test_upload_chunked(tmp_path, s3, batch, server):
 
 
 def test_upload_chunked_resume(tmp_path, s3, batch, server):
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     MiB = 1024 * 1024
     with open(file_in, "wb") as f:
         f.write(os.urandom(25 * MiB))
@@ -230,7 +230,7 @@ def test_upload_chunked_resume(tmp_path, s3, batch, server):
 
 
 def test_upload_chunked_error(tmp_path, s3, batch, server):
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024 * 5) + b"\x00")
 
@@ -270,7 +270,7 @@ def test_upload_chunked_error(tmp_path, s3, batch, server):
 def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
     batch.multiPartUploadId = "1234"
 
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     MiB = 1024 * 1024
     with open(file_in, "wb") as f:
         f.write(os.urandom(5 * MiB))

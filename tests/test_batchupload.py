@@ -67,12 +67,12 @@ def test_cancel(server):
     batch.delete(0)
 
 
-def test_data():
+def test_data(tmp_path):
     blob = BufferBlob(data="data", name="Test.txt", mimetype="text/plain")
     with blob:
         assert blob.data
 
-    test = "test_file"
+    test = os.path.join(str(tmp_path), "test_file")
     with open(test, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
     try:
@@ -94,8 +94,8 @@ def test_data():
         ("foo", True),
     ],
 )
-def test_digester(hash, is_valid, server):
-    file_out = "test_out"
+def test_digester(tmp_path, hash, is_valid, server):
+    file_out = os.path.join(str(tmp_path), "test_out")
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         batch = get_batch(server)
@@ -211,8 +211,8 @@ def test_handlers_custom(server):
         server.uploads.batch(handler="custom")
 
 
-def test_mimetype():
-    test = "test.bmp"
+def test_mimetype(tmp_path):
+    test = os.path.join(str(tmp_path), "test.bmp")
     with open(test, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
     try:
@@ -261,7 +261,7 @@ def test_upload(tmp_path, chunked, server):
 
     chunk_size = 1024
     file_size = 4096 if chunked else 1024
-    file_in, file_out = os.path.join(tmp_path, "test_in"), os.path.join(tmp_path, "test_out")
+    file_in, file_out = os.path.join(str(tmp_path), "test_in"), os.path.join(str(tmp_path), "test_out")
     with open(file_in, "wb") as f:
         f.write(b"\x00" * file_size)
 
@@ -320,7 +320,7 @@ def test_upload_several_callbacks(tmp_path, chunked, server):
 
     chunk_size = 1024
     file_size = 4096 if chunked else 1024
-    file_in, file_out = os.path.join(tmp_path, "test_in"), os.path.join(tmp_path, "test_out")
+    file_in, file_out = os.path.join(str(tmp_path), "test_in"), os.path.join(str(tmp_path), "test_out")
     with open(file_in, "wb") as f:
         f.write(b"\x00" * file_size)
 
@@ -362,7 +362,7 @@ def test_get_uploader(tmp_path, server):
         assert args
 
     batch = server.uploads.batch()
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
@@ -385,7 +385,7 @@ def test_get_uploader(tmp_path, server):
 
 def test_upload_error(tmp_path, server):
     batch = server.uploads.batch()
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
@@ -419,7 +419,7 @@ def test_upload_retry(tmp_path, retry_server):
     server = retry_server
     close_server = threading.Event()
 
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
@@ -446,7 +446,7 @@ def test_upload_retry(tmp_path, retry_server):
 
 
 def test_upload_resume(tmp_path, server):
-    file_in = os.path.join(tmp_path, "test_in")
+    file_in = os.path.join(str(tmp_path), "test_in")
     with open(file_in, "wb") as f:
         f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 

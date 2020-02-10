@@ -130,7 +130,7 @@ def test_handle_error(server):
     assert err == err_handled
 
 
-def test_file_out(server):
+def test_file_out(tmp_path, server):
     operation = server.operations.new("Document.GetChild")
     operation.params = {"name": "workspaces"}
     operation.input_obj = "/default-domain"
@@ -151,7 +151,7 @@ def test_file_out(server):
         check_lock += 1
 
     file_out = operation.execute(
-        file_out="test", callback=callback, lock_path=lock_path, unlock_path=unlock_path
+        file_out=os.path.join(str(tmp_path), "test"), callback=callback, lock_path=lock_path, unlock_path=unlock_path
     )
 
     try:
@@ -168,7 +168,7 @@ def test_file_out(server):
     assert check_unlock == 1
 
 
-def test_file_out_several_callbacks(server):
+def test_file_out_several_callbacks(tmp_path, server):
     operation = server.operations.new("Document.GetChild")
     operation.params = {"name": "workspaces"}
     operation.input_obj = "/default-domain"
@@ -184,7 +184,7 @@ def test_file_out_several_callbacks(server):
         check2 += 1
 
     callbacks = (callback1, callback2)
-    file_out = operation.execute(file_out="test", callback=callbacks)
+    file_out = operation.execute(file_out=os.path.join(str(tmp_path), "test"), callback=callbacks)
 
     try:
         with open(file_out) as f:
