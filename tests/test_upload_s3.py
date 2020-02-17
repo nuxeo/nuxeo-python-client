@@ -71,12 +71,11 @@ def batch(aws_pwd, bucket):
 
 
 @mock_s3
-def test_upload_not_chunked(batch, bucket, server):
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(os.urandom(1024 * 1024 * 5))
+def test_upload_not_chunked(tmp_path, batch, bucket, server):
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(os.urandom(1024 * 1024 * 5))
 
-    blob = FileBlob(file_in)
+    blob = FileBlob(str(file_in))
 
     def callback(uploader):
         assert isinstance(uploader, UploaderS3)
@@ -100,18 +99,17 @@ def test_upload_not_chunked(batch, bucket, server):
             batch.complete()
     finally:
         try:
-            os.remove(file_in)
+            os.remove(str(file_in))
         except OSError:
             pass
 
 
 @mock_s3
-def test_upload_not_chunked_error(batch, bucket, server):
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(os.urandom(1024 * 1024 * 5))
+def test_upload_not_chunked_error(tmp_path, batch, bucket, server):
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(os.urandom(1024 * 1024 * 5))
 
-    blob = FileBlob(file_in)
+    blob = FileBlob(str(file_in))
 
     def put_object(*args, **kwargs):
         raise HTTPError(409, "Conflict", "Mock'ed error")
@@ -129,17 +127,16 @@ def test_upload_not_chunked_error(batch, bucket, server):
             assert uploader.batch.etag is None
         finally:
             try:
-                os.remove(file_in)
+                os.remove(str(file_in))
             except OSError:
                 pass
 
 
-def test_upload_chunked(s3, batch, server):
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024 * 5) + b"\x00")
+def test_upload_chunked(tmp_path, s3, batch, server):
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024 * 5) + b"\x00")
 
-    blob = FileBlob(file_in)
+    blob = FileBlob(str(file_in))
 
     def callback1(uploader):
         assert isinstance(uploader, UploaderS3)
@@ -171,18 +168,17 @@ def test_upload_chunked(s3, batch, server):
         assert uploader.batch.etag is not None
     finally:
         try:
-            os.remove(file_in)
+            os.remove(str(file_in))
         except OSError:
             pass
 
 
-def test_upload_chunked_resume(s3, batch, server):
-    file_in = "test_in"
+def test_upload_chunked_resume(tmp_path, s3, batch, server):
+    file_in = tmp_path / "file_in"
     MiB = 1024 * 1024
-    with open(file_in, "wb") as f:
-        f.write(os.urandom(25 * MiB))
+    file_in.write_bytes(os.urandom(25 * MiB))
 
-    blob = FileBlob(file_in)
+    blob = FileBlob(str(file_in))
 
     def get_uploader():
         return ChunkUploaderS3(
@@ -224,17 +220,16 @@ def test_upload_chunked_resume(s3, batch, server):
         assert uploader.batch.etag is not None
     finally:
         try:
-            os.remove(file_in)
+            os.remove(str(file_in))
         except OSError:
             pass
 
 
-def test_upload_chunked_error(s3, batch, server):
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024 * 5) + b"\x00")
+def test_upload_chunked_error(tmp_path, s3, batch, server):
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024 * 5) + b"\x00")
 
-    blob = FileBlob(file_in)
+    blob = FileBlob(str(file_in))
 
     def upload_part(*args, **kwargs):
         raise HTTPError(409, "Conflict", "Mock'ed error")
@@ -262,20 +257,19 @@ def test_upload_chunked_error(s3, batch, server):
         assert uploader.batch.etag is not None
     finally:
         try:
-            os.remove(file_in)
+            os.remove(str(file_in))
         except OSError:
             pass
 
 
-def test_wrong_multipart_upload_id(s3, batch, server):
+def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
     batch.multiPartUploadId = "1234"
 
-    file_in = "test_in"
+    file_in = tmp_path / "file_in"
     MiB = 1024 * 1024
-    with open(file_in, "wb") as f:
-        f.write(os.urandom(5 * MiB))
+    file_in.write_bytes(os.urandom(5 * MiB))
 
-    blob = FileBlob(file_in)
+    blob = FileBlob(str(file_in))
 
     batch.provider = UP_AMAZON_S3
     uploader = server.uploads.get_uploader(

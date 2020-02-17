@@ -12,6 +12,7 @@ Contributors:
     Rémi Cattiau
     Mickaël Schoentgen <mschoentgen@nuxeo.com>
     Léa Klein
+    Romain Grasland
     and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
 from __future__ import unicode_literals

@@ -67,20 +67,19 @@ def test_cancel(server):
     batch.delete(0)
 
 
-def test_data():
+def test_data(tmp_path):
     blob = BufferBlob(data="data", name="Test.txt", mimetype="text/plain")
     with blob:
         assert blob.data
 
-    test = "test_file"
-    with open(test, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
     try:
-        blob = FileBlob(test)
+        blob = FileBlob(str(file_in))
         with blob:
             assert blob.data
     finally:
-        os.remove(test)
+        os.remove(str(file_in))
 
 
 @pytest.mark.parametrize(
@@ -94,8 +93,8 @@ def test_data():
         ("foo", True),
     ],
 )
-def test_digester(hash, is_valid, server):
-    file_out = "test_out"
+def test_digester(tmp_path, hash, is_valid, server):
+    file_out = tmp_path / "file_out"
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         batch = get_batch(server)
@@ -115,7 +114,7 @@ def test_digester(hash, is_valid, server):
             assert text(e.value)
     finally:
         doc.delete()
-        os.remove(file_out)
+        os.remove(str(file_out))
 
 
 @pytest.mark.parametrize("chunked", [False, True])
@@ -211,15 +210,14 @@ def test_handlers_custom(server):
         server.uploads.batch(handler="custom")
 
 
-def test_mimetype():
-    test = "test.bmp"
-    with open(test, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+def test_mimetype(tmp_path):
+    file_in = tmp_path / "file_in.bmp"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
     try:
-        blob = FileBlob(test)
+        blob = FileBlob(str(file_in))
         assert blob.mimetype in ["image/bmp", "image/x-ms-bmp"]
     finally:
-        os.remove(test)
+        os.remove(str(file_in))
 
 
 def test_operation(server):
@@ -242,7 +240,7 @@ def test_operation(server):
 
 
 @pytest.mark.parametrize("chunked", [False, True])
-def test_upload(chunked, server):
+def test_upload(tmp_path, chunked, server):
     def callback(upload):
         assert upload
         assert isinstance(upload.blob.uploadedChunkIds, list)
@@ -261,13 +259,12 @@ def test_upload(chunked, server):
 
     chunk_size = 1024
     file_size = 4096 if chunked else 1024
-    file_in, file_out = "test_in", "test_out"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" * file_size)
+    file_in, file_out = tmp_path / "file_in", tmp_path / "file_out"
+    file_in.write_bytes(b"\x00" * file_size)
 
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
-        blob = FileBlob(file_in, mimetype="application/octet-stream")
+        blob = FileBlob(str(file_in), mimetype="application/octet-stream")
         assert repr(blob)
         assert batch.upload(
             blob, chunked=chunked, callback=callback, chunk_size=chunk_size
@@ -289,13 +286,13 @@ def test_upload(chunked, server):
         doc.delete()
         for file_ in (file_in, file_out):
             try:
-                os.remove(file_)
+                os.remove(str(file_))
             except OSError:
                 pass
 
 
 @pytest.mark.parametrize("chunked", [False, True])
-def test_upload_several_callbacks(chunked, server):
+def test_upload_several_callbacks(tmp_path, chunked, server):
     check = 0
 
     def callback1(upload):
@@ -320,14 +317,13 @@ def test_upload_several_callbacks(chunked, server):
 
     chunk_size = 1024
     file_size = 4096 if chunked else 1024
-    file_in, file_out = "test_in", "test_out"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" * file_size)
+    file_in, file_out = tmp_path / "file_in", tmp_path / "file_out"
+    file_in.write_bytes(b"\x00" * file_size)
 
     callbacks = [callback1, callback2, "callback3"]
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
-        blob = FileBlob(file_in, mimetype="application/octet-stream")
+        blob = FileBlob(str(file_in), mimetype="application/octet-stream")
         assert repr(blob)
         assert batch.upload(
             blob, chunked=chunked, callback=callbacks, chunk_size=chunk_size
@@ -349,7 +345,7 @@ def test_upload_several_callbacks(chunked, server):
         doc.delete()
         for file_ in (file_in, file_out):
             try:
-                os.remove(file_)
+                os.remove(str(file_))
             except OSError:
                 pass
 
@@ -357,17 +353,16 @@ def test_upload_several_callbacks(chunked, server):
     assert check == 4 if chunked else 1
 
 
-def test_get_uploader(server):
+def test_get_uploader(tmp_path, server):
     def callback(*args):
         assert args
 
     batch = server.uploads.batch()
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
     try:
-        blob = FileBlob(file_in, mimetype="application/octet-stream")
+        blob = FileBlob(str(file_in), mimetype="application/octet-stream")
         uploader = batch.get_uploader(
             blob, chunked=True, chunk_size=256 * 1024, callback=callback
         )
@@ -378,19 +373,18 @@ def test_get_uploader(server):
         assert batch.get(0)
     finally:
         try:
-            os.remove(file_in)
+            os.remove(str(file_in))
         except OSError:
             pass
 
 
-def test_upload_error(server):
+def test_upload_error(tmp_path, server):
     batch = server.uploads.batch()
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
     try:
-        blob = FileBlob(file_in, mimetype="application/octet-stream")
+        blob = FileBlob(str(file_in), mimetype="application/octet-stream")
         assert repr(blob)
         uploader = batch.get_uploader(blob, chunked=True, chunk_size=256 * 1024)
         gen = uploader.iter_upload()
@@ -410,18 +404,17 @@ def test_upload_error(server):
 
     finally:
         try:
-            os.remove(file_in)
+            os.remove(str(file_in))
         except OSError:
             pass
 
 
-def test_upload_retry(retry_server):
+def test_upload_retry(tmp_path, retry_server):
     server = retry_server
     close_server = threading.Event()
 
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
     with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
         try:
@@ -434,21 +427,20 @@ def test_upload_retry(retry_server):
 
             with serv:
                 batch = server.uploads.batch()
-                blob = FileBlob(file_in, mimetype="application/octet-stream")
+                blob = FileBlob(str(file_in), mimetype="application/octet-stream")
                 batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 close_server.set()  # release server block
 
         finally:
             try:
-                os.remove(file_in)
+                os.remove(str(file_in))
             except OSError:
                 pass
 
 
-def test_upload_resume(server):
-    file_in = "test_in"
-    with open(file_in, "wb") as f:
-        f.write(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+def test_upload_resume(tmp_path, server):
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
     with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
         try:
@@ -462,7 +454,7 @@ def test_upload_resume(server):
 
             with serv:
                 batch = server.uploads.batch()
-                blob = FileBlob(file_in, mimetype="application/octet-stream")
+                blob = FileBlob(str(file_in), mimetype="application/octet-stream")
                 with pytest.raises(UploadError) as e:
                     batch.upload(blob, chunked=True, chunk_size=256 * 1024)
                 assert text(e.value)
@@ -478,7 +470,7 @@ def test_upload_resume(server):
 
         finally:
             try:
-                os.remove(file_in)
+                os.remove(str(file_in))
             except OSError:
                 pass
 

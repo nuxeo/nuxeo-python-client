@@ -7,6 +7,7 @@ Changelog
 Release date: ``2020-xx-xx``
 
 - `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-148 <https://jira.nuxeo.com/browse/NXPY-148>`__: Use the tmp_path fixture to auto-cleanup created files in tests
 
 Technical changes
 -----------------
