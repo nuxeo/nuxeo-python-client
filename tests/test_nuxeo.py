@@ -151,7 +151,7 @@ def test_file_out(tmp_path, server):
         check_lock += 1
 
     file_out = operation.execute(
-        file_out=os.path.join(str(tmp_path), "test"), callback=callback, lock_path=lock_path, unlock_path=unlock_path
+        file_out=tmp_path / "file_out", callback=callback, lock_path=lock_path, unlock_path=unlock_path
     )
 
     try:
@@ -184,7 +184,7 @@ def test_file_out_several_callbacks(tmp_path, server):
         check2 += 1
 
     callbacks = (callback1, callback2)
-    file_out = operation.execute(file_out=os.path.join(str(tmp_path), "test"), callback=callbacks)
+    file_out = operation.execute(file_out=tmp_path / "file_out", callback=callbacks)
 
     try:
         with open(file_out) as f:
