@@ -179,15 +179,9 @@ class ChunkUploaderS3(UploaderS3):
 
         :return: the chunk count and uploaded chunks
         """
-        uploaded_chunks = None
-
         if self.batch.multiPartUploadId:
-            try:
-                self.chunk_size, uploaded_chunks, self._data_packs = self._state()
-            except Exception:
-                logger.warning("No multipart upload found with that ID")
-
-        if uploaded_chunks is None:
+            self.chunk_size, uploaded_chunks, self._data_packs = self._state()
+        else:
             # It's a new upload
             self.new()
             uploaded_chunks = []
