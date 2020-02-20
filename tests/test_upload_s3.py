@@ -263,17 +263,13 @@ def test_upload_chunked_error(tmp_path, s3, batch, server):
 
 
 def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
-    batch.multiPartUploadId = "1234"
-
     file_in = tmp_path / "file_in"
     MiB = 1024 * 1024
     file_in.write_bytes(os.urandom(5 * MiB))
 
     blob = FileBlob(str(file_in))
 
+    batch.multiPartUploadId = "1234"
     batch.provider = UP_AMAZON_S3
-    uploader = server.uploads.get_uploader(
-        batch, blob, chunked=True, chunk_size=1024 * 1024
-    )
-    uploader.s3_client = s3
-    assert uploader.batch.multiPartUploadId != "1234"
+    with pytest.raises(KeyError):
+        server.uploads.get_uploader(batch, blob, chunked=True, chunk_size=1024 * 1024)
