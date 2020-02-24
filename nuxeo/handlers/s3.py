@@ -47,6 +47,7 @@ class UploaderS3(Uploader):
                 aws_access_key_id=s3_info["awsSecretKeyId"],
                 aws_secret_access_key=s3_info["awsSecretAccessKey"],
                 aws_session_token=s3_info["awsSessionToken"],
+                endpoint_url=s3_info.get("endpoint"),
                 region_name=s3_info["region"],
             )
         self.s3_client = s3_client
