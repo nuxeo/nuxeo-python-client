@@ -57,7 +57,9 @@ def batch(aws_pwd, bucket):
             "extraInfo": {
                 "bucket": bucket,
                 "baseKey": "directupload/",
-                # "expiration": 1576685943000,
+                "usePathStyleAccess": False,
+                "endpoint": "",
+                "expiration": 1576685943000,
                 "useS3Accelerate": False,
                 "region": "eu-west-1",
                 "awsSecretKeyId": aws_pwd,
