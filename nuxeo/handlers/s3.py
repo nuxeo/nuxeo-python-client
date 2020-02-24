@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import logging
 
 import boto3.session
+from botocore.client import Config
 
 from .default import Uploader
 from ..constants import UP_AMAZON_S3
@@ -42,13 +43,15 @@ class UploaderS3(Uploader):
         if not s3_client:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-multiprocessing
             session = boto3.session.Session()
+            path_style = "path" if s3_info.get("usePathStyleAccess", False) else "auto"
             s3_client = session.client(
                 "s3",
                 aws_access_key_id=s3_info["awsSecretKeyId"],
                 aws_secret_access_key=s3_info["awsSecretAccessKey"],
                 aws_session_token=s3_info["awsSessionToken"],
-                endpoint_url=s3_info.get("endpoint"),
+                endpoint_url=s3_info.get("endpoint") or None,
                 region_name=s3_info["region"],
+                config=Config(s3={"addressing_style": path_style}),
             )
         self.s3_client = s3_client
 
