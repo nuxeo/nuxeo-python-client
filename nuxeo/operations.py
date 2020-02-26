@@ -312,14 +312,15 @@ class API(APIEndpoint):
             with open(path, "ab") as f:
                 chunk_size = kwargs.get("chunk_size", self.client.chunk_size)
                 for chunk in resp.iter_content(chunk_size=chunk_size):
+                    f.write(chunk)
+                    if digester:
+                        digester.update(chunk)
+
                     # Check if synchronization thread was suspended
                     for callback in callbacks:
                         callback(path)
                     if operation:
-                        operation.progress += chunk_size
-                    f.write(chunk)
-                    if digester:
-                        digester.update(chunk)
+                        operation.progress += len(chunk)
 
                 # Force write of file to disk
                 f.flush()
