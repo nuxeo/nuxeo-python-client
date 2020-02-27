@@ -249,13 +249,7 @@ class NuxeoClient(object):
 
         headers.update(self.headers)
 
-        if logger.getEffectiveLevel() <= logging.DEBUG:
-            for key in kwargs.get("params") or {}:
-                if '_' in key or '.' in key:
-                    warn(f"Params must not contain _ or . characters: {key}", DeprecationWarning, 2)
-            for key in headers or {}:
-                if '_' in key or '.' in key:
-                    warn(f"Headers must not contain _ or . characters: {key}", DeprecationWarning, 2)
+        self._check_headers_and_params_format(headers, kwargs)
 
         if data and not isinstance(data, bytes) and not raw:
             data = json.dumps(data, default=json_helper)
@@ -291,6 +285,17 @@ class NuxeoClient(object):
             del exc
 
         return resp
+
+    def _check_headers_and_params_format(self, headers, kwargs):
+        """Check headers and params keys for dots or underscores and throw a warning if one is found"""
+
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            for key in kwargs.get("params") or {}:
+                if '_' in key or '.' in key:
+                    warn(f"Params must not contain _ or . characters: {key}", DeprecationWarning, 2)
+            for key in headers or {}:
+                if '_' in key or '.' in key:
+                    warn(f"Headers must not contain _ or . characters: {key}", DeprecationWarning, 2)
 
     def request_auth_token(
         self,

@@ -19,7 +19,7 @@ class API(APIEndpoint):
 
     def __init__(self, client, endpoint="group", headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        self.query = "?fetch.group=memberUsers&fetch.group=memberGroups"
+        self.params = {"fetch-group": ["memberUsers", "memberGroups"]}
         super(API, self).__init__(client, endpoint=endpoint, cls=Group, headers=headers)
 
     def get(self, group_id=None):
@@ -30,8 +30,7 @@ class API(APIEndpoint):
         :param group_id: the id of the group
         :return: the group
         """
-        request_path = "{}{}".format(group_id, self.query)
-        return super(API, self).get(path=request_path)
+        return super(API, self).get(path=group_id, params=self.params)
 
     def post(self, group):
         # type: (Group) -> Group
@@ -41,7 +40,7 @@ class API(APIEndpoint):
         :param group: the group to create
         :return: the created group
         """
-        return super(API, self).post(resource=group, path=self.query)
+        return super(API, self).post(resource=group, params=self.params)
 
     create = post  # Alias for clarity
 
