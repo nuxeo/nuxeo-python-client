@@ -248,8 +248,7 @@ class NuxeoClient(object):
             headers["enrichers-document"] = ", ".join(enrichers)
 
         headers.update(self.headers)
-
-        self._check_headers_and_params_format(headers, kwargs)
+        self._check_headers_and_params_format(headers, kwargs.get("params") or {})
 
         if data and not isinstance(data, bytes) and not raw:
             data = json.dumps(data, default=json_helper)
@@ -286,16 +285,19 @@ class NuxeoClient(object):
 
         return resp
 
-    def _check_headers_and_params_format(self, headers, kwargs):
-        """Check headers and params keys for dots or underscores and throw a warning if one is found"""
+    def _check_headers_and_params_format(self, headers, params):
+        # type: (Dict[Any, Any], Dict[Any, Any]) -> None
+        """Check headers and params keys for dots or underscores and throw a warning if one is found."""
 
-        if logger.getEffectiveLevel() <= logging.DEBUG:
-            for key in kwargs.get("params") or {}:
-                if '_' in key or '.' in key:
-                    warn(f"Params must not contain _ or . characters: {key}", DeprecationWarning, 2)
-            for key in headers or {}:
-                if '_' in key or '.' in key:
-                    warn(f"Headers must not contain _ or . characters: {key}", DeprecationWarning, 2)
+        msg = "{!r} {} should not contain '_' nor '.'. Replace with '-' to get rid of that warning."
+
+        for key in headers:
+            if "_" in key or "." in key:
+                warn(msg.format(key, "header"), DeprecationWarning, 2)
+
+        for key in params:
+            if "_" in key or "." in key:
+                warn(msg.format(key, "param"), DeprecationWarning, 2)
 
     def request_auth_token(
         self,
