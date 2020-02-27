@@ -5,6 +5,8 @@ import atexit
 import json
 import logging
 import sys
+from warnings import warn
+
 from urllib3.util.retry import Retry
 
 import requests
@@ -243,9 +245,17 @@ class NuxeoClient(object):
         )
         enrichers = kwargs.pop("enrichers", None)
         if enrichers:
-            headers["X-NXenrichers.document"] = ", ".join(enrichers)
+            headers["enrichers-document"] = ", ".join(enrichers)
 
         headers.update(self.headers)
+
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            for key in kwargs.get("params") or {}:
+                if '_' in key or '.' in key:
+                    warn(f"Params must not contain _ or . characters: {key}", DeprecationWarning, 2)
+            for key in headers or {}:
+                if '_' in key or '.' in key:
+                    warn(f"Headers must not contain _ or . characters: {key}", DeprecationWarning, 2)
 
         if data and not isinstance(data, bytes) and not raw:
             data = json.dumps(data, default=json_helper)

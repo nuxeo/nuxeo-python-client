@@ -32,9 +32,9 @@ class API(APIEndpoint):
         :param uid: the ID of the comment
         :return: the comment
         """
-        # Adding "&fetch.comment=repliesSummary" to the URL to retrieve replies number as well
+        # Adding "&fetch-comment=repliesSummary" to the URL to retrieve replies number as well
         return super(API, self).get(
-            path=uid, params={"fetch.comment": "repliesSummary"}
+            path=uid, params={"fetch-comment": "repliesSummary"}
         )
 
     def post(self, comment):
@@ -78,8 +78,8 @@ class API(APIEndpoint):
         :param uid: the ID of the comment
         :return: the list of replies
         """
-        # Adding "&fetch.comment=repliesSummary" to the URL to retrieve replies number as well
-        kwargs = {"fetch.comment": "repliesSummary"}
+        # Adding "&fetch-comment=repliesSummary" to the URL to retrieve replies number as well
+        kwargs = {"fetch-comment": "repliesSummary"}
         if isinstance(params, dict):
             kwargs.update(params)
 
