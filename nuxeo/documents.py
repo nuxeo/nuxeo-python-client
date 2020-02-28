@@ -139,8 +139,8 @@ class API(APIEndpoint):
         """
         path = "id/{}/@comment".format(uid)
 
-        # Adding "&fetch.comment=repliesSummary" to the URL to retrieve replies number as well
-        kwargs = {"fetch.comment": "repliesSummary"}
+        # Adding "&fetch-comment=repliesSummary" to the URL to retrieve replies number as well
+        kwargs = {"fetch-comment": "repliesSummary"}
         if isinstance(params, dict):
             kwargs.update(params)
 

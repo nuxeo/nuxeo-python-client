@@ -5,6 +5,8 @@ import atexit
 import json
 import logging
 import sys
+from warnings import warn
+
 from urllib3.util.retry import Retry
 
 import requests
@@ -243,9 +245,10 @@ class NuxeoClient(object):
         )
         enrichers = kwargs.pop("enrichers", None)
         if enrichers:
-            headers["X-NXenrichers.document"] = ", ".join(enrichers)
+            headers["enrichers-document"] = ", ".join(enrichers)
 
         headers.update(self.headers)
+        self._check_headers_and_params_format(headers, kwargs.get("params") or {})
 
         if data and not isinstance(data, bytes) and not raw:
             data = json.dumps(data, default=json_helper)
@@ -281,6 +284,22 @@ class NuxeoClient(object):
             del exc
 
         return resp
+
+    def _check_headers_and_params_format(self, headers, params):
+        # type: (Dict[text, Any], Dict[text, Any]) -> None
+        """Check headers and params keys for dots or underscores and throw a warning if one is found."""
+
+        msg = "{!r} {} should not contain '_' nor '.'. Replace with '-' to get rid of that warning."
+
+        for key in headers.keys():
+            if "_" in key or "." in key:
+                warn(msg.format(key, "header"), DeprecationWarning, 2)
+
+        if not isinstance(params, dict):
+            return
+        for key in params.keys():
+            if "_" in key or "." in key:
+                warn(msg.format(key, "param"), DeprecationWarning, 2)
 
     def request_auth_token(
         self,

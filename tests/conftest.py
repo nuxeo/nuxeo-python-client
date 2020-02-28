@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 import logging
 
 import os
+import sys
+
 import pytest
 from requests.cookies import RequestsCookieJar
 
@@ -26,6 +28,22 @@ def server_log(request, server):
         request.module.__name__, request.function.__name__
     )
     server.operations.execute(command="Log", level="warn", message=msg)
+
+
+@pytest.fixture(autouse=True)
+def no_warnings(recwarn):
+    """Fail on warning."""
+    yield
+    warnings = []
+    for warning in recwarn:  # pragma: no cover
+        message = str(warning.message)
+        if "unclosed" in message:
+            # It may be worth fixing tests leaking sockets and file descriptors
+            continue
+        warn = "{w.filename}:{w.lineno} {w.message}".format(w=warning)
+        print(warn, file=sys.stderr)
+        warnings.append(warn)
+    assert not warnings
 
 
 @pytest.fixture(scope="module")
