@@ -7,6 +7,7 @@ import os
 
 import pytest
 import requests
+from _pytest.recwarn import warns
 from requests.exceptions import ConnectionError, ReadTimeout
 
 from nuxeo import constants
@@ -151,7 +152,10 @@ def test_file_out(tmp_path, server):
         check_lock += 1
 
     file_out = operation.execute(
-        file_out=tmp_path / "file_out", callback=callback, lock_path=lock_path, unlock_path=unlock_path
+        file_out=tmp_path / "file_out",
+        callback=callback,
+        lock_path=lock_path,
+        unlock_path=unlock_path,
     )
 
     try:
@@ -368,3 +372,34 @@ def test_unauthorized(server):
         assert text(e.value).startswith("Unauthorized(401)")
     finally:
         server.client.auth = auth
+
+
+def test_param_format(server, recwarn):
+    params = "stringnotadict"
+    headers = {"test-wrong-typo": "error"}
+    with pytest.raises(HTTPError):
+        server.client.request("GET", "test", headers=headers, params=params)
+
+    assert len(recwarn) == 0
+
+    params = {"test.wrong.typo": "error"}
+    with warns(
+        DeprecationWarning,
+        match=r"'test.wrong.typo' param should not contain '_' nor '.'. Replace with '-' "
+        r"to get rid of that warning.",
+    ):
+        with pytest.raises(HTTPError):
+            server.client.request("GET", "test", headers=headers, params=params)
+
+
+def test_header_format(server):
+    params = None
+    headers = {"test.wrong.typo": "error"}
+
+    with warns(
+        DeprecationWarning,
+        match=r"'test.wrong.typo' header should not contain '_' nor '.'. Replace with '-' "
+        r"to get rid of that warning.",
+    ):
+        with pytest.raises(HTTPError):
+            server.client.request("GET", "test", headers=headers, params=params)
