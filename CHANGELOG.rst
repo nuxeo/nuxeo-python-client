@@ -4,17 +4,12 @@ Changelog
 2.4.4
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2020-02-28``
 
 - `NXPY-148 <https://jira.nuxeo.com/browse/NXPY-148>`__: Use the tmp_path fixture to auto-cleanup created files in tests
 - `NXPY-155 <https://jira.nuxeo.com/browse/NXPY-155>`__: Don't use dots or underscores in custom HTTP headers
 - `NXPY-156 <https://jira.nuxeo.com/browse/NXPY-156>`__: Do not silence S3 errors on upload resuming
 - `NXPY-158 <https://jira.nuxeo.com/browse/NXPY-158>`__: Allow S3 custom endpoint for direct upload
-
-Technical changes
------------------
-
--
 
 2.4.3
 -----
