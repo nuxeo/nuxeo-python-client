@@ -286,7 +286,7 @@ class NuxeoClient(object):
         return resp
 
     def _check_headers_and_params_format(self, headers, params):
-        # type: (Dict[text, text], Dict[text, text]) -> None
+        # type: (Dict[text, Any], Dict[text, Any]) -> None
         """Check headers and params keys for dots or underscores and throw a warning if one is found."""
 
         msg = "{!r} {} should not contain '_' nor '.'. Replace with '-' to get rid of that warning."
