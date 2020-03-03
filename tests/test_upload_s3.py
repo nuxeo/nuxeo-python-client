@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import boto3
 import pytest
+import requests.exceptions
 from moto import mock_s3
 from nuxeo.compat import text
 from nuxeo.constants import UP_AMAZON_S3
@@ -94,9 +95,13 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server):
         assert uploader.is_complete()
         assert uploader.batch.etag is not None
 
-        # Complete the upload, this will not work as there is no real
-        # batch ID existant. This is only to have a better coverage.
+        # Complete the upload
         batch.service = server.uploads
+        # Simple check for additional arguments
+        with pytest.raises(requests.exceptions.ReadTimeout):
+            batch.complete(timeout=(0.000001, 0.000001))
+        # This will not work as there is no real
+        # batch ID existant. This is only to have a better coverage.
         with pytest.raises(HTTPError):
             batch.complete()
     finally:

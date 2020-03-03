@@ -273,12 +273,14 @@ class API(APIEndpoint):
             params["xpath"] = "files:files"
         return self.execute(batch, "Blob.Attach", file_idx, params)
 
-    def complete(self, batch):
-        # type: () -> Any
+    def complete(self, batch, **kwargs):
+        # type: (Batch, Any) -> Any
         """
         Complete an upload.
         This is a no-op when using the default upload provider.
 
+        :param batch: batch to complete
+        :param kwargs: additional arguments fowarded at the underlying level
         :return: the output of the complete operation
         """
         if batch.provider == UP_AMAZON_S3:
@@ -294,7 +296,7 @@ class API(APIEndpoint):
             endpoint = "{}/{}/{}/complete".format(
                 self.endpoint, batch.uid, batch.upload_idx - 1
             )
-            return self.client.request("POST", endpoint, data=params)
+            return self.client.request("POST", endpoint, data=params, **kwargs)
 
         # Doing a /complete with the default upload provider
         # will end on a HTTP 409 Conflict error.
