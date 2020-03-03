@@ -220,14 +220,15 @@ class Batch(Model):
         """
         return self.service.attach(self, doc, file_idx)
 
-    def complete(self):
-        # type: () -> Any
+    def complete(self, **kwargs):
+        # type: (Any) -> Any
         """
         Complete a S3 Direct Upload.
 
+        :param kwargs: additional arguments fowarded at the underlying level
         :return: the output of the complete operation
         """
-        return self.service.complete(self)
+        return self.service.complete(self, **kwargs)
 
 
 class Blob(Model):

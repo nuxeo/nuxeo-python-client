@@ -6,12 +6,13 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY-1xx <https://jira.nuxeo.com/browse/NXPY-1xx>`__:
+- `NXPY-159 <https://jira.nuxeo.com/browse/NXPY-159>`__: Allow to pass additional arguments to ``Batch.complete()``
 
 Technical changes
 -----------------
 
--
+- ``Batch.complete()`` now handles additional parameters
+- nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters
 
 2.4.4
 -----
