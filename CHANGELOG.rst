@@ -4,7 +4,7 @@ Changelog
 2.4.5
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2020-03-03``
 
 - `NXPY-159 <https://jira.nuxeo.com/browse/NXPY-159>`__: Allow to pass additional arguments to ``Batch.complete()``
 
