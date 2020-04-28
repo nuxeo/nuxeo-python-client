@@ -480,3 +480,9 @@ def test_wrong_batch_id(server):
     batch.uid = "1234"
     with pytest.raises(HTTPError):
         batch.get(0)
+
+
+def test_refresh_token(server):
+    batch = server.uploads.batch()
+    batch.refresh_token()
+    assert batch.extraInfo is None

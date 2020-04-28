@@ -230,6 +230,19 @@ class Batch(Model):
         """
         return self.service.complete(self, **kwargs)
 
+    def refresh_token(self, **kwargs):
+        # type: () -> None
+        """
+        Get fresh tokens for the given batch.
+
+        The *extraInfo* dict will be updated inplace with the new data.
+        This is a no-op when using the default upload provider.
+
+        :param kwargs: additional arguments forwarded at the underlying level
+        """
+        tokens = self.service.refresh_token(self, **kwargs)
+        self.extraInfo.update(tokens) if tokens else None
+
 
 class Blob(Model):
     """ Blob superclass used for metadata. """

@@ -8,10 +8,13 @@ Release date: ``2020-xx-xx``
 
 - `NXPY-159 <https://jira.nuxeo.com/browse/NXPY-159>`__: Allow to pass additional arguments to ``Batch.complete()``
 - `NXPY-145 <https://jira.nuxeo.com/browse/NXPY-145>`__: Detect and log appropriate debug info when the transfer if chunked
+- `NXPY-163 <https://jira.nuxeo.com/browse/NXPY-163>`__: Add ``Batch.refresh_token()`` to get fresh tokens for a given batch
 
 Technical changes
 -----------------
 
+- Added ``Batch.refresh_token()``
+- Added nuxeo/uploads.py::\ ``API.refresh_token()``
 - ``Batch.complete()`` now handles additional parameters
 - nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters
 

@@ -6,17 +6,15 @@ So we just test the most crucial part of the upload: S3 calls.
 from __future__ import unicode_literals
 
 import os
-from uuid import uuid4
 
 import boto3
 import pytest
 import requests.exceptions
 from moto import mock_s3
-from nuxeo.compat import text
 from nuxeo.constants import UP_AMAZON_S3
 from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
-from nuxeo.models import Batch, FileBlob
+from nuxeo.models import FileBlob
 from nuxeo.utils import SwapAttr
 
 
@@ -50,25 +48,23 @@ def s3(aws_credentials, bucket):
 
 
 @pytest.fixture
-def batch(aws_pwd, bucket):
-    obj = Batch(
-        **{
-            "batchId": text(uuid4()),
-            "provider": UP_AMAZON_S3,
-            "extraInfo": {
-                "bucket": bucket,
-                "baseKey": "directupload/",
-                "usePathStyleAccess": False,
-                "endpoint": "",
-                "expiration": 1576685943000,
-                "useS3Accelerate": False,
-                "region": "eu-west-1",
-                "awsSecretKeyId": aws_pwd,
-                "awsSecretAccessKey": aws_pwd,
-                "awsSessionToken": aws_pwd,
-            },
-        }
-    )
+def batch(aws_pwd, bucket, server):
+    # TODO: when using a real server with S3 configured, just use:
+    #   obj = server.uploads.batch(handler="s3")
+    obj = server.uploads.batch()
+    obj.provider = UP_AMAZON_S3
+    obj.extraInfo = {
+        "bucket": bucket,
+        "baseKey": "directupload/",
+        "usePathStyleAccess": False,
+        "endpoint": "",
+        "expiration": 1576685943000,
+        "useS3Accelerate": False,
+        "region": "eu-west-1",
+        "awsSecretKeyId": aws_pwd,
+        "awsSecretAccessKey": aws_pwd,
+        "awsSessionToken": aws_pwd,
+    }
     assert obj.is_s3()
     return obj
 
@@ -215,6 +211,12 @@ def test_upload_chunked_resume(tmp_path, s3, batch, server):
             assert not uploader.is_complete()
             assert uploader.batch.etag is None
 
+        # Ask for new tokens, it should work
+        # TODO: cannot be tested until using a real server configured with S3
+        # extra_info = batch.extraInfo.copy()
+        # batch.refresh_token()
+        # assert batch.extraInfo != extra_info
+
         # Simulate a resume of the same upload, it should succeed
         # (AWS details are stored into the *batch* object, that's why it works)
         uploader = get_uploader()
@@ -280,3 +282,13 @@ def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
     batch.provider = UP_AMAZON_S3
     with pytest.raises(KeyError):
         server.uploads.get_uploader(batch, blob, chunked=True, chunk_size=1024 * 1024)
+
+
+def test_refresh_token(batch):
+    # Ask for new tokens, it should work
+    # TODO: cannot be really tested until using a real server configured with S3
+    # extra_info = batch.extraInfo.copy()
+    with pytest.raises(HTTPError) as e:
+        batch.refresh_token()
+    assert e.value.status == 501
+    # assert batch.extraInfo != extra_info

@@ -339,3 +339,23 @@ class API(APIEndpoint):
                 from .handlers.default import Uploader as cls
 
         return cls(self, batch, blob, chunk_size, callback)
+
+    def refresh_token(self, batch, **kwargs):
+        # type: (Batch, Any) -> Dict[str, Any]
+        """
+        Get fresh tokens for the given batch.
+        This is a no-op when using the default upload provider.
+
+        :param batch: the targeted batch
+        :param kwargs: additional arguments forwarded at the underlying level
+        :return: a dict containing new tokens
+        """
+        # Return an empty dict by default, instead of raising an error.
+        # It is more convenient.
+        tokens = {}
+
+        if batch.provider:
+            endpoint = "{}/{}/refreshToken".format(self.endpoint, batch.uid)
+            tokens = self.client.request("POST", endpoint, **kwargs)
+
+        return tokens
