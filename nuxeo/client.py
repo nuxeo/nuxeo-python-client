@@ -408,8 +408,20 @@ class NuxeoClient(object):
         headers = response.headers
         content_type = headers.get("content-type", "application/octet-stream")
         content_size = int(headers.get("content-length", 0))
+        chunked = headers.get("Transfer-Encoding", "") == "chunked"
 
-        if content_size <= 0:
+        if response.url.endswith("site/automation"):
+            # This endpoint returns too many information and pollute logs.
+            # Besides contents of this call are stored into the .operations attr.
+            content = "<Automation details saved into the *operations* attr>"
+        elif response.url.endswith("json/cmis"):
+            # This endpoint returns too many information and pollute logs.
+            # Besides contents of this call are stored into the .server_info attr.
+            content = "<CMIS details saved into the *server_info* attr>"
+        elif chunked:
+            # The data is returned by chunks, we cannot guess what it is.
+            content = "<chunked contents>"
+        elif content_size <= 0:
             # response.content is empty when *void_op* is True,
             # meaning we do not want to get back what we sent
             # or the operation does not return anything by default
@@ -419,14 +431,6 @@ class NuxeoClient(object):
             # Skipped binary types are everything but "text/xxx":
             #   https://www.iana.org/assignments/media-types/media-types.xhtml
             content = "<binary data ({:,} bytes)>".format(content_size)
-        elif response.url.endswith("site/automation"):
-            # This endpoint returns too many information and pollute logs.
-            # Besides contents of this call are stored into the .operations attr.
-            content = "<Automation details saved into the *operations* attr>"
-        elif response.url.endswith("json/cmis"):
-            # This endpoint returns too many information and pollute logs.
-            # Besides contents of this call are stored into the .server_info attr.
-            content = "<CMIS details saved into the *server_info* attr>"
         elif content_size <= limit_size:
             # At this point, we should only have text data not bigger than *limit_size*.
             # Do not use response.text as it will load the chardet module and its
