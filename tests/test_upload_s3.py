@@ -6,17 +6,15 @@ So we just test the most crucial part of the upload: S3 calls.
 from __future__ import unicode_literals
 
 import os
-from uuid import uuid4
 
 import boto3
 import pytest
 import requests.exceptions
 from moto import mock_s3
-from nuxeo.compat import text
 from nuxeo.constants import UP_AMAZON_S3
 from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
-from nuxeo.models import Batch, FileBlob
+from nuxeo.models import FileBlob
 from nuxeo.utils import SwapAttr
 
 
@@ -50,42 +48,36 @@ def s3(aws_credentials, bucket):
 
 
 @pytest.fixture
-def batch(aws_pwd, bucket):
-    obj = Batch(
-        **{
-            "batchId": text(uuid4()),
-            "provider": UP_AMAZON_S3,
-            "extraInfo": {
-                "bucket": bucket,
-                "baseKey": "directupload/",
-                "usePathStyleAccess": False,
-                "endpoint": "",
-                "expiration": 1576685943000,
-                "useS3Accelerate": False,
-                "region": "eu-west-1",
-                "awsSecretKeyId": aws_pwd,
-                "awsSecretAccessKey": aws_pwd,
-                "awsSessionToken": aws_pwd,
-            },
-        }
-    )
+def batch(aws_pwd, bucket, server):
+    # TODO: when using a real server with S3 configured, just use:
+    #   obj = server.uploads.batch(handler="s3")
+    obj = server.uploads.batch()
+    obj.provider = UP_AMAZON_S3
+    obj.extraInfo = {
+        "bucket": bucket,
+        "baseKey": "directupload/",
+        "usePathStyleAccess": False,
+        "endpoint": "",
+        "expiration": 1576685943000,
+        "useS3Accelerate": False,
+        "region": "eu-west-1",
+        "awsSecretKeyId": aws_pwd,
+        "awsSecretAccessKey": aws_pwd,
+        "awsSessionToken": aws_pwd,
+    }
     assert obj.is_s3()
     return obj
 
 
-@mock_s3
-def test_upload_not_chunked(tmp_path, batch, bucket, server):
+def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
     file_in = tmp_path / "file_in"
     file_in.write_bytes(os.urandom(1024 * 1024 * 5))
 
     blob = FileBlob(str(file_in))
 
-    def callback(uploader):
-        assert isinstance(uploader, UploaderS3)
-
     try:
         # Simulate a new single upload
-        uploader = server.uploads.get_uploader(batch, blob, callback=callback)
+        uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
 
         # Create a bucket
         uploader.s3_client.create_bucket(Bucket=bucket)
@@ -111,8 +103,7 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server):
             pass
 
 
-@mock_s3
-def test_upload_not_chunked_error(tmp_path, batch, bucket, server):
+def test_upload_not_chunked_error(tmp_path, batch, bucket, server, s3):
     file_in = tmp_path / "file_in"
     file_in.write_bytes(os.urandom(1024 * 1024 * 5))
 
@@ -122,7 +113,7 @@ def test_upload_not_chunked_error(tmp_path, batch, bucket, server):
         raise HTTPError(409, "Conflict", "Mock'ed error")
 
     # Simulate a single upload that failed
-    uploader = server.uploads.get_uploader(batch, blob)
+    uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
 
     # Create a bucket
     uploader.s3_client.create_bucket(Bucket=bucket)
@@ -156,13 +147,6 @@ def test_upload_chunked(tmp_path, s3, batch, server):
         return ChunkUploaderS3(
             server.uploads, batch, blob, 256 * 1024, s3_client=s3, callback=callbacks
         )
-
-    # For code coverage ...
-    batch.provider = UP_AMAZON_S3
-    assert isinstance(
-        server.uploads.get_uploader(batch, blob, chunked=True, chunk_size=1024 * 1024),
-        ChunkUploaderS3,
-    )
 
     try:
         # Simulate a chunked upload
@@ -214,6 +198,15 @@ def test_upload_chunked_resume(tmp_path, s3, batch, server):
                 assert "ETag" in data_pack
             assert not uploader.is_complete()
             assert uploader.batch.etag is None
+
+        # Ask for new tokens, the upload should continue without issue
+        # TODO: cannot be tested until using a real server configured with S3
+        # old_info = batch.extraInfo.copy()
+        # uploader.refresh_token()
+        # new_info = batch.extraInfo.copy()
+        # for key in ("awsSecretKeyId", "awsSecretAccessKey", "awsSessionToken"):
+        #     assert old_info[key] != new_info[key]
+        # assert old_info["expiration"] <= new_info["expiration"]
 
         # Simulate a resume of the same upload, it should succeed
         # (AWS details are stored into the *batch* object, that's why it works)
@@ -272,11 +265,10 @@ def test_upload_chunked_error(tmp_path, s3, batch, server):
 def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
     file_in = tmp_path / "file_in"
     MiB = 1024 * 1024
-    file_in.write_bytes(os.urandom(5 * MiB))
+    file_in.write_bytes(os.urandom(6 * MiB))
 
     blob = FileBlob(str(file_in))
 
     batch.multiPartUploadId = "1234"
-    batch.provider = UP_AMAZON_S3
     with pytest.raises(KeyError):
-        server.uploads.get_uploader(batch, blob, chunked=True, chunk_size=1024 * 1024)
+        ChunkUploaderS3(server.uploads, batch, blob, 1024 * 1024 * 5, s3_client=s3)

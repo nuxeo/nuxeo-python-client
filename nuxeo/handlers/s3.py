@@ -5,9 +5,12 @@ The Amazon S3 upload handler.
 from __future__ import unicode_literals
 
 import logging
+from datetime import datetime
 
 import boto3.session
 from botocore.client import Config
+from botocore.credentials import RefreshableCredentials
+
 
 from .default import Uploader
 from ..constants import UP_AMAZON_S3
@@ -18,7 +21,7 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Generator, List, Set, Tuple  # noqa
+        from typing import Any, Dict, Generator, List, Set, Tuple  # noqa
 except ImportError:
     pass
 
@@ -44,16 +47,34 @@ class UploaderS3(Uploader):
             # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-multiprocessing
             session = boto3.session.Session()
             path_style = "path" if s3_info.get("usePathStyleAccess", False) else "auto"
+
+            # The session will be able to automatically refresh its tokens
+            session_credentials = RefreshableCredentials.create_from_metadata(
+                metadata=self._refresh_credentials(),
+                refresh_using=self._refresh_credentials,
+                method="sts-assume-role",
+            )
+            session._credentials = session_credentials
+
             s3_client = session.client(
                 "s3",
-                aws_access_key_id=s3_info["awsSecretKeyId"],
-                aws_secret_access_key=s3_info["awsSecretAccessKey"],
-                aws_session_token=s3_info["awsSessionToken"],
                 endpoint_url=s3_info.get("endpoint") or None,
                 region_name=s3_info["region"],
                 config=Config(s3={"addressing_style": path_style}),
             )
+
         self.s3_client = s3_client
+
+    def _refresh_credentials(self):
+        # type: () -> Dict[str, Any]
+        """Method called automatically by boto3 to refresh tokens when needed."""
+        data = self.service.refresh_token(self.batch)
+        return {
+            "access_key": data["awsSecretAccessKey"],
+            "secret_key": data["awsSecretKeyId"],
+            "token": data["awsSessionToken"],
+            "expiry_time": datetime.fromtimestamp(data["expiration"] / 1000).isoformat(),
+        }
 
     def upload(self):
         # type: () -> None
