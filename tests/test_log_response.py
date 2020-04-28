@@ -72,6 +72,19 @@ class ResponseMxf(Response):
         raise OverflowError("join() result is too long")
 
 
+class ResponseChunkedContents(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "text/plain"
+        self.headers["content-length"] = "1024"
+        self.headers["transfer-encoding"] = "chunked"
+        self.url = "http://localhost:8080/nuxeo/small%20file.txt"
+
+    @property
+    def content(self):
+        return "TADA!".encode("utf-8")
+
+
 class ResponseTextOk(Response):
     def __init__(self):
         super().__init__()
@@ -116,6 +129,7 @@ class ResponseTextTooLong(Response):
         (ResponseTextOk, "TADA!"),
         (ResponseTextTooLong, "too much text"),
         (ResponseTextError, "no enough memory"),
+        (ResponseChunkedContents, "chunked contents"),
     ],
 )
 def test_response(caplog, response, pattern):
