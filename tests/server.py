@@ -64,12 +64,11 @@ def parse_nuxeo_request(request_content):
 def handle_nuxeo_request(request_content):
     method, path, headers = parse_nuxeo_request(request_content)
     try:
-        if len(path) == 1 and path[0] == "upload":
-            if method == "POST":
-                # Create batch
-                batch_id = text(uuid.uuid4())
-                uploads[batch_id] = {}
-                return generate_response("201 Created", {"batchId": batch_id})
+        if len(path) == 1 and path[0] == "upload" and method == "POST":
+            # Create batch
+            batch_id = text(uuid.uuid4())
+            uploads[batch_id] = {}
+            return generate_response("201 Created", {"batchId": batch_id})
         if len(path) == 3 and path[0] == "upload":
             batch_id, file_idx = path[1:]
             if method == "GET":
