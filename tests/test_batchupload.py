@@ -399,9 +399,6 @@ def test_upload_error(tmp_path, server):
         assert "already exists" in e.value.info
         uploader._to_upload = backup
 
-        for _ in uploader.iter_upload():
-            pass
-
     finally:
         try:
             os.remove(str(file_in))

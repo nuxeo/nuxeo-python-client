@@ -178,8 +178,8 @@ def test_follow_transition(server):
 
 
 def test_add_permission(server):
-    users = ["Administrator"]
     with SwapAttr(nuxeo.constants, "CHECK_PARAMS", True), Doc(server) as doc:
+        users = ["Administrator"]
         # NXPY-84: here we should not fail with KeyError: 'list' in check_params()
         doc.add_permission({"permission": "ReadWrite", "users": users})
 
