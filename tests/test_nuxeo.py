@@ -391,12 +391,11 @@ def test_param_format(server, recwarn):
 
 
 def test_header_format(server):
-    headers = {"test.wrong.typo": "error"}
-
     with pytest.warns(
         DeprecationWarning,
         match=r"'test.wrong.typo' header should not contain '_' nor '.'. Replace with '-' "
         r"to get rid of that warning.",
     ):
         with pytest.raises(HTTPError):
+            headers = {"test.wrong.typo": "error"}
             server.client.request("GET", "test", headers=headers)
