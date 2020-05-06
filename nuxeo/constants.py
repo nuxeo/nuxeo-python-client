@@ -16,6 +16,9 @@ DEFAULT_URL = "http://localhost:8080/nuxeo/"
 #   - 'applicationName' URL parameter
 DEFAULT_APP_NAME = "Python client"
 
+# Maximum size to not overflow when logging raw content of a HTTP response
+LOG_LIMIT_SIZE = 5 * 1024 * 1024  # 5 MiB
+
 # Retries for each HTTP call on conection error
 MAX_RETRY = 5
 

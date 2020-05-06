@@ -14,18 +14,48 @@ from nuxeo.client import NuxeoClient
 skip_logging = True
 
 
-class ResponseEmpty(Response):
-    def __init__(self):
-        super().__init__()
-        self.url = "http://localhost:8080/nuxeo/nothing"
-
-
 class ResponseAutomation(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "application/json"
         self.headers["content-length"] = "1024"
         self.url = "http://localhost:8080/nuxeo/site/automation"
+
+
+class ResponseChunkedContents(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "text/plain"
+        self.headers["transfer-encoding"] = "chunked"
+        self.url = "http://localhost:8080/nuxeo/small%20file.txt"
+
+    @property
+    def content(self):
+        return "TADA!".encode("utf-8")
+
+
+class ResponseChunkedJsonContents(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "application/json; nuxeo-entity=document"
+        self.headers["transfer-encoding"] = "chunked"
+        self.url = "http://localhost:8080/nuxeo/small%20file.txt"
+
+    @property
+    def content(self):
+        return "TADA!".encode("utf-8")
+
+
+class ResponseChunkedJsonContentsTooLong(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "application/json; nuxeo-entity=document"
+        self.headers["transfer-encoding"] = "chunked"
+        self.url = "http://localhost:8080/nuxeo/small%20file.txt"
+
+    @property
+    def content(self):
+        return ("TADA!" * 4096 * 2).encode("utf-8")
 
 
 class ResponseCmis(Response):
@@ -36,16 +66,15 @@ class ResponseCmis(Response):
         self.url = "http://localhost:8080/nuxeo/json/cmis"
 
 
-class ResponseMov(Response):
+class ResponseEmpty(Response):
     def __init__(self):
         super().__init__()
-        self.headers["content-type"] = "video/quicktime"
-        self.headers["content-length"] = 1088996060
-        self.url = "http://localhost:8080/nuxeo/1.0%20GiB.mov"
+        self.headers["content-type"] = "application/json"
+        self.url = "http://localhost:8080/nuxeo/nothing"
 
     @property
     def content(self):
-        raise MemoryError()
+        return b""
 
 
 class ResponseIso(Response):
@@ -54,6 +83,18 @@ class ResponseIso(Response):
         self.headers["content-type"] = "application/octet-stream"
         self.headers["content-length"] = "734334976"
         self.url = "http://localhost:8080/nuxeo/700.3%20MiB.iso"
+
+    @property
+    def content(self):
+        raise MemoryError()
+
+
+class ResponseMov(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "video/quicktime"
+        self.headers["content-length"] = 1088996060
+        self.url = "http://localhost:8080/nuxeo/1.0%20GiB.mov"
 
     @property
     def content(self):
@@ -72,17 +113,16 @@ class ResponseMxf(Response):
         raise OverflowError("join() result is too long")
 
 
-class ResponseChunkedContents(Response):
+class ResponseTextError(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = "1024"
-        self.headers["transfer-encoding"] = "chunked"
-        self.url = "http://localhost:8080/nuxeo/small%20file.txt"
+        self.url = "http://localhost:8080/nuxeo/big%20file.txt"
 
     @property
     def content(self):
-        return "TADA!".encode("utf-8")
+        raise MemoryError()
 
 
 class ResponseTextOk(Response):
@@ -97,18 +137,6 @@ class ResponseTextOk(Response):
         return "TADA!".encode("utf-8")
 
 
-class ResponseTextError(Response):
-    def __init__(self):
-        super().__init__()
-        self.headers["content-type"] = "text/plain"
-        self.headers["content-length"] = "1024"
-        self.url = "http://localhost:8080/nuxeo/big%20file.txt"
-
-    @property
-    def content(self):
-        raise MemoryError()
-
-
 class ResponseTextTooLong(Response):
     def __init__(self):
         super().__init__()
@@ -116,31 +144,48 @@ class ResponseTextTooLong(Response):
         self.headers["content-length"] = 4096 * 2
         self.url = "http://localhost:8080/nuxeo/big%20file.txt"
 
+    @property
+    def content(self):
+        return ("TADA!" * 4096 * 2).encode("utf-8")
+
 
 @pytest.mark.parametrize(
     "response, pattern",
     [
-        (ResponseEmpty, "no content"),
         (ResponseAutomation, "Automation details"),
+        (ResponseEmpty, "no content"),
+        (ResponseChunkedContents, "TADA!"),
+        (ResponseChunkedJsonContents, "TADA!"),
+        (ResponseChunkedJsonContentsTooLong, " [...] "),
         (ResponseCmis, "CMIS details"),
+        (ResponseIso, "binary data"),
         (ResponseMov, "binary data"),
         (ResponseMxf, "binary data"),
-        (ResponseIso, "binary data"),
-        (ResponseTextOk, "TADA!"),
-        (ResponseTextTooLong, "too much text"),
         (ResponseTextError, "no enough memory"),
-        (ResponseChunkedContents, "chunked contents"),
+        (ResponseTextOk, "TADA!"),
+        (ResponseTextTooLong, " [...] "),
     ],
 )
 def test_response(caplog, response, pattern):
     """Test all kind of responses to cover the whole method."""
     caplog.clear()
-    NuxeoClient._log_response(response(), 4096)
+    NuxeoClient._log_response(response(), limit_size=4096)
 
     assert caplog.records
     for record in caplog.records:
         assert record.levelname == "DEBUG"
         assert pattern in record.message
+
+
+def test_response_long(caplog):
+    """Test a long response that is not truncated."""
+    caplog.clear()
+    NuxeoClient._log_response(ResponseTextTooLong())
+
+    assert caplog.records
+    for record in caplog.records:
+        assert record.levelname == "DEBUG"
+        assert " [...] " not in record.message
 
 
 def test_response_with_logger_not_in_debug(caplog):
