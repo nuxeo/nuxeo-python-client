@@ -31,6 +31,7 @@ from .constants import (
     DEFAULT_API_PATH,
     DEFAULT_APP_NAME,
     DEFAULT_URL,
+    LOG_LIMIT_SIZE,
     MAX_RETRY,
     RETRY_BACKOFF_FACTOR,
     RETRY_METHODS,
@@ -277,7 +278,7 @@ class NuxeoClient(object):
                 raise self._handle_error(exc)
             resp = default
         else:
-            self._log_response(resp, self.chunk_size)
+            self._log_response(resp)
         finally:
             # Explicitly break a reference cycle
             exc = None
@@ -391,7 +392,7 @@ class NuxeoClient(object):
         return error
 
     @staticmethod
-    def _log_response(response, limit_size):
+    def _log_response(response, limit_size=LOG_LIMIT_SIZE):
         # type: (requests.Response, int) -> None
         """
         Log the server's response based on its content type.
@@ -408,7 +409,7 @@ class NuxeoClient(object):
         headers = response.headers
         content_type = headers.get("content-type", "application/octet-stream")
         content_size = int(headers.get("content-length", 0))
-        chunked = headers.get("Transfer-Encoding", "") == "chunked"
+        chunked = headers.get("transfer-encoding", "") == "chunked"
 
         if response.url.endswith("site/automation"):
             # This endpoint returns too many information and pollute logs.
@@ -418,35 +419,32 @@ class NuxeoClient(object):
             # This endpoint returns too many information and pollute logs.
             # Besides contents of this call are stored into the .server_info attr.
             content = "<CMIS details saved into the *server_info* attr>"
-        elif chunked:
-            # The data is returned by chunks, we cannot guess what it is.
-            content = "<chunked contents>"
-        elif content_size <= 0:
-            # response.content is empty when *void_op* is True,
-            # meaning we do not want to get back what we sent
-            # or the operation does not return anything by default
-            content = "<no content>"
-        elif not content_type.startswith("text") and "json" not in content_type:
+        elif not content_type.startswith("text") and "json" not in content_type and content_size:
             # The Content-Type is a binary one, but it does not contain JSON data
             # Skipped binary types are everything but "text/xxx":
             #   https://www.iana.org/assignments/media-types/media-types.xhtml
             content = "<binary data ({:,} bytes)>".format(content_size)
-        elif content_size <= limit_size:
+        elif chunked or content_size > 0:
             # At this point, we should only have text data not bigger than *limit_size*.
             # Do not use response.text as it will load the chardet module and its
             # heavy encoding detection mecanism. The server will only return UTF-8.
             # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
             try:
                 content = response.content.decode("utf-8", errors="replace")
+                content_size = len(content)
+                if content_size > limit_size:
+                    content = content[:limit_size]
+                    content = "{} [...] ({:,} bytes skipped)".format(content, content_size - limit_size)
             except (MemoryError, OverflowError):
                 # OverflowError: join() result is too long (in requests.models.content)
                 # Still check for memory errors, this should never happen; or else,
                 # it should be painless.
                 content = "<no enough memory ({:,} bytes)>".format(content_size)
         else:
-            # Here too, at this point, we should only have text data, but too much to display
-            # (maybe worth to remove that limit?)
-            content = "<too much text ({:,} bytes)>".format(content_size)
+            # response.content is empty when *void_op* is True,
+            # meaning we do not want to get back what we sent
+            # or the operation does not return anything by default
+            content = "<no content>"
 
         logger.debug(
             "Response from {!r}: {!r} with headers {!r} and cookies {!r}".format(

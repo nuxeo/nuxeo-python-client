@@ -14,6 +14,7 @@ Technical changes
 -----------------
 
 - ``Batch.complete()`` now handles additional parameters
+- Added nuxeo/constants.py::\ ``LOG_LIMIT_SIZE``
 - nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters
 
 2.4.4
