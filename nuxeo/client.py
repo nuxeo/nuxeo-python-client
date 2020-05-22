@@ -46,8 +46,8 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Dict, Optional, Text, Tuple, Type, Union  # noqa
-        from requests.auth import AuthBase  # noqa
+        from typing import Any, Dict, Optional, Text, Tuple, Type, Union
+        from requests.auth import AuthBase
 
         AuthType = Optional[Union[Tuple[Text, Text], AuthBase]]
 except ImportError:

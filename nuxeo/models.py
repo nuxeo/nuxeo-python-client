@@ -13,18 +13,17 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, BinaryIO, Dict, List, Optional, Text, Union  # noqa
-        from io import FileIO  # noqa
-        from .comments import API as CommentsAPI  # noqa
-        from .directories import API as DirectoriesAPI  # noqa
-        from .documents import API as DocumentsAPI  # noqa
-        from .endpoint import APIEndpoint  # noqa
-        from .groups import API as GroupsAPI  # noqa
-        from .operations import API as OperationsAPI  # noqa
-        from .tasks import API as TasksAPI  # noqa
-        from .uploads import API as UploadsAPI  # noqa
-        from .users import API as UsersAPI  # noqa
-        from .workflows import API as WorkflowsAPI  # noqa
+        from typing import Any, BinaryIO, Dict, List, Optional, Text, Union
+        from .comments import API as CommentsAPI
+        from .directories import API as DirectoriesAPI
+        from .documents import API as DocumentsAPI
+        from .endpoint import APIEndpoint
+        from .groups import API as GroupsAPI
+        from .operations import API as OperationsAPI
+        from .tasks import API as TasksAPI
+        from .uploads import API as UploadsAPI
+        from .users import API as UsersAPI
+        from .workflows import API as WorkflowsAPI
 except ImportError:
     pass
 

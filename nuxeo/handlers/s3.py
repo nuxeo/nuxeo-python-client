@@ -22,7 +22,7 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Dict, Generator, List, Set, Tuple  # noqa
+        from typing import Any, Dict, Generator, List, Tuple
 except ImportError:
     pass
 

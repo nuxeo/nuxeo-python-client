@@ -8,8 +8,8 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Dict, Optional, Text  # noqa
-        from .client import NuxeoClient  # noqa
+        from typing import Dict, Optional, Text
+        from .client import NuxeoClient
 except ImportError:
     pass
 

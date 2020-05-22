@@ -22,11 +22,12 @@ try:
             Text,
             Tuple,
             Union,
-        )  # noqa
-        from .client import NuxeoClient  # noqa
-        from .models import BufferBlob, FileBlob  # noqa
+        )
+        from .client import NuxeoClient
+        from .models import BufferBlob, FileBlob
+        from .handlers.default import Uploader
 
-        ActualBlob = Union[BufferBlob, FileBlob]  # noqa
+        ActualBlob = Union[BufferBlob, FileBlob]
 except ImportError:
     pass
 

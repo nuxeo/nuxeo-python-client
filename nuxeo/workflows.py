@@ -9,10 +9,10 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Union  # noqa
-        from .client import NuxeoClient  # noqa
-        from .models import Document, Task  # noqa
-        from .tasks import API as TasksAPI  # noqa
+        from typing import Any, Dict, List, Optional, Text
+        from .client import NuxeoClient
+        from .models import Document, Task
+        from .tasks import API as TasksAPI
 except ImportError:
     pass
 
