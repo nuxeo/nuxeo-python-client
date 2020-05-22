@@ -346,6 +346,11 @@ class API(APIEndpoint):
         Get fresh tokens for the given batch.
         The *Batch.extraInfo* dict will be updated inplace with the new data.
 
+        If the server is outdated and does not contain the refreshToken API, then
+        *Batch.extraInfo* will be returned to prevent a HTTP 404 error.
+        This is done on purpose and finally the ExpiredToken error will be raised
+        by boto3.
+
         This is a no-op when using the default upload provider.
 
         :param batch: the targeted batch
@@ -358,7 +363,13 @@ class API(APIEndpoint):
 
         if batch.provider:
             endpoint = "{}/{}/refreshToken".format(self.endpoint, batch.uid)
-            creds = self.client.request("POST", endpoint, **kwargs).json()
-            batch.extraInfo.update(**creds)
+            req = self.client.request("POST", endpoint, default=None, **kwargs)
+            if req:
+                creds = req.json()
+                batch.extraInfo.update(**creds)
+            else:
+                # Allow outdated servers (without the refreshToken API) to still work with S3.
+                # It will just end on a ExpiredToken error, but it is better than a 404 error.
+                creds = batch.extraInfo
 
         return creds

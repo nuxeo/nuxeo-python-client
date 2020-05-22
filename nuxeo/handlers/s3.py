@@ -8,9 +8,10 @@ import logging
 from datetime import datetime
 
 import boto3.session
+from botocore.session import get_session
 from botocore.client import Config
-from botocore.credentials import RefreshableCredentials
-
+from botocore.credentials import DeferredRefreshableCredentials
+from dateutil.tz import tzlocal
 
 from .default import Uploader
 from ..constants import UP_AMAZON_S3
@@ -45,22 +46,25 @@ class UploaderS3(Uploader):
 
         if not s3_client:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-multiprocessing
-            session = boto3.session.Session()
-            path_style = "path" if s3_info.get("usePathStyleAccess", False) else "auto"
 
-            # The session will be able to automatically refresh its tokens
-            session_credentials = RefreshableCredentials.create_from_metadata(
-                metadata=self._refresh_credentials(),
-                refresh_using=self._refresh_credentials,
-                method="sts-assume-role",
+            # The session will be able to automatically refresh credentials
+            creds = DeferredRefreshableCredentials(
+                self._refresh_credentials, "sts-assume-role",
             )
-            session._credentials = session_credentials
+            session = get_session()
+            session._credentials = creds
 
-            s3_client = session.client(
+            s3_client = boto3.Session(botocore_session=session).client(
                 "s3",
                 endpoint_url=s3_info.get("endpoint") or None,
-                region_name=s3_info["region"],
-                config=Config(s3={"addressing_style": path_style}),
+                config=Config(
+                    region_name=s3_info["region"],
+                    s3={
+                        "addressing_style": "path"
+                        if s3_info.get("usePathStyleAccess", False)
+                        else "auto"
+                    },
+                ),
             )
 
         self.s3_client = s3_client
@@ -73,7 +77,9 @@ class UploaderS3(Uploader):
             "access_key": data["awsSecretAccessKey"],
             "secret_key": data["awsSecretKeyId"],
             "token": data["awsSessionToken"],
-            "expiry_time": datetime.fromtimestamp(data["expiration"] / 1000).isoformat(),
+            "expiry_time": datetime.fromtimestamp(
+                data["expiration"] / 1000, tz=tzlocal()
+            ).isoformat(),
         }
 
     def upload(self):
