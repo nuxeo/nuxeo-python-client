@@ -11,10 +11,11 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Callable, Generator, Set, Text, Tuple, Union  # noqa
-        from .models import Batch, Blob, BufferBlob, FileBlob  # noqa
+        from typing import Any, Callable, Generator, Text, Tuple, Union
+        from ..models import Batch, Blob, BufferBlob, FileBlob
+        from ..uploads import API
 
-        ActualBlob = Union[BufferBlob, FileBlob]  # noqa
+        ActualBlob = Union[BufferBlob, FileBlob]
 except ImportError:
     pass
 

@@ -5,16 +5,16 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Text, Type, Union  # noqa
-        from requests import HTTPError  # noqa
+        from typing import Text, Type, Union
+        from requests import HTTPError
 except ImportError:
     pass
 
 try:
     from urllib.parse import quote, urlencode
 except ImportError:
-    from urllib2 import quote  # noqa
-    from urllib import urlencode  # noqa
+    from urllib2 import quote
+    from urllib import urlencode
 
 try:
     long = long
@@ -51,3 +51,14 @@ def get_text(data):
     if not isinstance(data, text):
         data = data.decode("utf-8")
     return data
+
+
+__all__ = (
+    "HTTPError",
+    "get_bytes",
+    "get_text",
+    "long",
+    "quote",
+    "text",
+    "urlencode",
+)

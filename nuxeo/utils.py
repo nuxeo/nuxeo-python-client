@@ -12,8 +12,8 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from _hashlib import HASH  # noqa
-        from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union  # noqa
+        from _hashlib import HASH
+        from typing import Any, Dict, List, Optional, Text, Tuple
 except ImportError:
     pass
 

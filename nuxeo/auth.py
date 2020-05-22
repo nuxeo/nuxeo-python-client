@@ -9,8 +9,8 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Text  # noqa
-        from requests import Request  # noqa
+        from typing import Text
+        from requests import Request
 except ImportError:
     pass
 

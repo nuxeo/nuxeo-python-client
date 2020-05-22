@@ -9,7 +9,7 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text  # noqa
+        from typing import Any, Dict, List, Optional, Text
 except ImportError:
     pass
 

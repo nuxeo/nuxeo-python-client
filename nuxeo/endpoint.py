@@ -9,9 +9,9 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from typing import Any, Dict, Optional, Text, Type, Union  # noqa
-        from .client import NuxeoClient  # noqa
-        from .models import Model  # noqa
+        from typing import Any, Dict, Optional, Text, Type
+        from .client import NuxeoClient
+        from .models import Model
 except ImportError:
     pass
 
