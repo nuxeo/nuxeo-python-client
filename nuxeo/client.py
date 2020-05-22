@@ -419,7 +419,11 @@ class NuxeoClient(object):
             # This endpoint returns too many information and pollute logs.
             # Besides contents of this call are stored into the .server_info attr.
             content = "<CMIS details saved into the *server_info* attr>"
-        elif not content_type.startswith("text") and "json" not in content_type and content_size:
+        elif (
+            not content_type.startswith("text")
+            and "json" not in content_type
+            and content_size
+        ):
             # The Content-Type is a binary one, but it does not contain JSON data
             # Skipped binary types are everything but "text/xxx":
             #   https://www.iana.org/assignments/media-types/media-types.xhtml
@@ -434,7 +438,9 @@ class NuxeoClient(object):
                 content_size = len(content)
                 if content_size > limit_size:
                     content = content[:limit_size]
-                    content = "{} [...] ({:,} bytes skipped)".format(content, content_size - limit_size)
+                    content = "{} [...] ({:,} bytes skipped)".format(
+                        content, content_size - limit_size
+                    )
             except (MemoryError, OverflowError):
                 # OverflowError: join() result is too long (in requests.models.content)
                 # Still check for memory errors, this should never happen; or else,
