@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import os
 
 import pytest
 import requests
@@ -135,19 +134,22 @@ def test_file_out(tmp_path, server):
     operation.params = {"name": "workspaces"}
     operation.input_obj = "/default-domain"
 
+    # Will be moved to "nonlocal" in  callback(), unlock_path() and lock_path()
+    # when Python 2 support will be dropped (NXPY-129)
+    global check_cb, check_lock, check_unlock
     check_cb = check_lock = check_unlock = 0
 
     def callback(path):
-        nonlocal check_cb
+        global check_cb
         check_cb += 1
 
     def unlock_path(path):
-        nonlocal check_unlock
+        global check_unlock
         check_unlock += 1
         return True
 
     def lock_path(path, locker):
-        nonlocal check_lock
+        global check_lock
         check_lock += 1
 
     file_out = operation.execute(
@@ -157,13 +159,11 @@ def test_file_out(tmp_path, server):
         unlock_path=unlock_path,
     )
 
-    try:
-        with open(file_out) as f:
-            file_content = json.loads(f.read())
-            resp_content = operation.execute()
-            assert file_content == resp_content
-    finally:
-        os.remove(file_out)
+    # str() will be removed when dropping Python 2 support (NXPY-129)
+    with open(str(file_out)) as f:
+        file_content = json.loads(f.read())
+        resp_content = operation.execute()
+        assert file_content == resp_content
 
     # Check callback and lock/unlock calls are unique
     assert check_cb == 1
@@ -176,26 +176,26 @@ def test_file_out_several_callbacks(tmp_path, server):
     operation.params = {"name": "workspaces"}
     operation.input_obj = "/default-domain"
 
+    # Will be moved to "nonlocal" in  callback1() and callback2() when Python 2 support will be dropped (NXPY-129)
+    global check1, check2
     check1 = check2 = 0
 
     def callback1(path):
-        nonlocal check1
+        global check1
         check1 += 1
 
     def callback2(path):
-        nonlocal check2
+        global check2
         check2 += 1
 
     callbacks = (callback1, callback2)
     file_out = operation.execute(file_out=tmp_path / "file_out", callback=callbacks)
 
-    try:
-        with open(file_out) as f:
-            file_content = json.loads(f.read())
-            resp_content = operation.execute()
-            assert file_content == resp_content
-    finally:
-        os.remove(file_out)
+    # str() will be removed when dropping Python 2 support (NXPY-129)
+    with open(str(file_out)) as f:
+        file_content = json.loads(f.read())
+        resp_content = operation.execute()
+        assert file_content == resp_content
 
     # Check callbacks calls are unique
     assert check1 == 1

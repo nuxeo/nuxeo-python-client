@@ -309,7 +309,8 @@ class API(APIEndpoint):
         if use_lock:
             locker = unlock_path(path)
         try:
-            with open(path, "ab") as f:
+            # str() will be removed when dropping Python 2 support (NXPY-129)
+            with open(str(path), "ab") as f:
                 chunk_size = kwargs.get("chunk_size", self.client.chunk_size)
                 for chunk in resp.iter_content(chunk_size=chunk_size):
                     # Check if synchronization thread was suspended
