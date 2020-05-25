@@ -114,7 +114,6 @@ def test_digester(tmp_path, hash, is_valid, server):
             assert text(e.value)
     finally:
         doc.delete()
-        os.remove(str(file_out))
 
 
 @pytest.mark.parametrize("chunked", [False, True])
@@ -293,10 +292,12 @@ def test_upload(tmp_path, chunked, server):
 
 @pytest.mark.parametrize("chunked", [False, True])
 def test_upload_several_callbacks(tmp_path, chunked, server):
+    # Will be moved to "nonlocal" in  callback1() when Python 2 support will be dropped (NXPY-129)
+    global check
     check = 0
 
     def callback1(upload):
-        nonlocal check
+        global check
         check += 1
 
     def callback2(upload):

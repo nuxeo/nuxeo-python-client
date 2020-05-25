@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from pathlib import Path
+from glob import glob
 from shutil import rmtree
 from subprocess import check_output
 
@@ -24,7 +24,7 @@ def test_packaged_files():
     rmtree("nuxeo.egg-info", ignore_errors=True)
 
     output = str(check_output(CMD))
-    for file in Path("nuxeo").glob("**/*.py"):
+    for file in glob("nuxeo/**/*.py"):
         assert str(file) in output
 
 

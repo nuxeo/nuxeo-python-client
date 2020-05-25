@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         python:
-          # - 2.7 (NXPY-167)
+          - 2.7
           # - 3.5 (NXPY-99)
           - 3.6
           - 3.7
