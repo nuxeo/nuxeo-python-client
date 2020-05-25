@@ -149,7 +149,7 @@ Setup
 
     git clone https://github.com/nuxeo/nuxeo-python-client
     cd nuxeo-python-client
-    python setup.py develop
+    python -m pip install -e ".[s3]"
 
 Test
 ~~~~
@@ -161,12 +161,6 @@ A Nuxeo Platform instance needs to be running on
 
     python -m pip install -U --user tox
     tox
-
-Tests can be launched without a server with Maven and tox:
-
-.. code:: shell
-
-    mvn -f ftest/pom.xml clean verify
 
 Sentry
 ======
