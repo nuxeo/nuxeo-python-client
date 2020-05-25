@@ -6,7 +6,7 @@ env:
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
 jobs:
-  unit-tests:
+  job:
     runs-on: ubuntu-latest
 
     services:
@@ -26,6 +26,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of SonarCloud reporting
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -38,3 +41,23 @@ jobs:
     - name: Unit tests
       # Run tox using the version of Python in `PATH`
       run: tox -e py
+
+    #- name: Fix coverage paths
+    #  run: |
+    #    # Replace absolute paths in the coverage file
+    #    sed -i 's/\(<package.*name="\).*\(nuxeo\)/\1\2/' coverage.xml
+    #    sed -i 's/\(filename="\).*\(nuxeo\)/\1\2/' coverage.xml
+
+    - name: Archive the coverage
+      uses: actions/upload-artifact@v1
+      with:
+        name: coverage-${{ matrix.python }}.xml
+        path: coverage.xml
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      with:
+        projectBaseDir: ${{ env.GITHUB_WORKSPACE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
