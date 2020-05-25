@@ -4,7 +4,7 @@ Client Library for Nuxeo API
 |Build Status| |Coverage| |Lines of code|
 
 The Nuxeo Python Client is a Python client library for the Nuxeo
-Automation and REST API. It works with both Python 2 and 3.
+Automation and REST API. It works with both Python 2.7 and 3.5+.
 
 This is an ongoing project, supported by Nuxeo.
 

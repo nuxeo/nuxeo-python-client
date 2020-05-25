@@ -168,7 +168,6 @@ def test_fetch_acls(server):
 
 def test_fetch_audit(server):
     with Doc(server) as doc:
-        # XXX: Replace with NuxeoDrive.WaitForElasticsearchCompletion
         time.sleep(1)
 
         audit = doc.fetch_audit()

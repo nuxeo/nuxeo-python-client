@@ -1,0 +1,40 @@
+name: Unit tests
+
+on: [pull_request]
+
+env:
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      nuxeo:
+        image: nuxeo/nuxeo:master
+        ports:
+          - 8080:8080
+
+    strategy:
+      matrix:
+        python:
+          # - 2.7 (NXPY-167)
+          # - 3.5 (NXPY-99)
+          - 3.6
+          - 3.7
+          - 3.8
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+
+    - name: Install dependencies
+      run: python -m pip install -U pip tox
+
+    - name: Unit tests
+      # Run tox using the version of Python in `PATH`
+      run: tox -e py
