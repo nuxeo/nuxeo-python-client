@@ -10,6 +10,7 @@ Release date: ``2020-xx-xx``
 - `NXPY-145 <https://jira.nuxeo.com/browse/NXPY-145>`__: Detect and log appropriate debug info when the transfer if chunked
 - `NXPY-163 <https://jira.nuxeo.com/browse/NXPY-163>`__: Add the capability to refresh tokens in third-party batch handlers
 - `NXPY-164 <https://jira.nuxeo.com/browse/NXPY-164>`__: Clean-up code smells found by Sourcery
+- `NXPY-166 <https://jira.nuxeo.com/browse/NXPY-166>`__: Move to GitHub Actions for testing
 
 Technical changes
 -----------------
