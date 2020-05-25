@@ -6,6 +6,7 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
+- `NXPY-99 <https://jira.nuxeo.com/browse/NXPY-99>`__: Fix errors in tests with Python 3.5
 - `NXPY-159 <https://jira.nuxeo.com/browse/NXPY-159>`__: Allow to pass additional arguments to ``Batch.complete()``
 - `NXPY-145 <https://jira.nuxeo.com/browse/NXPY-145>`__: Detect and log appropriate debug info when the transfer if chunked
 - `NXPY-163 <https://jira.nuxeo.com/browse/NXPY-163>`__: Add the capability to refresh tokens in third-party batch handlers
