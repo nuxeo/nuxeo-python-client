@@ -1,7 +1,7 @@
 Client Library for Nuxeo API
 ----------------------------
 
-|Build Status| |Coverage| |Lines of code|
+|Build Status| |Quality|
 
 The Nuxeo Python Client is a Python client library for the Nuxeo
 Automation and REST API. It works with both Python 2.7 and 3.5+.
@@ -232,11 +232,8 @@ including Verizon, Electronic Arts, Sharp, FICO, the U.S. Navy, and
 Boeing. Nuxeo is headquartered in New York and Paris. More information
 is available at `www.nuxeo.com <http://www.nuxeo.com/>`__.
 
-.. |Build Status| image:: https://qa.nuxeo.org/jenkins/buildStatus/icon?job=Client/nuxeo-python-client-master&style=flat
-   :target: https://qa.nuxeo.org/jenkins/job/Client/job/nuxeo-python-client-master/
+.. |Build Status| image:: https://github.com/nuxeo/nuxeo-python-client/workflows/Unit%20tests/badge.svg
+   :target: https://github.com/nuxeo/nuxeo-python-client/actions?query=workflow%3A%22Unit+tests%22
 
-.. |Coverage| image:: https://sonarcloud.io/api/project_badges/measure?project=org.nuxeo:nuxeo-python-client&metric=coverage
-   :target: https://sonarcloud.io/dashboard?id=org.nuxeo%3Anuxeo-python-client
-
-.. |Lines of code| image:: https://sonarcloud.io/api/project_badges/measure?project=org.nuxeo:nuxeo-python-client&metric=ncloc
-   :target: https://sonarcloud.io/dashboard?id=org.nuxeo%3Anuxeo-python-client
+.. |Quality| image:: https://github.com/nuxeo/nuxeo-python-client/workflows/Code%20quality/badge.svg
+   :target: https://github.com/nuxeo/nuxeo-python-client/actions?query=workflow%3A%22Code+quality%22
