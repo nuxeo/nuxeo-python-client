@@ -254,10 +254,8 @@ def test_max_retry(caplog, retry_server, method):
 
 
 def test_server_info(server):
+    server.client._server_info = None
     server_info = server.client.server_info
-
-    # At start, no server information
-    assert server.client._server_info is None
 
     # First call
     assert server_info()
