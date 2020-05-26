@@ -506,3 +506,12 @@ class Nuxeo(object):
         self.documents = documents.API(
             self.client, self.operations, self.workflows, self.comments
         )
+
+    def __repr__(self):
+        # type: () -> Text
+        fmt = "{name}<client={cls.client!r}>"
+        return fmt.format(name=type(self).__name__, cls=self)
+
+    def __str__(self):
+        # type: () -> Text
+        return repr(self)
