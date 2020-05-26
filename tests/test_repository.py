@@ -10,6 +10,7 @@ from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
+from . import version_lt
 
 
 class Doc(object):
@@ -231,7 +232,8 @@ def test_locking(server):
         assert doc.is_locked()
 
         # Double locking with the same user should work if the server has NXP-24359
-        doc.lock()
+        if not version_lt(server.client.server_version, "11.1"):
+            doc.lock()
 
         doc.unlock()
         assert not doc.is_locked()

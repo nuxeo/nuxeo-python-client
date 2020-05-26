@@ -123,7 +123,7 @@ def test_get_digester(hash, digester):
         ("foo.unknown", "application/octet-stream"),
         ("foo.rvt", "application/octet-stream"),
         # Cases badly handled by Windows
-        # See /NXP-11660 http://bugs.python.org/issue15207
+        # See NXP-11660 http://bugs.python.org/issue15207
         ("foo.xml", ("text/xml", "application/xml")),
         ("foo.svg", ("image/svg+xml", "application/octet-stream", "image/svg+xml")),
         ("foo.flv", ("application/octet-stream", "video/x-flv")),
