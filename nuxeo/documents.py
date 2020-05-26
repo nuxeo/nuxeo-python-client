@@ -124,8 +124,7 @@ class API(APIEndpoint):
         :param text: the content of the comment
         :return: the comment
         """
-        obj = Comment(parentId=uid, text=text)
-        return self.comments_api.post(obj)
+        return self.comments_api.create(uid, text)
 
     def comments(self, uid, params=None):
         # type: (Text, Any) -> List[Comment]
@@ -137,15 +136,7 @@ class API(APIEndpoint):
         :param uid: the ID of the document
         :return: the list of comments
         """
-        path = "id/{}/@comment".format(uid)
-
-        # Adding "&fetch-comment=repliesSummary" to the URL to retrieve replies number as well
-        kwargs = {"fetch-comment": "repliesSummary"}
-        if isinstance(params, dict):
-            kwargs.update(params)
-
-        with SwapAttr(self.comments_api, "endpoint", self.endpoint):
-            return super(CommentsAPI, self.comments_api).get(path=path, params=kwargs)
+        return self.comments_api.get(uid, params=params)
 
     def convert(self, uid, options):
         # type: (Text, Dict[Text, Text]) -> Union[Text, Dict[Text, Any]]

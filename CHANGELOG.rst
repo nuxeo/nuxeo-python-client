@@ -12,6 +12,7 @@ Release date: ``2020-xx-xx``
 - `NXPY-164 <https://jira.nuxeo.com/browse/NXPY-164>`__: Clean-up code smells found by Sourcery
 - `NXPY-166 <https://jira.nuxeo.com/browse/NXPY-166>`__: Move to GitHub Actions for testing
 - `NXPY-167 <https://jira.nuxeo.com/browse/NXPY-167>`__: Enable back Python 2.7 tests (+ fixes)
+- `NXPY-168 <https://jira.nuxeo.com/browse/NXPY-168>`__: Rework Comments handling to work on all supported Nuxeo versions
 
 Technical changes
 -----------------
@@ -19,6 +20,11 @@ Technical changes
 - ``Batch.complete()`` now handles additional parameters
 - Added nuxeo/constants.py::\ ``LOG_LIMIT_SIZE``
 - nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters
+- Added ``docuid`` argument to nuxeo/comments.py::\ ``API.get()``
+- Added ``params`` keyword argument to nuxeo/comments.py::\ ``API.get()``
+- Changed ``uid`` from positional argument to keyword argument in nuxeo/comments.py::\ ``API.get()``
+- Added ``docuid`` argument to nuxeo/comments.py::\ ``API.post()``
+- Changed ``comment (Comment)`` argument of nuxeo/comments.py::\ ``API.post()`` to ``text (str)``
 - Added nuxeo/uploads.py::\ ``API.refresh_token()``
 
 2.4.4

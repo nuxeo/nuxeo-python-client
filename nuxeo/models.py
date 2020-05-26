@@ -352,7 +352,7 @@ class Comment(Model):
         # type: (Text) -> Comment
         """ Add a reply to the comment. """
         # Add the reply
-        reply_comment = self.service.post(Comment(parentId=self.uid, text=text))
+        reply_comment = self.service.post(self.uid, text)
 
         # Update comment attributes
         self.numberOfReplies += 1
