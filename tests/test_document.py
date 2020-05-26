@@ -8,6 +8,7 @@ from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import SwapAttr
 
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
+from . import version_lt
 
 
 class Doc(object):
@@ -185,6 +186,9 @@ def test_add_permission(server):
 
 def test_document_comment(server):
     """Test the Document.comment() method, it is a simple helper."""
+    if version_lt(server.client.server_version, "10.3"):
+        pytest.skip("Nuxeo 10.3 minimum")
+
     doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
     doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
@@ -207,6 +211,9 @@ def test_document_comment(server):
 
 def test_comments_with_params(server):
     """Test GET parameters that allow to retrieve partial list of comments."""
+    if version_lt(server.client.server_version, "10.3"):
+        pytest.skip("Nuxeo 10.3 minimum")
+
     doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
     doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:

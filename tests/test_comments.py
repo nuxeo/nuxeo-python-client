@@ -1,9 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import pytest
 from nuxeo.models import Comment, Document
 
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT
+from . import version_lt
 
 document = Document(
     name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}
@@ -11,6 +13,9 @@ document = Document(
 
 
 def test_crud(server):
+    if version_lt(server.client.server_version, "10.3"):
+        pytest.skip("Nuxeo 10.3 minimum")
+
     doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
         # At first, the document has no comment
@@ -46,11 +51,15 @@ def test_crud(server):
 
 
 def test_reply(server):
+    if version_lt(server.client.server_version, "10.3"):
+        pytest.skip("Nuxeo 10.3 minimum")
+
     doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
         # Create a comment for that document
         new_comment = Comment(parentId=doc.uid, text="This is my comment")
         comment = server.comments.create(new_comment)
+        assert not comment.has_replies()
 
         # Add a 1st reply to that comment
         reply1 = comment.reply("This is my reply comment")
