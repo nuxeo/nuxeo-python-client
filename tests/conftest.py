@@ -76,6 +76,10 @@ def server():
     # But we will test that particular feature in one specific test.
     server.client.disable_retry()
 
+    # Coverage
+    assert repr(server)
+    assert str(server)
+
     return server
 
 
