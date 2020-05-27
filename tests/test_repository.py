@@ -8,9 +8,9 @@ import pytest
 from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
+from nuxeo.utils import version_lt
 
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
-from . import version_lt
 
 
 class Doc(object):

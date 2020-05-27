@@ -5,7 +5,9 @@ import hashlib
 import logging
 import mimetypes
 import sys
+from distutils.version import StrictVersion
 
+from nuxeo.compat import lru_cache
 from nuxeo.constants import UP_AMAZON_S3
 
 try:
@@ -13,7 +15,7 @@ try:
 
     if TYPE_CHECKING:
         from _hashlib import HASH
-        from typing import Any, Dict, List, Optional, Text, Tuple
+        from typing import Any, Dict, List, Optional, Text, Tuple, Union
 except ImportError:
     pass
 
@@ -67,6 +69,23 @@ def chunk_partition(file_size, desired_chunk_size, handler=""):
         )
 
     return chunk_count, chunk_size
+
+
+def cmp(a, b):
+    # type: (Union[None, Text, StrictVersion], Union[None, Text, StrictVersion]) -> int
+    """
+    cmp() does not exist anymore in Python 3.
+    Note: this function cannot be decorated with lru_cache() because when
+    *a* or *b* is a *StrictVersion* object, it is not hashable.
+    And callers are cached anyway.
+    """
+    if a is None:
+        if b is None:
+            return 0
+        return -1
+    if b is None:
+        return 1
+    return (a > b) - (a < b)
 
 
 def get_digest_algorithm(digest):
@@ -163,6 +182,117 @@ def log_chunk_details(chunk_count, chunk_size, uploaded_chunks, blob_size):
         chunk_count, chunk_size, uploaded_chunks_count, uploaded_data_length
     )
     logger.debug(details)
+
+
+@lru_cache(maxsize=128)
+def version_compare(x, y):
+    # type: (Text, Text) -> int
+    """
+    Compare version numbers using the usual x.y.z pattern.
+    For instance, will result in:
+        - 5.9.3 > 5.9.2
+        - 5.9.3 > 5.8
+        - 5.8 > 5.6.0
+        - 5.10 > 5.1.2
+        - 1.3.0524 > 1.3.0424
+        - 1.4 > 1.3.0524
+        - ...
+    Also handles snapshots and hotfixes:
+        - 5.9.4-SNAPSHOT > 5.9.3-SNAPSHOT
+        - 5.9.4-SNAPSHOT > 5.9.3
+        - 5.9.4-SNAPSHOT < 5.9.4
+        - 5.9.4-SNAPSHOT < 5.9.5
+        - 5.8.0-HF15 > 5.8
+        - 5.8.0-HF15 > 5.7.1-SNAPSHOT
+        - 5.8.0-HF15 < 5.9.1
+        - 5.8.0-HF15 > 5.8.0-HF14
+        - 5.8.0-HF15 > 5.6.0-HF35
+        - 5.8.0-HF15 < 5.10.0-HF01
+        - 5.8.0-HF15-SNAPSHOT > 5.8
+        - 5.8.0-HF15-SNAPSHOT > 5.8.0-HF14-SNAPSHOT
+        - 5.8.0-HF15-SNAPSHOT > 5.8.0-HF14
+        - 5.8.0-HF15-SNAPSHOT < 5.8.0-HF15
+        - 5.8.0-HF15-SNAPSHOT < 5.8.0-HF16-SNAPSHOT
+    """
+
+    # Handle None values
+    if not all((x, y)):
+        return cmp(x, y)
+
+    ret = (-1, 1)
+
+    x_numbers = x.split(".")
+    y_numbers = y.split(".")
+    while x_numbers and y_numbers:
+        x_part = x_numbers.pop(0)
+        y_part = y_numbers.pop(0)
+
+        # Handle hotfixes
+        if "HF" in x_part:
+            hf = x_part.replace("-HF", ".").split(".", 1)
+            x_part = hf[0]
+            x_numbers.append(hf[1])
+        if "HF" in y_part:
+            hf = y_part.replace("-HF", ".").split(".", 1)
+            y_part = hf[0]
+            y_numbers.append(hf[1])
+
+        # Handle snapshots
+        x_snapshot = "SNAPSHOT" in x_part
+        y_snapshot = "SNAPSHOT" in y_part
+        if not x_snapshot and y_snapshot:
+            # y is snapshot, x is not
+            x_number = int(x_part)
+            y_number = int(y_part.replace("-SNAPSHOT", ""))
+            return ret[y_number <= x_number]
+        elif not y_snapshot and x_snapshot:
+            # x is snapshot, y is not
+            x_number = int(x_part.replace("-SNAPSHOT", ""))
+            y_number = int(y_part)
+            return ret[x_number > y_number]
+
+        x_number = int(x_part.replace("-SNAPSHOT", ""))
+        y_number = int(y_part.replace("-SNAPSHOT", ""))
+        if x_number != y_number:
+            return ret[x_number - y_number > 0]
+
+    if x_numbers:
+        return 1
+    if y_numbers:
+        return -1
+
+    return 0
+
+
+@lru_cache(maxsize=128)
+def version_compare_client(x, y):
+    # type: (Text, Text) -> int
+    """ Try to compare SemVer and fallback to version_compare on error. """
+
+    # Ignore date based versions, they will be treated as normal versions
+    if x and "-I" in x:
+        x = x.split("-")[0]
+    if y and "-I" in y:
+        y = y.split("-")[0]
+
+    try:
+        return cmp(StrictVersion(x), StrictVersion(y))
+    except (AttributeError, ValueError):
+        return version_compare(x, y)
+
+
+@lru_cache(maxsize=128)
+def version_le(x, y):
+    # type: (Text, Text) -> bool
+    """ x <= y """
+    return version_compare_client(x, y) <= 0
+
+
+@lru_cache(maxsize=128)
+def version_lt(x, y):
+    # type: (Text, Text) -> bool
+    """ x < y """
+    return version_compare_client(x, y) < 0
 
 
 class SwapAttr(object):

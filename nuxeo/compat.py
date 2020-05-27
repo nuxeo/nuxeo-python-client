@@ -2,6 +2,11 @@
 from __future__ import unicode_literals
 
 try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
+
+try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
@@ -58,6 +63,7 @@ __all__ = (
     "get_bytes",
     "get_text",
     "long",
+    "lru_cache",
     "quote",
     "text",
     "urlencode",
