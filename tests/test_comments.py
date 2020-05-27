@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 
 import pytest
 from nuxeo.models import Comment, Document
+from nuxeo.utils import version_lt
 
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT
-from . import version_lt
 
 document = Document(
     name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}

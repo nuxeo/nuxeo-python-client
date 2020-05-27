@@ -25,7 +25,13 @@ Technical changes
 - Changed ``uid`` from positional argument to keyword argument in nuxeo/comments.py::\ ``API.get()``
 - Added ``docuid`` argument to nuxeo/comments.py::\ ``API.post()``
 - Changed ``comment (Comment)`` argument of nuxeo/comments.py::\ ``API.post()`` to ``text (str)``
+- Added nuxeo/compat.py::\ ``lru_cache()``
 - Added nuxeo/uploads.py::\ ``API.refresh_token()``
+- Added nuxeo/utils.py::\ ``cmp()``
+- Added nuxeo/utils.py::\ ``version_compare()``
+- Added nuxeo/utils.py::\ ``version_compare_client()``
+- Added nuxeo/utils.py::\ ``version_le()``
+- Added nuxeo/utils.py::\ ``version_lt()``
 
 2.4.4
 -----
