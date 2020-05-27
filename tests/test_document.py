@@ -5,10 +5,9 @@ import nuxeo.constants
 import pytest
 from nuxeo.compat import get_bytes
 from nuxeo.models import BufferBlob, Document
-from nuxeo.utils import SwapAttr
+from nuxeo.utils import SwapAttr, version_lt
 
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
-from . import version_lt
 
 
 class Doc(object):
@@ -179,6 +178,9 @@ def test_follow_transition(server):
 
 
 def test_add_permission(server):
+    if version_lt(server.client.server_version, "10.10"):
+        pytest.skip("Nuxeo 10.10 minimum")
+
     with SwapAttr(nuxeo.constants, "CHECK_PARAMS", True), Doc(server) as doc:
         # NXPY-84: here we should not fail with KeyError: 'list' in check_params()
         doc.add_permission({"permission": "ReadWrite", "users": ["Administrator"]})
