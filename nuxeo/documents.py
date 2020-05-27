@@ -5,7 +5,7 @@ from .comments import API as CommentsAPI
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery, HTTPError, UnavailableConvertor
 from .models import Comment, Document
-from .utils import SwapAttr
+from .utils import SwapAttr, version_lt
 from .workflows import API as WorkflowsAPI
 
 try:
@@ -358,6 +358,14 @@ class API(APIEndpoint):
 
         :param uid: the uid of the document
         """
+        if version_lt(self.client.server_version, "10.2"):
+            input_obj = "doc:" + uid
+            res_obj = self.operations.execute(
+                command="Document.SetLifeCycle", input_obj=input_obj, value="delete"
+            )
+            res_obj["isTrashed"] = res_obj["state"] == "deleted"
+            return res_obj
+
         return self.operations.execute(command="Document.Trash", input_obj=uid)
 
     def unlock(self, uid):
@@ -372,6 +380,14 @@ class API(APIEndpoint):
 
         :param uid: the uid of the document
         """
+        if version_lt(self.client.server_version, "10.2"):
+            input_obj = "doc:" + uid
+            res_obj = self.operations.execute(
+                command="Document.SetLifeCycle", input_obj=input_obj, value="undelete"
+            )
+            res_obj["isTrashed"] = res_obj["state"] == "deleted"
+            return res_obj
+
         return self.operations.execute(command="Document.Untrash", input_obj=uid)
 
     def workflows(self, document):
