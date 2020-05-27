@@ -31,6 +31,10 @@ RETRY_BACKOFF_FACTOR = 1
 RETRY_METHODS = frozenset(["GET", "POST", "PUT", "DELETE"])
 
 # HTTP status code to handle for retries
+# 425 Too Early
+# 500 Internal Server Error
+# 503 Service Unavailable
+# 504 Gateway Timeout
 RETRY_STATUS_CODES = [429, 500, 503, 504]
 
 # Connection and read timeout, in seconds

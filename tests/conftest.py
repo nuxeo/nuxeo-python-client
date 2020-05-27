@@ -72,10 +72,6 @@ def server():
     )
     server.client.set(schemas=["dublincore"])
 
-    # We do not need the retry feature in tests as it breaks too many uploads tests.
-    # But we will test that particular feature in one specific test.
-    server.client.disable_retry()
-
     # Coverage
     assert repr(server)
     assert str(server)
