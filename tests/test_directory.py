@@ -5,6 +5,7 @@ from functools import partial
 import pytest
 from nuxeo.exceptions import BadQuery
 from nuxeo.models import DirectoryEntry
+from nuxeo.utils import version_lt
 
 
 def test_create_wrong_arguments(directory):
@@ -57,6 +58,9 @@ def test_fetch_unknown(directory):
 
 
 def test_additionnal_params(server):
+    if version_lt(server.client.server_version, "10.2"):
+        pytest.skip("Nuxeo 10.2 minimum (NXP-21078)")
+
     func = partial(server.directories.get, "nature")
 
     # The number of returned entries is configured by the querySizeLimit parameters on the server (50 by default)
