@@ -28,7 +28,7 @@ jobs:
           - 8080:8080
         # Set health checks to wait for hotfixes installation
         options: >-
-          --health-cmd "curl -f -s http://localhost:8080"
+          --health-cmd "curl -f -s http://localhost:8080/nuxeo/runningstatus"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 60
