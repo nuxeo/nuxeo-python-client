@@ -75,32 +75,26 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
 
     blob = FileBlob(str(file_in))
 
-    try:
-        # Simulate a new single upload
-        uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
+    # Simulate a new single upload
+    uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
 
-        # Create a bucket
-        uploader.s3_client.create_bucket(Bucket=bucket)
+    # Create a bucket
+    uploader.s3_client.create_bucket(Bucket=bucket)
 
-        assert uploader.chunk_count == 1
-        uploader.upload()
-        assert uploader.is_complete()
-        assert uploader.batch.etag is not None
+    assert uploader.chunk_count == 1
+    uploader.upload()
+    assert uploader.is_complete()
+    assert uploader.batch.etag is not None
 
-        # Complete the upload
-        batch.service = server.uploads
-        # Simple check for additional arguments
-        with pytest.raises(requests.exceptions.ReadTimeout):
-            batch.complete(timeout=(0.000001, 0.000001))
-        # This will not work as there is no real
-        # batch ID existant. This is only to have a better coverage.
-        with pytest.raises(HTTPError):
-            batch.complete()
-    finally:
-        try:
-            os.remove(str(file_in))
-        except OSError:
-            pass
+    # Complete the upload
+    batch.service = server.uploads
+    # Simple check for additional arguments
+    with pytest.raises(requests.exceptions.ConnectionError) as exc:
+        batch.complete(timeout=(0.000001, 0.000001))
+    # This will not work as there is no real
+    # batch ID existant. This is only to have a better coverage.
+    with pytest.raises(HTTPError):
+        batch.complete()
 
 
 def test_upload_not_chunked_error(tmp_path, batch, bucket, server, s3):
@@ -119,15 +113,9 @@ def test_upload_not_chunked_error(tmp_path, batch, bucket, server, s3):
     uploader.s3_client.create_bucket(Bucket=bucket)
 
     with SwapAttr(uploader.s3_client, "put_object", put_object):
-        try:
-            with pytest.raises(UploadError):
-                uploader.upload()
-            assert uploader.batch.etag is None
-        finally:
-            try:
-                os.remove(str(file_in))
-            except OSError:
-                pass
+        with pytest.raises(UploadError):
+            uploader.upload()
+        assert uploader.batch.etag is None
 
 
 def test_upload_chunked(tmp_path, s3, batch, server):
@@ -148,20 +136,14 @@ def test_upload_chunked(tmp_path, s3, batch, server):
             server.uploads, batch, blob, 256 * 1024, s3_client=s3, callback=callbacks
         )
 
-    try:
-        # Simulate a chunked upload
-        uploader = get_uploader()
-        assert uploader.chunk_count == 2
-        assert uploader._data_packs == []
-        assert len(uploader.blob.uploadedChunkIds) == 0
-        uploader.upload()
-        assert uploader.is_complete()
-        assert uploader.batch.etag is not None
-    finally:
-        try:
-            os.remove(str(file_in))
-        except OSError:
-            pass
+    # Simulate a chunked upload
+    uploader = get_uploader()
+    assert uploader.chunk_count == 2
+    assert uploader._data_packs == []
+    assert len(uploader.blob.uploadedChunkIds) == 0
+    uploader.upload()
+    assert uploader.is_complete()
+    assert uploader.batch.etag is not None
 
 
 def test_upload_chunked_resume(tmp_path, s3, batch, server):
@@ -176,53 +158,47 @@ def test_upload_chunked_resume(tmp_path, s3, batch, server):
             server.uploads, batch, blob, 5 * MiB, s3_client=s3, max_parts=2
         )
 
-    try:
-        # Simulate a new upload that will fail
-        uploader = get_uploader()
-        assert uploader.chunk_count == 5
-        assert uploader._data_packs == []
-        assert len(uploader.blob.uploadedChunkIds) == 0
+    # Simulate a new upload that will fail
+    uploader = get_uploader()
+    assert uploader.chunk_count == 5
+    assert uploader._data_packs == []
+    assert len(uploader.blob.uploadedChunkIds) == 0
 
-        iterator = uploader.iter_upload()
+    iterator = uploader.iter_upload()
 
-        # Upload 4 parts (out of 5) and then fail
-        uploaded_parts = []
-        for part in range(1, 5):
-            next(iterator)
-            uploaded_parts.append(part)
-            assert uploader.blob.uploadedChunkIds == uploaded_parts
-            assert len(uploader._data_packs) == len(uploaded_parts)
-            for data_pack in uploader._data_packs:
-                assert isinstance(data_pack, dict)
-                assert data_pack["PartNumber"] in uploaded_parts
-                assert "ETag" in data_pack
-            assert not uploader.is_complete()
-            assert uploader.batch.etag is None
+    # Upload 4 parts (out of 5) and then fail
+    uploaded_parts = []
+    for part in range(1, 5):
+        next(iterator)
+        uploaded_parts.append(part)
+        assert uploader.blob.uploadedChunkIds == uploaded_parts
+        assert len(uploader._data_packs) == len(uploaded_parts)
+        for data_pack in uploader._data_packs:
+            assert isinstance(data_pack, dict)
+            assert data_pack["PartNumber"] in uploaded_parts
+            assert "ETag" in data_pack
+        assert not uploader.is_complete()
+        assert uploader.batch.etag is None
 
-        # Ask for new tokens, the upload should continue without issue
-        # TODO: cannot be tested until using a real server configured with S3
-        # old_info = batch.extraInfo.copy()
-        # uploader.refresh_token()
-        # new_info = batch.extraInfo.copy()
-        # for key in ("awsSecretKeyId", "awsSecretAccessKey", "awsSessionToken"):
-        #     assert old_info[key] != new_info[key]
-        # assert old_info["expiration"] <= new_info["expiration"]
+    # Ask for new tokens, the upload should continue without issue
+    # TODO: cannot be tested until using a real server configured with S3
+    # old_info = batch.extraInfo.copy()
+    # uploader.refresh_token()
+    # new_info = batch.extraInfo.copy()
+    # for key in ("awsSecretKeyId", "awsSecretAccessKey", "awsSessionToken"):
+    #     assert old_info[key] != new_info[key]
+    # assert old_info["expiration"] <= new_info["expiration"]
 
-        # Simulate a resume of the same upload, it should succeed
-        # (AWS details are stored into the *batch* object, that's why it works)
-        uploader = get_uploader()
-        assert uploader.chunk_count == 5
-        assert len(uploader._data_packs) == 4
-        assert uploader.blob.uploadedChunkIds == [1, 2, 3, 4]
-        uploader.upload()
-        assert uploader.blob.uploadedChunkIds == [1, 2, 3, 4, 5]
-        assert uploader.is_complete()
-        assert uploader.batch.etag is not None
-    finally:
-        try:
-            os.remove(str(file_in))
-        except OSError:
-            pass
+    # Simulate a resume of the same upload, it should succeed
+    # (AWS details are stored into the *batch* object, that's why it works)
+    uploader = get_uploader()
+    assert uploader.chunk_count == 5
+    assert len(uploader._data_packs) == 4
+    assert uploader.blob.uploadedChunkIds == [1, 2, 3, 4]
+    uploader.upload()
+    assert uploader.blob.uploadedChunkIds == [1, 2, 3, 4, 5]
+    assert uploader.is_complete()
+    assert uploader.batch.etag is not None
 
 
 def test_upload_chunked_error(tmp_path, s3, batch, server):
@@ -237,29 +213,23 @@ def test_upload_chunked_error(tmp_path, s3, batch, server):
     def get_uploader():
         return ChunkUploaderS3(server.uploads, batch, blob, 256 * 1024, s3_client=s3)
 
-    try:
-        # Simulate a new upload that failed at after the first uploaded part
-        uploader = get_uploader()
-        assert uploader.chunk_count == 2
-        assert uploader._data_packs == []
-        assert len(uploader.blob.uploadedChunkIds) == 0
+    # Simulate a new upload that failed at after the first uploaded part
+    uploader = get_uploader()
+    assert uploader.chunk_count == 2
+    assert uploader._data_packs == []
+    assert len(uploader.blob.uploadedChunkIds) == 0
 
-        iterator = uploader.iter_upload()
+    iterator = uploader.iter_upload()
 
-        with SwapAttr(uploader.s3_client, "upload_part", upload_part):
-            with pytest.raises(UploadError):
-                next(iterator)
-        assert not uploader.is_complete()
+    with SwapAttr(uploader.s3_client, "upload_part", upload_part):
+        with pytest.raises(UploadError):
+            next(iterator)
+    assert not uploader.is_complete()
 
-        # Retry should work
-        uploader.upload()
-        assert uploader.is_complete()
-        assert uploader.batch.etag is not None
-    finally:
-        try:
-            os.remove(str(file_in))
-        except OSError:
-            pass
+    # Retry should work
+    uploader.upload()
+    assert uploader.is_complete()
+    assert uploader.batch.etag is not None
 
 
 def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
