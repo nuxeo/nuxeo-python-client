@@ -120,6 +120,7 @@ class NuxeoClient(object):
             backoff_factor=RETRY_BACKOFF_FACTOR,
             method_whitelist=RETRY_METHODS,
             status_forcelist=RETRY_STATUS_CODES,
+            raise_on_status=False,
         )
 
         # Install the retries mecanism

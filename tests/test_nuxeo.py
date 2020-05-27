@@ -6,7 +6,7 @@ import logging
 
 import pytest
 import requests
-from requests.exceptions import ConnectionError, ReadTimeout
+from requests.exceptions import ConnectionError
 
 from nuxeo import constants
 from nuxeo.auth import TokenAuth
@@ -215,10 +215,12 @@ def test_operation_default(server):
 
 
 def test_operation_command_with_timeout(server):
-    with pytest.raises(ReadTimeout):
+    with pytest.raises(ConnectionError) as exc:
         server.operations.execute(
             command="Document.Create", type="File", check_params=True, timeout=0.0001
         )
+    error = text(exc.value)
+    assert "timed out" in error
 
 
 def test_post_default(server):

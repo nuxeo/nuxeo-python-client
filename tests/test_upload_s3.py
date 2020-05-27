@@ -11,6 +11,7 @@ import boto3
 import pytest
 import requests.exceptions
 from moto import mock_s3
+from nuxeo.compat import text
 from nuxeo.constants import UP_AMAZON_S3
 from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
@@ -91,6 +92,9 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
     # Simple check for additional arguments
     with pytest.raises(requests.exceptions.ConnectionError) as exc:
         batch.complete(timeout=(0.000001, 0.000001))
+    error = text(exc.value)
+    assert "timed out" in error
+
     # This will not work as there is no real
     # batch ID existant. This is only to have a better coverage.
     with pytest.raises(HTTPError):

@@ -367,17 +367,20 @@ def test_upload_error(tmp_path, server):
     uploader = batch.get_uploader(blob, chunked=True, chunk_size=256 * 1024)
     gen = uploader.iter_upload()
 
+    # Upload chunks 0 and 1
     next(gen)
     next(gen)
+
+    # Retry the chunk 0, it should end on a error
     backup = uploader._to_upload
     uploader._to_upload = [0]
     with pytest.raises(UploadError) as e:
         next(gen)
     assert e.value
     assert "already exists" in e.value.info
-    uploader._to_upload = backup
 
-    # Finish the upload
+    # Finish the upload, it must succeed
+    uploader._to_upload = backup
     list(uploader.iter_upload())
 
 
