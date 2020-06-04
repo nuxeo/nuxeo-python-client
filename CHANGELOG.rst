@@ -14,13 +14,16 @@ Release date: ``2020-xx-xx``
 - `NXPY-167 <https://jira.nuxeo.com/browse/NXPY-167>`__: Enable back Python 2.7 tests (+ fixes)
 - `NXPY-168 <https://jira.nuxeo.com/browse/NXPY-168>`__: Rework Comments handling to work on all supported Nuxeo versions
 - `NXPY-169 <https://jira.nuxeo.com/browse/NXPY-169>`__: Fix errors to fully re-support Nuxeo 9.10
+- `NXPY-171 <https://jira.nuxeo.com/browse/NXPY-171>`__: Set the timeout for uploads using the default handler
 
 Technical changes
 -----------------
 
 - ``Batch.complete()`` now handles additional parameters
+- Added ``Uploader.timeout()``
 - Added nuxeo/constants.py::\ ``LOG_LIMIT_SIZE``
 - nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters
+- Added``kwargs`` keyword arguments to nuxeo/uploads.py::\ ``API.send_data()``
 - Added ``docuid`` argument to nuxeo/comments.py::\ ``API.get()``
 - Added ``params`` keyword argument to nuxeo/comments.py::\ ``API.get()``
 - Changed ``uid`` from positional argument to keyword argument in nuxeo/comments.py::\ ``API.get()``
