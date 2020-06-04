@@ -359,7 +359,13 @@ class NuxeoClient(object):
         if force or self._server_info is None:
             response = self.request("GET", "json/cmis", default={})
             if isinstance(response, requests.Response):
-                info = response.json()["default"]
+                try:
+                    info = response.json()["default"]
+                except Exception:
+                    logger.warning(
+                        "Invalid response data when called server_info()", exc_info=True
+                    )
+                    info = None
             else:
                 info = response
             self._server_info = info
