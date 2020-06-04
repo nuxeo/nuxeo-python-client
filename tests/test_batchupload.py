@@ -246,9 +246,7 @@ def test_upload_chunk_timeout(tmp_path, chunked, server):
     blob = FileBlob(str(file_in), mimetype="application/octet-stream")
 
     batch = server.uploads.batch()
-    uploader = batch.get_uploader(
-        blob, chunked=chunked, chunk_size=chunk_size
-    )
+    uploader = batch.get_uploader(blob, chunked=chunked, chunk_size=chunk_size)
 
     assert uploader.timeout(-1) == 60.0
     assert uploader.timeout(0.000001) == 60.0

@@ -105,7 +105,13 @@ class Uploader(object):
 
             self.process(
                 self.service.send_data(
-                    self.blob.name, data, self.path, self.chunked, 0, self.headers, timeout=timeout
+                    self.blob.name,
+                    data,
+                    self.path,
+                    self.chunked,
+                    0,
+                    self.headers,
+                    timeout=timeout,
                 )
             )
 
