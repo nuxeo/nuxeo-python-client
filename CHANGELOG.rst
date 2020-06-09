@@ -16,6 +16,7 @@ Release date: ``2020-xx-xx``
 - `NXPY-169 <https://jira.nuxeo.com/browse/NXPY-169>`__: Fix errors to fully re-support Nuxeo 9.10
 - `NXPY-170 <https://jira.nuxeo.com/browse/NXPY-170>`__: Enforce ``NuxeoClient.server_info()`` robustness against invalid data
 - `NXPY-171 <https://jira.nuxeo.com/browse/NXPY-171>`__: Set the timeout for uploads using the default handler
+- `NXPY-172 <https://jira.nuxeo.com/browse/NXPY-172>`__: Always log the server response
 
 Technical changes
 -----------------
@@ -33,6 +34,7 @@ Technical changes
 - Added nuxeo/compat.py::\ ``lru_cache()``
 - Added nuxeo/uploads.py::\ ``API.refresh_token()``
 - Added nuxeo/utils.py::\ ``cmp()``
+- Added nuxeo/utils.py::\ ``get_response_content()``
 - Added nuxeo/utils.py::\ ``version_compare()``
 - Added nuxeo/utils.py::\ ``version_compare_client()``
 - Added nuxeo/utils.py::\ ``version_le()``

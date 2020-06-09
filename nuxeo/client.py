@@ -40,7 +40,7 @@ from .constants import (
     TIMEOUT_READ,
 )
 from .exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
-from .utils import json_helper
+from .utils import get_response_content, json_helper
 
 try:
     from typing import TYPE_CHECKING
@@ -273,13 +273,12 @@ class NuxeoClient(object):
             resp = self._session.request(
                 method, url, headers=headers, auth=self.auth, data=data, **kwargs
             )
+            self._log_response(resp)
             resp.raise_for_status()
         except Exception as exc:
             if default is object:
                 raise self._handle_error(exc)
             resp = default
-        else:
-            self._log_response(resp)
         finally:
             # Explicitly break a reference cycle
             exc = None
@@ -418,6 +417,9 @@ class NuxeoClient(object):
         content_size = int(headers.get("content-length", 0))
         chunked = headers.get("transfer-encoding", "") == "chunked"
 
+        if response.status_code and response.status_code >= 400:
+            # This is a request ending on an error
+            content = get_response_content(response, limit_size)
         if response.url.endswith("site/automation"):
             # This endpoint returns too many information and pollute logs.
             # Besides contents of this call are stored into the .operations attr.
@@ -437,22 +439,7 @@ class NuxeoClient(object):
             content = "<binary data ({:,} bytes)>".format(content_size)
         elif chunked or content_size > 0:
             # At this point, we should only have text data not bigger than *limit_size*.
-            # Do not use response.text as it will load the chardet module and its
-            # heavy encoding detection mecanism. The server will only return UTF-8.
-            # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
-            try:
-                content = response.content.decode("utf-8", errors="replace")
-                content_size = len(content)
-                if content_size > limit_size:
-                    content = content[:limit_size]
-                    content = "{} [...] ({:,} bytes skipped)".format(
-                        content, content_size - limit_size
-                    )
-            except (MemoryError, OverflowError):
-                # OverflowError: join() result is too long (in requests.models.content)
-                # Still check for memory errors, this should never happen; or else,
-                # it should be painless.
-                content = "<no enough memory ({:,} bytes)>".format(content_size)
+            content = get_response_content(response, limit_size)
         else:
             # response.content is empty when *void_op* is True,
             # meaning we do not want to get back what we sent
@@ -460,8 +447,8 @@ class NuxeoClient(object):
             content = "<no content>"
 
         logger.debug(
-            "Response from {!r}: {!r} with headers {!r} and cookies {!r}".format(
-                response.url, content, headers, response.cookies
+            "Response from {!r} [{}]: {!r} with headers {!r} and cookies {!r}".format(
+                response.url, response.status_code, content, headers, response.cookies
             )
         )
 
