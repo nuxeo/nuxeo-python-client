@@ -18,6 +18,7 @@ class ResponseAutomation(Response):
     def __init__(self):
         # super() will be used when Python 2 support will be dropped (NXPY-129)
         super(ResponseAutomation, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.headers["content-length"] = "1024"
         self.url = "http://localhost:8080/nuxeo/site/automation"
@@ -26,6 +27,7 @@ class ResponseAutomation(Response):
 class ResponseChunkedContents(Response):
     def __init__(self):
         super(ResponseChunkedContents, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["transfer-encoding"] = "chunked"
         self.url = "http://localhost:8080/nuxeo/small%20file.txt"
@@ -38,6 +40,7 @@ class ResponseChunkedContents(Response):
 class ResponseChunkedJsonContents(Response):
     def __init__(self):
         super(ResponseChunkedJsonContents, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "application/json; nuxeo-entity=document"
         self.headers["transfer-encoding"] = "chunked"
         self.url = "http://localhost:8080/nuxeo/small%20file.txt"
@@ -50,6 +53,7 @@ class ResponseChunkedJsonContents(Response):
 class ResponseChunkedJsonContentsTooLong(Response):
     def __init__(self):
         super(ResponseChunkedJsonContentsTooLong, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "application/json; nuxeo-entity=document"
         self.headers["transfer-encoding"] = "chunked"
         self.url = "http://localhost:8080/nuxeo/small%20file.txt"
@@ -62,6 +66,7 @@ class ResponseChunkedJsonContentsTooLong(Response):
 class ResponseCmis(Response):
     def __init__(self):
         super(ResponseCmis, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.headers["content-length"] = "1024"
         self.url = "http://localhost:8080/nuxeo/json/cmis"
@@ -70,6 +75,7 @@ class ResponseCmis(Response):
 class ResponseEmpty(Response):
     def __init__(self):
         super(ResponseEmpty, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.url = "http://localhost:8080/nuxeo/nothing"
 
@@ -78,9 +84,27 @@ class ResponseEmpty(Response):
         return b""
 
 
+class ResponseError409(Response):
+    def __init__(self):
+        super(ResponseError409, self).__init__()
+        self.status_code = 409
+        self.headers["content-type"] = "application/json"
+        self.headers["transfer-encoding"] = "chunked"
+        self.url = "http://localhost:8080/nuxeo/nothing"
+
+    @property
+    def content(self):
+        return (
+            b'{"entity-type":"exception","status":409,"message":"Failed to delete document '
+            b'/default-domain/workspaces/ws-python-tests, Failed to remove document '
+            b'6a502942-f83b-4742-bb0c-132905ee88bf, Concurrent update"}'
+        )
+
+
 class ResponseIso(Response):
     def __init__(self):
         super(ResponseIso, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "application/octet-stream"
         self.headers["content-length"] = "734334976"
         self.url = "http://localhost:8080/nuxeo/700.3%20MiB.iso"
@@ -93,6 +117,7 @@ class ResponseIso(Response):
 class ResponseMov(Response):
     def __init__(self):
         super(ResponseMov, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "video/quicktime"
         self.headers["content-length"] = 1088996060
         self.url = "http://localhost:8080/nuxeo/1.0%20GiB.mov"
@@ -105,6 +130,7 @@ class ResponseMov(Response):
 class ResponseMxf(Response):
     def __init__(self):
         super(ResponseMxf, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "application/mxf"
         self.headers["content-length"] = "8932294324"
         self.url = "http://localhost:8080/nuxeo/8.3%20GiB.mxf"
@@ -117,6 +143,7 @@ class ResponseMxf(Response):
 class ResponseTextError(Response):
     def __init__(self):
         super(ResponseTextError, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = "1024"
         self.url = "http://localhost:8080/nuxeo/big%20file.txt"
@@ -129,6 +156,7 @@ class ResponseTextError(Response):
 class ResponseTextOk(Response):
     def __init__(self):
         super(ResponseTextOk, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = "1024"
         self.url = "http://localhost:8080/nuxeo/small%20file.txt"
@@ -141,6 +169,7 @@ class ResponseTextOk(Response):
 class ResponseTextTooLong(Response):
     def __init__(self):
         super(ResponseTextTooLong, self).__init__()
+        self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = 4096 * 2
         self.url = "http://localhost:8080/nuxeo/big%20file.txt"
@@ -155,6 +184,7 @@ class ResponseTextTooLong(Response):
     [
         (ResponseAutomation, "Automation details"),
         (ResponseEmpty, "no content"),
+        (ResponseError409, "Concurrent update"),
         (ResponseChunkedContents, "TADA!"),
         (ResponseChunkedJsonContents, "TADA!"),
         (ResponseChunkedJsonContentsTooLong, " [...] "),
