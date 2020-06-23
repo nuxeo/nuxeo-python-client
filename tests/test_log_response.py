@@ -96,7 +96,7 @@ class ResponseError409(Response):
     def content(self):
         return (
             b'{"entity-type":"exception","status":409,"message":"Failed to delete document '
-            b'/default-domain/workspaces/ws-python-tests, Failed to remove document '
+            b"/default-domain/workspaces/ws-python-tests, Failed to remove document "
             b'6a502942-f83b-4742-bb0c-132905ee88bf, Concurrent update"}'
         )
 
