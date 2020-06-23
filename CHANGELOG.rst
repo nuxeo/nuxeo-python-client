@@ -17,6 +17,7 @@ Release date: ``2020-xx-xx``
 - `NXPY-170 <https://jira.nuxeo.com/browse/NXPY-170>`__: Enforce ``NuxeoClient.server_info()`` robustness against invalid data
 - `NXPY-171 <https://jira.nuxeo.com/browse/NXPY-171>`__: Set the timeout for uploads using the default handler
 - `NXPY-172 <https://jira.nuxeo.com/browse/NXPY-172>`__: Always log the server response
+- `NXPY-173 <https://jira.nuxeo.com/browse/NXPY-173>`__: Consign additionnal parameters sent to each HTTP requests in logs
 
 Technical changes
 -----------------

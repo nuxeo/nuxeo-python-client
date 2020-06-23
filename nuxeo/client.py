@@ -259,11 +259,16 @@ class NuxeoClient(object):
         # to set `default` to `None`.
         default = kwargs.pop("default", object)
 
+        _kwargs = {k: v for k, v in kwargs.items() if k != "params"}
         logger.debug(
-            ("Calling {!r} with headers={!r}, params={!r} and cookies={!r}").format(
+            (
+                "Calling {} {!r} with headers={!r}, params={!r}, kwargs={!r} and cookies={!r}"
+            ).format(
+                method,
                 url,
                 headers,
                 kwargs.get("params", data if not raw else {}),
+                _kwargs,
                 self._session.cookies,
             )
         )
@@ -503,8 +508,8 @@ class Nuxeo(object):
 
     def __repr__(self):
         # type: () -> Text
-        fmt = "{name}<client={cls.client!r}>"
-        return fmt.format(name=type(self).__name__, cls=self)
+        fmt = "{name}<version={ver!r}, client={cls.client!r}>"
+        return fmt.format(name=type(self).__name__, cls=self, ver=__version__)
 
     def __str__(self):
         # type: () -> Text
