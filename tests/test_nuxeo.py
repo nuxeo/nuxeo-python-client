@@ -6,6 +6,7 @@ import logging
 
 import pytest
 import requests
+import responses
 from requests.exceptions import ConnectionError
 
 from nuxeo import constants
@@ -278,6 +279,21 @@ def test_server_info(server):
     server.client._server_info = None
     with SwapAttr(server.client, "host", "http://example-42.org/"):
         assert not server_info()
+
+
+def test_server_info_bad_response(server):
+    """
+    Test bad response data (not serializable JSON).
+    NXPY-171: the call should not fail.
+    """
+    server_info = server.client.server_info
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, server.client.host + "json/cmis", body="...")
+        assert server_info(force=True) is None
+
+    # Another call, it must work as expected
+    assert server_info(force=True) is not None
 
 
 def test_server_version(server):

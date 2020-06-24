@@ -16,10 +16,12 @@ from nuxeo.exceptions import (
 )
 from nuxeo.models import BufferBlob, Document, FileBlob
 from nuxeo.utils import SwapAttr
+from requests.exceptions import ConnectionError
 from sentry_sdk import configure_scope
 
 from .constants import WORKSPACE_ROOT
 from .server import Server
+
 
 new_doc = Document(name="Document", type="File", properties={"dc:title": "foo"})
 
@@ -228,6 +230,42 @@ def test_operation(server):
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
         assert blob == b"data"
+    finally:
+        doc.delete()
+
+
+@pytest.mark.parametrize("chunked", [False, True])
+def test_upload_chunk_timeout(tmp_path, chunked, server):
+
+    chunk_size = 1024
+    file_size = 4096 if chunked else chunk_size
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(b"\x00" * file_size)
+
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
+    blob = FileBlob(str(file_in), mimetype="application/octet-stream")
+
+    batch = server.uploads.batch()
+    uploader = batch.get_uploader(blob, chunked=chunked, chunk_size=chunk_size)
+
+    assert uploader.timeout(-1) == 60.0
+    assert uploader.timeout(0.000001) == 60.0
+    assert uploader.timeout(0) == 60.0
+    assert uploader.timeout(1) == 60.0
+    assert uploader.timeout(1024) == 60.0
+    assert uploader.timeout(1024 * 1024) == 60.0 * 1  # 1 MiB
+    assert uploader.timeout(1024 * 1024 * 5) == 60.0 * 5  # 5 MiB
+    assert uploader.timeout(1024 * 1024 * 10) == 60.0 * 10  # 10 MiB
+    assert uploader.timeout(1024 * 1024 * 20) == 60.0 * 20  # 20 MiB
+
+    uploader._timeout = 0.00001
+    assert uploader.timeout(chunk_size) == 0.00001
+
+    try:
+        with pytest.raises(ConnectionError) as exc:
+            uploader.upload()
+        error = text(exc.value)
+        assert "timed out" in error
     finally:
         doc.delete()
 

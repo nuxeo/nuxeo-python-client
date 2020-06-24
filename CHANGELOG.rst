@@ -15,13 +15,20 @@ Release date: ``2020-xx-xx``
 - `NXPY-167 <https://jira.nuxeo.com/browse/NXPY-167>`__: Enable back Python 2.7 tests (+ fixes)
 - `NXPY-168 <https://jira.nuxeo.com/browse/NXPY-168>`__: Rework Comments handling to work on all supported Nuxeo versions
 - `NXPY-169 <https://jira.nuxeo.com/browse/NXPY-169>`__: Fix errors to fully re-support Nuxeo 9.10
+- `NXPY-170 <https://jira.nuxeo.com/browse/NXPY-170>`__: Enforce ``NuxeoClient.server_info()`` robustness against invalid data
+- `NXPY-171 <https://jira.nuxeo.com/browse/NXPY-171>`__: Set the timeout for uploads using the default handler
+- `NXPY-172 <https://jira.nuxeo.com/browse/NXPY-172>`__: Always log the server response
+- `NXPY-173 <https://jira.nuxeo.com/browse/NXPY-173>`__: Consign additionnal parameters sent to each HTTP requests in logs
+- `NXPY-174 <https://jira.nuxeo.com/browse/NXPY-174>`__: Improve ``test_repository.py`` reliability
 
 Technical changes
 -----------------
 
 - ``Batch.complete()`` now handles additional parameters
+- Added ``Uploader.timeout()``
 - Added nuxeo/constants.py::\ ``LOG_LIMIT_SIZE``
 - nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters
+- Added``kwargs`` keyword arguments to nuxeo/uploads.py::\ ``API.send_data()``
 - Added ``docuid`` argument to nuxeo/comments.py::\ ``API.get()``
 - Added ``params`` keyword argument to nuxeo/comments.py::\ ``API.get()``
 - Changed ``uid`` from positional argument to keyword argument in nuxeo/comments.py::\ ``API.get()``
@@ -30,6 +37,7 @@ Technical changes
 - Added nuxeo/compat.py::\ ``lru_cache()``
 - Added nuxeo/uploads.py::\ ``API.refresh_token()``
 - Added nuxeo/utils.py::\ ``cmp()``
+- Added nuxeo/utils.py::\ ``get_response_content()``
 - Added nuxeo/utils.py::\ ``version_compare()``
 - Added nuxeo/utils.py::\ ``version_compare_client()``
 - Added nuxeo/utils.py::\ ``version_le()``

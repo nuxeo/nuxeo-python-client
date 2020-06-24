@@ -5,7 +5,6 @@ from glob import glob
 from shutil import rmtree
 from subprocess import check_output
 
-import pytest
 from nuxeo import __version__
 
 
@@ -28,9 +27,8 @@ def test_packaged_files():
         assert str(file) in output
 
 
-def test_wheel_python_3_only():
-    """Ensure the produced wheel is Python 3 only."""
-    pytest.xfail("NXPY-129")
+def test_wheel_python_2_and_3():
+    """Ensure the produced wheel is Python 2 and 3."""
     output = str(check_output(CMD))
-    text = "nuxeo-{}-py3-none-any.whl".format(__version__)
+    text = "nuxeo-{}-py2.py3-none-any.whl".format(__version__)
     assert text in output

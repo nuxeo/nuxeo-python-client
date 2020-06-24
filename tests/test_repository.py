@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import operator
 import time
+from uuid import uuid4
 
 import pytest
 from nuxeo.compat import get_bytes, text
@@ -10,22 +11,29 @@ from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
-from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
+from .constants import WORKSPACE_ROOT
 
 
 class Doc(object):
-    def __init__(self, server, with_blob=False):
+    def __init__(self, server, with_blob=False, doc_type="File"):
         self.server = server
         self.blob = with_blob
+        self.filename = "ndt-{}.txt".format(uuid4())
+        self.doc_type = doc_type
 
     def __enter__(self):
         doc = Document(
-            name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}
+            name=self.filename,
+            type=self.doc_type,
+            properties={"dc:title": self.filename},
         )
         self.doc = self.server.documents.create(doc, parent_path=WORKSPACE_ROOT)
+        self.doc.filename = self.filename
 
         if self.blob:
-            blob = BufferBlob(data="foo", name="foo.txt", mimetype="text/plain")
+            blob = BufferBlob(
+                data=self.filename, name=self.filename, mimetype="text/plain"
+            )
             batch = self.server.uploads.batch()
             blob = batch.upload(blob)
             self.doc.properties["file:content"] = blob
@@ -33,7 +41,19 @@ class Doc(object):
         return self.doc
 
     def __exit__(self, *args):
-        self.doc.delete()
+        while "trying to delete":
+            try:
+                self.doc.delete()
+            except HTTPError as exc:
+                if exc.status == 404:
+                    break
+                elif exc.status == 409:
+                    # Concurrent update: I think this is related to async
+                    # workers hanlding the file even if the test is finished.
+                    # Let's retry.
+                    continue
+            else:
+                break
 
 
 def test_add_remove_permission(server):
@@ -64,7 +84,7 @@ def test_unavailable_converter(monkeypatch, server):
         """Mimic the error message when a converter is not available."""
         raise HTTPError(message="{} is not available".format(converter))
 
-    with Doc(server, with_blob=True) as doc:
+    with Doc(server) as doc:
         monkeypatch.setattr("nuxeo.endpoint.APIEndpoint.get", get)
         with pytest.raises(UnavailableConvertor) as e:
             doc.convert({"converter": converter})
@@ -77,7 +97,7 @@ def test_convert(server):
         try:
             res = doc.convert({"format": "html"})
             assert b"<html" in res
-            assert b"foo" in res
+            assert doc.filename.encode("utf-8") in res
         except UnavailableConvertor:
             pytest.mark.xfail("No more converters (NXP-28123)")
 
@@ -87,13 +107,13 @@ def test_convert_given_converter(server):
         try:
             res = doc.convert({"converter": "office2html"})
             assert b"<html" in res
-            assert b"foo" in res
+            assert doc.filename.encode("utf-8") in res
         except UnavailableConvertor:
             pytest.mark.xfail("No more converters (NXP-28123)")
 
 
 def test_convert_missing_args(server):
-    with Doc(server, with_blob=True) as doc:
+    with Doc(server) as doc:
         with pytest.raises(BadQuery):
             doc.convert({})
 
@@ -118,37 +138,29 @@ def test_convert_xpath(server):
         try:
             res = doc.convert({"xpath": "file:content", "type": "text/html"})
             assert b"<html" in res
-            assert b"foo" in res
+            assert doc.filename.encode("utf-8") in res
         except UnavailableConvertor:
             pytest.mark.xfail("No more converters (NXP-28123)")
 
 
 def test_create_doc_and_delete(server):
-    doc = Document(
-        name=WORKSPACE_NAME, type="Workspace", properties={"dc:title": "foo"}
-    )
-    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
-    try:
+    with Doc(server, doc_type="Workspace") as doc:
         assert isinstance(doc, Document)
-        assert doc.path == WORKSPACE_TEST
+        assert doc.path.startswith(WORKSPACE_ROOT)
         assert doc.type == "Workspace"
-        assert doc.get("dc:title") == "foo"
-        assert server.documents.exists(path=WORKSPACE_TEST)
-    finally:
-        doc.delete()
-    assert not server.documents.exists(path=WORKSPACE_TEST)
+        assert doc.get("dc:title") == doc.filename
+        assert server.documents.exists(path=doc.path)
+    assert not server.documents.exists(path=doc.path)
 
 
 def test_create_doc_with_space_and_delete(server):
-    doc = Document(
-        name="my domain", type="Workspace", properties={"dc:title": "My domain"}
-    )
-    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
-    try:
+    document = Doc(server, doc_type="Workspace")
+    document.filename += " (2)"
+    with document as doc:
         assert isinstance(doc, Document)
-        server.documents.get(path=WORKSPACE_ROOT + "/my domain")
-    finally:
-        doc.delete()
+        assert " " in doc.path
+        assert " " in doc.get("dc:title")
+        server.documents.get(path=doc.path)
 
 
 def test_fetch_acls(server):
@@ -169,7 +181,7 @@ def test_fetch_acls(server):
 
 def test_fetch_audit(server):
     with Doc(server) as doc:
-        time.sleep(1)
+        time.sleep(5)
 
         audit = doc.fetch_audit()
         if not audit["entries"]:
@@ -186,7 +198,7 @@ def test_fetch_audit(server):
 
 def test_fetch_blob(server):
     with Doc(server, with_blob=True) as doc:
-        assert doc.fetch_blob() == b"foo"
+        assert doc.fetch_blob() == doc.filename.encode("utf-8")
 
 
 def test_fetch_non_existing(server):
@@ -197,7 +209,7 @@ def test_fetch_rendition(server):
     with Doc(server, with_blob=True) as doc:
         res = doc.fetch_rendition("xmlExport")
         assert b'<?xml version="1.0" encoding="UTF-8"?>' in res
-        path = "<path>" + WORKSPACE_TEST[1:] + "</path>"
+        path = "<path>{}</path>".format(doc.path.lstrip("/"))
         assert get_bytes(path) in res
 
 
@@ -321,23 +333,16 @@ def test_query_missing_args(server):
 
 
 def test_update_doc_and_delete(server):
-    doc = Document(
-        name=WORKSPACE_NAME, type="Workspace", properties={"dc:title": "foo"}
-    )
-    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
-    assert doc
-    try:
+    with Doc(server, doc_type="Workspace") as doc:
         uid = doc.uid
         path = doc.path
         doc.set({"dc:title": "bar"})
         doc.save()
-        doc = server.documents.get(path=WORKSPACE_TEST)
-        assert isinstance(doc, Document)
-        assert doc.uid == uid
-        assert doc.path == path
-        assert doc.get("dc:title") == "bar"
-    finally:
-        doc.delete()
+        doc_updated = server.documents.get(path=path)
+        assert isinstance(doc_updated, Document)
+        assert doc_updated.uid == uid
+        assert doc_updated.path == path
+        assert doc_updated.get("dc:title") == "bar"
 
 
 def test_update_wrong_args(server):

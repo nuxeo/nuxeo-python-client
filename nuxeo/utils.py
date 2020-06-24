@@ -14,6 +14,7 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
+        from requests import Response
         from _hashlib import HASH
         from typing import Any, Dict, List, Optional, Text, Tuple, Union
 except ImportError:
@@ -152,6 +153,31 @@ def guess_mimetype(filename):
         return mime_type
 
     return "application/octet-stream"
+
+
+def get_response_content(response, limit_size):
+    # type: (Response, int) -> Text
+    """Log a server response."""
+    # Do not use response.text as it will load the chardet module and its
+    # heavy encoding detection mecanism. The server will only return UTF-8.
+    # See https://stackoverflow.com/a/24656254/1117028 and NXPY-100.
+    try:
+        content = response.content.decode("utf-8", errors="replace")
+        content_size = len(content)
+        if content_size > limit_size:
+            content = content[:limit_size]
+            content = "{} [...] ({:,} bytes skipped)".format(
+                content, content_size - limit_size
+            )
+    except (MemoryError, OverflowError):
+        # OverflowError: join() result is too long (in requests.models.content)
+        # Still check for memory errors, this should never happen; or else,
+        # it should be painless.
+        headers = response.headers
+        content_size = int(headers.get("content-length", 0))
+        content = "<no enough memory ({:,} bytes)>".format(content_size)
+
+    return content
 
 
 def json_helper(obj):

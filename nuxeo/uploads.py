@@ -146,6 +146,7 @@ class API(APIEndpoint):
         index,  # type: int
         headers,  # type: Dict[Text, Text]
         data_len=0,  # type: Optional[int]
+        **kwargs  # type: Any
     ):
         # type: (...) -> Blob
         """
@@ -165,9 +166,13 @@ class API(APIEndpoint):
         if data_len > 0:
             headers["Content-Length"] = text(data_len)
 
+        if "timeout" not in kwargs:
+            # Set a big timeout to bypass most of server micro-issues with the network or loading
+            kwargs["timeout"] = 60 * 10  # 10 min
+
         try:
             return super(API, self).post(
-                resource=data, path=path, raw=True, headers=headers
+                resource=data, path=path, raw=True, headers=headers, **kwargs
             )
         except HTTPError as e:
             raise UploadError(name, chunk=index if chunked else None, info=str(e))

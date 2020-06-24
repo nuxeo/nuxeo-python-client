@@ -53,6 +53,8 @@ class Uploader(object):
             }
         )
 
+        self._timeout = None
+
     def __repr__(self):
         # type: () -> Text
         return "<{} is_complete={!r}, chunked={!r}, chunk_size={!r}, batch={!r}, blob={!r}>".format(
@@ -78,15 +80,38 @@ class Uploader(object):
         self.blob.fileIdx = response.fileIdx
         self.blob.uploadedSize = int(response.uploadedSize)
 
+    def timeout(self, chunk_size):
+        # type: (int) -> float
+        """Compute a timeout that allowes to handle big chunks."""
+        if self._timeout is not None:
+            # Used in tests
+            return self._timeout
+
+        return max(60.0, 60.0 * chunk_size / 1024 / 1024)
+        #          |     |
+        #          └-----|--- 1 minute is the minimum
+        #                |
+        #                └--- (chunk size reduced to 1 MiB) in minutes
+        #                      ╚==> if chunk size is  5 MiB:  5 minutes
+        #                      ╚==> if chunk size is 10 MiB: 10 minutes
+        #                      ╚==> if chunk size is 20 MiB: 20 minutes
+
     def upload(self):
         # type: () -> None
         """ Upload the file. """
         with self.blob as src:
             data = src if self.blob.size else None
+            timeout = self.timeout(self.chunk_size)
 
             self.process(
                 self.service.send_data(
-                    self.blob.name, data, self.path, self.chunked, 0, self.headers
+                    self.blob.name,
+                    data,
+                    self.path,
+                    self.chunked,
+                    0,
+                    self.headers,
+                    timeout=timeout,
                 )
             )
 
@@ -161,6 +186,8 @@ class ChunkUploader(Uploader):
         itself since it contains all relevant data.
         """
         with self.blob as src:
+            timeout = self.timeout(self.chunk_size)
+
             while self._to_upload:
                 # Get the index of a chunk to upload
                 index = self._to_upload[0]
@@ -182,6 +209,7 @@ class ChunkUploader(Uploader):
                         index,
                         self.headers,
                         data_len=data_len,
+                        timeout=timeout,
                     )
                 )
 
