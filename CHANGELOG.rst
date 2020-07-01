@@ -34,6 +34,8 @@ Technical changes
 - Added ``docuid`` argument to nuxeo/comments.py::\ ``API.post()``
 - Changed ``comment (Comment)`` argument of nuxeo/comments.py::\ ``API.post()`` to ``text (str)``
 - Added nuxeo/compat.py::\ ``lru_cache()``
+- Changed nuxeo/constants.py::\ ``TIMEOUT_CONNECT`` from ``5`` to ``10``
+- Changed nuxeo/constants.py::\ ``TIMEOUT_READ`` from ``30`` to ``600``
 - Added nuxeo/uploads.py::\ ``API.refresh_token()``
 - Added nuxeo/utils.py::\ ``cmp()``
 - Added nuxeo/utils.py::\ ``get_response_content()``
