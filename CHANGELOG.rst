@@ -19,11 +19,13 @@ Release date: ``2020-xx-xx``
 - `NXPY-172 <https://jira.nuxeo.com/browse/NXPY-172>`__: Always log the server response
 - `NXPY-173 <https://jira.nuxeo.com/browse/NXPY-173>`__: Consign additionnal parameters sent to each HTTP requests in logs
 - `NXPY-174 <https://jira.nuxeo.com/browse/NXPY-174>`__: Improve ``test_repository.py`` reliability
+- `NXPY-176 <https://jira.nuxeo.com/browse/NXPY-176>`__: Add ``Nuxeo.can_use()`` to determine if a given operation is available
 
 Technical changes
 -----------------
 
 - ``Batch.complete()`` now handles additional parameters
+- Added ``Nuxeo.can_use()``
 - Added ``Uploader.timeout()``
 - Added nuxeo/constants.py::\ ``LOG_LIMIT_SIZE``
 - nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters

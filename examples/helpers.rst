@@ -137,3 +137,14 @@ yourself before running it, you can use the following:
         print(e)  # Indicates what is wrong
     else:
         # The parameters are valid
+
+
+**Check if the given operation can be used**
+
+Whenever you want to check if the Nuxeo Platform server can handle a
+given operation, it is as easy as:
+
+.. code:: python
+
+    if nuxeo.can_use("FileManager.CreateFolder"):
+        # do something
