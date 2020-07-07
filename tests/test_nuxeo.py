@@ -415,3 +415,8 @@ def test_header_format(server):
         with pytest.raises(HTTPError):
             headers = {"test.wrong.typo": "error"}
             server.client.request("GET", "test", headers=headers)
+
+
+def test_can_use(server):
+    assert server.can_use("FileManager.Import")
+    assert not server.can_use("FileManager.ImportAndKillTheServer")

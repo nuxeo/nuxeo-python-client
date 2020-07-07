@@ -514,3 +514,8 @@ class Nuxeo(object):
     def __str__(self):
         # type: () -> Text
         return repr(self)
+
+    def can_use(self, operation):
+        # type: (Text) -> str
+        """Return a boolean to let the caller know if the given *operation* can be used."""
+        return operation in self.operations.operations
