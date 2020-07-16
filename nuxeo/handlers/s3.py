@@ -74,8 +74,8 @@ class UploaderS3(Uploader):
         """Method called automatically by boto3 to refresh tokens when needed."""
         data = self.service.refresh_token(self.batch)
         return {
-            "access_key": data["awsSecretAccessKey"],
-            "secret_key": data["awsSecretKeyId"],
+            "access_key": data["awsSecretKeyId"],
+            "secret_key": data["awsSecretAccessKey"],
             "token": data["awsSessionToken"],
             "expiry_time": datetime.fromtimestamp(
                 data["expiration"] / 1000, tz=tzlocal()
