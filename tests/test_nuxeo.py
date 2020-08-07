@@ -301,10 +301,30 @@ def test_server_version(server):
     assert server.client.server_version
     assert str(server.client)
 
-    # Bad call
+
+def test_server_version_bad_url(server):
     server.client._server_info = None
     with SwapAttr(server.client, "host", "http://example-42.org/"):
-        assert not server.client.server_version
+        assert server.client.server_version == "unknown"
+        assert str(server.client)
+
+    # Another call, it must work as expected
+    assert server.client.server_version != "unknown"
+    assert str(server.client)
+
+
+def test_server_version_bad_response_from_server_info(server):
+    """
+    Test bad response data (not serializable JSON).
+    NXPY-177: the call should not fail on an AttributeError.
+    """
+    server.client._server_info = None
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, server.client.host + "json/cmis", body="...")
+        assert server.client.server_version == "unknown"
+
+    # Another call, it must work as expected
+    assert server.client.server_version != "unknown"
 
 
 def test_set_repository(server):

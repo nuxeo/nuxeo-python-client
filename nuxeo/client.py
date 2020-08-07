@@ -359,27 +359,24 @@ class NuxeoClient(object):
 
         :param bool force: Force information renewal.
         """
-
         if force or self._server_info is None:
             response = self.request("GET", "json/cmis", default={})
-            if isinstance(response, requests.Response):
-                try:
-                    info = response.json()["default"]
-                except Exception:
-                    logger.warning(
-                        "Invalid response data when called server_info()", exc_info=True
-                    )
-                    info = None
-            else:
-                info = response
-            self._server_info = info
+            try:
+                self._server_info = response.json()["default"]
+            except Exception:
+                logger.error(
+                    "Invalid response data when called server_info()", exc_info=True
+                )
         return self._server_info
 
     @property
     def server_version(self):
         # type: () -> Text
-        """ Return the server version. """
-        return self.server_info().get("productVersion", "")
+        """ Return the server version or "unknown". """
+        try:
+            return self.server_info()["productVersion"]
+        except Exception:
+            return "unknown"
 
     @staticmethod
     def _handle_error(error):

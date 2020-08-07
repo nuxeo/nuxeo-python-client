@@ -20,6 +20,7 @@ Release date: ``2020-xx-xx``
 - `NXPY-173 <https://jira.nuxeo.com/browse/NXPY-173>`__: Consign additionnal parameters sent to each HTTP requests in logs
 - `NXPY-174 <https://jira.nuxeo.com/browse/NXPY-174>`__: Improve ``test_repository.py`` reliability
 - `NXPY-176 <https://jira.nuxeo.com/browse/NXPY-176>`__: Add ``Nuxeo.can_use()`` to determine if a given operation is available
+- `NXPY-177 <https://jira.nuxeo.com/browse/NXPY-177>`__: Prevent ``AttributeError`` when fetching the server version and the response is bad (and return "unknown")
 
 Technical changes
 -----------------
