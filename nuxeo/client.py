@@ -364,7 +364,7 @@ class NuxeoClient(object):
                 response = self.request("GET", "json/cmis")
                 self._server_info = response.json()["default"]
             except Exception:
-                logger.error(
+                logger.warning(
                     "Invalid response data when called server_info()", exc_info=True
                 )
         return self._server_info
