@@ -70,6 +70,23 @@ def batch(aws_pwd, bucket, server):
     return obj
 
 
+def test_upload_blob_with_bad_characters(tmp_path, batch, bucket, server, s3):
+    file_in = tmp_path / "file_in (1).bin"
+    file_in.write_bytes(os.urandom(1024 * 1024 * 5))
+
+    blob = FileBlob(str(file_in))
+
+    # Simulate a single upload that failed
+    uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
+
+    # Create a bucket
+    uploader.s3_client.create_bucket(Bucket=bucket)
+
+    # Upload he file, it must work
+    uploader.upload()
+    assert uploader.batch.etag is not None
+
+
 def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
     file_in = tmp_path / "file_in"
     file_in.write_bytes(os.urandom(1024 * 1024 * 5))
