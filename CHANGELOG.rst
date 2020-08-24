@@ -22,6 +22,7 @@ Release date: ``2020-xx-xx``
 - `NXPY-176 <https://jira.nuxeo.com/browse/NXPY-176>`__: Add ``Nuxeo.can_use()`` to determine if a given operation is available
 - `NXPY-177 <https://jira.nuxeo.com/browse/NXPY-177>`__: Prevent ``AttributeError`` when fetching the server version and the response is bad (and return "unknown")
 - `NXPY-178 <https://jira.nuxeo.com/browse/NXPY-178>`__: Use a uniq ID for the S3 direct upload key
+- `NXPY-179 <https://jira.nuxeo.com/browse/NXPY-179>`__: Use S3 accelerate endpoint when enabled
 
 Technical changes
 -----------------
