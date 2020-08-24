@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from uuid import uuid4
+
 from .compat import text
 from .constants import UPLOAD_CHUNK_SIZE, UP_AMAZON_S3
 from .endpoint import APIEndpoint
@@ -25,7 +27,7 @@ try:
         )
         from .client import NuxeoClient
         from .models import BufferBlob, FileBlob
-        from .handlers.default import Uploader
+        from .handlers.default import Uploader  # noqa
 
         ActualBlob = Union[BufferBlob, FileBlob]
 except ImportError:
@@ -85,8 +87,10 @@ class API(APIEndpoint):
             else:
                 raise InvalidUploadHandler(handler, handlers)
 
-        response = self.client.request("POST", endpoint)
-        return Batch.parse(response.json(), service=self)
+        data = self.client.request("POST", endpoint).json()
+        # Set a uniq ID for that batch, it will be used by third-party upload handlers
+        data["key"] = str(uuid4())
+        return Batch.parse(data, service=self)
 
     batch = post  # Alias for clarity
 
@@ -292,10 +296,11 @@ class API(APIEndpoint):
         if batch.provider == UP_AMAZON_S3:
             blob = batch.blobs[0]
             s3_info = batch.extraInfo
+            key = "{}/{}".format(s3_info["baseKey"].rstrip("/"), batch.key or blob.name)
             params = {
                 "name": blob.name,
                 "fileSize": blob.size,
-                "key": "{}/{}".format(s3_info["baseKey"].rstrip("/"), blob.name),
+                "key": key,
                 "bucket": s3_info["bucket"],
                 "etag": batch.etag,
             }

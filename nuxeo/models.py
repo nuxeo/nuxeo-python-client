@@ -125,6 +125,7 @@ class Batch(Model):
         "dropped": None,
         "extraInfo": None,
         "etag": None,
+        "key": "",
         "multiPartUploadId": None,
         "provider": None,
         "upload_idx": 0,
