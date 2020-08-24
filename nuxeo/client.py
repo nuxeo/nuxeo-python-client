@@ -360,8 +360,8 @@ class NuxeoClient(object):
         :param bool force: Force information renewal.
         """
         if force or self._server_info is None:
-            response = self.request("GET", "json/cmis", default={})
             try:
+                response = self.request("GET", "json/cmis")
                 self._server_info = response.json()["default"]
             except Exception:
                 logger.error(
