@@ -56,17 +56,20 @@ class UploaderS3(Uploader):
             session = get_session()
             session._credentials = creds
 
+            # Save the S3 configuration into a private attr to ease debugging
+            self._s3_config = Config(
+                region_name=s3_info["region"],
+                s3={
+                    "addressing_style": "path"
+                    if s3_info.get("usePathStyleAccess", False)
+                    else "auto",
+                    "use_accelerate_endpoint": s3_info.get("useS3Accelerate", False),
+                },
+            )
             s3_client = boto3.Session(botocore_session=session).client(
                 "s3",
                 endpoint_url=s3_info.get("endpoint") or None,
-                config=Config(
-                    region_name=s3_info["region"],
-                    s3={
-                        "addressing_style": "path"
-                        if s3_info.get("usePathStyleAccess", False)
-                        else "auto"
-                    },
-                ),
+                config=self._s3_config,
             )
 
         self.s3_client = s3_client
