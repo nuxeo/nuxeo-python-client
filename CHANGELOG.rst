@@ -1,10 +1,10 @@
 Changelog
 =========
 
-2.4.5
+3.0.0
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2020-08-25``
 
 - `NXPY-159 <https://jira.nuxeo.com/browse/NXPY-159>`__: Allow to pass additional arguments to ``Batch.complete()``
 - `NXPY-145 <https://jira.nuxeo.com/browse/NXPY-145>`__: Detect and log appropriate debug info when the transfer if chunked
@@ -33,7 +33,7 @@ Technical changes
 - Added ``Uploader.timeout()``
 - Added nuxeo/constants.py::\ ``LOG_LIMIT_SIZE``
 - nuxeo/uploads.py::\ ``API.complete()`` now handles additional parameters
-- Added``kwargs`` keyword arguments to nuxeo/uploads.py::\ ``API.send_data()``
+- Added ``kwargs`` keyword arguments to nuxeo/uploads.py::\ ``API.send_data()``
 - Added ``docuid`` argument to nuxeo/comments.py::\ ``API.get()``
 - Added ``params`` keyword argument to nuxeo/comments.py::\ ``API.get()``
 - Changed ``uid`` from positional argument to keyword argument in nuxeo/comments.py::\ ``API.get()``
