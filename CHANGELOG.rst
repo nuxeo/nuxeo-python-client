@@ -4,14 +4,9 @@ Changelog
 3.0.1
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2020-09-08``
 
 - `NXPY-180 <https://jira.nuxeo.com/browse/NXPY-180>`__: Allow to upload to S3 when the bucket prefix is empty
-
-Technical changes
------------------
-
--
 
 3.0.0
 -----
