@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-180 <https://jira.nuxeo.com/browse/NXPY-180>`__: Allow to upload to S3 when the bucket prefix is empty
 
 Technical changes
 -----------------

@@ -42,9 +42,7 @@ class UploaderS3(Uploader):
         # Instantiate the S3 client
         s3_info = self.batch.extraInfo
         self.bucket = s3_info["bucket"]
-        self.key = "{}/{}".format(
-            s3_info["baseKey"].rstrip("/"), self.batch.key or self.blob.name
-        )
+        self.key = "{}{}".format(s3_info["baseKey"], self.batch.key or self.blob.name)
 
         if not s3_client:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-multiprocessing
