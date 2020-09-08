@@ -296,7 +296,7 @@ class API(APIEndpoint):
         if batch.provider == UP_AMAZON_S3:
             blob = batch.blobs[0]
             s3_info = batch.extraInfo
-            key = "{}/{}".format(s3_info["baseKey"].rstrip("/"), batch.key or blob.name)
+            key = "{}{}".format(s3_info["baseKey"], batch.key or blob.name)
             params = {
                 "name": blob.name,
                 "fileSize": blob.size,
