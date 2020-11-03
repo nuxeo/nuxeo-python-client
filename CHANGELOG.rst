@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY-182 <https://jira.nuxeo.com/browse/NXPY-182>`__: Set the TCP keep alive option by default
+- `NXPY-183 <https://jira.nuxeo.com/browse/NXPY-183>`__: Set the TCP keep alive option by default
 
 Technical changes
 -----------------
