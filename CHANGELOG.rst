@@ -6,12 +6,19 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-182 <https://jira.nuxeo.com/browse/NXPY-182>`__: Set the TCP keep alive option by default
 
 Technical changes
 -----------------
 
--
+- Added ``constants.LINUX``
+- Added ``constants.MAC``
+- Added ``constants.TCP_KEEPALIVE``
+- Added ``constants.TCP_KEEPALIVE_INTERVAL``
+- Added ``constants.TCP_KEEP_CNT``
+- Added ``constants.TCP_KEEP_IDLE``
+- Added ``constants.WINDOWS``
+- Added nuxeo/tcp/tcp_keep_alive_probes.py
 
 3.0.1
 -----

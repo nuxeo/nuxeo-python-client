@@ -7,10 +7,8 @@ import logging
 import sys
 from warnings import warn
 
-from urllib3.util.retry import Retry
-
 import requests
-from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from . import (
     __version__,
@@ -40,6 +38,7 @@ from .constants import (
     TIMEOUT_READ,
 )
 from .exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
+from .tcp import TcpKeepAliveHttpAdapter
 from .utils import get_response_content, json_helper
 
 try:
@@ -142,8 +141,12 @@ class NuxeoClient(object):
     def enable_retry(self):
         # type: () -> None
         """ Set a max retry for all connection errors with an adaptative backoff. """
-        self._session.mount("https://", HTTPAdapter(max_retries=self.retries))
-        self._session.mount("http://", HTTPAdapter(max_retries=self.retries))
+        self._session.mount(
+            "https://", TcpKeepAliveHttpAdapter(max_retries=self.retries)
+        )
+        self._session.mount(
+            "http://", TcpKeepAliveHttpAdapter(max_retries=self.retries)
+        )
 
     def disable_retry(self):
         # type: () -> None
@@ -151,8 +154,9 @@ class NuxeoClient(object):
         Restore default mount points to disable the eventual retry
         adapters set with .enable_retry().
         """
-        self._session.mount("https://", HTTPAdapter())
-        self._session.mount("http://", HTTPAdapter())
+        self._session.close()
+        self._session.mount("https://", TcpKeepAliveHttpAdapter())
+        self._session.mount("http://", TcpKeepAliveHttpAdapter())
 
     def query(
         self,
