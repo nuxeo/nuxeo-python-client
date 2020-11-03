@@ -1,6 +1,13 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+from sys import platform
+
+# OS
+LINUX = platform.startswith("linux")
+MAC = platform == "darwin"
+WINDOWS = platform == "win32"
+
 # Force parameters verification for all operations
 CHECK_PARAMS = False
 
@@ -36,6 +43,16 @@ RETRY_METHODS = frozenset(["GET", "POST", "PUT", "DELETE"])
 # 503 Service Unavailable
 # 504 Gateway Timeout
 RETRY_STATUS_CODES = [429, 500, 503, 504]
+
+# TCP Keep Alive
+# The content to send on macOS in the TCP Keep Alive probes
+TCP_KEEPALIVE = 0x10
+# The interval between probes
+TCP_KEEPALIVE_INTERVAL = 60
+# The maximum number of failed probes before terminating the connection
+TCP_KEEP_CNT = 3
+# The maximum time to keep the connection idle before sending probes
+TCP_KEEP_IDLE = 60
 
 # Connection and read timeout, in seconds
 TIMEOUT_CONNECT = 10
