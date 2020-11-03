@@ -2,16 +2,24 @@ fail_fast: true
 
 repos:
 -   repo: https://github.com/ambv/black
-    rev: stable
+    rev: 20.8b1
     hooks:
     - id: black
+- repo: https://gitlab.com/pycqa/flake8
+  rev: 3.8.3
+  hooks:
+    - id: flake8
+      language_version: python3
+      additional_dependencies:
+      - flake8-deprecated
+      - flake8-comprehensions
+      - flake8-quotes
+      - flake8-mutable
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: master
+    rev: v3.2.0
     hooks:
     - id: trailing-whitespace
-    - id: flake8
     - id: end-of-file-fixer
     - id: check-docstring-first
-    - id: requirements-txt-fixer
     - id: check-ast
     - id: no-commit-to-branch
