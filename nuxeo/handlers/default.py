@@ -169,7 +169,7 @@ class ChunkUploader(Uploader):
             return
 
         to_upload = set(range(self.chunk_count)) - set(self.blob.uploadedChunkIds)
-        self._to_upload = sorted(list(to_upload))
+        self._to_upload = sorted(to_upload)
 
     def is_complete(self):
         # type: () -> bool

@@ -128,7 +128,7 @@ class API(APIEndpoint):
             endpoint = "{}/handlers".format(self.endpoint)
             try:
                 response = self.client.request("GET", endpoint)
-                self.__handlers = [h for h in response.json()["handlers"][0].values()]
+                self.__handlers = list(response.json()["handlers"][0].values())
             except Exception:
                 # This is not good, no handlers == no uploads!
                 # Return an empty list without modifying .__handlers
