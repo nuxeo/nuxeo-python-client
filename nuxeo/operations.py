@@ -178,7 +178,7 @@ class API(APIEndpoint):
         url = "site/automation/{}".format(command)
         if isinstance(input_obj, Blob):
             url = "{}/upload/{}/{}/execute/{}".format(
-                self.client.api_path, input_obj.batch_id, input_obj.fileIdx, command
+                self.client.api_path, input_obj.batchId, input_obj.fileIdx, command
             )
             input_obj = None
 

@@ -126,7 +126,7 @@ class Uploader(object):
         """ Add the uploaded blob info to the batch. """
         if self.is_complete():
             # All the parts have been uploaded, update the attributes
-            self.blob.batch_id = self.batch.uid
+            self.blob.batchId = self.batch.uid
             self.batch.blobs[self.batch.upload_idx] = self.blob
             self.batch.upload_idx += 1
 

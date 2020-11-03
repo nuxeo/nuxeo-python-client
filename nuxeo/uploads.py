@@ -63,7 +63,7 @@ class API(APIEndpoint):
         resource = super(API, self).get(path=path)
 
         if file_idx is not None:
-            resource.batch_id = batch_id
+            resource.batchId = batch_id
             resource.fileIdx = file_idx
         elif not resource:
             return []
