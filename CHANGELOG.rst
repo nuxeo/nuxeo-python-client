@@ -7,10 +7,12 @@ Changelog
 Release date: ``2020-xx-xx``
 
 - `NXPY-183 <https://jira.nuxeo.com/browse/NXPY-183>`__: Set the TCP keep alive option by default
+- `NXPY-185 <https://jira.nuxeo.com/browse/NXPY-185>`__: Add the ``Blob.batchId`` attribute
 
 Technical changes
 -----------------
 
+- Added ``Blob.batchId`` and deprecated ``Blob.batch_id``
 - Added ``constants.LINUX``
 - Added ``constants.MAC``
 - Added ``constants.TCP_KEEPALIVE``
