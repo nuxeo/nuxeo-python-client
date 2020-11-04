@@ -43,7 +43,10 @@ def s3(aws_credentials, bucket):
         client = boto3.client("s3", region_name="eu-west-1")
 
         # Create a bucket
-        client.create_bucket(Bucket=bucket)
+        client.create_bucket(
+            Bucket=bucket,
+            CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
+        )
 
         yield client
 
@@ -79,9 +82,6 @@ def test_upload_blob_with_bad_characters(tmp_path, batch, bucket, server, s3):
     # Simulate a single upload that failed
     uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
 
-    # Create a bucket
-    uploader.s3_client.create_bucket(Bucket=bucket)
-
     # Upload he file, it must work
     uploader.upload()
     assert uploader.batch.etag is not None
@@ -95,9 +95,6 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
 
     # Simulate a new single upload
     uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
-
-    # Create a bucket
-    uploader.s3_client.create_bucket(Bucket=bucket)
 
     assert uploader.chunk_count == 1
     uploader.upload()
@@ -129,9 +126,6 @@ def test_upload_not_chunked_error(tmp_path, batch, bucket, server, s3):
 
     # Simulate a single upload that failed
     uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
-
-    # Create a bucket
-    uploader.s3_client.create_bucket(Bucket=bucket)
 
     with SwapAttr(uploader.s3_client, "put_object", put_object):
         with pytest.raises(UploadError):
