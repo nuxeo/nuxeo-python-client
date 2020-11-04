@@ -44,15 +44,11 @@ RETRY_METHODS = frozenset(["GET", "POST", "PUT", "DELETE"])
 # 504 Gateway Timeout
 RETRY_STATUS_CODES = [429, 500, 503, 504]
 
-# TCP Keep Alive
-# The content to send on macOS in the TCP Keep Alive probes
-TCP_KEEPALIVE = 0x10
-# The interval between probes
-TCP_KEEPALIVE_INTERVAL = 60
-# The maximum number of failed probes before terminating the connection
-TCP_KEEP_CNT = 3
-# The maximum time to keep the connection idle before sending probes
-TCP_KEEP_IDLE = 60
+# TCP keep-alive values
+# Amount of time in seconds between successive keep-alives sent to probe an unresponsive peer
+TCP_KEEPINTVL = 60
+# Maximum time in seconds to keep the connection idle before sending probes
+TCP_KEEPIDLE = 60
 
 # Connection and read timeout, in seconds
 TIMEOUT_CONNECT = 10

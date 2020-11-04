@@ -1,3 +1,3 @@
-from .tcp_keep_alive_probes import TcpKeepAliveHttpAdapter
+from .tcp_keep_alive_probes import TCPKeepAliveHTTPSAdapter
 
-__all__ = ("TcpKeepAliveHttpAdapter",)
+__all__ = ("TCPKeepAliveHTTPSAdapter",)

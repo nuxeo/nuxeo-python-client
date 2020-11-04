@@ -16,10 +16,8 @@ Technical changes
 - Added ``Blob.batchId`` and deprecated ``Blob.batch_id``
 - Added ``constants.LINUX``
 - Added ``constants.MAC``
-- Added ``constants.TCP_KEEPALIVE``
-- Added ``constants.TCP_KEEPALIVE_INTERVAL``
-- Added ``constants.TCP_KEEP_CNT``
-- Added ``constants.TCP_KEEP_IDLE``
+- Added ``constants.TCP_KEEPINTVL``
+- Added ``constants.TCP_KEEPIDLE``
 - Added ``constants.WINDOWS``
 - Added nuxeo/tcp/tcp_keep_alive_probes.py
 
