@@ -7,6 +7,7 @@ Changelog
 Release date: ``2020-xx-xx``
 
 - `NXPY-183 <https://jira.nuxeo.com/browse/NXPY-183>`__: Set the TCP keep alive option by default
+- `NXPY-184 <https://jira.nuxeo.com/browse/NXPY-184>`__: Fix ``test_upload_s3.py`` about ``IllegalLocationConstraintException``
 - `NXPY-185 <https://jira.nuxeo.com/browse/NXPY-185>`__: Add the ``Blob.batchId`` attribute
 
 Technical changes
