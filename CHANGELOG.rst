@@ -1,10 +1,10 @@
 Changelog
 =========
 
-3.0.2
+3.1.0
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2020-11-06``
 
 - `NXPY-183 <https://jira.nuxeo.com/browse/NXPY-183>`__: Set the TCP keep alive option by default
 - `NXPY-184 <https://jira.nuxeo.com/browse/NXPY-184>`__: Fix ``test_upload_s3.py`` about ``IllegalLocationConstraintException``
