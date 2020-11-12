@@ -49,7 +49,8 @@ class UploaderS3(Uploader):
 
             # The session will be able to automatically refresh credentials
             creds = DeferredRefreshableCredentials(
-                self._refresh_credentials, "sts-assume-role",
+                self._refresh_credentials,
+                "sts-assume-role",
             )
             session = get_session()
             session._credentials = creds
@@ -95,7 +96,10 @@ class UploaderS3(Uploader):
                 # returns nothing and it would involve doing another HTTP call
                 # just to get that information.
                 response = self.s3_client.put_object(
-                    Bucket=self.bucket, Key=self.key, Body=fd
+                    Bucket=self.bucket,
+                    Key=self.key,
+                    Body=fd,
+                    ContentType=self.headers["X-File-Type"],
                 )
             except Exception as e:
                 raise UploadError(self.blob.path, info=str(e))
@@ -151,7 +155,9 @@ class ChunkUploaderS3(UploaderS3):
 
         :return: the multipart upload ID
         """
-        mpu = self.s3_client.create_multipart_upload(Bucket=self.bucket, Key=self.key)
+        mpu = self.s3_client.create_multipart_upload(
+            Bucket=self.bucket, Key=self.key, ContentType=self.headers["X-File-Type"]
+        )
         self.batch.multiPartUploadId = mpu["UploadId"]
         return self.batch.multiPartUploadId
 
@@ -238,7 +244,7 @@ class ChunkUploaderS3(UploaderS3):
         to_upload = set(range(1, self.chunk_count + 1, 1)) - set(
             self.blob.uploadedChunkIds
         )
-        self._to_upload = sorted(list(to_upload))
+        self._to_upload = sorted(to_upload)
 
     def is_complete(self):
         # type: () -> bool

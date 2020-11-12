@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY-1 <https://jira.nuxeo.com/browse/NXPY-1>`__:
+- `NXPY-188 <https://jira.nuxeo.com/browse/NXPY-188>`__: Set the ``Content-Type`` for uploads done via S3
 
 Technical changes
 -----------------
