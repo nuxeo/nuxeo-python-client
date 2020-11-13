@@ -208,11 +208,73 @@ def test_handlers_custom(server):
         server.uploads.batch(handler="custom")
 
 
-def test_mimetype(tmp_path):
-    file_in = tmp_path / "file_in.bmp"
-    file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
+@pytest.mark.parametrize(
+    "filename, mimetypes, expected_mimetype",
+    [
+        ("file.bmp", ["image/bmp", "image/x-ms-bmp"], "image/bmp"),
+        ("file.pdf", ["application/pdf"], "application/pdf"),
+    ],
+)
+def test_mimetype(filename, mimetypes, expected_mimetype, tmp_path, server):
+    file_in = tmp_path / filename
+    file_in.write_bytes(b"0" * 42)
     blob = FileBlob(str(file_in))
-    assert blob.mimetype in ["image/bmp", "image/x-ms-bmp"]
+    assert blob.mimetype in mimetypes
+
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
+    try:
+        # Upload the blob
+        batch = server.uploads.batch()
+        uploader = batch.get_uploader(blob)
+        uploader.upload()
+
+        # Attach the blob to the doc
+        operation = server.operations.new("Blob.AttachOnDocument")
+        operation.params = {"document": doc.path}
+        operation.input_obj = batch.get(0)
+        operation.execute(void_op=True)
+
+        # Fetch doc metadata
+        operation = server.operations.new("Document.Fetch")
+        operation.params = {"value": doc.path}
+        info = operation.execute()
+
+        # Check the mimetype set by the server is correct
+        mimetype = info["properties"]["file:content"]["mime-type"]
+        assert mimetype == expected_mimetype
+    finally:
+        doc.delete()
+
+
+def test_bad_mimetype(tmp_path, server):
+    file_in = tmp_path / "file.pdf"
+    file_in.write_bytes(b"0" * 42)
+    blob = FileBlob(str(file_in), mimetype="pdf")
+    assert blob.mimetype == "pdf"
+
+    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
+    try:
+        # Upload the blob
+        batch = server.uploads.batch()
+        uploader = batch.get_uploader(blob)
+        uploader.upload()
+
+        # Attach the blob to the doc
+        operation = server.operations.new("Blob.AttachOnDocument")
+        operation.params = {"document": doc.path}
+        operation.input_obj = batch.get(0)
+        operation.execute(void_op=True)
+
+        # Fetch doc metadata
+        operation = server.operations.new("Document.Fetch")
+        operation.params = {"value": doc.path}
+        info = operation.execute()
+
+        # Check the mimetype set by the server is correct
+        mimetype = info["properties"]["file:content"]["mime-type"]
+        assert mimetype == "application/pdf"
+    finally:
+        doc.delete()
 
 
 def test_operation(server):
@@ -242,7 +304,6 @@ def test_upload_chunk_timeout(tmp_path, chunked, server):
     file_in = tmp_path / "file_in"
     file_in.write_bytes(b"\x00" * file_size)
 
-    doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     blob = FileBlob(str(file_in), mimetype="application/octet-stream")
 
     batch = server.uploads.batch()
@@ -261,13 +322,10 @@ def test_upload_chunk_timeout(tmp_path, chunked, server):
     uploader._timeout = 0.00001
     assert uploader.timeout(chunk_size) == 0.00001
 
-    try:
-        with pytest.raises(ConnectionError) as exc:
-            uploader.upload()
-        error = text(exc.value)
-        assert "timed out" in error
-    finally:
-        doc.delete()
+    with pytest.raises(ConnectionError) as exc:
+        uploader.upload()
+    error = text(exc.value)
+    assert "timed out" in error
 
 
 @pytest.mark.parametrize("chunked", [False, True])
