@@ -246,11 +246,19 @@ def test_mimetype(filename, mimetypes, expected_mimetype, tmp_path, server):
         doc.delete()
 
 
-def test_bad_mimetype(tmp_path, server):
+@pytest.mark.parametrize(
+    "bad_mimetype, expected_mimetype",
+    [
+        (None, "application/pdf"),
+        ("", "application/pdf"),
+        ("pdf", "application/pdf"),
+    ],
+)
+def test_bad_mimetype(bad_mimetype, expected_mimetype, tmp_path, server):
     file_in = tmp_path / "file.pdf"
     file_in.write_bytes(b"0" * 42)
-    blob = FileBlob(str(file_in), mimetype="pdf")
-    assert blob.mimetype == "pdf"
+    blob = FileBlob(str(file_in), mimetype=bad_mimetype)
+    assert blob.mimetype == (bad_mimetype or expected_mimetype)
 
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
@@ -272,7 +280,7 @@ def test_bad_mimetype(tmp_path, server):
 
         # Check the mimetype set by the server is correct
         mimetype = info["properties"]["file:content"]["mime-type"]
-        assert mimetype == "application/pdf"
+        assert mimetype == expected_mimetype
     finally:
         doc.delete()
 
