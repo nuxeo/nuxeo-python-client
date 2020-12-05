@@ -8,7 +8,7 @@ from .constants import UPLOAD_CHUNK_SIZE, UP_AMAZON_S3
 from .endpoint import APIEndpoint
 from .exceptions import HTTPError, InvalidUploadHandler, UploadError
 from .models import Batch, Blob
-from .utils import SwapAttr, chunk_partition
+from .utils import chunk_partition
 
 try:
     from typing import TYPE_CHECKING
@@ -109,13 +109,10 @@ class API(APIEndpoint):
         :param batch_id: the id of the batch
         :param file_idx: the index of the blob
         """
+        resource = batch_id
         if file_idx is not None:
-            target = "{}/{}".format(batch_id, file_idx)
-            super(API, self).delete(target)
-        else:
-            target = batch_id
-            with SwapAttr(self, "_cls", Batch):
-                super(API, self).delete(target)
+            resource += "/{}".format(file_idx)
+        super(API, self).delete(resource)
 
     def handlers(self, force=False):
         # type: (Optional[bool]) -> List[str]

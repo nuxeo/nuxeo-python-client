@@ -1,9 +1,9 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import os
 import threading
 
-import os
 import pytest
 
 from nuxeo.compat import text
@@ -15,10 +15,10 @@ from nuxeo.exceptions import (
     UploadError,
 )
 from nuxeo.models import BufferBlob, Document, FileBlob
-from nuxeo.utils import SwapAttr
 from requests.exceptions import ConnectionError
 from sentry_sdk import configure_scope
 
+from .compat import patch
 from .constants import WORKSPACE_ROOT
 from .server import Server
 
@@ -198,7 +198,7 @@ def test_handlers_server_error(server):
     def bad_request(*args, **kwargs):
         raise HTTPError(500, "Server Error", "Mock'ed error")
 
-    with SwapAttr(server.client, "request", bad_request):
+    with patch.object(server.client, "request", new=bad_request):
         assert server.uploads.handlers(force=True) == []
 
 
@@ -495,7 +495,7 @@ def test_upload_retry(tmp_path, retry_server):
     file_in = tmp_path / "file_in"
     file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
-    with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
+    with patch.object(server.client, "host", new="http://localhost:8081/nuxeo/"):
         serv = Server.upload_response_server(
             wait_to_close_event=close_server,
             port=8081,
@@ -514,7 +514,7 @@ def test_upload_resume(tmp_path, server):
     file_in = tmp_path / "file_in"
     file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
-    with SwapAttr(server.client, "host", "http://localhost:8081/nuxeo/"):
+    with patch.object(server.client, "host", new="http://localhost:8081/nuxeo/"):
         close_server = threading.Event()
         serv = Server.upload_response_server(
             wait_to_close_event=close_server,
