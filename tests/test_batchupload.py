@@ -209,13 +209,13 @@ def test_handlers_custom(server):
 
 
 @pytest.mark.parametrize(
-    "filename, mimetypes, expected_mimetype",
+    "filename, mimetypes",
     [
-        ("file.bmp", ["image/bmp", "image/x-ms-bmp"], "image/bmp"),
-        ("file.pdf", ["application/pdf"], "application/pdf"),
+        ("file.bmp", ["image/bmp", "image/x-ms-bmp"]),
+        ("file.pdf", ["application/pdf"]),
     ],
 )
-def test_mimetype(filename, mimetypes, expected_mimetype, tmp_path, server):
+def test_mimetype(filename, mimetypes, tmp_path, server):
     file_in = tmp_path / filename
     file_in.write_bytes(b"0" * 42)
     blob = FileBlob(str(file_in))
@@ -241,7 +241,7 @@ def test_mimetype(filename, mimetypes, expected_mimetype, tmp_path, server):
 
         # Check the mimetype set by the server is correct
         mimetype = info["properties"]["file:content"]["mime-type"]
-        assert mimetype == expected_mimetype
+        assert mimetype in mimetypes
     finally:
         doc.delete()
 
