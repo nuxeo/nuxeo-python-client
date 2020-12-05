@@ -9,6 +9,7 @@ from warnings import warn
 
 import requests
 from requests.adapters import HTTPAdapter
+from urllib3 import __version__ as urllib3_version
 from urllib3.util.retry import Retry
 
 from . import (
@@ -55,6 +56,22 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+if urllib3_version < "1.26.0":
+    DEFAULT_RETRY = Retry(
+        total=MAX_RETRY,
+        backoff_factor=RETRY_BACKOFF_FACTOR,
+        method_whitelist=RETRY_METHODS,
+        status_forcelist=RETRY_STATUS_CODES,
+        raise_on_status=False,
+    )
+else:
+    DEFAULT_RETRY = Retry(
+        total=MAX_RETRY,
+        backoff_factor=RETRY_BACKOFF_FACTOR,
+        allowed_methods=RETRY_METHODS,
+        status_forcelist=RETRY_STATUS_CODES,
+        raise_on_status=False,
+    )
 
 # Custom exception to raise based on the HTTP status code
 # (default will be HTTPError)
@@ -115,13 +132,7 @@ class NuxeoClient(object):
             self.host += "/"
 
         # The retry adapter
-        self.retries = Retry(
-            total=MAX_RETRY,
-            backoff_factor=RETRY_BACKOFF_FACTOR,
-            method_whitelist=RETRY_METHODS,
-            status_forcelist=RETRY_STATUS_CODES,
-            raise_on_status=False,
-        )
+        self.retries = kwargs.pop("retries", None) or DEFAULT_RETRY
 
         # Install the retries mecanism
         self.enable_retry()
