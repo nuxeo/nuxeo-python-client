@@ -77,12 +77,12 @@ class APIEndpoint(object):
 
         response = self.client.request("GET", endpoint, **kwargs)
 
-        if isinstance(response, Response):
-            if raw or response.status_code == 204:
-                return response.content
-            json = response.json()
-        else:
+        if not isinstance(response, Response):
             return response
+
+        if raw or response.status_code == 204:
+            return response.content
+        json = response.json()
 
         if cls is dict:
             return json
