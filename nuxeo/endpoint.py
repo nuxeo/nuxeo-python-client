@@ -67,7 +67,7 @@ class APIEndpoint(object):
         :return: one or more instances of cls parsed from
                  the returned JSON
         """
-        endpoint = self.endpoint
+        endpoint = kwargs.pop("endpoint", "") or self.endpoint
 
         if not cls:
             cls = self._cls
@@ -111,7 +111,7 @@ class APIEndpoint(object):
             else:
                 raise BadQuery("Data must be a Model object or a dictionary.")
 
-        endpoint = self.endpoint
+        endpoint = kwargs.pop("endpoint", "") or self.endpoint
 
         if path:
             endpoint = "{}/{}".format(endpoint, path)

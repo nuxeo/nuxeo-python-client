@@ -5,7 +5,7 @@ from .comments import API as CommentsAPI
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery, HTTPError, UnavailableConvertor
 from .models import Comment, Document
-from .utils import SwapAttr, version_lt
+from .utils import version_lt
 from .workflows import API as WorkflowsAPI
 
 try:
@@ -394,9 +394,9 @@ class API(APIEndpoint):
         # type: (Document) -> Union[Workflow, List[Workflow]]
         """ Get the workflows of a document. """
         path = "id/{}/@workflow".format(document.uid)
-
-        with SwapAttr(self.workflows_api, "endpoint", self.endpoint):
-            return super(WorkflowsAPI, self.workflows_api).get(path=path)
+        return super(WorkflowsAPI, self.workflows_api).get(
+            endpoint=self.endpoint, path=path
+        )
 
     def _path(self, uid=None, path=None):
         # type: (Optional[Text], Optional[Text]) -> Text

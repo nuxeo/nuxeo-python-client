@@ -16,7 +16,8 @@ from nuxeo.constants import MAX_RETRY, RETRY_METHODS
 from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
-from nuxeo.utils import SwapAttr
+
+from .compat import patch
 
 
 @pytest.mark.parametrize(
@@ -106,7 +107,7 @@ def test_check_params_constant(server):
     operation.execute()
 
     # But should fail now
-    with SwapAttr(constants, "CHECK_PARAMS", True):
+    with patch.object(constants, "CHECK_PARAMS", new=True):
         with pytest.raises(BadQuery):
             operation.execute()
 
@@ -117,7 +118,7 @@ def test_check_params_unknown_operation(server):
 
 
 def test_encoding_404_error(server):
-    with SwapAttr(server.client, "host", "http://localhost:8080/"):
+    with patch.object(server.client, "host", new="http://localhost:8080/"):
         with pytest.raises((ConnectionError, HTTPError)) as e:
             server.documents.get(path="/")
         if isinstance(e, HTTPError):
@@ -277,7 +278,7 @@ def test_server_info(server):
 
     # Bad call
     server.client._server_info = None
-    with SwapAttr(server.client, "host", "http://example-42.org/"):
+    with patch.object(server.client, "host", new="http://example-42.org/"):
         assert not server_info()
 
 
@@ -304,7 +305,7 @@ def test_server_version(server):
 
 def test_server_version_bad_url(server):
     server.client._server_info = None
-    with SwapAttr(server.client, "host", "http://example-42.org/"):
+    with patch.object(server.client, "host", new="http://example-42.org/"):
         assert server.client.server_version == "unknown"
         assert str(server.client)
 
@@ -365,7 +366,7 @@ def test_send_wrong_method(server):
 
 def test_server_reachable(server):
     assert server.client.is_reachable()
-    with SwapAttr(server.client, "host", "http://example.org"):
+    with patch.object(server.client, "host", new="http://example.org"):
         assert not server.client.is_reachable()
     assert server.client.is_reachable()
 

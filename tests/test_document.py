@@ -5,8 +5,9 @@ import nuxeo.constants
 import pytest
 from nuxeo.compat import get_bytes
 from nuxeo.models import BufferBlob, Document
-from nuxeo.utils import SwapAttr, version_lt
+from nuxeo.utils import version_lt
 
+from .compat import patch
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
 
 
@@ -57,8 +58,8 @@ def test_document_create(server):
 
 
 def test_document_create_bytes_warning(server):
-    """ Running "python3 -bb -m pytest -W error test..." will fail:
-        BytesWarning: str() on a bytes instance
+    """Running "python3 -bb -m pytest -W error test..." will fail:
+    BytesWarning: str() on a bytes instance
     """
     name = "File.txt"
     properties = {"dc:title": name, "note:note": b"some content"}
@@ -181,7 +182,7 @@ def test_add_permission(server):
     if version_lt(server.client.server_version, "10.10"):
         pytest.skip("Nuxeo 10.10 minimum")
 
-    with SwapAttr(nuxeo.constants, "CHECK_PARAMS", True), Doc(server) as doc:
+    with patch.object(nuxeo.constants, "CHECK_PARAMS", new=True), Doc(server) as doc:
         # NXPY-84: here we should not fail with KeyError: 'list' in check_params()
         doc.add_permission({"permission": "ReadWrite", "users": ["Administrator"]})
 

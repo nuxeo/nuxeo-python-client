@@ -16,7 +16,8 @@ from nuxeo.constants import UP_AMAZON_S3
 from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
 from nuxeo.models import FileBlob
-from nuxeo.utils import SwapAttr
+
+from .compat import patch
 
 
 @pytest.fixture(scope="session")
@@ -127,7 +128,7 @@ def test_upload_not_chunked_error(tmp_path, batch, bucket, server, s3):
     # Simulate a single upload that failed
     uploader = UploaderS3(server.uploads, batch, blob, 1024 * 1024 * 10, s3_client=s3)
 
-    with SwapAttr(uploader.s3_client, "put_object", put_object):
+    with patch.object(uploader.s3_client, "put_object", new=put_object):
         with pytest.raises(UploadError):
             uploader.upload()
         assert uploader.batch.etag is None
@@ -236,7 +237,7 @@ def test_upload_chunked_error(tmp_path, s3, batch, server):
 
     iterator = uploader.iter_upload()
 
-    with SwapAttr(uploader.s3_client, "upload_part", upload_part):
+    with patch.object(uploader.s3_client, "upload_part", new=upload_part):
         with pytest.raises(UploadError):
             next(iterator)
     assert not uploader.is_complete()

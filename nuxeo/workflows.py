@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from .endpoint import APIEndpoint
 from .models import Workflow
-from .utils import SwapAttr
 
 try:
     from typing import TYPE_CHECKING
@@ -65,13 +64,11 @@ class API(APIEndpoint):
         if "variables" in options:
             data["variables"] = options["variables"]
 
+        kwargs = {}
         if document:
-            path = "id/{}/@workflow".format(document.uid)
-            with SwapAttr(self, "endpoint", self.client.api_path):
-                workflow = super(API, self).post(data, path=path)
-        else:
-            workflow = super(API, self).post(data)
-        return workflow
+            kwargs["endpoint"] = self.client.api_path
+            kwargs["path"] = "id/{}/@workflow".format(document.uid)
+        return super(API, self).post(data, **kwargs)
 
     start = post  # Alias for clarity
 

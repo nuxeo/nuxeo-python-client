@@ -319,29 +319,3 @@ def version_lt(x, y):
     # type: (Text, Text) -> bool
     """ x < y """
     return version_compare_client(x, y) < 0
-
-
-class SwapAttr(object):
-    """
-    Context manager to swap an attribute's value:
-
-        >>> # self.person equals 'Alice'
-        >>> with SwapAttr(self, 'person', 'Bob'):
-        ...     # ...
-
-    """
-
-    def __init__(self, obj, attr, value):
-        # type: (Any, Text, Any) -> None
-        self.obj = obj
-        self.attr = attr
-        self.value = value
-        self.old_value = getattr(obj, attr)
-
-    def __enter__(self):
-        # type: () -> None
-        setattr(self.obj, self.attr, self.value)
-
-    def __exit__(self, *args):
-        # type: (Any) -> None
-        setattr(self.obj, self.attr, self.old_value)

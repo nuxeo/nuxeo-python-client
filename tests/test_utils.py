@@ -5,7 +5,6 @@ import sys
 import pytest
 from nuxeo.constants import UP_AMAZON_S3
 from nuxeo.utils import (
-    SwapAttr,
     chunk_partition,
     get_digester,
     guess_mimetype,
@@ -16,6 +15,8 @@ from nuxeo.utils import (
     version_lt,
 )
 from sentry_sdk import configure_scope
+
+from .compat import patch
 
 
 # We do not need to set-up a server and log the current test
@@ -183,7 +184,7 @@ def test_guess_mimetype(name, mime):
 def test_guess_mimetype_patch():
     """ Test WIN32_PATCHED_MIME_TYPES. """
 
-    with SwapAttr(sys, "platform", "win32"):
+    with patch.object(sys, "platform", new="win32"):
         assert guess_mimetype("foo.ppt")
 
 
