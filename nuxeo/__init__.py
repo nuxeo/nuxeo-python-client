@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 
 
 __author__ = "Nuxeo"
-__version__ = "3.1.2"
+__version__ = "4.0.0"
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 
