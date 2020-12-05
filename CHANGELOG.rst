@@ -7,6 +7,7 @@ Changelog
 Release date: ``2020-xx-xx``
 
 - `NXPY-186 <https://jira.nuxeo.com/browse/NXPY-186>`__: Remove the ``Blob.batch_id`` attribute
+- `NXPY-191 <https://jira.nuxeo.com/browse/NXPY-191>`__: Fix ``urllib3`` DeprecationWarning in client.py
 - `NXPY-192 <https://jira.nuxeo.com/browse/NXPY-192>`__: Add support for Python 3.10
 - `NXPY-193 <https://jira.nuxeo.com/browse/NXPY-193>`__: Fix thread-safety in uploads and workflows
 
