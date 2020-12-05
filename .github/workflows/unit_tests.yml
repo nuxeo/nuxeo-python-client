@@ -16,15 +16,13 @@ jobs:
     strategy:
       matrix:
         nuxeo:
-          - master
           - '10.10'
-          - '9.10'
         python:
-          - 2.7
-          # - 3.5 (NXPY-99)
-          - 3.6
-          - 3.7
-          - 3.8
+          # Minimum supported version
+          - '2.7'
+          # Maximum supported version
+          # Note: 3.10 is still in alpha, so we stick with 3.9 until there is an official 3.10
+          - '3.9'
 
     services:
       nuxeo:
@@ -55,4 +53,4 @@ jobs:
       env:
         SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       # Run tox using the version of Python in `PATH`
-      run: tox -e py
+      run: python -m tox -e py

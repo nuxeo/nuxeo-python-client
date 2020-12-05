@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-192 <https://jira.nuxeo.com/browse/NXPY-192>`__: Add support for Python 3.10
 
 Technical changes
 -----------------
