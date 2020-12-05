@@ -259,30 +259,6 @@ class Blob(Model):
             model.uploadedSize = model.size
         return model
 
-    @property
-    def batch_id(self):
-        """Kept for compatibility reasons, will be removed in version 4.0."""
-        from warnings import warn
-
-        warn(
-            "batch_id is deprecated and will be removed in version 4.0. Use batchId instead.",
-            DeprecationWarning,
-            2,
-        )
-        return self.batchId
-
-    @batch_id.setter
-    def batch_id(self, value):
-        """Kept for compatibility reasons, will be removed in version 4.0."""
-        from warnings import warn
-
-        warn(
-            "batch_id is deprecated and will be removed in version 4.0. Use batchId instead.",
-            DeprecationWarning,
-            2,
-        )
-        self.batchId = value
-
     def to_json(self):
         # type: () -> Dict[Text, Text]
         """ Return a JSON object used during the upload. """
