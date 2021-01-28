@@ -400,18 +400,19 @@ class NuxeoClient(object):
 
         :param error: The error to handle
         """
-        if isinstance(error, requests.HTTPError):
-            try:
-                error_data = error.response.json()
-            except ValueError:
-                error_data = {
-                    "status": error.response.status_code,
-                    "message": error.response.content,
-                }
+        if not isinstance(error, requests.HTTPError):
+            return error
 
-            error_cls = HTTP_ERROR.get(error_data.get("status"), HTTPError)
-            error = error_cls.parse(error_data)
-        return error
+        try:
+            error_data = error.response.json()
+        except ValueError:
+            error_data = {
+                "status": error.response.status_code,
+                "message": error.response.content,
+            }
+
+        error_cls = HTTP_ERROR.get(error_data.get("status"), HTTPError)
+        return error_cls.parse(error_data)
 
     @staticmethod
     def _log_response(response, limit_size=LOG_LIMIT_SIZE):
