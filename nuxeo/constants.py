@@ -23,6 +23,9 @@ DEFAULT_URL = "http://localhost:8080/nuxeo/"
 #   - 'applicationName' URL parameter
 DEFAULT_APP_NAME = "Python client"
 
+# Name of the HTTP header for idempotent requests
+IDEMPOTENCY_KEY = "Idempotency-Key"
+
 # Maximum size to not overflow when logging raw content of a HTTP response
 LOG_LIMIT_SIZE = 5 * 1024 * 1024  # 5 MiB
 

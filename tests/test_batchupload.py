@@ -3,15 +3,19 @@ from __future__ import unicode_literals
 
 import os
 import threading
+import uuid
+from collections import defaultdict
 
 import pytest
 
 from nuxeo.compat import text
+from nuxeo.constants import IDEMPOTENCY_KEY
 from nuxeo.exceptions import (
     CorruptedFile,
     HTTPError,
     InvalidBatch,
     InvalidUploadHandler,
+    OngoingRequestError,
     UploadError,
 )
 from nuxeo.models import BufferBlob, Document, FileBlob
@@ -545,3 +549,75 @@ def test_wrong_batch_id(server):
     batch.uid = "1234"
     with pytest.raises(HTTPError):
         batch.get(0)
+
+
+def test_idempotent_requests(tmp_path, server):
+    """
+    - upload a file in chunked mode
+    - call 5 times (concurrently) the FileManager.Import operation with that file
+    - check there are both conflict errors and only one created document
+    """
+    file_in = tmp_path / "file_in"
+    file_in.write_bytes(os.urandom(1024 * 1024 * 10))
+
+    batch = server.uploads.batch()
+    blob = FileBlob(str(file_in))
+    batch.upload(blob, chunked=True, chunk_size=1024 * 1024)
+
+    idempotency_key = str(uuid.uuid4())
+    res = defaultdict(int)
+
+    def func():
+        try:
+            op = server.operations.execute(
+                command="FileManager.Import",
+                context={"currentDocument": doc.path},
+                input_obj=blob,
+                headers={
+                    IDEMPOTENCY_KEY: idempotency_key,
+                    "X-Batch-No-Drop": "true",
+                },
+            )
+            res[op["uid"]] += 1
+        except OngoingRequestError as exc:
+            res[str(exc)] += 1
+
+    # Create a folder
+    name = str(uuid.uuid4())
+    folder = Document(name=name, type="Folder", properties={"dc:title": name})
+    doc = server.documents.create(folder, parent_path=WORKSPACE_ROOT)
+
+    try:
+        # Concurrent calls to the same endpoint
+        threads = [threading.Thread(target=func) for _ in range(5)]
+        threads[0].start()
+        threads[0].join(0.001)
+
+        for thread in threads[1:]:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        # Checks
+        # 1 docid + 1 error (both can be present multiple times)
+        assert len(res.keys()) == 2
+        error = (
+            "OngoingRequestError: a request with the idempotency key"
+            " '{}' is already being processed."
+        ).format(idempotency_key)
+        assert error in res
+
+        # Ensure there is only 1 doc on the server
+        children = server.documents.get_children(path=doc.path)
+        assert len(children) == 1
+        assert children[0].title == "file_in"
+
+        # Check calling the same request with the same idempotency key returns always the same result
+        current_identical_doc = res[children[0].uid]
+        current_identical_errors = res[error]
+        for _ in range(10):
+            func()
+        assert res[error] == current_identical_errors
+        assert res[children[0].uid] == current_identical_doc + 10
+    finally:
+        doc.delete()
