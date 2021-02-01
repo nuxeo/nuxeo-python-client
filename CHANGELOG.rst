@@ -6,7 +6,14 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
-- `NXPY-1 <https://jira.nuxeo.com/browse/NXPY-1>`__:
+- `NXPY-199 <https://jira.nuxeo.com/browse/NXPY-199>`__: Add support for idempotent calls
+
+Technical changes
+-----------------
+
+- Added nuxeo/constants.py::\ ``IDEMPOTENCY_KEY``
+- Added nuxeo/exceptions.py::\ ``Conflict``
+- Added nuxeo/exceptions.py::\ ``OngoingRequestError``
 
 4.0.0
 -----

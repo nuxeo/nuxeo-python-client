@@ -1,8 +1,19 @@
-from nuxeo.exceptions import Forbidden, HTTPError, Unauthorized
+from nuxeo.exceptions import (
+    Conflict,
+    Forbidden,
+    HTTPError,
+    OngoingRequestError,
+    Unauthorized,
+)
 
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
+
+
+def test_crafted_conflict():
+    exc = Conflict()
+    assert exc.status == 409
 
 
 def test_crafted_forbidden():
@@ -37,6 +48,12 @@ def test_crafted_httperror_parse():
     assert exc.status == -1
     assert exc.message == "oups"
     assert exc.stacktrace == "NulPointerException: bla*3"
+
+
+def test_crafted_ongoing_request_error():
+    exc = OngoingRequestError("123-456-789")
+    assert exc.status == 409
+    assert exc.request_uid == "123-456-789"
 
 
 def test_crafted_unauthorized():

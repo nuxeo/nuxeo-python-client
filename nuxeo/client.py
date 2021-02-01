@@ -31,6 +31,7 @@ from .constants import (
     DEFAULT_API_PATH,
     DEFAULT_APP_NAME,
     DEFAULT_URL,
+    IDEMPOTENCY_KEY,
     LOG_LIMIT_SIZE,
     MAX_RETRY,
     RETRY_BACKOFF_FACTOR,
@@ -39,7 +40,14 @@ from .constants import (
     TIMEOUT_CONNECT,
     TIMEOUT_READ,
 )
-from .exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
+from .exceptions import (
+    BadQuery,
+    Conflict,
+    Forbidden,
+    HTTPError,
+    OngoingRequestError,
+    Unauthorized,
+)
 from .tcp import TCPKeepAliveHTTPSAdapter
 from .utils import get_response_content, json_helper
 
@@ -76,6 +84,7 @@ else:
 # Custom exception to raise based on the HTTP status code
 # (default will be HTTPError)
 HTTP_ERROR = {
+    requests.codes.conflict: Conflict,
     requests.codes.forbidden: Forbidden,
     requests.codes.unauthorized: Unauthorized,
 }
@@ -411,8 +420,11 @@ class NuxeoClient(object):
                 "message": error.response.content,
             }
 
-        error_cls = HTTP_ERROR.get(error_data.get("status"), HTTPError)
-        return error_cls.parse(error_data)
+        status = error_data.get("status", 0)
+        request_uid = error.response.headers.get(IDEMPOTENCY_KEY, "")
+        if status == 409 and request_uid:
+            return OngoingRequestError(request_uid)
+        return HTTP_ERROR.get(status, HTTPError).parse(error_data)
 
     @staticmethod
     def _log_response(response, limit_size=LOG_LIMIT_SIZE):

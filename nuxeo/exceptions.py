@@ -89,6 +89,12 @@ class HTTPError(RetryError, NuxeoError):
         return model
 
 
+class Conflict(HTTPError):
+    """ Exception thrown when the HTTPError code is 409. """
+
+    status = 409
+
+
 class Forbidden(HTTPError):
     """ Exception thrown when the HTTPError code is 403. """
 
@@ -111,6 +117,23 @@ class InvalidUploadHandler(NuxeoError):
         # type: () -> Text
         msg = "{}: the upload handler {!r} is not one of {}."
         return msg.format(type(self).__name__, self.handler, self.handlers)
+
+    def __str__(self):
+        # type: () -> Text
+        return repr(self)
+
+
+class OngoingRequestError(Conflict):
+    """ Exception thrown when doing an idempotent call that is already being processed. """
+
+    def __init__(self, request_uid):
+        # type: (Text) -> None
+        self.request_uid = request_uid
+
+    def __repr__(self):
+        # type: () -> Text
+        msg = "{}: a request with the idempotency key {!r} is already being processed."
+        return msg.format(type(self).__name__, self.request_uid)
 
     def __str__(self):
         # type: () -> Text
