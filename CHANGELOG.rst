@@ -6,6 +6,7 @@ Changelog
 
 Release date: ``2020-xx-xx``
 
+- `NXPY-198 <https://jira.nuxeo.com/browse/NXPY-198>`__: Automatic deployment via GitHub Actions
 - `NXPY-199 <https://jira.nuxeo.com/browse/NXPY-199>`__: Add support for idempotent calls
 
 Technical changes
