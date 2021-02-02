@@ -190,12 +190,7 @@ And customize the Sentry environment too:
 Deploying
 ~~~~~~~~~
 
-For the maintainer, the command to distribute the module is:
-
-.. code:: shell
-
-    python3 -m pip install wheel
-    python3 setup.py sdist bdist_wheel upload
+Releases are fully automated, have a look at that `GitHub Action <https://github.com/nuxeo/nuxeo-python-client/actions?query=workflow%3ARelease>`__.
 
 Reporting Issues
 ~~~~~~~~~~~~~~~~
