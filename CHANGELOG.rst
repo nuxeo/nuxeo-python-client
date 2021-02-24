@@ -4,7 +4,7 @@ Changelog
 4.0.1
 -----
 
-Release date: ``2020-xx-xx``
+Release date: ``2021-02-24``
 
 - `NXPY-198 <https://jira.nuxeo.com/browse/NXPY-198>`__: Automatic deployment via GitHub Actions
 - `NXPY-199 <https://jira.nuxeo.com/browse/NXPY-199>`__: Add support for idempotent calls
