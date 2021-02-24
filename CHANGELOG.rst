@@ -8,10 +8,16 @@ Release date: ``2020-xx-xx``
 
 - `NXPY-198 <https://jira.nuxeo.com/browse/NXPY-198>`__: Automatic deployment via GitHub Actions
 - `NXPY-199 <https://jira.nuxeo.com/browse/NXPY-199>`__: Add support for idempotent calls
+- `NXPY-202 <https://jira.nuxeo.com/browse/NXPY-202>`__: Add SSO with Portals authentication
 
 Technical changes
 -----------------
 
+- Added ``TokenAuth.HEADER_TOKEN``
+- Added nuxeo/auth/portal_sso.py
+- Added nuxeo/auth/token.py
+- Added nuxeo/auth/utils.py
+- Removed nuxeo/auth.py
 - Added nuxeo/constants.py::\ ``IDEMPOTENCY_KEY``
 - Added nuxeo/exceptions.py::\ ``Conflict``
 - Added nuxeo/exceptions.py::\ ``OngoingRequestError``
