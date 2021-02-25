@@ -1,7 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import pytest
 from requests import Request
+
+from nuxeo.compat import text
+from nuxeo.exceptions import NuxeoError
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
@@ -19,16 +23,7 @@ def test_make_portal_sso_token():
     assert result == expected
 
 
-def test_nuxeo_token_auth():
-    from nuxeo.auth import TokenAuth
-
-    auth = TokenAuth("secure_token")
-    req = Request("GET", "https://httpbin.org/get", auth=auth)
-    prepared = req.prepare()
-    assert prepared.headers[auth.HEADER_TOKEN] == "secure_token"
-
-
-def test_portal_sso_auth():
+def test_portal_sso():
     from nuxeo.auth import PortalSSOAuth
 
     auth = PortalSSOAuth("alice", "secure secret")
@@ -38,3 +33,36 @@ def test_portal_sso_auth():
     assert auth.NX_TOKEN in prepared.headers
     assert auth.NX_RD in prepared.headers
     assert auth.NX_TS in prepared.headers
+
+
+def test_portal_sso_digest_algorithm_uppercase():
+    from nuxeo.auth import PortalSSOAuth
+
+    auth = PortalSSOAuth("alice", "secure secret", digest_algorithm="MD5")
+    req = Request("GET", "https://httpbin.org/get", auth=auth)
+    prepared = req.prepare()
+    assert prepared.headers[auth.NX_USER] == "alice"
+    assert auth.NX_TOKEN in prepared.headers
+    assert auth.NX_RD in prepared.headers
+    assert auth.NX_TS in prepared.headers
+
+
+def test_portal_sso_digest_algorithm_not_found():
+    from nuxeo.auth import PortalSSOAuth
+
+    auth = PortalSSOAuth("alice", "secure secret", digest_algorithm="boom")
+    req = Request("GET", "https://httpbin.org/get", auth=auth)
+    with pytest.raises(NuxeoError) as exc:
+        req.prepare()
+    error = text(exc.value)
+    msg = "Cannot compute token because of unknown digest algorithm: 'boom'"
+    assert msg in error
+
+
+def test_token():
+    from nuxeo.auth import TokenAuth
+
+    auth = TokenAuth("secure_token")
+    req = Request("GET", "https://httpbin.org/get", auth=auth)
+    prepared = req.prepare()
+    assert prepared.headers[auth.HEADER_TOKEN] == "secure_token"

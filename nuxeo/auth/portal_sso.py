@@ -33,7 +33,7 @@ class PortalSSOAuth(AuthBase):
         # type: (Text, Text, Optional[Text]) -> None
         self.username = username
         self.secret = secret
-        self.digest_algorithm = digest_algorithm
+        self.digest_algorithm = digest_algorithm.lower()
 
     def __eq__(self, other):
         # type: (object) -> bool
