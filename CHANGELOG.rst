@@ -7,6 +7,7 @@ Changelog
 Release date: ``2021-xx-xx``
 
 - `NXPY-203 <https://jira.nuxeo.com/browse/NXPY-203>`__: Better support badly cased or unknown Portal SSO digest algorithms
+- `NXPY-205 <https://jira.nuxeo.com/browse/NXPY-205>`__: Improve S3 non-chunked uploads
 
 Technical changes
 -----------------
