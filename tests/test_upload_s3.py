@@ -41,7 +41,7 @@ def bucket():
 @pytest.fixture
 def s3(aws_credentials, bucket):
     with mock_s3():
-        client = boto3.client("s3", region_name="eu-west-1")
+        client = boto3.client(UP_AMAZON_S3, region_name="eu-west-1")
 
         # Create a bucket
         client.create_bucket(
@@ -55,7 +55,7 @@ def s3(aws_credentials, bucket):
 @pytest.fixture
 def batch(aws_pwd, bucket, server):
     # TODO: when using a real server with S3 configured, just use:
-    #   obj = server.uploads.batch(handler="s3")
+    #   obj = server.uploads.batch(handler=UP_AMAZON_S3)
     obj = server.uploads.batch()
     obj.provider = UP_AMAZON_S3
     obj.extraInfo = {
