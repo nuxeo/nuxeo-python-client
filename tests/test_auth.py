@@ -55,7 +55,7 @@ def test_portal_sso_digest_algorithm_not_found():
     with pytest.raises(NuxeoError) as exc:
         req.prepare()
     error = text(exc.value)
-    msg = "Cannot compute token because of unknown digest algorithm: 'boom'"
+    msg = "Cannot compute token because of unknown digest algorithm"
     assert msg in error
 
 
