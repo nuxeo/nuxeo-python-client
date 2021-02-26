@@ -23,6 +23,8 @@ try:
 
     if TYPE_CHECKING:
         from typing import Any, Dict, Generator, List, Tuple
+
+        import botocore.client
 except ImportError:
     pass
 
@@ -39,52 +41,32 @@ class UploaderS3(Uploader):
 
         super(UploaderS3, self).__init__(*args, **kwargs)
 
-        # Instantiate the S3 client
+        # S3 client configuration
         s3_info = self.batch.extraInfo
         self.bucket = s3_info["bucket"]
         self.key = "{}{}".format(s3_info["baseKey"], self.batch.key or self.blob.name)
+        self._s3_config = Config(
+            region_name=s3_info["region"],
+            s3={
+                "addressing_style": "path"
+                if s3_info.get("usePathStyleAccess", False)
+                else "auto",
+                "use_accelerate_endpoint": s3_info.get("useS3Accelerate", False),
+            },
+        )
+        self.s3_client = s3_client or self._create_s3_client(s3_info)
 
-        if not s3_client:
-            # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-multiprocessing
-
-            # The session will be able to automatically refresh credentials
-            creds = DeferredRefreshableCredentials(
-                self._refresh_credentials,
-                "sts-assume-role",
-            )
-            session = get_session()
-            session._credentials = creds
-
-            # Save the S3 configuration into a private attr to ease debugging
-            self._s3_config = Config(
-                region_name=s3_info["region"],
-                s3={
-                    "addressing_style": "path"
-                    if s3_info.get("usePathStyleAccess", False)
-                    else "auto",
-                    "use_accelerate_endpoint": s3_info.get("useS3Accelerate", False),
-                },
-            )
-            s3_client = boto3.Session(botocore_session=session).client(
-                "s3",
-                endpoint_url=s3_info.get("endpoint") or None,
-                config=self._s3_config,
-            )
-
-        self.s3_client = s3_client
-
-    def _refresh_credentials(self):
-        # type: () -> Dict[str, Any]
-        """Method called automatically by boto3 to refresh tokens when needed."""
-        data = self.service.refresh_token(self.batch)
-        return {
-            "access_key": data["awsSecretKeyId"],
-            "secret_key": data["awsSecretAccessKey"],
-            "token": data["awsSessionToken"],
-            "expiry_time": datetime.fromtimestamp(
-                data["expiration"] / 1000, tz=tzlocal()
-            ).isoformat(),
-        }
+    def _create_s3_client(self, s3_info):
+        # type: (Dict[str, Any]) -> botocore.client.BaseClient
+        """Create the S3 client."""
+        return boto3.Session().client(
+            UP_AMAZON_S3,
+            aws_access_key_id=s3_info["awsSecretKeyId"],
+            aws_secret_access_key=s3_info["awsSecretAccessKey"],
+            aws_session_token=s3_info["awsSessionToken"],
+            endpoint_url=s3_info.get("endpoint") or None,
+            config=self._s3_config,
+        )
 
     def upload(self):
         # type: () -> None
@@ -148,6 +130,37 @@ class ChunkUploaderS3(UploaderS3):
 
         self._to_upload = []
         self._compute_chunks_left()
+
+    def _create_s3_client(self, s3_info):
+        # type: (Dict[str, Any]) -> botocore.client.BaseClient
+        """Create the S3 client with automatic credentials renewal."""
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-and-multiprocessing
+        # The session will be able to automatically refresh credentials
+        creds = DeferredRefreshableCredentials(
+            self._refresh_credentials,
+            "sts-assume-role",
+        )
+        session = get_session()
+        session._credentials = creds
+
+        return boto3.Session(botocore_session=session).client(
+            UP_AMAZON_S3,
+            endpoint_url=s3_info.get("endpoint") or None,
+            config=self._s3_config,
+        )
+
+    def _refresh_credentials(self):
+        # type: () -> Dict[str, Any]
+        """Method called automatically by boto3 to refresh tokens when needed."""
+        data = self.service.refresh_token(self.batch)
+        return {
+            "access_key": data["awsSecretKeyId"],
+            "secret_key": data["awsSecretAccessKey"],
+            "token": data["awsSessionToken"],
+            "expiry_time": datetime.fromtimestamp(
+                data["expiration"] / 1000, tz=tzlocal()
+            ).isoformat(),
+        }
 
     def new(self):
         """
