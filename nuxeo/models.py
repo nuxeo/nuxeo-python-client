@@ -14,16 +14,7 @@ try:
 
     if TYPE_CHECKING:
         from typing import Any, BinaryIO, Dict, List, Optional, Text, Union
-        from .comments import API as CommentsAPI
-        from .directories import API as DirectoriesAPI
-        from .documents import API as DocumentsAPI
         from .endpoint import APIEndpoint
-        from .groups import API as GroupsAPI
-        from .operations import API as OperationsAPI
-        from .tasks import API as TasksAPI
-        from .uploads import API as UploadsAPI
-        from .users import API as UsersAPI
-        from .workflows import API as WorkflowsAPI
 except ImportError:
     pass
 
@@ -35,12 +26,10 @@ class Model(object):
     """ Base class for all entities. """
 
     _valid_properties = {}  # type: Dict[Text, Any]
-    service = None  # type: APIEndpoint
-    uid = None  # type: Text
 
     def __init__(self, service=None, **kwargs):
         # type: (Optional[APIEndpoint], Any) -> None
-        self.service = service
+        self.service = service  # type: APIEndpoint
 
         # Declare attributes
         for key, default in type(self)._valid_properties.items():
@@ -130,7 +119,6 @@ class Batch(Model):
         "provider": None,
         "upload_idx": 0,
     }
-    service = None  # type: UploadsAPI
 
     @property
     def uid(self):
@@ -246,7 +234,6 @@ class Blob(Model):
         "uploadedChunkIds": [],
         "uploadedSize": 0,
     }
-    service = None  # type: UploadsAPI
 
     @classmethod
     def parse(cls, json, service=None):
@@ -273,8 +260,6 @@ class BufferBlob(Blob):
     with the `with` statement.
     """
 
-    stringio = None  # type: Optional[StringIO]
-
     def __init__(self, data, **kwargs):
         # type: (Text, Any) -> None
         """
@@ -282,6 +267,7 @@ class BufferBlob(Blob):
         :param **kwargs: named attributes
         """
         super(BufferBlob, self).__init__(**kwargs)
+        self.stringio = None  # type: Optional[StringIO]
         self.buffer = data
         self.size = len(self.buffer)
         self.mimetype = "application/octet-stream"
@@ -321,7 +307,6 @@ class Comment(Model):
         "parentId": None,
         "text": None,
     }
-    service = None  # type: CommentsAPI
 
     @property
     def uid(self):
@@ -372,9 +357,6 @@ class FileBlob(Blob):
     with the `with` statement.
     """
 
-    # File descriptor
-    fd = None  # type: Optional[BinaryIO]
-
     def __init__(self, path, **kwargs):
         # type: (Text, Any) -> None
         """
@@ -382,6 +364,7 @@ class FileBlob(Blob):
         :param **kwargs: named attributes
         """
         super(FileBlob, self).__init__(**kwargs)
+        self.fd = None  # type: Optional[BinaryIO]
         self.path = path
         self.name = os.path.basename(self.path)
         self.size = os.path.getsize(self.path)
@@ -416,7 +399,6 @@ class Directory(Model):
         "entries": [],
         "entity-type": "directory",
     }
-    service = None  # type: DirectoriesAPI
 
     @property
     def uid(self):
@@ -471,7 +453,6 @@ class DirectoryEntry(Model):
         "entity-type": "directoryEntry",
         "properties": {},
     }
-    service = None  # type: DirectoriesAPI
 
     @property
     def uid(self):
@@ -513,7 +494,6 @@ class Document(RefreshableModel):
         "uid": None,
         "versionLabel": None,
     }
-    service = None  # type: DocumentsAPI
 
     @property
     def workflows(self):
@@ -679,7 +659,6 @@ class Group(Model):
         "memberGroups": [],
         "memberUsers": [],
     }
-    service = None  # type: GroupsAPI
 
     @property
     def uid(self):
@@ -702,7 +681,6 @@ class Operation(Model):
         "params": {},
         "progress": 0,
     }
-    service = None  # type: OperationsAPI
 
     def execute(self, **kwargs):
         # type: (Any) -> Any
@@ -730,7 +708,6 @@ class Task(RefreshableModel):
         "workflowInstanceId": None,
         "workflowModelName": None,
     }
-    service = None  # type: TasksAPI
 
     @property
     def uid(self):
@@ -769,7 +746,6 @@ class User(RefreshableModel):
         "isAnonymous": False,
         "properties": {},
     }
-    service = None  # type: UsersAPI
 
     @property
     def uid(self):
@@ -807,7 +783,6 @@ class Workflow(Model):
         "variables": {},
         "workflowModelName": None,
     }
-    service = None  # type: WorkflowsAPI
 
     @property
     def tasks(self):

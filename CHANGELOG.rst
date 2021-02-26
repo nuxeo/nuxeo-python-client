@@ -12,7 +12,21 @@ Release date: ``2021-xx-xx``
 Technical changes
 -----------------
 
--
+- Removed ``Batch.service`` class attribute
+- Removed ``Blob.service`` class attribute
+- Removed ``BufferBlob.stringio`` class attribute
+- Removed ``Comment.service`` class attribute
+- Removed ``FileBlob.fd`` class attribute
+- Removed ``Directory.service`` class attribute
+- Removed ``DirectoryEntry.service`` class attribute
+- Removed ``Document.service`` class attribute
+- Removed ``Group.service`` class attribute
+- Removed ``Model.service`` class attribute
+- Removed ``Model.uid`` class attribute
+- Removed ``Operation.service`` class attribute
+- Removed ``Task.service`` class attribute
+- Removed ``User.service`` class attribute
+- Removed ``Workflow.service`` class attribute
 
 4.1.0
 -----
