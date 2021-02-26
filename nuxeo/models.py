@@ -32,7 +32,12 @@ class Model(object):
         self.service = service  # type: APIEndpoint
 
         # Declare attributes
-        for key, default in type(self)._valid_properties.items():
+        for key, default in type(self)._valid_properties.copy().items():
+            # Reset mutable objects to prevent data leaks
+            if isinstance(default, dict):
+                default = {}
+            elif isinstance(default, list):
+                default = []
             key = key.replace("-", "_")
             setattr(self, key, kwargs.get(key, default))
 
