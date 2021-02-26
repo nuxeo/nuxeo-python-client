@@ -141,6 +141,7 @@ For instance, you can use the Amazon provider with its S3 Direct Upload.
 
 .. code:: python
 
+    from nuxeo.constants import UP_AMAZON_S3
     from nuxeo.models import Document, FileBlob
 
     # Create a document
@@ -153,7 +154,7 @@ For instance, you can use the Amazon provider with its S3 Direct Upload.
     file = nuxeo.documents.create(new_file, parent_path="/default-domain/workspaces")
 
     # Create a batch using S3
-    batch = nuxeo.uploads.batch(handler="s3")
+    batch = nuxeo.uploads.batch(handler=UP_AMAZON_S3)
 
     # Create a blob
     blob = FileBlob("/path/to/file")

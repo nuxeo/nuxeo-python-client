@@ -9,7 +9,7 @@ from collections import defaultdict
 import pytest
 
 from nuxeo.compat import text
-from nuxeo.constants import IDEMPOTENCY_KEY
+from nuxeo.constants import IDEMPOTENCY_KEY, UP_AMAZON_S3
 from nuxeo.exceptions import (
     CorruptedFile,
     HTTPError,
@@ -185,7 +185,7 @@ def test_handlers(server):
     assert isinstance(handlers, list)
     assert "default" in handlers
 
-    if "s3" in handlers:
+    if UP_AMAZON_S3 in handlers:
         assert server.uploads.has_s3()
     else:
         assert not server.uploads.has_s3()
