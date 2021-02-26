@@ -4,7 +4,7 @@ Changelog
 4.1.1
 -----
 
-Release date: ``2021-xx-xx``
+Release date: ``2021-02-26``
 
 - `NXPY-203 <https://jira.nuxeo.com/browse/NXPY-203>`__: Better support badly cased or unknown Portal SSO digest algorithms
 - `NXPY-204 <https://jira.nuxeo.com/browse/NXPY-204>`__: Fix data leak issue with mutable model properties
