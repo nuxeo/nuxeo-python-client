@@ -24,7 +24,7 @@ try:
     if TYPE_CHECKING:
         from typing import Any, Dict, Generator, List, Tuple
 
-        import botocore.client
+        from botocore.client import BaseClient
 except ImportError:
     pass
 
@@ -57,7 +57,7 @@ class UploaderS3(Uploader):
         self.s3_client = s3_client or self._create_s3_client(s3_info)
 
     def _create_s3_client(self, s3_info):
-        # type: (Dict[str, Any]) -> botocore.client.BaseClient
+        # type: (Dict[str, Any]) -> BaseClient
         """Create the S3 client."""
         return boto3.Session().client(
             UP_AMAZON_S3,
@@ -132,7 +132,7 @@ class ChunkUploaderS3(UploaderS3):
         self._compute_chunks_left()
 
     def _create_s3_client(self, s3_info):
-        # type: (Dict[str, Any]) -> botocore.client.BaseClient
+        # type: (Dict[str, Any]) -> BaseClient
         """Create the S3 client with automatic credentials renewal."""
         # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-and-multiprocessing
         # The session will be able to automatically refresh credentials
