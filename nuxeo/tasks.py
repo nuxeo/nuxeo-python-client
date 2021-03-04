@@ -19,6 +19,8 @@ except ImportError:
 class API(APIEndpoint):
     """ Endpoint for tasks. """
 
+    __slots__ = ()
+
     def __init__(self, client, endpoint="task", headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         super(API, self).__init__(client, endpoint=endpoint, cls=Task, headers=headers)
@@ -65,9 +67,10 @@ class API(APIEndpoint):
         :param comment: for the action
         :return: Updated task
         """
-        task.comment = comment
         if variables:
             task.variables.update(variables)
+        if comment:
+            task.variables["comment"] = comment
 
         request_path = "{}/{}".format(task.uid, action)
         return super(API, self).put(task, path=request_path)

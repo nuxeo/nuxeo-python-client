@@ -17,6 +17,8 @@ except ImportError:
 class API(APIEndpoint):
     """ Endpoint for comments. """
 
+    __slots__ = ()
+
     def __init__(self, client, endpoint="id", headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         super(API, self).__init__(

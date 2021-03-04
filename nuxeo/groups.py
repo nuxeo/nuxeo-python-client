@@ -17,6 +17,8 @@ except ImportError:
 class API(APIEndpoint):
     """ Endpoint for groups. """
 
+    __slots__ = ("params",)
+
     def __init__(self, client, endpoint="group", headers=None):
         # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
         self.params = {"fetch-group": ["memberUsers", "memberGroups"]}

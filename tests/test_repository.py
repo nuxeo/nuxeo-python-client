@@ -28,7 +28,6 @@ class Doc(object):
             properties={"dc:title": self.filename},
         )
         self.doc = self.server.documents.create(doc, parent_path=WORKSPACE_ROOT)
-        self.doc.filename = self.filename
 
         if self.blob:
             blob = BufferBlob(
@@ -97,7 +96,7 @@ def test_convert(server):
         try:
             res = doc.convert({"format": "html"})
             assert b"<html" in res
-            assert doc.filename.encode("utf-8") in res
+            assert doc.properties["dc:title"].encode("utf-8") in res
         except UnavailableConvertor:
             pytest.mark.xfail("No more converters (NXP-28123)")
 
@@ -107,7 +106,7 @@ def test_convert_given_converter(server):
         try:
             res = doc.convert({"converter": "office2html"})
             assert b"<html" in res
-            assert doc.filename.encode("utf-8") in res
+            assert doc.properties["dc:title"].encode("utf-8") in res
         except UnavailableConvertor:
             pytest.mark.xfail("No more converters (NXP-28123)")
 
@@ -138,7 +137,7 @@ def test_convert_xpath(server):
         try:
             res = doc.convert({"xpath": "file:content", "type": "text/html"})
             assert b"<html" in res
-            assert doc.filename.encode("utf-8") in res
+            assert doc.properties["dc:title"].encode("utf-8") in res
         except UnavailableConvertor:
             pytest.mark.xfail("No more converters (NXP-28123)")
 
@@ -148,7 +147,8 @@ def test_create_doc_and_delete(server):
         assert isinstance(doc, Document)
         assert doc.path.startswith(WORKSPACE_ROOT)
         assert doc.type == "Workspace"
-        assert doc.get("dc:title") == doc.filename
+        assert doc.get("dc:title").startswith("ndt-")
+        assert doc.get("dc:title").endswith(".txt")
         assert server.documents.exists(path=doc.path)
     assert not server.documents.exists(path=doc.path)
 
@@ -169,7 +169,7 @@ def test_fetch_acls(server):
         assert len(acls) == 1
         assert acls[0]["name"] == "inherited"
 
-        aces = list(sorted(acls[0]["aces"], key=operator.itemgetter("id")))
+        aces = sorted(acls[0]["aces"], key=operator.itemgetter("id"))
         # 2 on Jenkins, 3 locally ...
         assert len(aces) in (2, 3)
         assert aces[0]["id"] == "Administrator:Everything:true:::"
@@ -198,7 +198,7 @@ def test_fetch_audit(server):
 
 def test_fetch_blob(server):
     with Doc(server, with_blob=True) as doc:
-        assert doc.fetch_blob() == doc.filename.encode("utf-8")
+        assert doc.fetch_blob() == doc.properties["dc:title"].encode("utf-8")
 
 
 def test_fetch_non_existing(server):

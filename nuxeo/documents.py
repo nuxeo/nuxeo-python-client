@@ -23,6 +23,8 @@ except ImportError:
 class API(APIEndpoint):
     """ Endpoint for documents. """
 
+    __slots__ = ("comments_api", "operations", "workflows_api")
+
     def __init__(
         self,
         client,  # type: NuxeoClient

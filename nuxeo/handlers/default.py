@@ -23,6 +23,19 @@ except ImportError:
 class Uploader(object):
     """ Helper for uploads """
 
+    __slots__ = (
+        "batch",
+        "blob",
+        "callback",
+        "chunk_count",
+        "chunk_size",
+        "headers",
+        "path",
+        "service",
+        "_completed",
+        "_timeout",
+    )
+
     chunked = False
 
     def __init__(self, service, batch, blob, chunk_size, callback=None):
@@ -133,6 +146,8 @@ class Uploader(object):
 
 class ChunkUploader(Uploader):
     """ Helper for chunked uploads """
+
+    __slots__ = ("_to_upload",)
 
     chunked = True
 

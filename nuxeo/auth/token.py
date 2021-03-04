@@ -1,9 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from requests.auth import AuthBase
-
 from ..compat import get_bytes
+from .base import AuthBase
 
 try:
     from typing import TYPE_CHECKING
@@ -17,6 +16,8 @@ except ImportError:
 
 class TokenAuth(AuthBase):
     """ Attaches Nuxeo Token Authentication to the given Request object. """
+
+    __slots__ = ("token",)
 
     HEADER_TOKEN = get_bytes("X-Authentication-Token")
 

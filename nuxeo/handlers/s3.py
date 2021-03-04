@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 class UploaderS3(Uploader):
     """ Helper for uploads using Amazon S3 Direct Upload (single). """
 
+    __slots__ = ("bucket", "key", "s3_client", "_s3_config")
+
     def __init__(self, *args, **kwargs):
         # Allow to pass a custom S3 client (for tests)
         s3_client = kwargs.pop("s3_client", None)
@@ -100,6 +102,8 @@ class UploaderS3(Uploader):
 
 class ChunkUploaderS3(UploaderS3):
     """ Helper for chunked uploads using Amazon S3 Direct Upload (multipart). """
+
+    __slots__ = ("_data_packs", "_max_parts", "_to_upload")
 
     chunked = True
 

@@ -52,6 +52,7 @@ def test_crafted_httperror_parse():
 
 def test_crafted_ongoing_request_error():
     exc = OngoingRequestError("123-456-789")
+    assert str(exc)
     assert exc.status == 409
     assert exc.request_uid == "123-456-789"
 

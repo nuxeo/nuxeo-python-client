@@ -6,12 +6,14 @@ Changelog
 
 Release date: ``2021-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-208 <https://jira.nuxeo.com/browse/NXPY-208>`__: Use ``__slots__`` for memory efficiency and attributes access velocity
 
 Technical changes
 -----------------
 
--
+- Removed ``Task.comment``
+- Removed ``User.password``. Use ``.change_password()`` instead.
+- Added nuxeo/auth/base.py
 
 4.1.1
 -----

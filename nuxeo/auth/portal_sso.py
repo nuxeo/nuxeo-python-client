@@ -4,9 +4,8 @@ from __future__ import unicode_literals
 from random import randint
 from time import time
 
-from requests.auth import AuthBase
-
 from ..compat import get_bytes
+from .base import AuthBase
 from .utils import make_portal_sso_token
 
 try:
@@ -23,6 +22,8 @@ class PortalSSOAuth(AuthBase):
     """Attaches required HTTP headers for SSO with Portals.
     See https://doc.nuxeo.com/nxdoc/using-sso-portals/ for details.
     """
+
+    __slots__ = ("digest_algorithm", "secret", "username")
 
     NX_USER = get_bytes("NX_USER")
     NX_TOKEN = get_bytes("NX_TOKEN")

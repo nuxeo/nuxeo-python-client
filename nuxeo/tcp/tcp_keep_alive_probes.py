@@ -20,6 +20,8 @@ class TCPKeepAliveValidationMethods(object):
     Balancer which kills a connection if it is idle for more then 350 seconds.
     """
 
+    __slots__ = ()
+
     @staticmethod
     def adjust_connection_socket(conn):
         """Adjusts the socket settings so that the client sends a TCP keep-alive probe over the connection."""
