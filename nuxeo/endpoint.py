@@ -22,6 +22,8 @@ class APIEndpoint(object):
     for CRUD operations.
     """
 
+    __slots__ = ("client", "endpoint", "headers", "_cls")
+
     def __init__(
         self,
         client,  # type: NuxeoClient

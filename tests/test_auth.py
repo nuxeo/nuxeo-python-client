@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 import pytest
 from requests import Request
 
+from nuxeo.auth import PortalSSOAuth, TokenAuth
+from nuxeo.auth.utils import make_portal_sso_token
 from nuxeo.compat import text
 from nuxeo.exceptions import NuxeoError
 
@@ -12,8 +14,6 @@ skip_logging = True
 
 
 def test_make_portal_sso_token():
-    from nuxeo.auth.utils import make_portal_sso_token
-
     timestamp = 1324572561000
     random = "qwertyuiop"
     secret = "secret"
@@ -24,8 +24,6 @@ def test_make_portal_sso_token():
 
 
 def test_portal_sso():
-    from nuxeo.auth import PortalSSOAuth
-
     auth = PortalSSOAuth("alice", "secure secret")
     req = Request("GET", "https://httpbin.org/get", auth=auth)
     prepared = req.prepare()
@@ -35,9 +33,15 @@ def test_portal_sso():
     assert auth.NX_TS in prepared.headers
 
 
-def test_portal_sso_digest_algorithm_uppercase():
-    from nuxeo.auth import PortalSSOAuth
+def test_portal_sso_equality():
+    auth1 = PortalSSOAuth("alice", "secure secret")
+    auth2 = PortalSSOAuth("bob", "secret")
+    auth3 = PortalSSOAuth("bob", "secret", digest_algorithm="sha256")
+    assert auth1 != auth2
+    assert auth2 != auth3
 
+
+def test_portal_sso_digest_algorithm_uppercase():
     auth = PortalSSOAuth("alice", "secure secret", digest_algorithm="MD5")
     req = Request("GET", "https://httpbin.org/get", auth=auth)
     prepared = req.prepare()
@@ -48,8 +52,6 @@ def test_portal_sso_digest_algorithm_uppercase():
 
 
 def test_portal_sso_digest_algorithm_not_found():
-    from nuxeo.auth import PortalSSOAuth
-
     auth = PortalSSOAuth("alice", "secure secret", digest_algorithm="boom")
     req = Request("GET", "https://httpbin.org/get", auth=auth)
     with pytest.raises(NuxeoError) as exc:
@@ -60,9 +62,13 @@ def test_portal_sso_digest_algorithm_not_found():
 
 
 def test_token():
-    from nuxeo.auth import TokenAuth
-
     auth = TokenAuth("secure_token")
     req = Request("GET", "https://httpbin.org/get", auth=auth)
     prepared = req.prepare()
     assert prepared.headers[auth.HEADER_TOKEN] == "secure_token"
+
+
+def test_token_equality():
+    auth1 = TokenAuth("secure_token")
+    auth2 = TokenAuth("0")
+    assert auth1 != auth2

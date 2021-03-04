@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.client import Nuxeo
 from nuxeo.exceptions import BadQuery
 from nuxeo.users import User
 
@@ -74,39 +75,24 @@ def test_lazy_loading(server):
         assert user.properties["company"] == "Pom Pom Gali resort"
 
 
-def test_update_user(server):
+def test_update_user(server, host):
     with Georges(server) as georges:
         company = "Classe Américaine"
         georges.properties["company"] = company
         georges.save()
         user = server.users.get("georges")
         assert user.properties["company"] == company
-        auth = server.client.auth
-        server.client.auth = ("georges", "Test")
-        try:
-            assert server.client.is_reachable()
-        finally:
-            server.client.auth = auth
+
+        auth = ("georges", "Test")
+        server2 = Nuxeo(host=host, auth=auth)
+        assert server2.users.current_user()
 
 
-def test_update_user_autoset_change_password(server):
+def test_update_user_autoset_change_password(server, host):
     with Georges(server) as georges:
-        georges.password = "Test2"
+        georges.change_password("Test2")
         georges.save()
-        auth = server.client.auth
-        server.client.auth = ("georges", "Test2")
-        try:
-            assert server.client.is_reachable()
-        finally:
-            server.client.auth = auth
 
-
-def test_update_user_autoset_change_password_2(server):
-    with Georges(server) as georges:
-        georges.change_password("Test3")
-        auth = server.client.auth
-        server.client.auth = ("georges", "Test3")
-        try:
-            assert server.client.is_reachable()
-        finally:
-            server.client.auth = auth
+        auth = ("georges", "Test2")
+        server2 = Nuxeo(host=host, auth=auth)
+        assert server2.users.current_user()

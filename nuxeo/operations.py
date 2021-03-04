@@ -52,6 +52,8 @@ PARAM_TYPES = {
 class API(APIEndpoint):
     """ Endpoint for operations. """
 
+    __slots__ = ()
+
     # Operations cache
     ops = {}  # type: Dict[Text, Any]
 

@@ -10,7 +10,6 @@ import responses
 from requests.exceptions import ConnectionError
 
 from nuxeo import constants
-from nuxeo.auth import TokenAuth
 from nuxeo.compat import get_bytes, long, text
 from nuxeo.constants import MAX_RETRY, RETRY_METHODS
 from nuxeo.endpoint import APIEndpoint
@@ -345,10 +344,7 @@ def test_request_token(server):
         token = server.client.request_auth_token(
             device_id, permission, app_name=app_name, device=device
         )
-        assert server.client.auth.token == token
-        assert server.client.auth == TokenAuth(token)
-        assert server.client.auth != TokenAuth("0")
-        assert server.client.is_reachable()
+        assert server.users.current_user()
 
         # Calling twice should return the same token
         same_token = server.client.request_auth_token(

@@ -19,6 +19,8 @@ except ImportError:
 class API(APIEndpoint):
     """ Endpoint for workflows. """
 
+    __slots__ = ("tasks_api",)
+
     def __init__(
         self,
         client,  # type: NuxeoClient

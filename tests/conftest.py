@@ -61,12 +61,17 @@ def repository(server):
     return server.documents
 
 
+@pytest.fixture(scope="session")
+def host():
+    return os.environ.get("NXDRIVE_TEST_NUXEO_URL", "http://localhost:8080/nuxeo")
+
+
 @pytest.fixture(scope="module")
-def server():
+def server(host):
     cookies = RequestsCookieJar()
     cookies.set("device", "python-client")
     server = Nuxeo(
-        host=os.environ.get("NXDRIVE_TEST_NUXEO_URL", "http://localhost:8080/nuxeo"),
+        host=host,
         auth=("Administrator", "Administrator"),
         cookies=cookies,
     )

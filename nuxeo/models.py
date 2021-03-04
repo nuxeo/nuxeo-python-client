@@ -25,14 +25,14 @@ except ImportError:
 class Model(object):
     """ Base class for all entities. """
 
-    _valid_properties = {}  # type: Dict[Text, Any]
+    __slots__ = {"service": None}  # type: Dict[Text, Any]
 
     def __init__(self, service=None, **kwargs):
         # type: (Optional[APIEndpoint], Any) -> None
         self.service = service  # type: APIEndpoint
 
         # Declare attributes
-        for key, default in type(self)._valid_properties.copy().items():
+        for key, default in type(self).__slots__.copy().items():
             # Reset mutable objects to prevent data leaks
             if isinstance(default, dict):
                 default = {}
@@ -44,8 +44,8 @@ class Model(object):
     def __repr__(self):
         # type: () -> Text
         attrs = ", ".join(
-            "{}={!r}".format(attr, getattr(self, attr.replace("-", "_"), None))
-            for attr in sorted(self._valid_properties)
+            "{}={!r}".format(attr.replace("_", "-"), getattr(self, attr, None))
+            for attr in sorted(self.__slots__)
         )
         return "<{} {}>".format(self.__class__.__name__, attrs)
 
@@ -53,15 +53,15 @@ class Model(object):
         # type: () -> Dict[Text, Any]
         """ Returns a dict representation of the resource. """
         result = {}
-        for key in self._valid_properties:
-            val = getattr(self, key.replace("-", "_"))
+        for key in self.__slots__:
+            val = getattr(self, key)
             if val is None:
                 continue
             # Parse lists of objects
             elif isinstance(val, list) and len(val) > 0 and isinstance(val[0], Model):
                 val = [item.as_dict() for item in val]
 
-            result[key] = val
+            result[key.replace("_", "-")] = val
         return result
 
     @classmethod
@@ -78,6 +78,9 @@ class Model(object):
 
 
 class RefreshableModel(Model):
+
+    __slots__ = ()
+
     def load(self, model=None):
         # type: (Optional[Union[Model, Dict[Text, Any]]]) -> None
         """
@@ -102,8 +105,7 @@ class RefreshableModel(Model):
             def get_prop(obj, key):
                 return getattr(obj, key)
 
-        for key in self._valid_properties:
-            key = key.replace("-", "_")
+        for key in self.__slots__.keys():
             setattr(self, key, get_prop(model, key))
 
 
@@ -113,7 +115,7 @@ class RefreshableModel(Model):
 class Batch(Model):
     """ Upload batch. """
 
-    _valid_properties = {
+    __slots__ = {
         "batchId": None,
         "blobs": {},
         "dropped": None,
@@ -227,7 +229,7 @@ class Batch(Model):
 class Blob(Model):
     """ Blob superclass used for metadata. """
 
-    _valid_properties = {
+    __slots__ = {
         "batchId": "",
         "chunkCount": 0,
         "fileIdx": None,
@@ -297,12 +299,12 @@ class BufferBlob(Blob):
 class Comment(Model):
     """ Comment. """
 
-    _valid_properties = {
+    __slots__ = {
         "ancestorIds": [],
         "author": None,
         "creationDate": None,
         "entity": None,
-        "entity-type": "comment",
+        "entity_type": "comment",
         "entityId": None,
         "id": None,
         "lastReplyDate": None,
@@ -399,10 +401,10 @@ class FileBlob(Blob):
 class Directory(Model):
     """ Directory. """
 
-    _valid_properties = {
+    __slots__ = {
         "directoryName": None,
         "entries": [],
-        "entity-type": "directory",
+        "entity_type": "directory",
     }
 
     @property
@@ -453,9 +455,9 @@ class Directory(Model):
 class DirectoryEntry(Model):
     """ Directory entry. """
 
-    _valid_properties = {
+    __slots__ = {
         "directoryName": None,
-        "entity-type": "directoryEntry",
+        "entity_type": "directoryEntry",
         "properties": {},
     }
 
@@ -478,10 +480,10 @@ class DirectoryEntry(Model):
 class Document(RefreshableModel):
     """ Document. """
 
-    _valid_properties = {
+    __slots__ = {
         "changeToken": None,
         "contextParameters": {},
-        "entity-type": "document",
+        "entity_type": "document",
         "facets": [],
         "isCheckedOut": False,
         "isProxy": False,
@@ -657,8 +659,8 @@ class Document(RefreshableModel):
 class Group(Model):
     """ User group. """
 
-    _valid_properties = {
-        "entity-type": "group",
+    __slots__ = {
+        "entity_type": "group",
         "grouplabel": None,
         "groupname": None,
         "memberGroups": [],
@@ -679,7 +681,7 @@ class Group(Model):
 class Operation(Model):
     """ Automation operation. """
 
-    _valid_properties = {
+    __slots__ = {
         "command": None,
         "context": None,
         "input_obj": None,
@@ -696,13 +698,13 @@ class Operation(Model):
 class Task(RefreshableModel):
     """ Workflow task. """
 
-    _valid_properties = {
+    __slots__ = {
         "actors": [],
         "comments": [],
         "created": None,
         "directive": None,
         "dueDate": None,
-        "entity-type": "task",
+        "entity_type": "task",
         "id": None,
         "name": None,
         "nodeName": None,
@@ -743,8 +745,8 @@ class Task(RefreshableModel):
 class User(RefreshableModel):
     """ User. """
 
-    _valid_properties = {
-        "entity-type": "user",
+    __slots__ = {
+        "entity_type": "user",
         "extendedGroups": [],
         "id": None,
         "isAdministrator": False,
@@ -776,9 +778,9 @@ class User(RefreshableModel):
 class Workflow(Model):
     """ Workflow. """
 
-    _valid_properties = {
+    __slots__ = {
         "attachedDocumentIds": [],
-        "entity-type": "workflow",
+        "entity_type": "workflow",
         "graphResource": None,
         "id": None,
         "initiator": None,
