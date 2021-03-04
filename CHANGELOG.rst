@@ -7,13 +7,16 @@ Changelog
 Release date: ``2021-xx-xx``
 
 - `NXPY-208 <https://jira.nuxeo.com/browse/NXPY-208>`__: Use ``__slots__`` for memory efficiency and attributes access velocity
+- `NXPY-209 <https://jira.nuxeo.com/browse/NXPY-209>`__: Allow to pass a callback to ``uploads.refresh_token()``
 
 Technical changes
 -----------------
 
+- Added ``token_callback`` keyword argument to ``Uploader.__init__()``
 - Removed ``Task.comment``
 - Removed ``User.password``. Use ``.change_password()`` instead.
 - Added nuxeo/auth/base.py
+- Added ``kwargs`` keyword arguments to nuxeo/uploads.py::\ ``API.get_uploader()``
 
 4.1.1
 -----

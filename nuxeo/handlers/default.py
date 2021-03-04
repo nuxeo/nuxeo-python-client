@@ -29,6 +29,7 @@ class Uploader(object):
         "callback",
         "chunk_count",
         "chunk_size",
+        "token_callback",
         "headers",
         "path",
         "service",
@@ -38,8 +39,10 @@ class Uploader(object):
 
     chunked = False
 
-    def __init__(self, service, batch, blob, chunk_size, callback=None):
-        # type: ("API", Batch, ActualBlob, int, Union[Callable, Tuple[Callable]]) -> None
+    def __init__(
+        self, service, batch, blob, chunk_size, callback=None, token_callback=None
+    ):
+        # type: ("API", Batch, ActualBlob, int, Union[Callable, Tuple[Callable]], Callable) -> None
         self.service = service
         self.batch = batch
         self.blob = blob
@@ -51,6 +54,9 @@ class Uploader(object):
             self.callback = tuple(cb for cb in callback if callable(cb))
         else:
             self.callback = tuple([callback] if callable(callback) else [])
+
+        # Callback triggered after having renewed token
+        self.token_callback = token_callback
 
         self.blob.uploadType = "chunked" if self.chunked else "normal"
         self.chunk_count = 1

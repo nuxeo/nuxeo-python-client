@@ -50,6 +50,17 @@ def get_batch(server):
     return batch
 
 
+def test_token_callback(server):
+    batch = server.uploads.batch()
+    check = {batch.uid: "falsify"}
+
+    def callback(batch, creds):
+        check[batch.uid] = creds
+
+    server.uploads.refresh_token(batch, token_callback=callback)
+    assert not check[batch.uid]
+
+
 def test_batch_handler_default(server):
     server.uploads.batch(handler="default")
 

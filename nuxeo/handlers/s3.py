@@ -156,7 +156,9 @@ class ChunkUploaderS3(UploaderS3):
     def _refresh_credentials(self):
         # type: () -> Dict[str, Any]
         """Method called automatically by boto3 to refresh tokens when needed."""
-        data = self.service.refresh_token(self.batch)
+        data = self.service.refresh_token(
+            self.batch, token_callback=self.token_callback
+        )
         return {
             "access_key": data["awsSecretKeyId"],
             "secret_key": data["awsSecretAccessKey"],

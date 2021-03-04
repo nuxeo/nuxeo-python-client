@@ -149,7 +149,7 @@ class API(APIEndpoint):
         index,  # type: int
         headers,  # type: Dict[Text, Text]
         data_len=0,  # type: Optional[int]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> Blob
         """
@@ -319,6 +319,7 @@ class API(APIEndpoint):
         chunked=False,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
         callback=None,  # type: Union[Callable, Tuple[Callable]]
+        **kwargs,  # type: Any
     ):
         # type: (...) -> "Uploader"
         """
@@ -333,6 +334,7 @@ class API(APIEndpoint):
         :param chunk_size: if blob is bigger, send in chunks of this size
         :param callback: if not None, they are executed between each chunk.
           It is either a single callable or a tuple of callables (tuple is used to keep order).
+        :param kwargs: additional arguments forwarded at the underlying level
         :return: uploaded blob details
         """
         chunked = chunked and blob.size > chunk_size
@@ -348,7 +350,7 @@ class API(APIEndpoint):
             else:
                 from .handlers.default import Uploader as cls
 
-        return cls(self, batch, blob, chunk_size, callback)
+        return cls(self, batch, blob, chunk_size, callback, **kwargs)
 
     def refresh_token(self, batch, **kwargs):
         # type: (Batch, Any) -> Dict[str, Any]
@@ -364,7 +366,7 @@ class API(APIEndpoint):
         This is a no-op when using the default upload provider.
 
         :param batch: the targeted batch
-        :param kwargs: additional arguments forwarded at the underlying level
+        :param kwargs: additional arguments
         :return: a dict containing new tokens
         """
         # Return an empty dict by default instead of raising an error.
@@ -381,5 +383,10 @@ class API(APIEndpoint):
                 # Allow outdated servers (without the refreshToken API) to still work with S3.
                 # It will just end on a ExpiredToken error, but it is better than a 404 error.
                 creds = batch.extraInfo
+
+        # Allow to trigger a callback with new credentials
+        callback = kwargs.get("token_callback")
+        if callback and callable(callback):
+            callback(batch, creds)
 
         return creds
