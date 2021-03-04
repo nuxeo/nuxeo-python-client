@@ -1,10 +1,10 @@
 Changelog
 =========
 
-4.1.2
+5.0.0
 -----
 
-Release date: ``2021-xx-xx``
+Release date: ``2021-03-04``
 
 - `NXPY-208 <https://jira.nuxeo.com/browse/NXPY-208>`__: Use ``__slots__`` for memory efficiency and attributes access velocity
 - `NXPY-209 <https://jira.nuxeo.com/browse/NXPY-209>`__: Allow to pass a callback to ``uploads.refresh_token()``
