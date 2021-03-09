@@ -2,6 +2,7 @@ from nuxeo.exceptions import (
     Conflict,
     Forbidden,
     HTTPError,
+    OAuth2Error,
     OngoingRequestError,
     Unauthorized,
 )
@@ -48,6 +49,14 @@ def test_crafted_httperror_parse():
     assert exc.status == -1
     assert exc.message == "oups"
     assert exc.stacktrace == "NulPointerException: bla*3"
+
+
+def test_crafted_oauth2_error():
+    exc = OAuth2Error("invalid_grant", "Cannot refresh token")
+    assert str(exc)
+    assert exc.status == 400
+    assert exc.message == "Cannot refresh token"
+    assert exc.stacktrace == "invalid_grant"
 
 
 def test_crafted_ongoing_request_error():
