@@ -412,16 +412,19 @@ class NuxeoClient(object):
         if not isinstance(error, requests.HTTPError):
             return error
 
+        response = error.response
+        error_data = {}
         try:
-            error_data = error.response.json()
+            error_data.update(response.json())
         except ValueError:
-            error_data = {
-                "status": error.response.status_code,
-                "message": error.response.content,
-            }
+            error_data["message"] = response.content
+        finally:
+            error_data["status"] = response.status_code
+            if not error_data.get("message", ""):
+                error_data["message"] = response.reason
 
-        status = error_data.get("status", 0)
-        request_uid = error.response.headers.get(IDEMPOTENCY_KEY, "")
+        status = error_data["status"]
+        request_uid = response.headers.get(IDEMPOTENCY_KEY, "")
         if status == 409 and request_uid:
             return OngoingRequestError(request_uid)
         return HTTP_ERROR.get(status, HTTPError).parse(error_data)
