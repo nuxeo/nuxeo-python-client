@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2021-0x-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-213 <https://jira.nuxeo.com/browse/NXPY-213>`__: Handle incomplete serialized HTTP error
 
 Technical changes
 -----------------

@@ -6,7 +6,7 @@ requests Responses objects are crafted based on real usecases that broke somethi
 import logging
 
 import pytest
-from requests import Response
+from requests import HTTPError, Response
 from nuxeo.client import NuxeoClient
 
 
@@ -99,6 +99,38 @@ class ResponseError409(Response):
             b"/default-domain/workspaces/ws-python-tests, Failed to remove document "
             b'6a502942-f83b-4742-bb0c-132905ee88bf, Concurrent update"}'
         )
+
+
+class ResponseError500Empty(Response):
+    def __init__(self):
+        super(ResponseError500Empty, self).__init__()
+        self.status_code = 500
+
+    @property
+    def content(self):
+        return b"foo"
+
+
+class ResponseError500EmptyMessage(Response):
+    def __init__(self):
+        super(ResponseError500EmptyMessage, self).__init__()
+        self.status_code = 500
+        self.reason = "Erreur Interne de Servlet"
+
+    @property
+    def content(self):
+        return b'{"message":""}'
+
+
+class ResponseError500WithReason(Response):
+    def __init__(self):
+        super(ResponseError500WithReason, self).__init__()
+        self.status_code = 500
+        self.reason = "Erreur Interne de Servlet"
+
+    @property
+    def content(self):
+        return b'{"stacktrace": "my error"}'
 
 
 class ResponseIso(Response):
@@ -224,3 +256,28 @@ def test_response_with_logger_not_in_debug(caplog):
     with caplog.at_level(logging.INFO):
         NuxeoClient._log_response(ResponseEmpty(), 4096)
     assert not caplog.records
+
+
+def test_500_empty_content():
+    response = ResponseError500Empty()
+    exception = HTTPError(response=response)
+    error = NuxeoClient._handle_error(exception)
+    assert error.status == 500
+    assert error.message == b"foo"
+
+
+def test_500_empty_message():
+    response = ResponseError500EmptyMessage()
+    exception = HTTPError(response=response)
+    error = NuxeoClient._handle_error(exception)
+    assert error.status == 500
+    assert error.message == "Erreur Interne de Servlet"
+
+
+def test_500_with_reason():
+    response = ResponseError500WithReason()
+    exception = HTTPError(response=response)
+    error = NuxeoClient._handle_error(exception)
+    assert error.status == 500
+    assert error.message == "Erreur Interne de Servlet"
+    assert error.stacktrace == "my error"
