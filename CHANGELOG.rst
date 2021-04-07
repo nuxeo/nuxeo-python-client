@@ -7,6 +7,7 @@ Changelog
 Release date: ``2021-0x-xx``
 
 - `NXPY-213 <https://jira.nuxeo.com/browse/NXPY-213>`__: Handle incomplete serialized HTTP error
+- `NXPY-214 <https://jira.nuxeo.com/browse/NXPY-214>`__: Add a code coverage GitHub Action on PRs
 
 Technical changes
 -----------------
