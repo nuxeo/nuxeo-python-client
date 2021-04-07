@@ -19,7 +19,7 @@ except ImportError:
 class APIEndpoint(object):
     """
     Represents an API endpoint for Nuxeo, containing common patterns
-    for CRUD operations
+    for CRUD operations.
     """
 
     __slots__ = ("client", "endpoint", "headers", "_cls")
