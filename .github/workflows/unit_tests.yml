@@ -19,7 +19,7 @@ jobs:
           - '10.10'
         python:
           # Minimum supported version
-          - '2.7'
+          # - '2.7'
           # Maximum supported version
           # Note: 3.10 is still in alpha, so we stick with 3.9 until there is an official 3.10
           - '3.9'
