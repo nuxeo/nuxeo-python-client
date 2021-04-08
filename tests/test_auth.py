@@ -4,13 +4,26 @@ from __future__ import unicode_literals
 import pytest
 from requests import Request
 
-from nuxeo.auth import PortalSSOAuth, TokenAuth
+from nuxeo.auth import JWTAuth, PortalSSOAuth, TokenAuth
 from nuxeo.auth.utils import make_portal_sso_token
 from nuxeo.compat import text
 from nuxeo.exceptions import NuxeoError
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
+
+
+def test_jwt():
+    auth = JWTAuth("<TOKEN>")
+    req = Request("GET", "https://httpbin.org/get", auth=auth)
+    prepared = req.prepare()
+    assert prepared.headers[auth.AUTHORIZATION] == "Bearer <TOKEN>"
+
+
+def test_jwt_equality():
+    auth1 = JWTAuth("secure secret")
+    auth2 = JWTAuth("other secret")
+    assert auth1 != auth2
 
 
 def test_make_portal_sso_token():

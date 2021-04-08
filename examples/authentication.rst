@@ -13,6 +13,19 @@ Basic Authentication
     server = Nuxeo(host=host, auth=auth)
 
 
+JSON Web Token Authentication
+=============================
+
+.. code:: python
+
+    from nuxeo.auth import JWTAuth
+    from nuxeo.client import Nuxeo
+
+    host = "https://<HOST>/nuxeo/"
+    auth = JWTAuth("token")
+    server = Nuxeo(host=host, auth=auth)
+
+
 Portal SSO Authentication
 =========================
 
