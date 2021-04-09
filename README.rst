@@ -123,6 +123,7 @@ Usage
 Now that your client is set up, here are pages to help you with the
 main functions available:
 
+-  `Available authentication mechanisms <examples/authentication.rst>`__
 -  `Manage users and groups <examples/users_and_groups.rst>`__
 -  `Work with documents <examples/documents.rst>`__
 -  `Work with directories <examples/directories.rst>`__
