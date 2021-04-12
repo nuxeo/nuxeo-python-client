@@ -6,6 +6,7 @@ Changelog
 
 Release date: ``2021-0x-xx``
 
+- `NXPY-201 <https://jira.nuxeo.com/browse/NXPY-201>`__: Implement support for OAuth2
 - `NXPY-213 <https://jira.nuxeo.com/browse/NXPY-213>`__: Handle incomplete serialized HTTP error
 - `NXPY-214 <https://jira.nuxeo.com/browse/NXPY-214>`__: Add a code coverage GitHub Action on PRs
 - `NXPY-215 <https://jira.nuxeo.com/browse/NXPY-215>`__: Add support for the JSON Web Token authentication
@@ -15,6 +16,8 @@ Technical changes
 -----------------
 
 - Added nuxeo/auth/jwt.py
+- Added nuxeo/auth/oauth2.py
+- Added nuxeo/exceptions.py::\ ``OAuth2Error``
 
 5.0.0
 -----

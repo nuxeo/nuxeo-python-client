@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import pytest
 from requests import Request
 
-from nuxeo.auth import JWTAuth, PortalSSOAuth, TokenAuth
+from nuxeo.auth import JWTAuth, OAuth2, PortalSSOAuth, TokenAuth
 from nuxeo.auth.utils import make_portal_sso_token
 from nuxeo.compat import text
 from nuxeo.exceptions import NuxeoError
@@ -72,6 +72,45 @@ def test_portal_sso_digest_algorithm_not_found():
     error = text(exc.value)
     msg = "Cannot compute token because of unknown digest algorithm"
     assert msg in error
+
+
+def test_oauth2_equality():
+    token1 = {
+        "access_token": "<ACCESS>",
+        "refresh_token": "<REFRESH>",
+        "token_type": "bearer",
+        "expires_in": 2500,
+        "expires_at": 1018242695,
+    }
+    token2 = {
+        "access_token": "<ACCESS2>",
+        "refresh_token": "<REFRESH2>",
+        "token_type": "bearer",
+        "expires_in": 2500,
+        "expires_at": 1018242695,
+    }
+    auth1 = OAuth2("<host>", token=token1)
+    auth2 = OAuth2("<host>", token=token2)
+    assert auth1 != auth2
+
+
+def test_oauth2_token():
+    token = {
+        "access_token": "<ACCESS>",
+        "refresh_token": "<REFRESH>",
+        "token_type": "bearer",
+        "expires_in": 2500,
+        "expires_at": 1018242695,
+    }
+    auth = OAuth2("<host>", token=token)
+    assert auth.token_is_expired()
+
+    token["expires_at"] = 9918242695
+    assert not auth.token_is_expired()
+
+    req = Request("GET", "https://httpbin.org/get", auth=auth)
+    prepared = req.prepare()
+    assert prepared.headers[auth.AUTHORIZATION] == "Bearer <ACCESS>"
 
 
 def test_token():

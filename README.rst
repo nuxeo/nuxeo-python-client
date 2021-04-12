@@ -21,7 +21,19 @@ The client can make use of the Amazon S3 provider, to install its requirements:
 
 .. code:: shell
 
-    python -m pip install -U --user nuxeo[s3]
+    python -m pip install -U --user "nuxeo[s3]"
+
+The client is compatible with OAuth2 mechanism, to install its requirements:
+
+.. code:: shell
+
+    python -m pip install -U --user "nuxeo[oauth2]"
+
+And to install several flavors of requirements:
+
+.. code:: shell
+
+    python -m pip install -U --user "nuxeo[oauth2, s3]"
 
 Import
 ------
@@ -150,7 +162,7 @@ Setup
 
     git clone https://github.com/nuxeo/nuxeo-python-client
     cd nuxeo-python-client
-    python -m pip install -e ".[s3]"
+    python -m pip install -e ".[oauth2, s3]"
 
 Test
 ~~~~
