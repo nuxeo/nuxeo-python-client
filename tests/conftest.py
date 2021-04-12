@@ -40,6 +40,9 @@ def no_warnings(recwarn):
         if "unclosed" in message:
             # It may be worth fixing tests leaking sockets and file descriptors
             continue
+        elif "Python 2.7 will reach" in message:
+            # TODO NXPY-129: remove that bloc
+            continue
         warn = "{w.filename}:{w.lineno} {w.message}".format(w=warning)
         print(warn, file=sys.stderr)
         warnings.append(warn)

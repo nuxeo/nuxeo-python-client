@@ -10,6 +10,7 @@ Release date: ``2021-0x-xx``
 - `NXPY-213 <https://jira.nuxeo.com/browse/NXPY-213>`__: Handle incomplete serialized HTTP error
 - `NXPY-214 <https://jira.nuxeo.com/browse/NXPY-214>`__: Add a code coverage GitHub Action on PRs
 - `NXPY-215 <https://jira.nuxeo.com/browse/NXPY-215>`__: Add support for the JSON Web Token authentication
+- `NXPY-217 <https://jira.nuxeo.com/browse/NXPY-217>`__: Restore Python 2.7 support
 
 Technical changes
 -----------------

@@ -149,7 +149,7 @@ class API(APIEndpoint):
         index,  # type: int
         headers,  # type: Dict[Text, Text]
         data_len=0,  # type: Optional[int]
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> Blob
         """
@@ -319,7 +319,7 @@ class API(APIEndpoint):
         chunked=False,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
         callback=None,  # type: Union[Callable, Tuple[Callable]]
-        **kwargs,  # type: Any
+        **kwargs  # type: Any
     ):
         # type: (...) -> "Uploader"
         """
