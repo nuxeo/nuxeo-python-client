@@ -66,5 +66,4 @@ jobs:
       with:
         files: ./coverage.xml
         flags: unit
-        env_vars: OS,PYTHON
-        token: ${{ secrets.CODECOV_TOKEN }}
+        env_vars: PYTHON
