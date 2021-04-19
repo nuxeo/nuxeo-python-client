@@ -31,6 +31,14 @@ OAuth2
 
 OAuth2 with automatic credentials renewal is available by default.
 
+The ``OAuth2`` class can take several optionnal keyword arguments:
+
+- ``client_id``: the consumer client ID
+- ``client_secret``: the consumer client secret
+- ``token``: existent token
+- ``authorization_endpoint``: custom authorization endpoint
+- ``token_endpoint``: custom token endpoint
+
 Scenario 1: Generating a New Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
