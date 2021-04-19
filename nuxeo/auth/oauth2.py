@@ -24,6 +24,10 @@ except ImportError:
     pass
 
 
+DEFAULT_AUTHORIZATION_ENDPOINT = "oauth2/authorize"
+DEFAULT_TOKEN_ENDPOINT = "oauth2/token"
+
+
 class OAuth2(AuthBase):
     """OAuth2 mechanism."""
 
@@ -45,8 +49,8 @@ class OAuth2(AuthBase):
         client_secret=None,
         client_id=None,
         token=None,
-        authorization_endpoint="oauth2/authorize",
-        token_endpoint="oauth2/token",
+        authorization_endpoint=None,
+        token_endpoint=None,
     ):
         # type: (Text, Optional[Text], Optional[Text], Optional[Token], Optional[Text], Optional[Text]) -> None
         if not host.endswith("/"):
@@ -59,9 +63,11 @@ class OAuth2(AuthBase):
             self.set_token(token)
 
         # Allow to pass custom endpoints (not handled by the platform)
-        if not authorization_endpoint.startswith("https://"):
-            authorization_endpoint = self._host + authorization_endpoint
-        self._authorization_endpoint = authorization_endpoint
+        auth_endpoint = authorization_endpoint or DEFAULT_AUTHORIZATION_ENDPOINT
+        token_endpoint = token_endpoint or DEFAULT_TOKEN_ENDPOINT
+        if not auth_endpoint.startswith("https://"):
+            auth_endpoint = self._host + auth_endpoint
+        self._authorization_endpoint = auth_endpoint
         if not token_endpoint.startswith("https://"):
             token_endpoint = self._host + token_endpoint
         self._token_endpoint = token_endpoint
