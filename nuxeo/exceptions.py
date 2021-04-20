@@ -124,14 +124,14 @@ class InvalidUploadHandler(NuxeoError):
 
 
 class OAuth2Error(HTTPError):
-    """ Exception thown when an OAuth2 error happens. """
+    """ Exception thrown when an OAuth2 error happens. """
 
     status = 400
 
-    def __init__(self, error, description):
-        # type: (Text, Text) -> None
-        self.stacktrace = error
-        self.message = description
+    def __init__(self, error):
+        # type: (Text) -> None
+        self.message = error
+        self.stacktrace = None
 
 
 class OngoingRequestError(Conflict):

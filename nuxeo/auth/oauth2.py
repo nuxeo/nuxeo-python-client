@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from time import time
 
 from authlib.common.security import generate_token
-from authlib.integrations.base_client.errors import OAuthError
+from authlib.integrations.base_client.errors import AuthlibBaseError
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7636 import create_s256_code_challenge
 
@@ -77,9 +77,9 @@ class OAuth2(AuthBase):
         """Make a request with the OAuthlib client and shadow exceptions."""
         try:
             return method(*args, **kwargs)
-        except OAuthError as exc:
+        except AuthlibBaseError as exc:
             # TODO NXPY-129: Use raise ... from None
-            raise OAuth2Error(exc.error, exc.description)
+            raise OAuth2Error(exc.description)
 
     def token_is_expired(self):
         # type: () -> bool
@@ -102,15 +102,19 @@ class OAuth2(AuthBase):
         )
         return uri, state, code_verifier
 
-    def request_token(self, authorization_response, code_verifier):
-        # type: (Text, Text) -> None
-        """Do request for a token."""
+    def request_token(self, **kwargs):
+        # type: (Any) -> None
+        """Do request for a token.
+        The *code_verifier* kwarg is required in any cases.
+        Other kwargs can be a combination of either:
+            1. *authorization_response* or;
+            2. *code* and *state*.
+        """
         token = self._request(
             self._client.fetch_token,
             self._token_endpoint,
             grant_type=self.GRANT_AUTHORIZATION_CODE,
-            authorization_response=authorization_response,
-            code_verifier=code_verifier,
+            **kwargs
         )
         self.set_token(token)
         return token
