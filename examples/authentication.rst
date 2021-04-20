@@ -62,7 +62,17 @@ Scenario 1: Generating a New Token
     authorization_response = req.url
 
     # Step 3, get the token
-    token = nuxeo.client.auth.request_token(authorization_response, code_verifier)
+    token = nuxeo.client.auth.request_token(
+        code_verifier=code_verifier,
+        authorization_response=authorization_response,
+    )
+
+    # Step 3, another possibility when you already parsed *authorization_response* and know the *code*
+    token = nuxeo.client.auth.request_token(
+        code_verifier=code_verifier,
+        code=code,
+        state=state,
+    )
 
 
 Scenario 2: Using an Existing Token

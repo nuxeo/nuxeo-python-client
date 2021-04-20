@@ -52,11 +52,11 @@ def test_crafted_httperror_parse():
 
 
 def test_crafted_oauth2_error():
-    exc = OAuth2Error("invalid_grant", "Cannot refresh token")
+    exc = OAuth2Error("Cannot refresh token")
     assert str(exc)
     assert exc.status == 400
     assert exc.message == "Cannot refresh token"
-    assert exc.stacktrace == "invalid_grant"
+    assert not exc.stacktrace
 
 
 def test_crafted_ongoing_request_error():
