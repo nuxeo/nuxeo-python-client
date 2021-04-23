@@ -7,8 +7,9 @@ import mimetypes
 import sys
 from distutils.version import StrictVersion
 
-from nuxeo.compat import lru_cache
-from nuxeo.constants import UP_AMAZON_S3
+from . import constants
+from .compat import lru_cache
+from .constants import UP_AMAZON_S3
 
 try:
     from typing import TYPE_CHECKING
@@ -17,6 +18,8 @@ try:
         from requests import Response
         from _hashlib import HASH
         from typing import Any, Dict, List, Optional, Text, Tuple, Union
+
+        from requests import Response  # noqa
 except ImportError:
     pass
 
@@ -208,6 +211,62 @@ def log_chunk_details(chunk_count, chunk_size, uploaded_chunks, blob_size):
         chunk_count, chunk_size, uploaded_chunks_count, uploaded_data_length
     )
     logger.debug(details)
+
+
+def log_response(response, *args, **kwargs):
+    # type: (Response, Any, Any) -> Response
+    """
+    Log the server's response based on its content type.
+
+    :param response: The server's response to handle
+    :param limit_size: Maximum size to not overflow when printing raw content
+    of the response
+    """
+
+    # No need to do more work if nobody will see it
+    if logger.getEffectiveLevel() > logging.DEBUG:
+        return
+
+    headers = response.headers
+    content_type = headers.get("content-type", "application/octet-stream")
+    content_size = int(headers.get("content-length", 0))
+    chunked = headers.get("transfer-encoding", "") == "chunked"
+
+    if response.status_code and response.status_code >= 400:
+        # This is a request ending on an error
+        content = get_response_content(response, constants.LOG_LIMIT_SIZE)
+    if response.url.endswith("site/automation"):
+        # This endpoint returns too many information and pollute logs.
+        # Besides contents of this call are stored into the .operations attr.
+        content = "<Automation details saved into the *operations* attr>"
+    elif response.url.endswith("json/cmis"):
+        # This endpoint returns too many information and pollute logs.
+        # Besides contents of this call are stored into the .server_info attr.
+        content = "<CMIS details saved into the *server_info* attr>"
+    elif (
+        not content_type.startswith("text")
+        and "json" not in content_type
+        and content_size
+    ):
+        # The Content-Type is a binary one, but it does not contain JSON data
+        # Skipped binary types are everything but "text/xxx":
+        #   https://www.iana.org/assignments/media-types/media-types.xhtml
+        content = "<binary data ({:,} bytes)>".format(content_size)
+    elif chunked or content_size > 0:
+        # At this point, we should only have text data not bigger than *limit_size*.
+        content = get_response_content(response, constants.LOG_LIMIT_SIZE)
+    else:
+        # response.content is empty when *void_op* is True,
+        # meaning we do not want to get back what we sent
+        # or the operation does not return anything by default
+        content = "<no content>"
+
+    logger.debug(
+        "Response from {!r} [{}]: {!r} with headers {!r} and cookies {!r}".format(
+            response.url, response.status_code, content, headers, response.cookies
+        )
+    )
+    return response
 
 
 @lru_cache(maxsize=128)
