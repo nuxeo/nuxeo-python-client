@@ -10,6 +10,7 @@ from authlib.oauth2.rfc7636 import create_s256_code_challenge
 
 from ..compat import get_bytes
 from ..exceptions import OAuth2Error
+from ..utils import log_response
 from .base import AuthBase
 
 try:
@@ -57,6 +58,7 @@ class OAuth2(AuthBase):
             host += "/"
         self._host = host
         self._client = OAuth2Session(client_id=client_id, client_secret=client_secret)
+        self._client.session.hooks["response"] = [log_response]
         self._token_header = ""
         self.token = {}  # type: Token
         if token:

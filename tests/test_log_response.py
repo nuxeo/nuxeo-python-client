@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-Test NuxeoClient._log_response() to prevent regressions causing memory errors.
+Test log_response() to prevent regressions causing memory errors.
 requests Responses objects are crafted based on real usecases that broke something at some point.
 """
 import logging
@@ -8,7 +8,9 @@ import logging
 import pytest
 from requests import HTTPError, Response
 from nuxeo.client import NuxeoClient
+from nuxeo.utils import log_response
 
+from .compat import patch
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
@@ -229,10 +231,11 @@ class ResponseTextTooLong(Response):
         (ResponseTextTooLong, " [...] "),
     ],
 )
+@patch("nuxeo.constants.LOG_LIMIT_SIZE", 4096)
 def test_response(caplog, response, pattern):
     """Test all kind of responses to cover the whole method."""
     caplog.clear()
-    NuxeoClient._log_response(response(), limit_size=4096)
+    log_response(response())
 
     assert caplog.records
     for record in caplog.records:
@@ -243,7 +246,7 @@ def test_response(caplog, response, pattern):
 def test_response_long(caplog):
     """Test a long response that is not truncated."""
     caplog.clear()
-    NuxeoClient._log_response(ResponseTextTooLong())
+    log_response(ResponseTextTooLong())
 
     assert caplog.records
     for record in caplog.records:
@@ -254,7 +257,7 @@ def test_response_long(caplog):
 def test_response_with_logger_not_in_debug(caplog):
     """If the logging level is higher than DEBUG, nothing is logged."""
     with caplog.at_level(logging.INFO):
-        NuxeoClient._log_response(ResponseEmpty(), 4096)
+        log_response(ResponseEmpty())
     assert not caplog.records
 
 

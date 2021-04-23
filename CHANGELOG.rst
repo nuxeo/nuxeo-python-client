@@ -18,6 +18,7 @@ Technical changes
 - Added nuxeo/auth/jwt.py
 - Added nuxeo/auth/oauth2.py
 - Added nuxeo/exceptions.py::\ ``OAuth2Error``
+- Added nuxeo/utils.py::\ ``log_response()``
 
 5.0.0
 -----
