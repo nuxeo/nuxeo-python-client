@@ -1,10 +1,10 @@
 Changelog
 =========
 
-5.0.1
+5.1.0
 -----
 
-Release date: ``2021-0x-xx``
+Release date: ``2021-04-27``
 
 - `NXPY-201 <https://jira.nuxeo.com/browse/NXPY-201>`__: Implement support for OAuth2
 - `NXPY-213 <https://jira.nuxeo.com/browse/NXPY-213>`__: Handle incomplete serialized HTTP error
