@@ -24,7 +24,7 @@ from . import (
     users,
     workflows,
 )
-from .auth import TokenAuth
+from .auth import BasicAuth, TokenAuth
 from .compat import text
 from .constants import (
     CHUNK_SIZE,
@@ -109,7 +109,7 @@ class NuxeoClient(object):
         **kwargs  # type: Any
     ):
         # type: (...) -> None
-        self.auth = auth
+        self.auth = BasicAuth(*auth) if isinstance(auth, tuple) else auth
         self.host = host
         self.api_path = api_path
         self.chunk_size = chunk_size
@@ -282,6 +282,9 @@ class NuxeoClient(object):
         # to set `default` to `None`.
         default = kwargs.pop("default", object)
 
+        # Allow to pass a custom authentication class
+        auth = kwargs.pop("auth", None) or self.auth
+
         _kwargs = {k: v for k, v in kwargs.items() if k != "params"}
         logger.debug(
             (
@@ -299,7 +302,7 @@ class NuxeoClient(object):
         exc = None
         try:
             resp = self._session.request(
-                method, url, headers=headers, auth=self.auth, data=data, **kwargs
+                method, url, headers=headers, auth=auth, data=data, **kwargs
             )
             resp.raise_for_status()
         except Exception as exc:
@@ -340,6 +343,7 @@ class NuxeoClient(object):
         # type: (...) -> Text
         """
         Request a token for the user.
+        It should only be used if you want to get a Nuxeo token from a Basic Auth.
 
         :param device_id: device identifier
         :param permission: read/write permissions
@@ -347,22 +351,20 @@ class NuxeoClient(object):
         :param device: optional device description
         :param revoke: revoke the token
         """
-
-        parameters = {
-            "deviceId": device_id,
-            "applicationName": app_name,
-            "permission": permission,
-            "revoke": text(revoke).lower(),
-        }
-        if device:
-            parameters["deviceDescription"] = device
-
-        path = "authentication/token"
-        token = self.request("GET", path, params=parameters).text
+        auth = TokenAuth("")
+        token = auth.request_token(
+            self,
+            device_id,
+            permission,
+            app_name=app_name,
+            device=device,
+            revoke=revoke,
+            auth=self.auth,
+        )
 
         # Use the (potentially re-newed) token from now on
         if not revoke:
-            self.auth = TokenAuth(token)
+            self.auth = auth
         return token
 
     def is_reachable(self):

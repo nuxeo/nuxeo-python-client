@@ -11,10 +11,12 @@ Release date: ``2021-0x-xx``
 - `NXPY-214 <https://jira.nuxeo.com/browse/NXPY-214>`__: Add a code coverage GitHub Action on PRs
 - `NXPY-215 <https://jira.nuxeo.com/browse/NXPY-215>`__: Add support for the JSON Web Token authentication
 - `NXPY-217 <https://jira.nuxeo.com/browse/NXPY-217>`__: Restore Python 2.7 support
+- `NXPY-218 <https://jira.nuxeo.com/browse/NXPY-218>`__: Introduce the ``BasicAuth`` class
 
 Technical changes
 -----------------
 
+- Added nuxeo/auth/basic.py
 - Added nuxeo/auth/jwt.py
 - Added nuxeo/auth/oauth2.py
 - Added nuxeo/exceptions.py::\ ``OAuth2Error``

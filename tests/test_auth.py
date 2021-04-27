@@ -4,13 +4,29 @@ from __future__ import unicode_literals
 import pytest
 from requests import Request
 
-from nuxeo.auth import JWTAuth, OAuth2, PortalSSOAuth, TokenAuth
+from nuxeo.auth import BasicAuth, JWTAuth, OAuth2, PortalSSOAuth, TokenAuth
 from nuxeo.auth.utils import make_portal_sso_token
 from nuxeo.compat import text
 from nuxeo.exceptions import NuxeoError
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
+
+
+def test_basic():
+    auth = BasicAuth("Alice", "her password")
+    req = Request("GET", "https://httpbin.org/get", auth=auth)
+    prepared = req.prepare()
+    assert prepared.headers[auth.AUTHORIZATION] == "Basic QWxpY2U6aGVyIHBhc3N3b3Jk"
+
+
+def test_basic_equality():
+    auth1 = BasicAuth("Alice", "a password")
+    auth2 = BasicAuth("Alice", "a new password")
+    auth3 = BasicAuth("Bob", "a password")
+    assert auth1 != auth2
+    assert auth1 != auth3
+    assert auth2 != auth3
 
 
 def test_jwt():

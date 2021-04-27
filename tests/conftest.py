@@ -9,6 +9,7 @@ import sys
 import pytest
 from requests.cookies import RequestsCookieJar
 
+from nuxeo.auth import BasicAuth
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import HTTPError
 
@@ -75,7 +76,7 @@ def server(host):
     cookies.set("device", "python-client")
     server = Nuxeo(
         host=host,
-        auth=("Administrator", "Administrator"),
+        auth=BasicAuth("Administrator", "Administrator"),
         cookies=cookies,
     )
     server.client.set(schemas=["dublincore"])
