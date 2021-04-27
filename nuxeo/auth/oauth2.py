@@ -105,7 +105,7 @@ class OAuth2(AuthBase):
         return uri, state, code_verifier
 
     def request_token(self, **kwargs):
-        # type: (Any) -> None
+        # type: (Any) -> Token
         """Do request for a token.
         The *code_verifier* kwarg is required in any cases.
         Other kwargs can be a combination of either:
@@ -122,7 +122,7 @@ class OAuth2(AuthBase):
         return token
 
     def refresh_token(self):
-        # type: () -> None
+        # type: () -> Token
         """Do refresh the current token using the *refresh_token*."""
         token = self._request(
             self._client.refresh_token,
