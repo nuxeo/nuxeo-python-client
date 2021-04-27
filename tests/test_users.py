@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import pytest
 
+from nuxeo.auth import BasicAuth
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import BadQuery
 from nuxeo.users import User
@@ -83,7 +84,7 @@ def test_update_user(server, host):
         user = server.users.get("georges")
         assert user.properties["company"] == company
 
-        auth = ("georges", "Test")
+        auth = BasicAuth("georges", "Test")
         server2 = Nuxeo(host=host, auth=auth)
         assert server2.users.current_user()
 
@@ -93,6 +94,6 @@ def test_update_user_autoset_change_password(server, host):
         georges.change_password("Test2")
         georges.save()
 
-        auth = ("georges", "Test2")
+        auth = BasicAuth("georges", "Test2")
         server2 = Nuxeo(host=host, auth=auth)
         assert server2.users.current_user()
