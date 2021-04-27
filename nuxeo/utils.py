@@ -225,7 +225,7 @@ def log_response(response, *args, **kwargs):
 
     # No need to do more work if nobody will see it
     if logger.getEffectiveLevel() > logging.DEBUG:
-        return
+        return response
 
     headers = response.headers
     content_type = headers.get("content-type", "application/octet-stream")
