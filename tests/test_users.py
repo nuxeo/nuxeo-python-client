@@ -49,7 +49,7 @@ def test_current_user(server):
     user = server.users.current_user()
     assert isinstance(user, User)
     assert user.uid == "Administrator"
-    assert "administrators" in user.extendedGroups
+    assert "administrators" in [g["name"] for g in user.extendedGroups]
     assert user.isAdministrator
 
 

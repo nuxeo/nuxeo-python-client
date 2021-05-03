@@ -71,9 +71,5 @@ class API(APIEndpoint):
 
         :return User: user's details
         """
-        details = self.client.request("POST", "site/automation/login").json()
-        return User(
-            extendedGroups=details["groups"],
-            id=details["username"],
-            isAdministrator=details["isAdministrator"],
-        )
+        details = self.client.request("GET", "site/api/v1/me").json()
+        return User(**details)
