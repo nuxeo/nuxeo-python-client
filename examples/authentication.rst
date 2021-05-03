@@ -33,11 +33,15 @@ OAuth2 with automatic credentials renewal is available by default.
 
 The ``OAuth2`` class can take several optionnal keyword arguments:
 
+- ``authorization_endpoint``: custom authorization endpoint
 - ``client_id``: the consumer client ID
 - ``client_secret``: the consumer client secret
+- ``openid_configuration_url``: configuration URL for OpenID Connect Discovery
+- ``redirect_uri``: the redirect URI (mandatory when using ADFS ofr instance)
 - ``token``: existent token
-- ``authorization_endpoint``: custom authorization endpoint
 - ``token_endpoint``: custom token endpoint
+
+When ``openid_configuration_url`` is passed, ``authorization_endpoint`` and ``token_endpoint`` have no effect.
 
 Scenario 1: Generating a New Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

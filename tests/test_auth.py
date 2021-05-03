@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import pytest
+import responses
 from requests import Request
 
 from nuxeo.auth import BasicAuth, JWTAuth, OAuth2, PortalSSOAuth, TokenAuth
@@ -127,6 +128,34 @@ def test_oauth2_token():
     req = Request("GET", "https://httpbin.org/get", auth=auth)
     prepared = req.prepare()
     assert prepared.headers[auth.AUTHORIZATION] == "Bearer <ACCESS>"
+
+
+@responses.activate
+def test_oauth2_openid_configuration_url():
+    authorization_endpoint = "/authorization/endpoint"
+    token_endpoint = "/token/endpoint"
+    redirect_uri = "/custom/redirect/url"
+    openid_configuration_url = "https://example.com/.well-known/openid-configuration"
+    openid_configuation = {
+        "authorization_endpoint": "https://real.authorization.endpoint",
+        "token_endpoint": "https://real.token.endpoint",
+    }
+
+    responses.add(responses.GET, openid_configuration_url, json=openid_configuation)
+    auth = OAuth2(
+        "<host>",
+        authorization_endpoint=authorization_endpoint,
+        token_endpoint=token_endpoint,
+        openid_configuration_url=openid_configuration_url,
+        redirect_uri=redirect_uri,
+    )
+
+    # Ensure the redirect_uri is well set
+    assert auth._client.redirect_uri == redirect_uri
+
+    # Check that endpoints referenced from the OpenID configuration have the priority over specific endpoints arguments
+    assert auth._authorization_endpoint == openid_configuation["authorization_endpoint"]
+    assert auth._token_endpoint == openid_configuation["token_endpoint"]
 
 
 def test_token():
