@@ -6,12 +6,13 @@ Changelog
 
 Release date: ``2021-0x-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-219 <https://jira.nuxeo.com/browse/NXPY-219>`__: Add support for OpenID Connect Discovery
 
 Technical changes
 -----------------
 
--
+- Added ``redirect_uri`` keyword argument to ``OAuth2.__init__()``
+- Added ``openid_configuration_url`` keyword argument to ``OAuth2.__init__()``
 
 5.1.0
 -----

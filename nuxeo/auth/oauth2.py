@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from time import time
 
+import requests
 from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import AuthlibBaseError
 from authlib.integrations.requests_client import OAuth2Session
@@ -46,32 +47,45 @@ class OAuth2(AuthBase):
 
     def __init__(
         self,
-        host,
-        client_secret=None,
-        client_id=None,
-        token=None,
-        authorization_endpoint=None,
-        token_endpoint=None,
+        host,  # type: Text
+        client_secret=None,  # type: Optional[Text]
+        client_id=None,  # type: Optional[Text]
+        token=None,  # type: Optional[Text]
+        authorization_endpoint=None,  # type: Optional[Text]
+        token_endpoint=None,  # type: Optional[Text]
+        redirect_uri=None,  # type: Optional[Text]
+        openid_configuration_url=None,  # type: Optional[Text]
     ):
-        # type: (Text, Optional[Text], Optional[Text], Optional[Token], Optional[Text], Optional[Text]) -> None
+        # type: (...) -> None
         if not host.endswith("/"):
             host += "/"
         self._host = host
-        self._client = OAuth2Session(client_id=client_id, client_secret=client_secret)
-        self._client.session.hooks["response"] = [log_response]
         self._token_header = ""
         self.token = {}  # type: Token
         if token:
             self.set_token(token)
 
-        # Allow to pass custom endpoints (not handled by the platform)
-        auth_endpoint = authorization_endpoint or DEFAULT_AUTHORIZATION_ENDPOINT
-        token_endpoint = token_endpoint or DEFAULT_TOKEN_ENDPOINT
-        if not auth_endpoint.startswith("https://"):
-            auth_endpoint = self._host + auth_endpoint
+        # Allow to pass custom endpoints
+        if openid_configuration_url:
+            # OpenID Connect Discovery
+            with requests.get(openid_configuration_url) as req:
+                data = req.json()
+                auth_endpoint = data["authorization_endpoint"]
+                token_endpoint = data["token_endpoint"]
+        else:
+            auth_endpoint = authorization_endpoint or DEFAULT_AUTHORIZATION_ENDPOINT
+            token_endpoint = token_endpoint or DEFAULT_TOKEN_ENDPOINT
+            if not auth_endpoint.startswith("https://"):
+                auth_endpoint = self._host + auth_endpoint
+            if not token_endpoint.startswith("https://"):
+                token_endpoint = self._host + token_endpoint
+
+        self._client = OAuth2Session(
+            client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri
+        )
+        self._client.session.hooks["response"] = [log_response]
+
         self._authorization_endpoint = auth_endpoint
-        if not token_endpoint.startswith("https://"):
-            token_endpoint = self._host + token_endpoint
         self._token_endpoint = token_endpoint
 
     def _request(self, method, *args, **kwargs):
@@ -86,7 +100,11 @@ class OAuth2(AuthBase):
     def token_is_expired(self):
         # type: () -> bool
         """Check whenever the current token is expired or not."""
-        return self.token and self.token["expires_at"] < time()
+        token = self.token
+        if not token:
+            return False
+
+        return token["expires_at"] < time()
 
     def create_authorization_url(self, **kwargs):
         # type: (Any) -> Tuple[str, str, str]
