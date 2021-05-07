@@ -8,6 +8,8 @@ from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import AuthlibBaseError
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7636 import create_s256_code_challenge
+from jwt import JWT, jwk_from_dict
+from jwt.exceptions import JWTDecodeError
 
 from ..compat import get_bytes
 from ..exceptions import OAuth2Error
@@ -38,6 +40,7 @@ class OAuth2(AuthBase):
         "_authorization_endpoint",
         "_client",
         "_host",
+        "_openid_conf",
         "_token_endpoint",
         "_token_header",
     )
@@ -60,6 +63,7 @@ class OAuth2(AuthBase):
         if not host.endswith("/"):
             host += "/"
         self._host = host
+        self._openid_conf = {}
         self._token_header = ""
         self.token = {}  # type: Token
         if token:
@@ -69,9 +73,11 @@ class OAuth2(AuthBase):
         if openid_configuration_url:
             # OpenID Connect Discovery
             with requests.get(openid_configuration_url) as req:
-                data = req.json()
-                auth_endpoint = data["authorization_endpoint"]
-                token_endpoint = data["token_endpoint"]
+                self._openid_conf = req.json()
+            auth_endpoint = self._openid_conf["authorization_endpoint"]
+            token_endpoint = self._openid_conf["token_endpoint"]
+            with requests.get(self._openid_conf["jwks_uri"]) as req:
+                self._openid_conf["signing_keys"] = req.json()["keys"]
         else:
             auth_endpoint = authorization_endpoint or DEFAULT_AUTHORIZATION_ENDPOINT
             token_endpoint = token_endpoint or DEFAULT_TOKEN_ENDPOINT
@@ -154,7 +160,21 @@ class OAuth2(AuthBase):
         # type: (Token) -> None
         """Apply the given *token*."""
         self.token = token
-        self._token_header = token["token_type"].title() + " " + token["access_token"]
+        self._token_header = "Bearer " + token["access_token"]
+
+    def validate_access_token(self):
+        error = ""
+        instance = JWT()
+        for key in self._openid_conf["signing_keys"]:
+            try:
+                # Validate token and return claims
+                verifying_key = jwk_from_dict(key)
+                return instance.decode(
+                    self.token["access_token"], verifying_key, do_time_check=True
+                )
+            except JWTDecodeError as exc:
+                error = str(exc)
+        raise OAuth2Error(error)
 
     def __eq__(self, other):
         # type: (object) -> bool
