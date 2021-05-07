@@ -54,7 +54,7 @@ class Uploader(object):
 
         self.blob.uploadType = "chunked" if self.chunked else "normal"
         self.chunk_count = 1
-        self.path = "{}/{}".format(self.batch.batchId, self.batch.upload_idx)
+        self.path = f"{self.batch.batchId}/{self.batch.upload_idx}"
         self.headers.update(
             {
                 "Cache-Control": "no-cache",
@@ -70,13 +70,10 @@ class Uploader(object):
 
     def __repr__(self):
         # type: () -> str
-        return "<{} is_complete={!r}, chunked={!r}, chunk_size={!r}, batch={!r}, blob={!r}>".format(
-            type(self).__name__,
-            self.is_complete(),
-            self.chunked,
-            self.chunk_size,
-            self.batch,
-            self.blob,
+        return (
+            f"<{type(self).__name__} is_complete={self.is_complete()!r},"
+            f" chunked={self.chunked!r}, chunk_size={self.chunk_size!r},"
+            f" batch={self.batch!r}, blob={self.blob!r}>"
         )
 
     def __str__(self):

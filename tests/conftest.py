@@ -22,9 +22,7 @@ def server_log(request, server):
     if should_log_to_server:
         return
 
-    msg = ">>> testing: {}.{}".format(
-        request.module.__name__, request.function.__name__
-    )
+    msg = f">>> testing: {request.module.__name__}.{request.function.__name__}"
     server.operations.execute(command="Log", level="warn", message=msg)
 
 
@@ -38,7 +36,7 @@ def no_warnings(recwarn):
         if "unclosed" in message:
             # It may be worth fixing tests leaking sockets and file descriptors
             continue
-        warn = "{w.filename}:{w.lineno} {w.message}".format(w=warning)
+        warn = f"{warning.filename}:{warning.lineno} {message}"
         print(warn, file=sys.stderr)
         warnings.append(warn)
     assert not warnings

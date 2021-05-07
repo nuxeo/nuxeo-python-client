@@ -36,7 +36,7 @@ class APIEndpoint(object):
         """
         self.client = client
         if endpoint:
-            self.endpoint = "{}/{}".format(client.api_path, endpoint)
+            self.endpoint = f"{client.api_path}/{endpoint}"
         else:
             self.endpoint = client.api_path
         self.headers = headers or {}
@@ -48,7 +48,7 @@ class APIEndpoint(object):
         cls=None,  # type: Optional[Type]
         raw=False,  # type: bool
         single=False,  # type: bool
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> Any
         """
@@ -69,7 +69,7 @@ class APIEndpoint(object):
             cls = self._cls
 
         if path:
-            endpoint = "{}/{}".format(endpoint, path)
+            endpoint = f"{endpoint}/{path}"
 
         response = self.client.request("GET", endpoint, **kwargs)
 
@@ -110,7 +110,7 @@ class APIEndpoint(object):
         endpoint = kwargs.pop("endpoint", "") or self.endpoint
 
         if path:
-            endpoint = "{}/{}".format(endpoint, path)
+            endpoint = f"{endpoint}/{path}"
 
         response = self.client.request(
             "POST", endpoint, data=resource, raw=raw, **kwargs
@@ -130,7 +130,7 @@ class APIEndpoint(object):
         :return: the modified resource
         """
 
-        endpoint = "{}/{}".format(self.endpoint, path or resource.uid)
+        endpoint = f"{self.endpoint}/{path or resource.uid}"
 
         data = resource.as_dict() if resource else resource
 
@@ -147,7 +147,7 @@ class APIEndpoint(object):
         :param resource_id: the resource ID to be deleted
         """
 
-        endpoint = "{}/{}".format(self.endpoint, resource_id)
+        endpoint = f"{self.endpoint}/{resource_id}"
         self.client.request("DELETE", endpoint)
 
     def exists(self, path):
@@ -158,7 +158,7 @@ class APIEndpoint(object):
         :param path: the endpoint (URL path) for the request
         :return: True if it exists, else False
         """
-        endpoint = "{}/{}".format(self.endpoint, path)
+        endpoint = f"{self.endpoint}/{path}"
 
         try:
             self.client.request("GET", endpoint)

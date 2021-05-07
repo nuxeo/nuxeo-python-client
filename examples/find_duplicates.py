@@ -57,14 +57,14 @@ nuxeo = Nuxeo(host=host, auth=auth)
 
 
 def color_print(text, color):
-    print("{}{}{}".format(color, text, BColors.ENDC))
+    print(f"{color}{text}{BColors.ENDC}")
 
 
 def print_duplicates(path, uids):
+    uid_list = "\n".join(uids)
     print(
-        "{}'{}'{} appears {} times with following uids:\n{}".format(
-            BColors.OKBLUE, path, BColors.ENDC, len(uids), "\n".join(uids)
-        )
+        f"{BColors.OKBLUE}'{path}'{BColors.ENDC} appears {len(uids)} times",
+        f"with following uids:\n{uid_list}",
     )
 
 
@@ -113,12 +113,12 @@ def find_duplicates_of_uid(uid):
                 )
             else:
                 color_print(
-                    "No duplicate for the document with uid={}.".format(uid),
+                    f"No duplicate for the document with uid={uid}.",
                     BColors.OKGREEN,
                 )
         except HTTPError as e:
             if e.response.status_code == 404:
-                color_print("No document with uid={}.".format(uid), BColors.FAIL)
+                color_print(f"No document with uid={uid}.", BColors.FAIL)
 
 
 def find_duplicates_with_name(name):
@@ -135,7 +135,7 @@ def find_duplicates_with_name(name):
             no_duplicates = False
             print_duplicates("/".join([path, name]), uids)
     if no_duplicates:
-        color_print("No duplicate for {}.".format(get_bytes(name)), BColors.OKGREEN)
+        color_print(f"No duplicate for {get_bytes(name)}.", BColors.OKGREEN)
 
 
 def main():

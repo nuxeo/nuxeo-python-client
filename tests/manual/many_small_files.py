@@ -8,7 +8,7 @@ from nuxeo.models import Document, FileBlob
 
 
 def create_random_file(file_in, i):
-    filename = "{}_{}".format(file_in, i)
+    filename = f"{file_in}_{i}"
     r_size = random.randint(10, 500)
     with open(filename, "wb") as f:
         f.write(b"\x00" + os.urandom(r_size * 100 * 1024) + b"\x00")
@@ -36,11 +36,11 @@ def upload_file(server, filename):
 
 @profile
 def download_file(server, file_in, i):
-    filename = "{}_{}".format(file_in, i)
+    filename = f"{file_in}_{i}"
     file_out = filename + ".dl"
     try:
         operation = server.operations.new("Blob.Get")
-        operation.input_obj = "{}/{}".format("/default-domain/workspaces", filename)
+        operation.input_obj = f"/default-domain/workspaces/{filename}"
         operation.execute(file_out=file_out)
     finally:
         os.remove(filename)

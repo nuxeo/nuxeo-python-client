@@ -21,7 +21,7 @@ def workflows(server):
         pass
     for item in ("task-root", "document-route-instances-root"):
         try:
-            server.client.request("DELETE", "repo/default/path/{}".format(item))
+            server.client.request("DELETE", f"repo/default/path/{item}")
         except (HTTPError, socket.timeout):
             pass
     return server.workflows
@@ -58,7 +58,7 @@ def test_basic_workflow(tasks, workflows, server):
             "assignees": ["user:Administrator"],
             "end_date": "2011-10-23T12:00:00.00Z",
         }
-        task.delegate(["user:{}".format(user.uid)], comment="a comment")
+        task.delegate([f"user:{user.uid}"], comment="a comment")
         task.complete("start_review", variables=infos, comment="another comment")
         assert len(doc.workflows) == 1
         assert task.state == "ended"
@@ -66,7 +66,7 @@ def test_basic_workflow(tasks, workflows, server):
         assert len(tks) == 1
         task = tks[0]
         # NXPY-12: Reassign task give _read() error
-        task.reassign(["user:{}".format(user.uid)], comment="other comment")
+        task.reassign([f"user:{user.uid}"], comment="other comment")
         task.complete("validate", variables={"comment": "new comment"})
         assert task.state == "ended"
         assert not doc.workflows

@@ -30,8 +30,10 @@ class CorruptedFile(NuxeoError):
 
     def __repr__(self):
         # type: () -> str
-        err = "CorruptedFile {!r}: server digest is {!r}, local digest is {!r}"
-        return err.format(self.filename, self.server_digest, self.local_digest)
+        return (
+            f"CorruptedFile {self.filename!r}: server digest is {self.server_digest!r},"
+            f" local digest is {self.local_digest!r}"
+        )
 
     def __str__(self):
         # type: () -> str
@@ -105,8 +107,7 @@ class InvalidUploadHandler(NuxeoError):
 
     def __repr__(self):
         # type: () -> str
-        msg = "{}: the upload handler {!r} is not one of {}."
-        return msg.format(type(self).__name__, self.handler, self.handlers)
+        return f"{type(self).__name__}: the upload handler {self.handler!r} is not one of {self.handlers}."
 
     def __str__(self):
         # type: () -> str
@@ -133,8 +134,10 @@ class OngoingRequestError(Conflict):
 
     def __repr__(self):
         # type: () -> str
-        msg = "{}: a request with the idempotency key {!r} is already being processed."
-        return msg.format(type(self).__name__, self.request_uid)
+        return (
+            f"{type(self).__name__}: a request with the idempotency key"
+            f" {self.request_uid!r} is already being processed."
+        )
 
     def __str__(self):
         # type: () -> str
@@ -162,9 +165,7 @@ class UnavailableConvertor(NuxeoError):
 
     def __repr__(self):
         # type: () -> str
-        return (
-            "UnavailableConvertor: conversion with options {!r} is not available"
-        ).format(self.options)
+        return f"UnavailableConvertor: conversion with options {self.options!r} is not available"
 
     def __str__(self):
         # type: () -> str
@@ -184,11 +185,11 @@ class UploadError(NuxeoError):
 
     def __repr__(self):
         # type: () -> str
-        err = "UploadError: unable to upload file {!r}".format(self.name)
+        err = f"UploadError: unable to upload file {self.name!r}"
         if self.chunk:
-            err = "{} (failed at chunk {})".format(err, self.chunk)
+            err += f" (failed at chunk {self.chunk})"
         if self.info:
-            err = "{} (source: {})".format(err, self.info)
+            err += f" (source: {self.info})"
         return err
 
     def __str__(self):

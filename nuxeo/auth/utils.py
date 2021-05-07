@@ -10,8 +10,8 @@ def make_portal_sso_token(timestamp, random, secret, username, digest_algorithm=
     """Generate a token for SSO with Portals."""
     digester = get_digest_hash(digest_algorithm)
     if not digester:
-        err = "Cannot compute token because of unknown digest algorithm: {!r}"
-        raise NuxeoError(err.format(digest_algorithm))
+        err = f"Cannot compute token because of unknown digest algorithm: {digest_algorithm!r}"
+        raise NuxeoError(err)
 
     clear_token = ":".join([str(timestamp), random, secret, username])
     digester.update(get_bytes(clear_token))

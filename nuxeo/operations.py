@@ -9,7 +9,7 @@ from . import constants
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery, CorruptedFile
 from .models import Blob, Operation
-from .utils import get_digester, get_text
+from .utils import get_digester
 
 if TYPE_CHECKING:
     from .client import NuxeoClient
@@ -93,7 +93,7 @@ class API(APIEndpoint):
 
         operation = self.operations.get(command)
         if not operation:
-            raise BadQuery("{!r} is not a registered operation".format(command))
+            raise BadQuery(f"{command!r} is not a registered operation")
 
         parameters = {param["name"]: param for param in operation["params"]}
 
@@ -103,8 +103,8 @@ class API(APIEndpoint):
             try:
                 param = parameters.pop(name)
             except KeyError:
-                err = "unexpected parameter {!r} for operation {}"
-                raise BadQuery(err.format(name, command))
+                err = f"unexpected parameter {name!r} for operation {command}"
+                raise BadQuery(err)
 
             # Check types
             types_accepted, default = PARAM_TYPES[param["type"]]
@@ -119,15 +119,15 @@ class API(APIEndpoint):
                     types = ", ".join(types[:-1]) + " or " + types[-1]
                 else:
                     types = types[0]
-                err = "parameter {}={!r} should be of type {} (current is {})"
-                raise BadQuery(err.format(name, value, types, type(value).__name__))
+                err = f"parameter {name}={value!r} should be of type {types} (current is {type(value).__name__})"
+                raise BadQuery(err)
 
         # Check for required parameters.  As of now, `parameters` may contain
         # unclaimed parameters and we just need to check for required ones.
         for (name, parameter) in parameters.items():
             if parameter["required"]:
-                err = "missing required parameter {!r} for operation {!r}"
-                raise BadQuery(err.format(name, command))
+                err = f"missing required parameter {name!r} for operation {command!r}"
+                raise BadQuery(err)
 
     def execute(
         self,
@@ -135,7 +135,7 @@ class API(APIEndpoint):
         void_op=False,  # type: bool
         headers=None,  # type: Optional[Dict[str, str]]
         file_out=None,  # type: Optional[str]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> Any
         """
@@ -167,11 +167,9 @@ class API(APIEndpoint):
         if check_params:
             self.check_params(command, params)
 
-        url = "site/automation/{}".format(command)
+        url = f"site/automation/{command}"
         if isinstance(input_obj, Blob):
-            url = "{}/upload/{}/{}/execute/{}".format(
-                self.client.api_path, input_obj.batchId, input_obj.fileIdx, command
-            )
+            url = f"{self.client.api_path}/upload/{input_obj.batchId}/{input_obj.fileIdx}/execute/{command}"
             input_obj = None
 
         headers = headers or {}
@@ -215,7 +213,7 @@ class API(APIEndpoint):
 
     @staticmethod
     def get_attributes(operation, **kwargs):
-        # type: (Operation, Any) -> (str, Any, Dict[str, Any])
+        # type: (Operation, Any) -> Tuple[str, Any, Dict[str, Any]]
         """ Get the operation attributes. """
         if operation:
             command = operation.command
@@ -257,9 +255,7 @@ class API(APIEndpoint):
                 continue
 
             # v can only be a dict
-            contents = [
-                "{}={}".format(name, get_text(value)) for name, value in v.items()
-            ]
+            contents = [f"{name}={value}" for name, value in v.items()]
             clean_obj[k] = "\n".join(contents)
 
         return clean_obj

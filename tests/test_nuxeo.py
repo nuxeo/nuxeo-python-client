@@ -241,7 +241,7 @@ def test_max_retry(caplog, retry_server, method):
 
     for retry_number, record in enumerate(caplog.records, 1):
         assert record.levelname == "WARNING"
-        text = "Retrying (Retry(total={}".format(MAX_RETRY - retry_number)
+        text = f"Retrying (Retry(total={MAX_RETRY - retry_number}"
         assert text in record.message
 
 

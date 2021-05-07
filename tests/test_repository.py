@@ -15,7 +15,7 @@ class Doc(object):
     def __init__(self, server, with_blob=False, doc_type="File"):
         self.server = server
         self.blob = with_blob
-        self.filename = "ndt-{}.txt".format(uuid4())
+        self.filename = f"ndt-{uuid4()}.txt"
         self.doc_type = doc_type
 
     def __enter__(self):
@@ -78,7 +78,7 @@ def test_unavailable_converter(monkeypatch, server):
 
     def get(*args, **kwargs):
         """Mimic the error message when a converter is not available."""
-        raise HTTPError(message="{} is not available".format(converter))
+        raise HTTPError(message=f"{converter} is not available")
 
     with Doc(server) as doc:
         monkeypatch.setattr("nuxeo.endpoint.APIEndpoint.get", get)
@@ -206,7 +206,7 @@ def test_fetch_rendition(server):
     with Doc(server, with_blob=True) as doc:
         res = doc.fetch_rendition("xmlExport")
         assert b'<?xml version="1.0" encoding="UTF-8"?>' in res
-        path = "<path>{}</path>".format(doc.path.lstrip("/"))
+        path = f"<path>{doc.path.lstrip('/')}</path>"
         assert get_bytes(path) in res
 
 

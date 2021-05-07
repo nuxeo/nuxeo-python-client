@@ -33,7 +33,7 @@ def upload_file(server, filename):
 @profile
 def download_file(server, filename):
     operation = server.operations.new("Blob.Get")
-    operation.input_obj = "/default-domain/workspaces/{}".format(filename)
+    operation.input_obj = f"/default-domain/workspaces/{filename}"
     operation.execute(file_out=filename)
 
 

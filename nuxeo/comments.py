@@ -25,9 +25,9 @@ class API(APIEndpoint):
         :param uid: the ID of the comment
         :return: the comment
         """
-        path = "{}/@comment".format(docuid)
+        path = f"{docuid}/@comment"
         if uid:
-            path += "/{}".format(uid)
+            path += f"/{uid}"
 
         # Adding "&fetch-comment=repliesSummary" to the URL to retrieve replies number as well
         kwargs = {"fetch-comment": "repliesSummary"}
@@ -57,7 +57,7 @@ class API(APIEndpoint):
         :param resource: the entry to update
         :return: the entry updated
         """
-        path = "{}/@comment/{}".format(comment.parentId, comment.uid)
+        path = f"{comment.parentId}/@comment/{comment.uid}"
         return super().put(resource=comment, path=path)
 
     def delete(self, uid):
