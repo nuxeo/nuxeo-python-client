@@ -11,6 +11,7 @@ Release date: ``2021-0x-xx``
 Technical changes
 -----------------
 
+- Added ``OAuth2.validate_access_token()``
 - Added ``redirect_uri`` keyword argument to ``OAuth2.__init__()``
 - Added ``openid_configuration_url`` keyword argument to ``OAuth2.__init__()``
 
