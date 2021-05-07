@@ -23,17 +23,17 @@ Example output:
     707e6ea7-a7c1-49aa-b3bd-764d27e6f3ef
     54969ca5-0be2-4bbf-938a-3e8b4016e420
 """
-from __future__ import unicode_literals
-
 import argparse
 
 import os
 import re
 from collections import defaultdict
+from urllib.parse import quote
+
 from requests import HTTPError
 
 from nuxeo.client import Nuxeo
-from nuxeo.compat import get_bytes, quote
+from nuxeo.utils import get_bytes
 
 
 class BColors(object):

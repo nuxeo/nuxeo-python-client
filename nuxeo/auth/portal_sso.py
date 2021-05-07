@@ -1,21 +1,13 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 from random import randint
 from time import time
+from typing import Optional
 
-from ..compat import get_bytes
+from requests import Request
+
+from ..utils import get_bytes
 from .base import AuthBase
 from .utils import make_portal_sso_token
-
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Optional, Text
-        from requests import Request
-except ImportError:
-    pass
 
 
 class PortalSSOAuth(AuthBase):
@@ -31,7 +23,7 @@ class PortalSSOAuth(AuthBase):
     NX_TS = get_bytes("NX_TS")
 
     def __init__(self, username, secret, digest_algorithm="md5"):
-        # type: (Text, Text, Optional[Text]) -> None
+        # type: (str, str, Optional[str]) -> None
         self.username = username
         self.secret = secret
         self.digest_algorithm = digest_algorithm.lower()

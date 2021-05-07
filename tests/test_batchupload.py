@@ -1,14 +1,11 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import os
 import threading
 import uuid
 from collections import defaultdict
+from unittest.mock import patch
 
 import pytest
-
-from nuxeo.compat import text
 from nuxeo.constants import IDEMPOTENCY_KEY, UP_AMAZON_S3
 from nuxeo.exceptions import (
     CorruptedFile,
@@ -22,7 +19,6 @@ from nuxeo.models import BufferBlob, Document, FileBlob
 from requests.exceptions import ConnectionError
 from sentry_sdk import configure_scope
 
-from .compat import patch
 from .constants import WORKSPACE_ROOT
 from .server import Server
 
@@ -68,7 +64,7 @@ def test_batch_handler_default(server):
 def test_batch_handler_inexistant(server):
     with pytest.raises(InvalidUploadHandler) as exc:
         server.uploads.batch(handler="light")
-    error = text(exc.value)
+    error = str(exc.value)
     assert "light" in error
     assert "default" in error
 
@@ -80,7 +76,7 @@ def test_cancel(server):
     batch.cancel()
     with pytest.raises(InvalidBatch) as e:
         batch.get(0)
-    assert text(e.value)
+    assert str(e.value)
     batch.delete(0)
 
 
@@ -125,7 +121,7 @@ def test_digester(tmp_path, hash, is_valid, server):
             with pytest.raises(CorruptedFile) as e, configure_scope() as scope:
                 scope._should_capture = False
                 operation.execute(file_out=file_out, digest=hash)
-            assert text(e.value)
+            assert str(e.value)
     finally:
         doc.delete()
 
@@ -347,7 +343,7 @@ def test_upload_chunk_timeout(tmp_path, chunked, server):
 
     with pytest.raises(ConnectionError) as exc:
         uploader.upload()
-    error = text(exc.value)
+    error = str(exc.value)
     assert "timed out" in error
 
 
@@ -400,12 +396,10 @@ def test_upload(tmp_path, chunked, server):
 
 @pytest.mark.parametrize("chunked", [False, True])
 def test_upload_several_callbacks(tmp_path, chunked, server):
-    # Will be moved to "nonlocal" in  callback1() when Python 2 support will be dropped (NXPY-129)
-    global check
     check = 0
 
     def callback1(upload):
-        global check
+        nonlocal check
         check += 1
 
     def callback2(upload):
@@ -543,7 +537,7 @@ def test_upload_resume(tmp_path, server):
             blob = FileBlob(str(file_in), mimetype="application/octet-stream")
             with pytest.raises(UploadError) as e:
                 batch.upload(blob, chunked=True, chunk_size=256 * 1024)
-            assert text(e.value)
+            assert str(e.value)
 
             # Resume the upload
             batch.upload(blob, chunked=True, chunk_size=256 * 1024)

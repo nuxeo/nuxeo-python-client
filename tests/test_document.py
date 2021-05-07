@@ -1,13 +1,12 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from unittest.mock import patch
 
 import nuxeo.constants
 import pytest
-from nuxeo.compat import get_bytes
+from nuxeo.utils import get_bytes
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
-from .compat import patch
 from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
 
 

@@ -1,9 +1,5 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import pytest
-
-from nuxeo.compat import text
 from nuxeo.exceptions import BadQuery, HTTPError
 
 
@@ -42,7 +38,7 @@ def test_document_get_child_unknown(server):
     operation.input_obj = "/default-domain"
     with pytest.raises(HTTPError) as e:
         operation.execute()
-    assert text(e.value)
+    assert str(e.value)
     assert e.value.status == 404
 
 

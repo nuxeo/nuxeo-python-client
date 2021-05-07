@@ -4,13 +4,12 @@ Test log_response() to prevent regressions causing memory errors.
 requests Responses objects are crafted based on real usecases that broke something at some point.
 """
 import logging
+from unittest.mock import patch
 
 import pytest
 from requests import HTTPError, Response
 from nuxeo.client import NuxeoClient
 from nuxeo.utils import log_response
-
-from .compat import patch
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
@@ -18,8 +17,7 @@ skip_logging = True
 
 class ResponseAutomation(Response):
     def __init__(self):
-        # super() will be used when Python 2 support will be dropped (NXPY-129)
-        super(ResponseAutomation, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.headers["content-length"] = "1024"
@@ -28,7 +26,7 @@ class ResponseAutomation(Response):
 
 class ResponseChunkedContents(Response):
     def __init__(self):
-        super(ResponseChunkedContents, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["transfer-encoding"] = "chunked"
@@ -41,7 +39,7 @@ class ResponseChunkedContents(Response):
 
 class ResponseChunkedJsonContents(Response):
     def __init__(self):
-        super(ResponseChunkedJsonContents, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/json; nuxeo-entity=document"
         self.headers["transfer-encoding"] = "chunked"
@@ -54,7 +52,7 @@ class ResponseChunkedJsonContents(Response):
 
 class ResponseChunkedJsonContentsTooLong(Response):
     def __init__(self):
-        super(ResponseChunkedJsonContentsTooLong, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/json; nuxeo-entity=document"
         self.headers["transfer-encoding"] = "chunked"
@@ -67,7 +65,7 @@ class ResponseChunkedJsonContentsTooLong(Response):
 
 class ResponseCmis(Response):
     def __init__(self):
-        super(ResponseCmis, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.headers["content-length"] = "1024"
@@ -76,7 +74,7 @@ class ResponseCmis(Response):
 
 class ResponseEmpty(Response):
     def __init__(self):
-        super(ResponseEmpty, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.url = "http://localhost:8080/nuxeo/nothing"
@@ -88,7 +86,7 @@ class ResponseEmpty(Response):
 
 class ResponseError409(Response):
     def __init__(self):
-        super(ResponseError409, self).__init__()
+        super().__init__()
         self.status_code = 409
         self.headers["content-type"] = "application/json"
         self.headers["transfer-encoding"] = "chunked"
@@ -105,7 +103,7 @@ class ResponseError409(Response):
 
 class ResponseError500Empty(Response):
     def __init__(self):
-        super(ResponseError500Empty, self).__init__()
+        super().__init__()
         self.status_code = 500
 
     @property
@@ -115,7 +113,7 @@ class ResponseError500Empty(Response):
 
 class ResponseError500EmptyMessage(Response):
     def __init__(self):
-        super(ResponseError500EmptyMessage, self).__init__()
+        super().__init__()
         self.status_code = 500
         self.reason = "Erreur Interne de Servlet"
 
@@ -126,7 +124,7 @@ class ResponseError500EmptyMessage(Response):
 
 class ResponseError500WithReason(Response):
     def __init__(self):
-        super(ResponseError500WithReason, self).__init__()
+        super().__init__()
         self.status_code = 500
         self.reason = "Erreur Interne de Servlet"
 
@@ -137,7 +135,7 @@ class ResponseError500WithReason(Response):
 
 class ResponseIso(Response):
     def __init__(self):
-        super(ResponseIso, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/octet-stream"
         self.headers["content-length"] = "734334976"
@@ -150,7 +148,7 @@ class ResponseIso(Response):
 
 class ResponseMov(Response):
     def __init__(self):
-        super(ResponseMov, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "video/quicktime"
         self.headers["content-length"] = 1088996060
@@ -163,7 +161,7 @@ class ResponseMov(Response):
 
 class ResponseMxf(Response):
     def __init__(self):
-        super(ResponseMxf, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/mxf"
         self.headers["content-length"] = "8932294324"
@@ -176,7 +174,7 @@ class ResponseMxf(Response):
 
 class ResponseTextError(Response):
     def __init__(self):
-        super(ResponseTextError, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = "1024"
@@ -189,7 +187,7 @@ class ResponseTextError(Response):
 
 class ResponseTextOk(Response):
     def __init__(self):
-        super(ResponseTextOk, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = "1024"
@@ -202,7 +200,7 @@ class ResponseTextOk(Response):
 
 class ResponseTextTooLong(Response):
     def __init__(self):
-        super(ResponseTextTooLong, self).__init__()
+        super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = 4096 * 2

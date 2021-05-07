@@ -1,17 +1,7 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from typing import Any, Dict, List, Optional
 
 from requests.exceptions import RetryError
-
-from .compat import text
-
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text
-except ImportError:
-    pass
 
 
 class NuxeoError(Exception):
@@ -33,18 +23,18 @@ class CorruptedFile(NuxeoError):
     """ Exception thrown when digests of a downloaded blob are different. """
 
     def __init__(self, filename, server_digest, local_digest):
-        # type: (Text, Text, Text) -> None
+        # type: (str, str, str) -> None
         self.filename = filename
         self.server_digest = server_digest
         self.local_digest = local_digest
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         err = "CorruptedFile {!r}: server digest is {!r}, local digest is {!r}"
         return err.format(self.filename, self.server_digest, self.local_digest)
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
 
@@ -65,7 +55,7 @@ class HTTPError(RetryError, NuxeoError):
             setattr(self, key, value)
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         return "%s(%d), error: %r, server trace: %r" % (
             type(self).__name__,
             self.status,
@@ -74,12 +64,12 @@ class HTTPError(RetryError, NuxeoError):
         )
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
     @classmethod
     def parse(cls, json):
-        # type: (Dict[Text, Any]) -> HTTPError
+        # type: (Dict[str, Any]) -> HTTPError
         """ Parse a JSON object into a model instance. """
         model = cls()
 
@@ -109,17 +99,17 @@ class InvalidUploadHandler(NuxeoError):
     """ Exception thrown when trying to upload a blob using an invalid handler. """
 
     def __init__(self, handler, handlers):
-        # type: (Text, List[Text]) -> None
+        # type: (str, List[str]) -> None
         self.handler = handler
         self.handlers = tuple(handlers)
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         msg = "{}: the upload handler {!r} is not one of {}."
         return msg.format(type(self).__name__, self.handler, self.handlers)
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
 
@@ -129,7 +119,7 @@ class OAuth2Error(HTTPError):
     status = 400
 
     def __init__(self, error):
-        # type: (Text) -> None
+        # type: (str) -> None
         self.message = error
         self.stacktrace = None
 
@@ -138,16 +128,16 @@ class OngoingRequestError(Conflict):
     """ Exception thrown when doing an idempotent call that is already being processed. """
 
     def __init__(self, request_uid):
-        # type: (Text) -> None
+        # type: (str) -> None
         self.request_uid = request_uid
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         msg = "{}: a request with the idempotency key {!r} is already being processed."
         return msg.format(type(self).__name__, self.request_uid)
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
 
@@ -166,18 +156,18 @@ class UnavailableConvertor(NuxeoError):
     """
 
     def __init__(self, options):
-        # type: (Dict[Text, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         self.options = options
-        self.message = text(self)
+        self.message = str(self)
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         return (
             "UnavailableConvertor: conversion with options {!r} is not available"
         ).format(self.options)
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
 
@@ -187,13 +177,13 @@ class UploadError(NuxeoError):
     """
 
     def __init__(self, name, chunk=None, info=None):
-        # type: (Text, Optional[int], Optional[str]) -> None
+        # type: (str, Optional[int], Optional[str]) -> None
         self.name = name
         self.chunk = chunk
         self.info = info
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         err = "UploadError: unable to upload file {!r}".format(self.name)
         if self.chunk:
             err = "{} (failed at chunk {})".format(err, self.chunk)
@@ -202,5 +192,5 @@ class UploadError(NuxeoError):
         return err
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)

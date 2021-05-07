@@ -1,10 +1,8 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import atexit
 import json
 import logging
-import sys
+from typing import Any, Dict, Optional, Tuple, Type, Union
 from warnings import warn
 
 import requests
@@ -24,8 +22,8 @@ from . import (
     users,
     workflows,
 )
+from .auth.base import AuthBase
 from .auth import BasicAuth, TokenAuth
-from .compat import text
 from .constants import (
     CHUNK_SIZE,
     DEFAULT_API_PATH,
@@ -50,17 +48,7 @@ from .exceptions import (
 from .tcp import TCPKeepAliveHTTPSAdapter
 from .utils import json_helper, log_response
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, Optional, Text, Tuple, Type, Union
-        from requests.auth import AuthBase
-
-        AuthType = Optional[Union[Tuple[Text, Text], AuthBase]]
-except ImportError:
-    pass
-
+AuthType = Optional[Union[Tuple[str, str], AuthBase]]
 logger = logging.getLogger(__name__)
 
 if urllib3_version < "1.26.0":
@@ -103,8 +91,8 @@ class NuxeoClient(object):
     def __init__(
         self,
         auth=None,  # type: AuthType
-        host=DEFAULT_URL,  # type: Text
-        api_path=DEFAULT_API_PATH,  # type: Text
+        host=DEFAULT_URL,  # type: str
+        api_path=DEFAULT_API_PATH,  # type: str
         chunk_size=CHUNK_SIZE,  # type: int
         **kwargs  # type: Any
     ):
@@ -147,12 +135,12 @@ class NuxeoClient(object):
         self.enable_retry()
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         fmt = "{name}<host={cls.host!r}, version={cls.server_version!r}>"
         return fmt.format(name=type(self).__name__, cls=self)
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
     def on_exit(self):
@@ -179,8 +167,8 @@ class NuxeoClient(object):
 
     def query(
         self,
-        query,  # type: Text
-        params=None,  # type: Dict[Text, Any]
+        query,  # type: str
+        params=None,  # type: Dict[str, Any]
     ):
         """
         Query the server with the specified NXQL query.
@@ -200,7 +188,7 @@ class NuxeoClient(object):
         return self.request("GET", url, params=data).json()
 
     def set(self, repository=None, schemas=None):
-        # type: (Optional[Text], Optional[Text]) -> NuxeoClient
+        # type: (Optional[str], Optional[str]) -> NuxeoClient
         """
         Set the repository and/or the schemas for the requests.
 
@@ -218,9 +206,9 @@ class NuxeoClient(object):
 
     def request(
         self,
-        method,  # type: Text
-        path,  # type: Text
-        headers=None,  # type: Optional[Dict[Text, Text]]
+        method,  # type: str
+        path,  # type: str
+        headers=None,  # type: Optional[Dict[str, str]]
         data=None,  # type: Optional[Any]
         raw=False,  # type: bool
         **kwargs  # type: Any
@@ -317,7 +305,7 @@ class NuxeoClient(object):
         return resp
 
     def _check_headers_and_params_format(self, headers, params):
-        # type: (Dict[text, Any], Dict[text, Any]) -> None
+        # type: (Dict[str, Any], Dict[str, Any]) -> None
         """Check headers and params keys for dots or underscores and throw a warning if one is found."""
 
         msg = "{!r} {} should not contain '_' nor '.'. Replace with '-' to get rid of that warning."
@@ -334,13 +322,13 @@ class NuxeoClient(object):
 
     def request_auth_token(
         self,
-        device_id,  # type: Text
-        permission,  # type: Text
-        app_name=DEFAULT_APP_NAME,  # type: Text
-        device=None,  # type: Optional[Text]
+        device_id,  # type: str
+        permission,  # type: str
+        app_name=DEFAULT_APP_NAME,  # type: str
+        device=None,  # type: Optional[str]
         revoke=False,  # type: bool
     ):
-        # type: (...) -> Text
+        # type: (...) -> str
         """
         Request a token for the user.
         It should only be used if you want to get a Nuxeo token from a Basic Auth.
@@ -377,7 +365,7 @@ class NuxeoClient(object):
             return bool(response)
 
     def server_info(self, force=False):
-        # type: (bool) -> Dict[Text, Text]
+        # type: (bool) -> Dict[str, str]
         """
         Retreive server information.
 
@@ -395,7 +383,7 @@ class NuxeoClient(object):
 
     @property
     def server_version(self):
-        # type: () -> Text
+        # type: () -> str
         """ Return the server version or "unknown". """
         try:
             return self.server_info()["productVersion"]
@@ -444,26 +432,14 @@ class Nuxeo(object):
 
     def __init__(
         self,
-        auth=None,  # type: Optional[Tuple[Text, Text]]
-        host=DEFAULT_URL,  # type: Text
-        app_name=DEFAULT_APP_NAME,  # type: Text
-        version=__version__,  # type: Text
+        auth=None,  # type: Optional[Tuple[str, str]]
+        host=DEFAULT_URL,  # type: str
+        app_name=DEFAULT_APP_NAME,  # type: str
+        version=__version__,  # type: str
         client=NuxeoClient,  # type: Type[NuxeoClient]
         **kwargs  # type: Any
     ):
         # type: (...) -> None
-
-        if sys.version_info[:2] == (2, 7):  # pragma: no cover
-            from warnings import warn
-
-            message = (
-                "Python 2.7 will reach the end of its life on January"
-                " 1st, 2020. Please upgrade your Python as Python 2.7"
-                " won't be maintained after that date."
-                " And so the Nuxeo Python client."
-            )
-            warn(message, DeprecationWarning, 2)
-
         self.client = client(
             auth, host=host, app_name=app_name, version=version, **kwargs
         )
@@ -480,15 +456,15 @@ class Nuxeo(object):
         )
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         fmt = "{name}<version={ver!r}, client={cls.client!r}>"
         return fmt.format(name=type(self).__name__, cls=self, ver=__version__)
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
     def can_use(self, operation):
-        # type: (Text) -> str
+        # type: (str) -> str
         """Return a boolean to let the caller know if the given *operation* can be used."""
         return operation in self.operations.operations

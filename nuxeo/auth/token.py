@@ -1,20 +1,13 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from typing import Any, Dict, Optional
+
+from requests import Request
 
 from ..constants import DEFAULT_APP_NAME
-from ..compat import get_bytes, text
+from ..utils import get_bytes
 from .base import AuthBase
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, Optional, Text
-        from requests import Request
-
-        Token = Dict[str, Any]
-except ImportError:
-    pass
+Token = Dict[str, Any]
 
 
 class TokenAuth(AuthBase):
@@ -25,16 +18,16 @@ class TokenAuth(AuthBase):
     HEADER_TOKEN = get_bytes("X-Authentication-Token")
 
     def __init__(self, token):
-        # type: (Text) -> None
+        # type: (str) -> None
         self.token = token
 
     def request_token(
         self,
         client,
-        device_id,  # type: Text
-        permission,  # type: Text
-        app_name=DEFAULT_APP_NAME,  # type: Text
-        device=None,  # type: Optional[Text]
+        device_id,  # type: str
+        permission,  # type: str
+        app_name=DEFAULT_APP_NAME,  # type: str
+        device=None,  # type: Optional[str]
         revoke=False,  # type: bool
         auth=None,
     ):
@@ -53,7 +46,7 @@ class TokenAuth(AuthBase):
             "deviceId": device_id,
             "applicationName": app_name,
             "permission": permission,
-            "revoke": text(revoke).lower(),
+            "revoke": str(revoke).lower(),
         }
         if device:
             params["deviceDescription"] = device

@@ -1,19 +1,12 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .endpoint import APIEndpoint
-from .models import Workflow
+from .models import Document, Task, Workflow
+from .tasks import API as TasksAPI
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text
-        from .client import NuxeoClient
-        from .models import Document, Task
-        from .tasks import API as TasksAPI
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from .client import NuxeoClient
 
 
 class API(APIEndpoint):
@@ -25,30 +18,28 @@ class API(APIEndpoint):
         self,
         client,  # type: NuxeoClient
         tasks,  # type: TasksAPI
-        endpoint="workflow",  # type: Text
-        headers=None,  # type: Optional[Dict[Text, Text]]
+        endpoint="workflow",  # type: str
+        headers=None,  # type: Optional[Dict[str, str]]
     ):
         # type: (...) -> None
         self.tasks_api = tasks
-        super(API, self).__init__(
-            client, endpoint=endpoint, cls=Workflow, headers=headers
-        )
+        super().__init__(client, endpoint=endpoint, cls=Workflow, headers=headers)
 
     def get(self, workflow_id=None):
-        # type: (Optional[Text]) -> Workflow
+        # type: (Optional[str]) -> Workflow
         """
         Get the detail of a workflow.
 
         :param workflow_id: the id of the workflow
         :return: the workflow
         """
-        return super(API, self).get(path=workflow_id)
+        return super().get(path=workflow_id)
 
     def post(
         self,
-        model,  # type: Text
+        model,  # type: str
         document=None,  # type: Optional[Document]
-        options=None,  # type: Optional[Dict[Text, Any]]
+        options=None,  # type: Optional[Dict[str, Any]]
     ):
         # type: (...) -> Workflow
         """
@@ -70,7 +61,7 @@ class API(APIEndpoint):
         if document:
             kwargs["endpoint"] = self.client.api_path
             kwargs["path"] = "id/{}/@workflow".format(document.uid)
-        return super(API, self).post(data, **kwargs)
+        return super().post(data, **kwargs)
 
     start = post  # Alias for clarity
 
@@ -79,16 +70,16 @@ class API(APIEndpoint):
         raise NotImplementedError()
 
     def delete(self, workflow_id):
-        # type: (Text) -> None
+        # type: (str) -> None
         """
         Delete a workflow.
 
         :param workflow_id: the id of the workflow to delete
         """
-        super(API, self).delete(workflow_id)
+        super().delete(workflow_id)
 
     def graph(self, workflow):
-        # type: (Workflow) -> Dict[Text, Any]
+        # type: (Workflow) -> Dict[str, Any]
         """
         Get the graph of the workflow in JSON format.
 
@@ -96,17 +87,17 @@ class API(APIEndpoint):
         :return: the graph
         """
         request_path = "{}/graph".format(workflow.uid)
-        return super(API, self).get(path=request_path)
+        return super().get(path=request_path)
 
     def started(self, model):
-        # type: (Text) -> List[Workflow]
+        # type: (str) -> List[Workflow]
         """
         Get started workflows having the specified model.
 
         :param model: the workflow model
         :return: the started workflows
         """
-        return super(API, self).get(params={"workflowModelName": model})
+        return super().get(params={"workflowModelName": model})
 
     def tasks(self, workflow):
         # type: (Workflow) -> List[Task]

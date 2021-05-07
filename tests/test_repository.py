@@ -1,15 +1,12 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import operator
 import time
 from uuid import uuid4
 
 import pytest
-from nuxeo.compat import get_bytes, text
 from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
-from nuxeo.utils import version_lt
+from nuxeo.utils import get_bytes, version_lt
 
 from .constants import WORKSPACE_ROOT
 
@@ -126,7 +123,7 @@ def test_convert_unavailable(server, monkeypatch):
     with Doc(server, with_blob=True) as doc:
         with pytest.raises(UnavailableConvertor) as e:
             doc.convert({"converter": "office2html"})
-        assert text(e.value)
+        assert str(e.value)
         msg = e.value.message
         assert msg.startswith("UnavailableConvertor: conversion with options")
         assert msg.endswith("is not available")

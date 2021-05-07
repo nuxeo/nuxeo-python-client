@@ -1,11 +1,7 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import socket
 
 import pytest
-
-from nuxeo.compat import text
 from nuxeo.exceptions import BadQuery, HTTPError
 from nuxeo.models import Document, Task, User
 
@@ -119,5 +115,5 @@ def test_task_transfer(tasks):
     task = Task()
     with pytest.raises(BadQuery) as e:
         tasks.transfer(task, "bogus_transfer", {})
-    msg = text(e.value)
+    msg = str(e.value)
     assert msg == "Task transfer must be either delegate or reassign."

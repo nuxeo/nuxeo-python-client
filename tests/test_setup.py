@@ -1,16 +1,12 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 from glob import glob
 from shutil import rmtree
 from subprocess import check_output
 
 from nuxeo import __version__
 
-
 # We do not need to set-up a server and log the current test
 skip_logging = True
-
 
 CMD = "python setup.py sdist bdist_wheel".split()
 
@@ -27,8 +23,8 @@ def test_packaged_files():
         assert str(file) in output
 
 
-def test_wheel_python_2_and_3():
-    """Ensure the produced wheel is Python 2 and 3."""
+def test_wheel_python_3():
+    """Ensure the produced wheel is Python 3."""
     output = str(check_output(CMD))
-    text = "nuxeo-{}-py2.py3-none-any.whl".format(__version__)
+    text = "nuxeo-{}-py3-none-any.whl".format(__version__)
     assert text in output

@@ -1,23 +1,15 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import os
 from io import StringIO
+from typing import TYPE_CHECKING, Any, BinaryIO, Dict, List, Optional, Union
 
-from .compat import text
 from .constants import UP_AMAZON_S3
+
 from .exceptions import InvalidBatch
 from .utils import guess_mimetype
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, BinaryIO, Dict, List, Optional, Text, Union
-        from .endpoint import APIEndpoint
-except ImportError:
-    pass
-
+if TYPE_CHECKING:
+    from .endpoint import APIEndpoint
 
 # Base classes
 
@@ -25,7 +17,7 @@ except ImportError:
 class Model(object):
     """ Base class for all entities. """
 
-    __slots__ = {"service": None}  # type: Dict[Text, Any]
+    __slots__ = {"service": None}  # type: Dict[str, Any]
 
     def __init__(self, service=None, **kwargs):
         # type: (Optional[APIEndpoint], Any) -> None
@@ -42,7 +34,7 @@ class Model(object):
             setattr(self, key, kwargs.get(key, default))
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         attrs = ", ".join(
             "{}={!r}".format(attr.replace("_", "-"), getattr(self, attr, None))
             for attr in sorted(self.__slots__)
@@ -50,7 +42,7 @@ class Model(object):
         return "<{} {}>".format(self.__class__.__name__, attrs)
 
     def as_dict(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """ Returns a dict representation of the resource. """
         result = {}
         for key in self.__slots__:
@@ -66,7 +58,7 @@ class Model(object):
 
     @classmethod
     def parse(cls, json, service=None):
-        # type: (Dict[Text, Any], Optional[APIEndpoint]) -> Model
+        # type: (Dict[str, Any], Optional[APIEndpoint]) -> Model
         """ Parse a JSON object into a model instance. """
         kwargs = {k: v for k, v in json.items()}
         return cls(service=service, **kwargs)
@@ -82,7 +74,7 @@ class RefreshableModel(Model):
     __slots__ = ()
 
     def load(self, model=None):
-        # type: (Optional[Union[Model, Dict[Text, Any]]]) -> None
+        # type: (Optional[Union[Model, Dict[str, Any]]]) -> None
         """
         Reload the Model.
 
@@ -129,12 +121,12 @@ class Batch(Model):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.batchId
 
     @uid.setter
     def uid(self, value):
-        # type: (Text) -> None
+        # type: (str) -> None
         self.batchId = value
 
     def cancel(self):
@@ -193,7 +185,7 @@ class Batch(Model):
         return self.service.upload(self, blob, **kwargs)
 
     def execute(self, operation, file_idx=None, params=None):
-        # type: (Text, int, Dict[Text, Any]) -> Any
+        # type: (str, int, Dict[str, Any]) -> Any
         """
         Execute an operation on this batch.
 
@@ -205,7 +197,7 @@ class Batch(Model):
         return self.service.execute(self, operation, file_idx, params)
 
     def attach(self, doc, file_idx=None):
-        # type: (Text, Optional[int]) -> Any
+        # type: (str, Optional[int]) -> Any
         """
         Attach one or all files of this batch to a document.
 
@@ -244,7 +236,7 @@ class Blob(Model):
 
     @classmethod
     def parse(cls, json, service=None):
-        # type: (Dict[Text, Any], Optional[APIEndpoint]) -> Blob
+        # type: (Dict[str, Any], Optional[APIEndpoint]) -> Blob
         """ Parse a JSON object into a blob instance. """
         kwargs = {k: v for k, v in json.items()}
         model = cls(service=service, **kwargs)
@@ -254,9 +246,9 @@ class Blob(Model):
         return model
 
     def to_json(self):
-        # type: () -> Dict[Text, Text]
+        # type: () -> Dict[str, str]
         """ Return a JSON object used during the upload. """
-        return {"upload-batch": self.batchId, "upload-fileId": text(self.fileIdx)}
+        return {"upload-batch": self.batchId, "upload-fileId": str(self.fileIdx)}
 
 
 class BufferBlob(Blob):
@@ -268,12 +260,12 @@ class BufferBlob(Blob):
     """
 
     def __init__(self, data, **kwargs):
-        # type: (Text, Any) -> None
+        # type: (str, Any) -> None
         """
         :param data: content to upload to Nuxeo
         :param **kwargs: named attributes
         """
-        super(BufferBlob, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.stringio = None  # type: Optional[StringIO]
         self.buffer = data
         self.size = len(self.buffer)
@@ -317,7 +309,7 @@ class Comment(Model):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.id
 
     def delete(self):
@@ -331,7 +323,7 @@ class Comment(Model):
         return self.numberOfReplies > 0
 
     def replies(self, **params):
-        # type: (Text, Any) -> List[Comment]
+        # type: (str, Any) -> List[Comment]
         """
         Get the replies of the comment.
 
@@ -343,7 +335,7 @@ class Comment(Model):
         return self.service.replies(self.uid, params=params)
 
     def reply(self, text):
-        # type: (Text) -> Comment
+        # type: (str) -> Comment
         """ Add a reply to the comment. """
         # Add the reply
         reply_comment = self.service.post(self.uid, text)
@@ -365,17 +357,17 @@ class FileBlob(Blob):
     """
 
     def __init__(self, path, **kwargs):
-        # type: (Text, Any) -> None
+        # type: (str, Any) -> None
         """
         :param path: file path
         :param **kwargs: named attributes
         """
-        super(FileBlob, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.fd = None  # type: Optional[BinaryIO]
         self.path = path
         self.name = os.path.basename(self.path)
         self.size = os.path.getsize(self.path)
-        self.mimetype = self.mimetype or guess_mimetype(self.path)  # type: Text
+        self.mimetype = self.mimetype or guess_mimetype(self.path)  # type: str
 
     @property
     def data(self):
@@ -409,11 +401,11 @@ class Directory(Model):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.directoryName
 
     def get(self, entry):
-        # type: (Text) -> DirectoryEntry
+        # type: (str) -> DirectoryEntry
         """
         Get an entry of the directory.
 
@@ -433,7 +425,7 @@ class Directory(Model):
         return self.service.put(entry, dir_name=self.uid)
 
     def delete(self, entry):
-        # type: (Text) -> None
+        # type: (str) -> None
         """
         Delete one of the directory's entries.
 
@@ -442,7 +434,7 @@ class Directory(Model):
         self.service.delete(self.uid, entry)
 
     def exists(self, entry):
-        # type: (Text) -> bool
+        # type: (str) -> bool
         """
         Check if an entry is in the directory.
 
@@ -463,7 +455,7 @@ class DirectoryEntry(Model):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.properties["id"]
 
     def save(self):
@@ -509,7 +501,7 @@ class Document(RefreshableModel):
         return self.service.workflows(self)
 
     def add_permission(self, params):
-        # type: (Dict[Text, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         """
         Add a permission to a document.
 
@@ -518,7 +510,7 @@ class Document(RefreshableModel):
         return self.service.add_permission(self.uid, params)
 
     def comment(self, text):
-        # type: (Text) -> Comment
+        # type: (str) -> Comment
         """
         Add a comment to the document.
 
@@ -535,7 +527,7 @@ class Document(RefreshableModel):
         return self.service.comments(self.uid, params=params)
 
     def convert(self, params):
-        # type: (Dict[Text, Any]) -> Union[Dict[Text, Any], Text]
+        # type: (Dict[str, Any]) -> Union[Dict[str, Any], str]
         """
         Convert the document to another format.
 
@@ -550,17 +542,17 @@ class Document(RefreshableModel):
         self.service.delete(self.uid)
 
     def fetch_acls(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """ Fetch document ACLs. """
         return self.service.fetch_acls(self.uid)
 
     def fetch_audit(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """ Fetch audit for current document. """
         return self.service.fetch_audit(self.uid)
 
     def fetch_blob(self, xpath="blobholder:0"):
-        # type: (Text) -> Blob
+        # type: (str) -> Blob
         """
         Retrieve one of the blobs attached to the document.
 
@@ -570,12 +562,12 @@ class Document(RefreshableModel):
         return self.service.fetch_blob(uid=self.uid, xpath=xpath)
 
     def fetch_lock_status(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """ Get lock informations. """
         return self.service.fetch_lock_status(self.uid)
 
     def fetch_rendition(self, name):
-        # type: (Text) -> Union[Text, bytes]
+        # type: (str) -> Union[str, bytes]
         """
         :param name: Rendition name to use
         :return: The rendition content
@@ -583,14 +575,14 @@ class Document(RefreshableModel):
         return self.service.fetch_rendition(self.uid, name)
 
     def fetch_renditions(self):
-        # type: () -> List[Union[Text, bytes]]
+        # type: () -> List[Union[str, bytes]]
         """
         :return: Available renditions for this document
         """
         return self.service.fetch_renditions(self.uid)
 
     def follow_transition(self, name):
-        # type: (Text) -> None
+        # type: (str) -> None
         """
         Follow a lifecycle transition on this document.
 
@@ -600,12 +592,12 @@ class Document(RefreshableModel):
         self.load(doc)
 
     def get(self, prop):
-        # type: (Text) -> Any
+        # type: (str) -> Any
         """ Get a property of the document by its name. """
         return self.properties[prop]
 
     def has_permission(self, permission):
-        # type: (Text) -> bool
+        # type: (str) -> bool
         """ Verify if a document has the permission. """
         return self.service.has_permission(self.uid, permission)
 
@@ -615,12 +607,12 @@ class Document(RefreshableModel):
         return not not self.fetch_lock_status()
 
     def lock(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """ Lock the document. """
         return self.service.lock(self.uid)
 
     def move(self, dst, name=None):
-        # type: (Text, Optional[Text]) -> None
+        # type: (str, Optional[str]) -> None
         """
         Move a document into another parent.
 
@@ -631,12 +623,12 @@ class Document(RefreshableModel):
         self.load(doc)
 
     def remove_permission(self, params):
-        # type: (Dict[Text, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         """ Remove a permission to a document. """
         return self.service.remove_permission(self.uid, params)
 
     def set(self, properties):
-        # type: (Dict[Text, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         """ Add/update the properties of the document. """
         self.properties.update(properties)
 
@@ -646,7 +638,7 @@ class Document(RefreshableModel):
         self.load(doc)
 
     def unlock(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """ Unlock the document. """
         return self.service.unlock(self.uid)
 
@@ -669,7 +661,7 @@ class Group(Model):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.groupname
 
     def delete(self):
@@ -718,11 +710,11 @@ class Task(RefreshableModel):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.id
 
     def complete(self, action, variables=None, comment=None):
-        # type: (Text, Optional[Dict[Text, Any]], Optional[Text]) -> None
+        # type: (str, Optional[Dict[str, Any]], Optional[str]) -> None
         """ Complete the action of a task. """
         updated_task = self.service.complete(
             self, action, variables=variables, comment=comment
@@ -730,13 +722,13 @@ class Task(RefreshableModel):
         self.load(updated_task)
 
     def delegate(self, actors, comment=None):
-        # type: (Text, Optional[Text]) -> None
+        # type: (str, Optional[str]) -> None
         """ Delegate the task to someone else. """
         self.service.transfer(self, "delegate", actors, comment=comment)
         self.load()
 
     def reassign(self, actors, comment=None):
-        # type: (Text, Optional[Text]) -> None
+        # type: (str, Optional[str]) -> None
         """ Reassign the task to someone else. """
         self.service.transfer(self, "reassign", actors, comment=comment)
         self.load()
@@ -756,11 +748,11 @@ class User(RefreshableModel):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.id
 
     def change_password(self, password):
-        # type: (Text) -> None
+        # type: (str) -> None
         """
         Change user password.
 
@@ -799,7 +791,7 @@ class Workflow(Model):
 
     @property
     def uid(self):
-        # type: () -> Text
+        # type: () -> str
         return self.id
 
     def delete(self):
@@ -808,6 +800,6 @@ class Workflow(Model):
         self.service.delete(self.uid)
 
     def graph(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """ Return a JSON representation of the workflow graph. """
         return self.service.graph(self)

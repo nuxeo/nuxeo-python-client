@@ -3,21 +3,17 @@
 We cannot mock the Nuxeo server with S3 enabled.
 So we just test the most crucial part of the upload: S3 calls.
 """
-from __future__ import unicode_literals
-
 import os
+from unittest.mock import patch
 
 import boto3
 import pytest
 import requests.exceptions
 from moto import mock_s3
-from nuxeo.compat import text
 from nuxeo.constants import UP_AMAZON_S3
 from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
 from nuxeo.models import FileBlob
-
-from .compat import patch
 
 
 @pytest.fixture(scope="session")
@@ -107,7 +103,7 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
     # Simple check for additional arguments
     with pytest.raises(requests.exceptions.ConnectionError) as exc:
         batch.complete(timeout=(0.000001, 0.000001))
-    error = text(exc.value)
+    error = str(exc.value)
     assert "timed out" in error
 
     # This will not work as there is no real

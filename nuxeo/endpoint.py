@@ -1,19 +1,13 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
 from requests import Response
 
 from .exceptions import BadQuery, HTTPError
+from .models import Model
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, Optional, Text, Type
-        from .client import NuxeoClient
-        from .models import Model
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from .client import NuxeoClient
 
 
 class APIEndpoint(object):
@@ -27,8 +21,8 @@ class APIEndpoint(object):
     def __init__(
         self,
         client,  # type: NuxeoClient
-        endpoint=None,  # type: Optional[Text]
-        headers=None,  # type: Optional[Dict[Text, Text]]
+        endpoint=None,  # type: Optional[str]
+        headers=None,  # type: Optional[Dict[str, str]]
         cls=None,  # type: Optional[Type]
     ):
         # type: (...) -> None
@@ -50,7 +44,7 @@ class APIEndpoint(object):
 
     def get(
         self,
-        path=None,  # type: Optional[Text]
+        path=None,  # type: Optional[str]
         cls=None,  # type: Optional[Type]
         raw=False,  # type: bool
         single=False,  # type: bool
@@ -98,7 +92,7 @@ class APIEndpoint(object):
         return cls.parse(json, service=self)
 
     def post(self, resource=None, path=None, raw=False, **kwargs):
-        # type: (Optional[Any], Optional[Text], bool, Any) -> Any
+        # type: (Optional[Any], Optional[str], bool, Any) -> Any
         """
         Creates a new instance of the resource.
 
@@ -127,7 +121,7 @@ class APIEndpoint(object):
         return self._cls.parse(response.json(), service=self)
 
     def put(self, resource=None, path=None, **kwargs):
-        # type: (Optional[Model], Optional[Text], Any) -> Any
+        # type: (Optional[Model], Optional[str], Any) -> Any
         """
         Edits an existing resource.
 
@@ -146,7 +140,7 @@ class APIEndpoint(object):
             return self._cls.parse(response.json(), service=self)
 
     def delete(self, resource_id):
-        # type: (Text) -> None
+        # type: (str) -> None
         """
         Deletes an existing resource.
 
@@ -157,7 +151,7 @@ class APIEndpoint(object):
         self.client.request("DELETE", endpoint)
 
     def exists(self, path):
-        # type: (Text) -> bool
+        # type: (str) -> bool
         """
         Checks if a resource exists.
 

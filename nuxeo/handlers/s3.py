@@ -2,14 +2,13 @@
 """
 The Amazon S3 upload handler.
 """
-from __future__ import unicode_literals
-
 import logging
 from datetime import datetime
+from typing import Any, Dict, Generator, List, Tuple
 
 import boto3.session
 from botocore.session import get_session
-from botocore.client import Config
+from botocore.client import BaseClient, Config
 from botocore.credentials import DeferredRefreshableCredentials
 from dateutil.tz import tzlocal
 
@@ -17,16 +16,6 @@ from .default import Uploader
 from ..constants import UP_AMAZON_S3
 from ..exceptions import UploadError
 from ..utils import chunk_partition, log_chunk_details
-
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, Generator, List, Tuple
-
-        from botocore.client import BaseClient
-except ImportError:
-    pass
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +30,7 @@ class UploaderS3(Uploader):
         # Allow to pass a custom S3 client (for tests)
         s3_client = kwargs.pop("s3_client", None)
 
-        super(UploaderS3, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # S3 client configuration
         s3_info = self.batch.extraInfo
@@ -114,7 +103,7 @@ class ChunkUploaderS3(UploaderS3):
         # 0 <= MaxParts <= 2,147,483,647 (default is 1,000)
         self._max_parts = kwargs.pop("max_parts", 1000)
 
-        super(ChunkUploaderS3, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Parts already sent
         self._data_packs = []

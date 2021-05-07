@@ -1,6 +1,4 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 # We do not need to set-up a server and log the current test
 skip_logging = True
 

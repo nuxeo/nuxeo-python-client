@@ -15,7 +15,7 @@ import socket
 import threading
 import uuid
 
-from nuxeo.compat import get_bytes, get_text, text
+from nuxeo.utils import get_bytes, get_text
 
 uploads = {}
 
@@ -66,7 +66,7 @@ def handle_nuxeo_request(request_content):
     try:
         if len(path) == 1 and path[0] == "upload" and method == "POST":
             # Create batch
-            batch_id = text(uuid.uuid4())
+            batch_id = str(uuid.uuid4())
             uploads[batch_id] = {}
             return generate_response("201 Created", {"batchId": batch_id})
         if len(path) == 3 and path[0] == "upload":
@@ -128,7 +128,7 @@ class Server(threading.Thread):
         wait_to_close_event=None,
         **kwargs
     ):
-        super(Server, self).__init__()
+        super().__init__()
 
         self.handler = handler or consume_socket
         self.handler_results = []

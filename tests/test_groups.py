@@ -1,11 +1,7 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import time
 
 import pytest
-
-from nuxeo.compat import text
 from nuxeo.exceptions import BadQuery
 from nuxeo.models import Group
 
@@ -66,7 +62,7 @@ def test_fetch_unknown_group(server):
 def test_update_group(server):
     group = get_group(server)
     try:
-        grouplabel = text(int(round(time.time() * 1000)))
+        grouplabel = str(int(round(time.time() * 1000)))
         group.grouplabel = grouplabel
         group.save()
         group = server.groups.get("plops")
