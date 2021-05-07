@@ -1,13 +1,5 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from requests import Request
-except ImportError:
-    pass
+from requests import Request
 
 
 class AuthBase(object):

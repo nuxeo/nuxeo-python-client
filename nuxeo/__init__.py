@@ -15,8 +15,6 @@ Contributors:
     Romain Grasland
     and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
-from __future__ import unicode_literals
-
 
 __author__ = "Nuxeo"
 __version__ = "6.0.0"

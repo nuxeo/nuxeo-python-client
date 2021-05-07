@@ -3,8 +3,6 @@
 Inspired from https://github.com/finbourne/lusid-sdk-python/blob/ef029ec/sdk/lusid/tcp/tcp_keep_alive_probes.py
 See NXPY-183 and linked tickets for details.
 """
-from __future__ import unicode_literals
-
 import socket
 
 from requests.adapters import HTTPAdapter
@@ -55,7 +53,7 @@ class TCPKeepAliveHTTPSConnectionPool(HTTPSConnectionPool):
 
     def _validate_conn(self, conn):
         """Called right before a request is made, after the socket is created."""
-        super(TCPKeepAliveHTTPSConnectionPool, self)._validate_conn(conn)
+        super()._validate_conn(conn)
         TCPKeepAliveValidationMethods.adjust_connection_socket(conn)
 
 
@@ -66,9 +64,7 @@ class TCPKeepAlivePoolManager(PoolManager):
     """
 
     def __init__(self, num_pools=10, headers=None, **connection_pool_kw):
-        super(TCPKeepAlivePoolManager, self).__init__(
-            num_pools=num_pools, headers=headers, **connection_pool_kw
-        )
+        super().__init__(num_pools=num_pools, headers=headers, **connection_pool_kw)
         self.pool_classes_by_scheme = {
             "https": TCPKeepAliveHTTPSConnectionPool,
         }

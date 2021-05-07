@@ -1,6 +1,6 @@
 # coding: utf-8
-from __future__ import unicode_literals
 import sys
+from unittest.mock import patch
 
 import pytest
 from nuxeo.constants import UP_AMAZON_S3
@@ -15,9 +15,6 @@ from nuxeo.utils import (
     version_lt,
 )
 from sentry_sdk import configure_scope
-
-from .compat import patch
-
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
@@ -94,7 +91,7 @@ def test_get_digester(hash, digester):
 @pytest.mark.parametrize(
     "name, mime",
     [
-        # Text
+        # str
         ("foo.txt", "text/plain"),
         ("foo.html", "text/html"),
         ("foo.css", "text/css"),

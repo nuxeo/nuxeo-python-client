@@ -1,22 +1,18 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import json
 import logging
+from unittest.mock import patch
 
 import pytest
 import requests
 import responses
-from requests.exceptions import ConnectionError
-
 from nuxeo import constants
-from nuxeo.compat import get_bytes, long, text
 from nuxeo.constants import MAX_RETRY, RETRY_METHODS
 from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
-
-from .compat import patch
+from nuxeo.utils import get_bytes
+from requests.exceptions import ConnectionError
 
 
 @pytest.mark.parametrize(
@@ -53,7 +49,7 @@ from .compat import patch
         ("Document.Query", {"query": "test", "pageSize": 10}, True),
         ("Document.Query", {"query": "test", "pageSize": "test"}, False),
         # 'startPage', 'endPage' type == long
-        ("PDF.ExtractPages", {"startPage": 1, "endPage": long(2)}, True),
+        ("PDF.ExtractPages", {"startPage": 1, "endPage": int(2)}, True),
         ("PDF.ExtractPages", {"startPage": "test", "endPage": "test"}, False),
         # 'info' type == dict
         ("User.Invite", {"info": {"username": "test"}}, True),
@@ -135,22 +131,19 @@ def test_file_out(tmp_path, server):
     operation.params = {"name": "workspaces"}
     operation.input_obj = "/default-domain"
 
-    # Will be moved to "nonlocal" in  callback(), unlock_path() and lock_path()
-    # when Python 2 support will be dropped (NXPY-129)
-    global check_cb, check_lock, check_unlock
     check_cb = check_lock = check_unlock = 0
 
     def callback(path):
-        global check_cb
+        nonlocal check_cb
         check_cb += 1
 
     def unlock_path(path):
-        global check_unlock
+        nonlocal check_unlock
         check_unlock += 1
         return True
 
     def lock_path(path, locker):
-        global check_lock
+        nonlocal check_lock
         check_lock += 1
 
     file_out = operation.execute(
@@ -160,11 +153,10 @@ def test_file_out(tmp_path, server):
         unlock_path=unlock_path,
     )
 
-    # str() will be removed when dropping Python 2 support (NXPY-129)
-    with open(str(file_out)) as f:
+    with open(file_out) as f:
         file_content = json.loads(f.read())
-        resp_content = operation.execute()
-        assert file_content == resp_content
+    resp_content = operation.execute()
+    assert file_content == resp_content
 
     # Check callback and lock/unlock calls are unique
     assert check_cb == 1
@@ -177,26 +169,23 @@ def test_file_out_several_callbacks(tmp_path, server):
     operation.params = {"name": "workspaces"}
     operation.input_obj = "/default-domain"
 
-    # Will be moved to "nonlocal" in  callback1() and callback2() when Python 2 support will be dropped (NXPY-129)
-    global check1, check2
     check1 = check2 = 0
 
     def callback1(path):
-        global check1
+        nonlocal check1
         check1 += 1
 
     def callback2(path):
-        global check2
+        nonlocal check2
         check2 += 1
 
     callbacks = (callback1, callback2)
     file_out = operation.execute(file_out=tmp_path / "file_out", callback=callbacks)
 
-    # str() will be removed when dropping Python 2 support (NXPY-129)
-    with open(str(file_out)) as f:
+    with open(file_out) as f:
         file_content = json.loads(f.read())
-        resp_content = operation.execute()
-        assert file_content == resp_content
+    resp_content = operation.execute()
+    assert file_content == resp_content
 
     # Check callbacks calls are unique
     assert check1 == 1
@@ -220,7 +209,7 @@ def test_operation_command_with_timeout(server):
         server.operations.execute(
             command="Document.Create", type="File", check_params=True, timeout=0.0001
         )
-    error = text(exc.value)
+    error = str(exc.value)
     assert "timed out" in error
 
 
@@ -385,7 +374,7 @@ def test_forbidden(server):
             server.users.create(
                 User(properties={"username": "another_one", "password": "test"})
             )
-        assert text(e.value).startswith("Forbidden(403)")
+        assert str(e.value).startswith("Forbidden(403)")
     finally:
         server.client.auth = auth
         user.delete()
@@ -401,7 +390,7 @@ def test_unauthorized(server):
             server.users.create(
                 User(properties={"username": "another_one", "password": "test"})
             )
-        assert text(e.value).startswith("Unauthorized(401)")
+        assert str(e.value).startswith("Unauthorized(401)")
     finally:
         server.client.auth = auth
 

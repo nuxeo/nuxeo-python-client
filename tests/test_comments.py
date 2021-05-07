@@ -1,6 +1,4 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import pytest
 from nuxeo.models import Comment, Document
 from nuxeo.utils import version_lt

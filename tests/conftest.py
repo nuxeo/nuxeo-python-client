@@ -1,17 +1,14 @@
 # coding: utf-8
-from __future__ import print_function, unicode_literals
-
 import logging
 
 import os
 import sys
 
 import pytest
-from requests.cookies import RequestsCookieJar
-
 from nuxeo.auth import BasicAuth
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import HTTPError
+from requests.cookies import RequestsCookieJar
 
 logging.basicConfig(
     format="%(module)-14s %(levelname).1s %(message)s", level=logging.DEBUG
@@ -40,9 +37,6 @@ def no_warnings(recwarn):
         message = str(warning.message)
         if "unclosed" in message:
             # It may be worth fixing tests leaking sockets and file descriptors
-            continue
-        elif "Python 2.7 will reach" in message:
-            # TODO NXPY-129: remove that bloc
             continue
         warn = "{w.filename}:{w.lineno} {w.message}".format(w=warning)
         print(warn, file=sys.stderr)

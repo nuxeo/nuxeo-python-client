@@ -6,12 +6,14 @@ Changelog
 
 Release date: ``2021-0x-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-129 <https://jira.nuxeo.com/browse/NXPY-129>`__: Drop support for Python 2.7 and 3.5
 
 Technical changes
 -----------------
 
--
+- Moved compat.py::``get_bytes()`` to utils.py
+- Moved compat.py::``get_text()`` to utils.py
+- Removed compat.py
 
 5.2.0
 -----

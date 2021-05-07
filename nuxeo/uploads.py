@@ -1,37 +1,28 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 from uuid import uuid4
 
-from .compat import text
 from .constants import UPLOAD_CHUNK_SIZE, UP_AMAZON_S3
 from .endpoint import APIEndpoint
 from .exceptions import HTTPError, InvalidUploadHandler, UploadError
-from .models import Batch, Blob
+from .handlers.default import Uploader
+from .models import Batch, Blob, BufferBlob, FileBlob
 from .utils import chunk_partition
 
-try:
-    from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .client import NuxeoClient
 
-    if TYPE_CHECKING:
-        from typing import (
-            Any,
-            BinaryIO,
-            Callable,
-            Dict,
-            List,
-            Optional,
-            Text,
-            Tuple,
-            Union,
-        )
-        from .client import NuxeoClient
-        from .models import BufferBlob, FileBlob
-        from .handlers.default import Uploader  # noqa
-
-        ActualBlob = Union[BufferBlob, FileBlob]
-except ImportError:
-    pass
+ActualBlob = Union[BufferBlob, FileBlob]
 
 
 class API(APIEndpoint):
@@ -40,14 +31,14 @@ class API(APIEndpoint):
     __slots__ = ("__handlers",)
 
     def __init__(self, client, endpoint="upload", headers=None):
-        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        super(API, self).__init__(client, endpoint=endpoint, cls=Blob, headers=headers)
+        # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
+        super().__init__(client, endpoint=endpoint, cls=Blob, headers=headers)
 
         # Available upload handlers
         self.__handlers = None  # type: Optional[List[str]]
 
     def get(self, batch_id, file_idx=None):
-        # type: (Text, Optional[int]) -> Union[List[Blob], Blob]
+        # type: (str, Optional[int]) -> Union[List[Blob], Blob]
         """
         Get the detail of a batch.
 
@@ -62,7 +53,7 @@ class API(APIEndpoint):
         if file_idx is not None:
             path = "{}/{}".format(path, file_idx)
 
-        resource = super(API, self).get(path=path)
+        resource = super().get(path=path)
 
         if file_idx is not None:
             resource.batchId = batch_id
@@ -72,7 +63,7 @@ class API(APIEndpoint):
         return resource
 
     def post(self, handler=""):
-        # type: (Optional[Text]) -> Batch
+        # type: (Optional[str]) -> Batch
         """
         Create a batch.
 
@@ -101,7 +92,7 @@ class API(APIEndpoint):
         raise NotImplementedError()
 
     def delete(self, batch_id, file_idx=None):
-        # type: (Text, Optional[int]) -> None
+        # type: (str, Optional[int]) -> None
         """
         Delete a batch or a blob.
 
@@ -114,7 +105,7 @@ class API(APIEndpoint):
         resource = batch_id
         if file_idx is not None:
             resource += "/{}".format(file_idx)
-        super(API, self).delete(resource)
+        super().delete(resource)
 
     def handlers(self, force=False):
         # type: (Optional[bool]) -> List[str]
@@ -142,12 +133,12 @@ class API(APIEndpoint):
 
     def send_data(
         self,
-        name,  # type: Text
-        data,  # type: Union[BinaryIO, Text, bytes]
-        path,  # type: Text
+        name,  # type: str
+        data,  # type: Union[BinaryIO, str, bytes]
+        path,  # type: str
         chunked,  # type: bool
         index,  # type: int
-        headers,  # type: Dict[Text, Text]
+        headers,  # type: Dict[str, str]
         data_len=0,  # type: Optional[int]
         **kwargs  # type: Any
     ):
@@ -164,24 +155,24 @@ class API(APIEndpoint):
         :return: the blob info
         """
         if chunked:
-            headers["X-Upload-Chunk-Index"] = text(index)
+            headers["X-Upload-Chunk-Index"] = str(index)
 
         if data_len > 0:
-            headers["Content-Length"] = text(data_len)
+            headers["Content-Length"] = str(data_len)
 
         if "timeout" not in kwargs:
             # Set a big timeout to bypass most of server micro-issues with the network or loading
             kwargs["timeout"] = 60 * 10  # 10 min
 
         try:
-            return super(API, self).post(
+            return super().post(
                 resource=data, path=path, raw=True, headers=headers, **kwargs
             )
         except HTTPError as e:
             raise UploadError(name, chunk=index if chunked else None, info=str(e))
 
     def state(self, path, blob, chunk_size=UPLOAD_CHUNK_SIZE):
-        # type: (Text, ActualBlob, int) -> Tuple[int, List[int]]
+        # type: (str, ActualBlob, int) -> Tuple[int, List[int]]
         """
         Get the state of a blob.
 
@@ -199,7 +190,7 @@ class API(APIEndpoint):
         :return: a tuple of the chunk count and
                  the set of uploaded chunk indexes
         """
-        info = super(API, self).get(path, default=None)
+        info = super().get(path, default=None)
 
         if info:
             chunk_count = int(info.chunkCount)
@@ -241,7 +232,7 @@ class API(APIEndpoint):
         return uploader.blob
 
     def execute(self, batch, operation, file_idx=None, params=None, void_op=True):
-        # type: (Batch, Text, Optional[int], Optional[Dict[Text,Any]], bool) -> Any
+        # type: (Batch, str, Optional[int], Optional[Dict[str,Any]], bool) -> Any
         """
         Execute an operation with the batch or one of its files as an input.
 
@@ -268,7 +259,7 @@ class API(APIEndpoint):
         )
 
     def attach(self, batch, doc, file_idx=None):
-        # type: (Batch, Text, Optional[int]) -> Any
+        # type: (Batch, str, Optional[int]) -> Any
         """
         Attach one or all files of a batch to a document.
 

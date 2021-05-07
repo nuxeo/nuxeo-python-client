@@ -1,19 +1,12 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from .compat import text
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery
 from .models import Task
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text, Union
-        from .client import NuxeoClient
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from .client import NuxeoClient
 
 
 class API(APIEndpoint):
@@ -22,11 +15,11 @@ class API(APIEndpoint):
     __slots__ = ()
 
     def __init__(self, client, endpoint="task", headers=None):
-        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        super(API, self).__init__(client, endpoint=endpoint, cls=Task, headers=headers)
+        # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
+        super().__init__(client, endpoint=endpoint, cls=Task, headers=headers)
 
     def get(
-        self, options=None  # type: Optional[Union[Dict[Text, Any], Text]]
+        self, options=None  # type: Optional[Union[Dict[str, Any], str]]
     ):
         # type: (...) -> Union[Task, List[Task]]
         """
@@ -39,10 +32,10 @@ class API(APIEndpoint):
 
         if isinstance(options, dict):
             params = options
-        elif isinstance(options, text):
+        elif isinstance(options, str):
             request_path = options
 
-        return super(API, self).get(path=request_path, params=params)
+        return super().get(path=request_path, params=params)
 
     def post(self, **kwargs):
         # type: (Any) -> None
@@ -53,11 +46,11 @@ class API(APIEndpoint):
         raise NotImplementedError()
 
     def delete(self, task_id):
-        # type: (Text) -> None
+        # type: (str) -> None
         raise NotImplementedError()
 
     def complete(self, task, action, variables=None, comment=None):
-        # type: (Task, Text, Optional[Dict[Text, Any]], Optional[Text]) -> Task
+        # type: (Task, str, Optional[Dict[str, Any]], Optional[str]) -> Task
         """
         Complete the task.
 
@@ -73,10 +66,10 @@ class API(APIEndpoint):
             task.variables["comment"] = comment
 
         request_path = "{}/{}".format(task.uid, action)
-        return super(API, self).put(task, path=request_path)
+        return super().put(task, path=request_path)
 
     def transfer(self, task, transfer, actors, comment=None):
-        # type: (Task, Text, Text, Optional[Text]) -> None
+        # type: (Task, str, str, Optional[str]) -> None
         """
          Delegate or reassign the Task to someone else.
 
@@ -98,4 +91,4 @@ class API(APIEndpoint):
             params["comment"] = comment
 
         request_path = "{}/{}".format(task.uid, transfer)
-        super(API, self).put(None, path=request_path, params=params)
+        super().put(None, path=request_path, params=params)

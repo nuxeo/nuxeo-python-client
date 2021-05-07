@@ -1,6 +1,4 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 from .basic import BasicAuth
 from .jwt import JWTAuth
 from .oauth2 import OAuth2

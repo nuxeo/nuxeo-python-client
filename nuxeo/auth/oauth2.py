@@ -1,7 +1,6 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 from time import time
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import requests
 from authlib.common.security import generate_token
@@ -11,23 +10,11 @@ from authlib.oauth2.rfc7636 import create_s256_code_challenge
 from jwt import JWT, jwk_from_dict
 from jwt.exceptions import JWTDecodeError
 
-from ..compat import get_bytes
 from ..exceptions import OAuth2Error
-from ..utils import log_response
+from ..utils import get_bytes, log_response
 from .base import AuthBase
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Callable, Dict, Optional, Text, Tuple
-        from requests import Request
-
-        Token = Dict[str, Any]
-except ImportError:
-    pass
-
-
+Token = Dict[str, Any]
 DEFAULT_AUTHORIZATION_ENDPOINT = "oauth2/authorize"
 DEFAULT_TOKEN_ENDPOINT = "oauth2/token"
 
@@ -50,14 +37,14 @@ class OAuth2(AuthBase):
 
     def __init__(
         self,
-        host,  # type: Text
-        client_secret=None,  # type: Optional[Text]
-        client_id=None,  # type: Optional[Text]
-        token=None,  # type: Optional[Text]
-        authorization_endpoint=None,  # type: Optional[Text]
-        token_endpoint=None,  # type: Optional[Text]
-        redirect_uri=None,  # type: Optional[Text]
-        openid_configuration_url=None,  # type: Optional[Text]
+        host,  # type: str
+        client_secret=None,  # type: Optional[str]
+        client_id=None,  # type: Optional[str]
+        token=None,  # type: Optional[str]
+        authorization_endpoint=None,  # type: Optional[str]
+        token_endpoint=None,  # type: Optional[str]
+        redirect_uri=None,  # type: Optional[str]
+        openid_configuration_url=None,  # type: Optional[str]
     ):
         # type: (...) -> None
         if not host.endswith("/"):
@@ -100,8 +87,7 @@ class OAuth2(AuthBase):
         try:
             return method(*args, **kwargs)
         except AuthlibBaseError as exc:
-            # TODO NXPY-129: Use raise ... from None
-            raise OAuth2Error(exc.description)
+            raise OAuth2Error(exc.description) from None
 
     def token_is_expired(self):
         # type: () -> bool
@@ -185,7 +171,7 @@ class OAuth2(AuthBase):
         return not self == other
 
     def __call__(self, r):
-        # type: (Request) -> Request
+        # type: (requests.Request) -> requests.Request
         if self.token_is_expired():
             self.refresh_token()
 

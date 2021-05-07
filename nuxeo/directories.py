@@ -1,18 +1,12 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery
 from .models import Directory, DirectoryEntry
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, Text, Optional, Union
-        from .client import NuxeoClient
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from .client import NuxeoClient
 
 
 class API(APIEndpoint):
@@ -21,13 +15,11 @@ class API(APIEndpoint):
     __slots__ = ()
 
     def __init__(self, client, endpoint="directory", headers=None):
-        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        super(API, self).__init__(
-            client, endpoint=endpoint, cls=DirectoryEntry, headers=headers
-        )
+        # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
+        super().__init__(client, endpoint=endpoint, cls=DirectoryEntry, headers=headers)
 
     def get(self, dir_name, dir_entry=None, **params):
-        # type: (Text, Optional[Text], Any) -> Union[Directory, DirectoryEntry]
+        # type: (str, Optional[str], Any) -> Union[Directory, DirectoryEntry]
         """
         Get the entries of a directory.
 
@@ -42,13 +34,13 @@ class API(APIEndpoint):
         if dir_entry:
             path = "{}/{}".format(path, dir_entry)
 
-        entries = super(API, self).get(path=path, params=params)
+        entries = super().get(path=path, params=params)
         if dir_entry:
             return entries
         return Directory(directoryName=dir_name, entries=entries, service=self)
 
     def post(self, resource=None, dir_name=None, **kwargs):
-        # type: (DirectoryEntry, Text, Any) -> DirectoryEntry
+        # type: (DirectoryEntry, str, Any) -> DirectoryEntry
         """
         Create a directory entry.
 
@@ -60,12 +52,12 @@ class API(APIEndpoint):
             if not isinstance(resource, DirectoryEntry):
                 raise BadQuery("The resource should be a directory entry.")
             resource.directoryName = dir_name
-        return super(API, self).post(resource=resource, path=dir_name)
+        return super().post(resource=resource, path=dir_name)
 
     create = post  # Alias for clarity
 
     def put(self, resource, dir_name):
-        # type: (DirectoryEntry, Text) -> DirectoryEntry
+        # type: (DirectoryEntry, str) -> DirectoryEntry
         """
         Update an entry.
 
@@ -74,10 +66,10 @@ class API(APIEndpoint):
         :return: the updated entry
         """
         path = "{}/{}".format(dir_name, resource.uid)
-        return super(API, self).put(resource, path=path)
+        return super().put(resource, path=path)
 
     def delete(self, dir_name, dir_entry):
-        # type: (Text, Text) -> None
+        # type: (str, str) -> None
         """
         Delete a directory entry.
 
@@ -85,10 +77,10 @@ class API(APIEndpoint):
         :param dir_entry: the name of the entry
         """
         path = "{}/{}".format(dir_name, dir_entry)
-        super(API, self).delete(path)
+        super().delete(path)
 
     def exists(self, dir_name, dir_entry=None):
-        # type: (Text, Optional[Text]) -> bool
+        # type: (str, Optional[str]) -> bool
         """
         Check if a directory or an entry exists.
 
@@ -99,4 +91,4 @@ class API(APIEndpoint):
         path = dir_name
         if dir_entry:
             path = "{}/{}".format(path, dir_entry)
-        return super(API, self).exists(path)
+        return super().exists(path)

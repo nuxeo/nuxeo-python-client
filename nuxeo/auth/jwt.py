@@ -1,17 +1,8 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from requests import Request
 
-from ..compat import get_bytes
+from ..utils import get_bytes
 from .base import AuthBase
-
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Text
-        from requests import Request
-except ImportError:
-    pass
 
 
 class JWTAuth(AuthBase):
@@ -22,7 +13,7 @@ class JWTAuth(AuthBase):
     AUTHORIZATION = get_bytes("Authorization")
 
     def __init__(self, token):
-        # type: (Text) -> None
+        # type: (str) -> None
         self.token = token
 
     def __eq__(self, other):

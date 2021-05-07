@@ -1,52 +1,42 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from collections.abc import Sequence
 from os import fsync
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
 
-try:
-    from collections.abc import Sequence
-except ImportError:
-    from collections import Sequence
+from requests import Response
 
 from . import constants
-from .compat import get_text, long, text
 from .endpoint import APIEndpoint
 from .exceptions import BadQuery, CorruptedFile
 from .models import Blob, Operation
-from .utils import get_digester
+from .utils import get_digester, get_text
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from requests import Response
-        from typing import Any, Dict, Optional, Text, Tuple, Type
-        from .client import NuxeoClient
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from .client import NuxeoClient
 
 # Types allowed for operations parameters
 # See https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html
 # for default values
 PARAM_TYPES = {
     # Operation: ((accepted types), default value if optional))
-    "blob": ((text, bytes, Blob), None),
+    "blob": ((str, bytes, Blob), None),
     "boolean": ((bool,), False),
-    "date": ((text, bytes), None),
-    "document": ((text, bytes), None),
+    "date": ((str, bytes), None),
+    "document": ((str, bytes), None),
     "documents": ((list,), None),
     "int": ((int,), 0),
     "integer": ((int,), 0),
-    "long": ((int, long), 0),
+    "long": ((int, int), 0),
     "list": ((list,), None),
     "map": ((dict,), None),
     "object": ((object,), None),
     "properties": ((dict,), None),
-    "resource": ((text, bytes), None),
+    "resource": ((str, bytes), None),
     "serializable": ((Sequence,), None),
-    "string": ((text, bytes), None),
+    "string": ((str, bytes), None),
     "stringlist": ((Sequence,), None),
-    "validationmethod": ((text, bytes), None),
-}  # type: Dict[Text, Tuple[Type, ...]]
+    "validationmethod": ((str, bytes), None),
+}  # type: Dict[str, Tuple[Type, ...]]
 
 
 class API(APIEndpoint):
@@ -55,31 +45,31 @@ class API(APIEndpoint):
     __slots__ = ()
 
     # Operations cache
-    ops = {}  # type: Dict[Text, Any]
+    ops = {}  # type: Dict[str, Any]
 
     def __init__(self, client, endpoint="site/automation", headers=None):
-        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
+        # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
         headers = headers or {}
         headers.update({"Content-Type": "application/json", "X-NXproperties": "*"})
-        super(API, self).__init__(client, endpoint=endpoint, cls=dict, headers=headers)
+        super().__init__(client, endpoint=endpoint, cls=dict, headers=headers)
         self.endpoint = endpoint
 
     def get(self, **kwargs):
-        # type: (Any) -> Dict[Text, Any]
+        # type: (Any) -> Dict[str, Any]
         """ Get the list of available operations from the server. """
-        return super(API, self).get()
+        return super().get()
 
     def put(self, **kwargs):
         # type: (Any) -> None
         raise NotImplementedError()
 
     def delete(self, resource_id):
-        # type: (Text) -> None
+        # type: (str) -> None
         raise NotImplementedError()
 
     @property
     def operations(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[str, Any]
         """
         Get a dict of available operations.
 
@@ -95,7 +85,7 @@ class API(APIEndpoint):
         return self.ops
 
     def check_params(self, command, params):
-        # type: (Text, Dict[Text, Any]) -> None
+        # type: (str, Dict[str, Any]) -> None
         """
         Check given parameters of the `command` operation.  It will also
         check for types whenever possible.
@@ -143,8 +133,8 @@ class API(APIEndpoint):
         self,
         operation=None,  # type: Optional[Operation]
         void_op=False,  # type: bool
-        headers=None,  # type: Optional[Dict[Text, Text]]
-        file_out=None,  # type: Optional[Text]
+        headers=None,  # type: Optional[Dict[str, str]]
+        file_out=None,  # type: Optional[str]
         **kwargs  # type: Any
     ):
         # type: (...) -> Any
@@ -225,7 +215,7 @@ class API(APIEndpoint):
 
     @staticmethod
     def get_attributes(operation, **kwargs):
-        # type: (Operation, Any) -> (Text, Any, Dict[Text, Any])
+        # type: (Operation, Any) -> (str, Any, Dict[str, Any])
         """ Get the operation attributes. """
         if operation:
             command = operation.command
@@ -240,10 +230,10 @@ class API(APIEndpoint):
         return command, input_obj, params, context
 
     def build_payload(self, params, context):
-        # type: (Dict[Text, Any], Dict[Text, Any]) -> Dict[Text, Any]
+        # type: (Dict[str, Any], Dict[str, Any]) -> Dict[str, Any]
         """ Create sanitized operation payload. """
-        data = {"params": self.sanitize(params)}  # type: Dict[Text, Any]
-        clean_context = self.sanitize(context)  # type: Dict[Text, Any]
+        data = {"params": self.sanitize(params)}  # type: Dict[str, Any]
+        clean_context = self.sanitize(context)  # type: Dict[str, Any]
         if clean_context:
             data["context"] = clean_context
 
@@ -251,12 +241,12 @@ class API(APIEndpoint):
 
     @staticmethod
     def sanitize(obj):
-        # type: (Dict[Text, Any]) -> Dict[Text, Any]
+        # type: (Dict[str, Any]) -> Dict[str, Any]
         """ Sanitize the operation parameters. """
         if not obj:
             return {}
 
-        clean_obj = {}  # type: Dict[Text, Any]
+        clean_obj = {}  # type: Dict[str, Any]
 
         for k, v in obj.items():
             if v is None:
@@ -275,12 +265,12 @@ class API(APIEndpoint):
         return clean_obj
 
     def new(self, command, **kwargs):
-        # type: (Text, Any) -> Operation
+        # type: (str, Any) -> Operation
         """ Make a new Operation object. """
         return Operation(command=command, service=self, **kwargs)
 
     def save_to_file(self, operation, resp, path, **kwargs):
-        # type: (Operation, Response, Text, Any) -> Text
+        # type: (Operation, Response, str, Any) -> str
         """
         Save the result of an operation to a file.
 
@@ -311,8 +301,7 @@ class API(APIEndpoint):
         if use_lock:
             locker = unlock_path(path)
         try:
-            # str() will be removed when dropping Python 2 support (NXPY-129)
-            with open(str(path), "ab") as f:
+            with open(path, "ab") as f:
                 chunk_size = kwargs.get("chunk_size", self.client.chunk_size)
                 for chunk in resp.iter_content(chunk_size=chunk_size):
                     # Check if synchronization thread was suspended

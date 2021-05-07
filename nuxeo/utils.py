@@ -1,27 +1,17 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
+from _hashlib import HASH
 import hashlib
 import logging
 import mimetypes
 import sys
 from distutils.version import StrictVersion
+from functools import lru_cache
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from requests import Response
 
 from . import constants
-from .compat import lru_cache
 from .constants import UP_AMAZON_S3
-
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from requests import Response
-        from _hashlib import HASH
-        from typing import Any, Dict, List, Optional, Text, Tuple, Union
-
-        from requests import Response  # noqa
-except ImportError:
-    pass
 
 
 logger = logging.getLogger(__name__)
@@ -39,7 +29,7 @@ WIN32_PATCHED_MIME_TYPES = {
 
 
 def chunk_partition(file_size, desired_chunk_size, handler=""):
-    # type: (int, int, Optional[Text]) -> Tuple[int, int]
+    # type: (int, int, Optional[str]) -> Tuple[int, int]
     """Determine the chunk count and chunk size from
     given *file_size* and *desired_chunk_size*.
 
@@ -76,7 +66,7 @@ def chunk_partition(file_size, desired_chunk_size, handler=""):
 
 
 def cmp(a, b):
-    # type: (Union[None, Text, StrictVersion], Union[None, Text, StrictVersion]) -> int
+    # type: (Union[None, str, StrictVersion], Union[None, str, StrictVersion]) -> int
     """
     cmp() does not exist anymore in Python 3.
     Note: this function cannot be decorated with lru_cache() because when
@@ -92,8 +82,34 @@ def cmp(a, b):
     return (a > b) - (a < b)
 
 
+def get_bytes(data):
+    # type: (Union[str, bytes]) -> bytes
+    """
+    If data is not bytes, encode it.
+
+    :param data: the input data
+    :return: the bytes of data
+    """
+    if not isinstance(data, bytes):
+        data = data.encode("utf-8")
+    return data
+
+
+def get_text(data):
+    # type: (Union[str, bytes]) -> str
+    """
+    If data is not text, decode it.
+
+    :param data: the input data
+    :return: data in unicode
+    """
+    if not isinstance(data, str):
+        data = data.decode("utf-8")
+    return data
+
+
 def get_digest_algorithm(digest):
-    # type: (Text) -> Optional[Text]
+    # type: (str) -> Optional[str]
 
     # Available algorithms
     digesters = {
@@ -115,7 +131,7 @@ def get_digest_algorithm(digest):
 
 
 def get_digest_hash(algorithm):
-    # type: (Text) -> Optional[HASH]
+    # type: (str) -> Optional[HASH]
 
     # Retrieve the hashlib function for the given digest, None if not found
     func = getattr(hashlib, algorithm, None)
@@ -124,7 +140,7 @@ def get_digest_hash(algorithm):
 
 
 def get_digester(digest):
-    # type: (Text) -> Optional[HASH]
+    # type: (str) -> Optional[HASH]
     """
     Get the digester corresponding to the given hash.
 
@@ -145,7 +161,7 @@ def get_digester(digest):
 
 
 def guess_mimetype(filename):
-    # type: (Text) -> Text
+    # type: (str) -> str
     """ Guess the mimetype of a given file. """
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type:
@@ -159,7 +175,7 @@ def guess_mimetype(filename):
 
 
 def get_response_content(response, limit_size):
-    # type: (Response, int) -> Text
+    # type: (Response, int) -> str
     """Log a server response."""
     # Do not use response.text as it will load the chardet module and its
     # heavy encoding detection mecanism. The server will only return UTF-8.
@@ -184,7 +200,7 @@ def get_response_content(response, limit_size):
 
 
 def json_helper(obj):
-    # type: (Any) -> Dict[Text, Any]
+    # type: (Any) -> Dict[str, Any]
     return obj.to_json()
 
 
@@ -271,7 +287,7 @@ def log_response(response, *args, **kwargs):
 
 @lru_cache(maxsize=128)
 def version_compare(x, y):
-    # type: (Text, Text) -> int
+    # type: (str, str) -> int
     """
     Compare version numbers using the usual x.y.z pattern.
     For instance, will result in:
@@ -351,7 +367,7 @@ def version_compare(x, y):
 
 @lru_cache(maxsize=128)
 def version_compare_client(x, y):
-    # type: (Text, Text) -> int
+    # type: (str, str) -> int
     """ Try to compare SemVer and fallback to version_compare on error. """
 
     # Ignore date based versions, they will be treated as normal versions
@@ -368,13 +384,13 @@ def version_compare_client(x, y):
 
 @lru_cache(maxsize=128)
 def version_le(x, y):
-    # type: (Text, Text) -> bool
+    # type: (str, str) -> bool
     """ x <= y """
     return version_compare_client(x, y) <= 0
 
 
 @lru_cache(maxsize=128)
 def version_lt(x, y):
-    # type: (Text, Text) -> bool
+    # type: (str, str) -> bool
     """ x < y """
     return version_compare_client(x, y) < 0

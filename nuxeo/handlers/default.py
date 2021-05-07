@@ -2,22 +2,16 @@
 """
 The default upload handler.
 """
-from __future__ import unicode_literals
+from typing import TYPE_CHECKING, Any, Callable, Generator, Tuple, Union
+from urllib.parse import quote
 
-from ..compat import get_bytes, quote, text
-from ..utils import log_chunk_details
+from ..models import Batch, Blob, BufferBlob, FileBlob
+from ..utils import get_bytes, log_chunk_details
 
-try:
-    from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..uploads import API
 
-    if TYPE_CHECKING:
-        from typing import Any, Callable, Generator, Text, Tuple, Union
-        from ..models import Batch, Blob, BufferBlob, FileBlob
-        from ..uploads import API
-
-        ActualBlob = Union[BufferBlob, FileBlob]
-except ImportError:
-    pass
+ActualBlob = Union[BufferBlob, FileBlob]
 
 
 class Uploader(object):
@@ -65,9 +59,9 @@ class Uploader(object):
             {
                 "Cache-Control": "no-cache",
                 "X-File-Name": quote(get_bytes(self.blob.name)),
-                "X-File-Size": text(self.blob.size),
+                "X-File-Size": str(self.blob.size),
                 "X-File-Type": self.blob.mimetype,
-                "Content-Length": text(self.blob.size),
+                "Content-Length": str(self.blob.size),
                 "Content-Type": self.blob.mimetype,
             }
         )
@@ -75,7 +69,7 @@ class Uploader(object):
         self._timeout = None
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         return "<{} is_complete={!r}, chunked={!r}, chunk_size={!r}, batch={!r}, blob={!r}>".format(
             type(self).__name__,
             self.is_complete(),
@@ -86,7 +80,7 @@ class Uploader(object):
         )
 
     def __str__(self):
-        # type: () -> Text
+        # type: () -> str
         return repr(self)
 
     def is_complete(self):
@@ -159,7 +153,7 @@ class ChunkUploader(Uploader):
 
     def __init__(self, *args, **kwargs):
         # type: (Any, Any) -> None
-        super(ChunkUploader, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.chunk_count, self.blob.uploadedChunkIds = self.service.state(
             self.path, self.blob, chunk_size=self.chunk_size
@@ -177,7 +171,7 @@ class ChunkUploader(Uploader):
         )
 
         self.headers.update(
-            {"X-Upload-Type": "chunked", "X-Upload-Chunk-Count": text(self.chunk_count)}
+            {"X-Upload-Type": "chunked", "X-Upload-Chunk-Count": str(self.chunk_count)}
         )
 
         self._to_upload = []

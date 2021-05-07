@@ -1,14 +1,10 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import pytest
 import responses
-from requests import Request
-
 from nuxeo.auth import BasicAuth, JWTAuth, OAuth2, PortalSSOAuth, TokenAuth
 from nuxeo.auth.utils import make_portal_sso_token
-from nuxeo.compat import text
 from nuxeo.exceptions import NuxeoError
+from requests import Request
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
@@ -86,7 +82,7 @@ def test_portal_sso_digest_algorithm_not_found():
     req = Request("GET", "https://httpbin.org/get", auth=auth)
     with pytest.raises(NuxeoError) as exc:
         req.prepare()
-    error = text(exc.value)
+    error = str(exc.value)
     msg = "Cannot compute token because of unknown digest algorithm"
     assert msg in error
 

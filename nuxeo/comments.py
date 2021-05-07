@@ -1,17 +1,11 @@
 # coding: utf-8
-from __future__ import unicode_literals
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .endpoint import APIEndpoint
 from .models import Comment
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any, Dict, List, Optional, Text
-        from .client import NuxeoClient
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from .client import NuxeoClient
 
 
 class API(APIEndpoint):
@@ -20,13 +14,11 @@ class API(APIEndpoint):
     __slots__ = ()
 
     def __init__(self, client, endpoint="id", headers=None):
-        # type: (NuxeoClient, Text, Optional[Dict[Text, Text]]) -> None
-        super(API, self).__init__(
-            client, endpoint=endpoint, cls=Comment, headers=headers
-        )
+        # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
+        super().__init__(client, endpoint=endpoint, cls=Comment, headers=headers)
 
     def get(self, docuid, uid=None, params=None):
-        # type: (Text, Text, Any) -> Comment
+        # type: (str, str, Any) -> Comment
         """
         Get the detail of a comment.
 
@@ -42,10 +34,10 @@ class API(APIEndpoint):
         if isinstance(params, dict):
             kwargs.update(params)
 
-        return super(API, self).get(path=path, params=kwargs)
+        return super().get(path=path, params=kwargs)
 
     def post(self, docuid, text):
-        # type: (Text, Text) -> Comment
+        # type: (str, str) -> Comment
         """
         Create a comment.
 
@@ -53,7 +45,7 @@ class API(APIEndpoint):
         :return: the created comment
         """
         kwargs = {"entity-type": "comment", "parentId": docuid, "text": text}
-        return super(API, self).post(path=docuid, adapter="comment", resource=kwargs)
+        return super().post(path=docuid, adapter="comment", resource=kwargs)
 
     create = post  # Alias for clarity
 
@@ -66,19 +58,19 @@ class API(APIEndpoint):
         :return: the entry updated
         """
         path = "{}/@comment/{}".format(comment.parentId, comment.uid)
-        return super(API, self).put(resource=comment, path=path)
+        return super().put(resource=comment, path=path)
 
     def delete(self, uid):
-        # type: (Text) -> None
+        # type: (str) -> None
         """
         Delete a comment.
 
         :param uid: the ID of the comment to delete
         """
-        super(API, self).delete(uid)
+        super().delete(uid)
 
     def replies(self, uid, params=None):
-        # type: (Text, Any) -> List[Comment]
+        # type: (str, Any) -> List[Comment]
         """
         Get the replies of the comment.
 
@@ -92,4 +84,4 @@ class API(APIEndpoint):
         if isinstance(params, dict):
             kwargs.update(params)
 
-        return super(API, self).get(path=uid, adapter="comment", params=kwargs)
+        return super().get(path=uid, adapter="comment", params=kwargs)

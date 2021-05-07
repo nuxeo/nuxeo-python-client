@@ -1,18 +1,9 @@
 # coding: utf-8
-from __future__ import unicode_literals
 import base64
+from requests import Request
 
-from ..compat import get_bytes, get_text
+from ..utils import get_bytes, get_text
 from .base import AuthBase
-
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Text
-        from requests import Request
-except ImportError:
-    pass
 
 
 class BasicAuth(AuthBase):
@@ -23,13 +14,13 @@ class BasicAuth(AuthBase):
     AUTHORIZATION = get_bytes("Authorization")
 
     def __init__(self, username, password):
-        # type: (Text, Text) -> None
+        # type: (str, str) -> None
         self.username = username
         self.password = password
         self.set_token(password)
 
     def set_token(self, token):
-        # type: (Text) -> None
+        # type: (str) -> None
         """Apply the given *token*."""
         self.password = token
         self._token_header = "Basic " + get_text(

@@ -1,8 +1,5 @@
 # coding: utf-8
-from __future__ import unicode_literals
-
 import pytest
-
 from nuxeo.auth import BasicAuth
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import BadQuery
