@@ -1,10 +1,10 @@
 Changelog
 =========
 
-5.1.1
+5.2.0
 -----
 
-Release date: ``2021-0x-xx``
+Release date: ``2021-05-07``
 
 - `NXPY-219 <https://jira.nuxeo.com/browse/NXPY-219>`__: Add support for OpenID Connect Discovery
 - `NXPY-220 <https://jira.nuxeo.com/browse/NXPY-220>`__: Use a REST API call instead of Automation for ``Users.current_user()``
