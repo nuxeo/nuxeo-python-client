@@ -185,16 +185,14 @@ def get_response_content(response, limit_size):
         content_size = len(content)
         if content_size > limit_size:
             content = content[:limit_size]
-            content = "{} [...] ({:,} bytes skipped)".format(
-                content, content_size - limit_size
-            )
+            content = f"{content} [...] ({content_size - limit_size:,} bytes skipped)"
     except (MemoryError, OverflowError):
         # OverflowError: join() result is too long (in requests.models.content)
         # Still check for memory errors, this should never happen; or else,
         # it should be painless.
         headers = response.headers
         content_size = int(headers.get("content-length", 0))
-        content = "<no enough memory ({:,} bytes)>".format(content_size)
+        content = "<no enough memory ({content_size:,} bytes)>"
 
     return content
 
@@ -217,14 +215,11 @@ def log_chunk_details(chunk_count, chunk_size, uploaded_chunks, blob_size):
 
     uploaded_chunks_count = len(uploaded_chunks)
     uploaded_data_length = min(blob_size, chunk_size * uploaded_chunks_count)
-    msg = (
-        "Computed chunks count is {:,d}"
-        "; chunks size is {:,d} bytes"
-        "; uploaded chunks count is {:,d}"
-        " => uploaded data so far is {:,d} bytes."
-    )
-    details = msg.format(
-        chunk_count, chunk_size, uploaded_chunks_count, uploaded_data_length
+    details = (
+        f"Computed chunks count is {chunk_count:,}"
+        f"; chunks size is {chunk_size:,} bytes"
+        f"; uploaded chunks count is {uploaded_chunks_count:,}"
+        f" => uploaded data so far is {uploaded_data_length:,} bytes."
     )
     logger.debug(details)
 
@@ -267,7 +262,7 @@ def log_response(response, *args, **kwargs):
         # The Content-Type is a binary one, but it does not contain JSON data
         # Skipped binary types are everything but "text/xxx":
         #   https://www.iana.org/assignments/media-types/media-types.xhtml
-        content = "<binary data ({:,} bytes)>".format(content_size)
+        content = f"<binary data ({content_size:,} bytes)>"
     elif chunked or content_size > 0:
         # At this point, we should only have text data not bigger than *limit_size*.
         content = get_response_content(response, constants.LOG_LIMIT_SIZE)
@@ -278,9 +273,8 @@ def log_response(response, *args, **kwargs):
         content = "<no content>"
 
     logger.debug(
-        "Response from {!r} [{}]: {!r} with headers {!r} and cookies {!r}".format(
-            response.url, response.status_code, content, headers, response.cookies
-        )
+        f"Response from {response.url!r} [{response.status_code}]: {content!r}"
+        f" with headers {headers!r} and cookies {response.cookies!r}"
     )
     return response
 

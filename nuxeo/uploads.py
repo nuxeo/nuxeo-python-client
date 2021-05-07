@@ -51,7 +51,7 @@ class API(APIEndpoint):
         """
         path = batch_id
         if file_idx is not None:
-            path = "{}/{}".format(path, file_idx)
+            path = f"{path}/{file_idx}"
 
         resource = super().get(path=path)
 
@@ -76,7 +76,7 @@ class API(APIEndpoint):
             handlers = self.handlers()
             if handler in handlers:
                 if handler != "default":
-                    endpoint = "{}/new/{}".format(endpoint, handler)
+                    endpoint = f"{endpoint}/new/{handler}"
             else:
                 raise InvalidUploadHandler(handler, handlers)
 
@@ -104,7 +104,7 @@ class API(APIEndpoint):
         """
         resource = batch_id
         if file_idx is not None:
-            resource += "/{}".format(file_idx)
+            resource += f"/{file_idx}"
         super().delete(resource)
 
     def handlers(self, force=False):
@@ -115,7 +115,7 @@ class API(APIEndpoint):
         :param force: force refreshing the list
         """
         if self.__handlers is None or force:
-            endpoint = "{}/handlers".format(self.endpoint)
+            endpoint = f"{self.endpoint}/handlers"
             try:
                 response = self.client.request("GET", endpoint)
                 self.__handlers = list(response.json()["handlers"][0].values())
@@ -140,7 +140,7 @@ class API(APIEndpoint):
         index,  # type: int
         headers,  # type: Dict[str, str]
         data_len=0,  # type: Optional[int]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> Blob
         """
@@ -244,11 +244,11 @@ class API(APIEndpoint):
         from the server will be empty
         :return: the output of the operation
         """
-        path = "{}/{}".format(self.endpoint, batch.uid)
+        path = f"{self.endpoint}/{batch.uid}"
         if file_idx is not None:
-            path = "{}/{}".format(path, file_idx)
+            path = f"{path}/{file_idx}"
 
-        path = "{}/execute/{}".format(path, operation)
+        path = f"{path}/execute/{operation}"
 
         headers = {}
         if void_op:
@@ -286,7 +286,7 @@ class API(APIEndpoint):
         if batch.provider == UP_AMAZON_S3:
             blob = batch.blobs[0]
             s3_info = batch.extraInfo
-            key = "{}{}".format(s3_info["baseKey"], batch.key or blob.name)
+            key = f"{s3_info['baseKey']}{batch.key or blob.name}"
             params = {
                 "name": blob.name,
                 "fileSize": blob.size,
@@ -294,9 +294,7 @@ class API(APIEndpoint):
                 "bucket": s3_info["bucket"],
                 "etag": batch.etag,
             }
-            endpoint = "{}/{}/{}/complete".format(
-                self.endpoint, batch.uid, batch.upload_idx - 1
-            )
+            endpoint = f"{self.endpoint}/{batch.uid}/{batch.upload_idx - 1}/complete"
             return self.client.request("POST", endpoint, data=params, **kwargs)
 
         # Doing a /complete with the default upload provider
@@ -310,7 +308,7 @@ class API(APIEndpoint):
         chunked=False,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
         callback=None,  # type: Union[Callable, Tuple[Callable]]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> "Uploader"
         """
@@ -365,7 +363,7 @@ class API(APIEndpoint):
         creds = {}
 
         if batch.provider:
-            endpoint = "{}/{}/refreshToken".format(self.endpoint, batch.uid)
+            endpoint = f"{self.endpoint}/{batch.uid}/refreshToken"
             req = self.client.request("POST", endpoint, default=None, **kwargs)
             if req:
                 creds = req.json()

@@ -36,10 +36,10 @@ class Model(object):
     def __repr__(self):
         # type: () -> str
         attrs = ", ".join(
-            "{}={!r}".format(attr.replace("_", "-"), getattr(self, attr, None))
+            f"{attr.replace('_', '-')}={getattr(self, attr, None)!r}"
             for attr in sorted(self.__slots__)
         )
-        return "<{} {}>".format(self.__class__.__name__, attrs)
+        return f"<{self.__class__.__name__} {attrs}>"
 
     def as_dict(self):
         # type: () -> Dict[str, Any]

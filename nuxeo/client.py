@@ -94,7 +94,7 @@ class NuxeoClient(object):
         host=DEFAULT_URL,  # type: str
         api_path=DEFAULT_API_PATH,  # type: str
         chunk_size=CHUNK_SIZE,  # type: int
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> None
         self.auth = BasicAuth(*auth) if isinstance(auth, tuple) else auth
@@ -136,8 +136,7 @@ class NuxeoClient(object):
 
     def __repr__(self):
         # type: () -> str
-        fmt = "{name}<host={cls.host!r}, version={cls.server_version!r}>"
-        return fmt.format(name=type(self).__name__, cls=self)
+        return f"{type(self).__name__}<host={self.host!r}, version={self.server_version!r}>"
 
     def __str__(self):
         # type: () -> str
@@ -211,7 +210,7 @@ class NuxeoClient(object):
         headers=None,  # type: Optional[Dict[str, str]]
         data=None,  # type: Optional[Any]
         raw=False,  # type: bool
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> Union[requests.Response, Any]
         """
@@ -241,7 +240,7 @@ class NuxeoClient(object):
         # Construct the full URL without double slashes
         url = self.host + path.lstrip("/")
         if "adapter" in kwargs:
-            url = "{}/@{}".format(url, kwargs.pop("adapter"))
+            url = f"{url}/@{kwargs.pop('adapter')}"
 
         kwargs.update(self.client_kwargs)
 
@@ -274,16 +273,12 @@ class NuxeoClient(object):
         auth = kwargs.pop("auth", None) or self.auth
 
         _kwargs = {k: v for k, v in kwargs.items() if k != "params"}
+        logged_params = kwargs.get("params", data if not raw else {})
         logger.debug(
             (
-                "Calling {} {!r} with headers={!r}, params={!r}, kwargs={!r} and cookies={!r}"
-            ).format(
-                method,
-                url,
-                headers,
-                kwargs.get("params", data if not raw else {}),
-                _kwargs,
-                self._session.cookies,
+                f"Calling {method} {url!r} with headers={headers!r},"
+                f" params={logged_params!r}, kwargs={_kwargs!r}"
+                f" and cookies={self._session.cookies!r}"
             )
         )
 
@@ -437,7 +432,7 @@ class Nuxeo(object):
         app_name=DEFAULT_APP_NAME,  # type: str
         version=__version__,  # type: str
         client=NuxeoClient,  # type: Type[NuxeoClient]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> None
         self.client = client(
@@ -457,8 +452,7 @@ class Nuxeo(object):
 
     def __repr__(self):
         # type: () -> str
-        fmt = "{name}<version={ver!r}, client={cls.client!r}>"
-        return fmt.format(name=type(self).__name__, cls=self, ver=__version__)
+        return f"{type(self).__name__}<version={__version__!r}, client={self.client!r}>"
 
     def __str__(self):
         # type: () -> str

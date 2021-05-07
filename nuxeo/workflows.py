@@ -60,7 +60,7 @@ class API(APIEndpoint):
         kwargs = {}
         if document:
             kwargs["endpoint"] = self.client.api_path
-            kwargs["path"] = "id/{}/@workflow".format(document.uid)
+            kwargs["path"] = f"id/{document.uid}/@workflow"
         return super().post(data, **kwargs)
 
     start = post  # Alias for clarity
@@ -86,7 +86,7 @@ class API(APIEndpoint):
         :param workflow: the worklow to get the graph from
         :return: the graph
         """
-        request_path = "{}/graph".format(workflow.uid)
+        request_path = f"{workflow.uid}/graph"
         return super().get(path=request_path)
 
     def started(self, model):

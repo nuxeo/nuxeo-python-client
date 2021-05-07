@@ -26,5 +26,5 @@ def test_packaged_files():
 def test_wheel_python_3():
     """Ensure the produced wheel is Python 3."""
     output = str(check_output(CMD))
-    text = "nuxeo-{}-py3-none-any.whl".format(__version__)
+    text = f"nuxeo-{__version__}-py3-none-any.whl"
     assert text in output

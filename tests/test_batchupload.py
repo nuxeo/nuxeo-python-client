@@ -608,8 +608,8 @@ def test_idempotent_requests(tmp_path, server):
         assert len(res.keys()) == 2
         error = (
             "OngoingRequestError: a request with the idempotency key"
-            " '{}' is already being processed."
-        ).format(idempotency_key)
+            f" {idempotency_key!r} is already being processed."
+        )
         assert error in res
 
         # Ensure there is only 1 doc on the server

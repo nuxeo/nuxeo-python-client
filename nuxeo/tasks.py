@@ -65,7 +65,7 @@ class API(APIEndpoint):
         if comment:
             task.variables["comment"] = comment
 
-        request_path = "{}/{}".format(task.uid, action)
+        request_path = f"{task.uid}/{action}"
         return super().put(task, path=request_path)
 
     def transfer(self, task, transfer, actors, comment=None):
@@ -90,5 +90,5 @@ class API(APIEndpoint):
         if comment:
             params["comment"] = comment
 
-        request_path = "{}/{}".format(task.uid, transfer)
+        request_path = f"{task.uid}/{transfer}"
         super().put(None, path=request_path, params=params)

@@ -39,7 +39,7 @@ def main():
         # CREATE A WORKSPACE AS default-domain/workspaces/ws
         "Destination Path": "/default-domain/workspaces/ws"
     }
-    operation.input_obj = "/{}".format(doc["title"])
+    operation.input_obj = f"/{doc['title']}"
     proxy = operation.execute()
     print(proxy)
 

@@ -44,8 +44,8 @@ def generate_response(status, content=None):
         length = len(content)
     else:
         length = 0
-    response = "HTTP/1.1 {}\r\nContent-Length: {}\r\n\r\n{}"
-    return get_bytes(response.format(status, length, content))
+    response = f"HTTP/1.1 {status}\r\nContent-Length: {length}\r\n\r\n{content}"
+    return get_bytes(response)
 
 
 def parse_nuxeo_request(request_content):
@@ -126,7 +126,7 @@ class Server(threading.Thread):
         port=0,
         requests_to_handle=1,
         wait_to_close_event=None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__()
 

@@ -25,9 +25,7 @@ class Doc(object):
             # Upload several blobs for one document
             batch = self.server.uploads.batch()
             for idx in range(self.blobs):
-                blob = BufferBlob(
-                    data="foo {}".format(idx), name="foo-{}.txt".format(idx)
-                )
+                blob = BufferBlob(data=f"foo {idx}", name=f"foo-{idx}.txt")
                 batch.upload(blob)
 
             path = WORKSPACE_TEST
@@ -82,9 +80,9 @@ def test_document_get_blobs(server):
     number = 4
     with Doc(server, blobs=number) as doc:
         for idx in range(number):
-            xpath = "files:files/{}/file".format(idx)
+            xpath = f"files:files/{idx}/file"
             blob = doc.fetch_blob(xpath)
-            assert blob == get_bytes("foo {}".format(idx))
+            assert blob == get_bytes(f"foo {idx}")
 
 
 def test_document_list_update(server):
@@ -221,7 +219,7 @@ def test_comments_with_params(server):
     try:
         # Create a bunch of comments for that document
         for idx in range(8):
-            doc.comment("This is my comment n° {}".format(idx))
+            doc.comment(f"This is my comment n° {idx}")
 
         # Get maximum comments with default values
         comments = doc.comments()

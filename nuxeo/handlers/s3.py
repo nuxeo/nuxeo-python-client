@@ -35,7 +35,7 @@ class UploaderS3(Uploader):
         # S3 client configuration
         s3_info = self.batch.extraInfo
         self.bucket = s3_info["bucket"]
-        self.key = "{}{}".format(s3_info["baseKey"], self.batch.key or self.blob.name)
+        self.key = f"{s3_info['baseKey']}{self.batch.key or self.blob.name}"
         self._s3_config = Config(
             region_name=s3_info["region"],
             s3={

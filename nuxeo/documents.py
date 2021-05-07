@@ -140,7 +140,7 @@ class API(APIEndpoint):
         :return: the response from the server
         """
         xpath = options.pop("xpath", "blobholder:0")
-        adapter = "blob/{}/@convert".format(xpath)
+        adapter = f"blob/{xpath}/@convert"
         if (
             "converter" not in options
             and "type" not in options
@@ -210,7 +210,7 @@ class API(APIEndpoint):
         :param name: the name of the rendition
         :return: the corresponding rendition
         """
-        adapter = "rendition/{}".format(name)
+        adapter = f"rendition/{name}"
         return super().get(path=self._path(uid=uid), raw=True, adapter=adapter)
 
     def fetch_renditions(self, uid):
@@ -250,7 +250,7 @@ class API(APIEndpoint):
         :param xpath: the xpath of the blob
         :return: the blob
         """
-        adapter = "blob/{}".format(xpath)
+        adapter = f"blob/{xpath}"
         return super().get(
             path=self._path(uid=uid, path=path), raw=True, adapter=adapter
         )
@@ -323,7 +323,7 @@ class API(APIEndpoint):
         else:
             raise BadQuery("Need either a pageProvider or a query")
 
-        path = "query/{}".format(query)
+        path = f"query/{query}"
         res = super().get(path=path, params=opts, cls=dict)
         res["entries"] = [
             Document.parse(entry, service=self) for entry in res["entries"]
@@ -384,7 +384,7 @@ class API(APIEndpoint):
     def workflows(self, document):
         # type: (Document) -> Union[Workflow, List[Workflow]]
         """ Get the workflows of a document. """
-        path = "id/{}/@workflow".format(document.uid)
+        path = f"id/{document.uid}/@workflow"
         return super(WorkflowsAPI, self.workflows_api).get(
             endpoint=self.endpoint, path=path
         )
@@ -392,7 +392,7 @@ class API(APIEndpoint):
     def _path(self, uid=None, path=None):
         # type: (Optional[str], Optional[str]) -> str
         if uid:
-            path = "repo/{}/id/{}".format(self.client.repository, uid)
+            path = f"repo/{self.client.repository}/id/{uid}"
         elif path:
-            path = "repo/{}/path{}".format(self.client.repository, path)
+            path = f"repo/{self.client.repository}/path{path}"
         return path

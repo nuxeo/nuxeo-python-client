@@ -32,7 +32,7 @@ class API(APIEndpoint):
         """
         path = dir_name
         if dir_entry:
-            path = "{}/{}".format(path, dir_entry)
+            path = f"{path}/{dir_entry}"
 
         entries = super().get(path=path, params=params)
         if dir_entry:
@@ -65,7 +65,7 @@ class API(APIEndpoint):
         :param dir_name: the name of the directory
         :return: the updated entry
         """
-        path = "{}/{}".format(dir_name, resource.uid)
+        path = f"{dir_name}/{resource.uid}"
         return super().put(resource, path=path)
 
     def delete(self, dir_name, dir_entry):
@@ -76,7 +76,7 @@ class API(APIEndpoint):
         :param dir_name: the name of the directory
         :param dir_entry: the name of the entry
         """
-        path = "{}/{}".format(dir_name, dir_entry)
+        path = f"{dir_name}/{dir_entry}"
         super().delete(path)
 
     def exists(self, dir_name, dir_entry=None):
@@ -90,5 +90,5 @@ class API(APIEndpoint):
         """
         path = dir_name
         if dir_entry:
-            path = "{}/{}".format(path, dir_entry)
+            path = f"{path}/{dir_entry}"
         return super().exists(path)
