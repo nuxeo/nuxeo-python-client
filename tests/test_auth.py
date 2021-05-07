@@ -136,11 +136,15 @@ def test_oauth2_openid_configuration_url():
     token_endpoint = "/token/endpoint"
     redirect_uri = "/custom/redirect/url"
     openid_configuration_url = "https://example.com/.well-known/openid-configuration"
+    jwks_uri = "https://signing_keys.endpoint"
     openid_configuation = {
         "authorization_endpoint": "https://real.authorization.endpoint",
         "token_endpoint": "https://real.token.endpoint",
+        "jwks_uri": jwks_uri,
     }
+    jwks_uri_response = {"keys": []}
 
+    responses.add(responses.GET, jwks_uri, json=jwks_uri_response)
     responses.add(responses.GET, openid_configuration_url, json=openid_configuation)
     auth = OAuth2(
         "<host>",
