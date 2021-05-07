@@ -1,6 +1,18 @@
 Changelog
 =========
 
+6.0.0
+-----
+
+Release date: ``2021-0x-xx``
+
+- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+
+Technical changes
+-----------------
+
+-
+
 5.2.0
 -----
 
