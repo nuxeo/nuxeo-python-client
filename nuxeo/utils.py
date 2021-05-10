@@ -82,32 +82,6 @@ def cmp(a, b):
     return (a > b) - (a < b)
 
 
-def get_bytes(data):
-    # type: (Union[str, bytes]) -> bytes
-    """
-    If data is not bytes, encode it.
-
-    :param data: the input data
-    :return: the bytes of data
-    """
-    if not isinstance(data, bytes):
-        data = data.encode("utf-8")
-    return data
-
-
-def get_text(data):
-    # type: (Union[str, bytes]) -> str
-    """
-    If data is not text, decode it.
-
-    :param data: the input data
-    :return: data in unicode
-    """
-    if not isinstance(data, str):
-        data = data.decode("utf-8")
-    return data
-
-
 def get_digest_algorithm(digest):
     # type: (str) -> Optional[str]
 

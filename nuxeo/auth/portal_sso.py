@@ -5,7 +5,6 @@ from typing import Optional
 
 from requests import Request
 
-from ..utils import get_bytes
 from .base import AuthBase
 from .utils import make_portal_sso_token
 
@@ -17,10 +16,10 @@ class PortalSSOAuth(AuthBase):
 
     __slots__ = ("digest_algorithm", "secret", "username")
 
-    NX_USER = get_bytes("NX_USER")
-    NX_TOKEN = get_bytes("NX_TOKEN")
-    NX_RD = get_bytes("NX_RD")
-    NX_TS = get_bytes("NX_TS")
+    NX_USER = "NX_USER".encode("utf-8")
+    NX_TOKEN = "NX_TOKEN".encode("utf-8")
+    NX_RD = "NX_RD".encode("utf-8")
+    NX_TS = "NX_TS".encode("utf-8")
 
     def __init__(self, username, secret, digest_algorithm="md5"):
         # type: (str, str, Optional[str]) -> None

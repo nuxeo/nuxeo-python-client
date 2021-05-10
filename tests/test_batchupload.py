@@ -501,7 +501,7 @@ def test_upload_retry(tmp_path, retry_server):
     server = retry_server
     close_server = threading.Event()
 
-    file_in = tmp_path / "file_in"
+    file_in = tmp_path / "χρυσαφὶ"
     file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
     with patch.object(server.client, "host", new="http://localhost:8081/nuxeo/"):
@@ -615,7 +615,7 @@ def test_idempotent_requests(tmp_path, server):
         # Ensure there is only 1 doc on the server
         children = server.documents.get_children(path=doc.path)
         assert len(children) == 1
-        assert children[0].title == "file_in"
+        assert children[0].title == file_in.name
 
         # Check calling the same request with the same idempotency key returns always the same result
         current_identical_doc = res[children[0].uid]

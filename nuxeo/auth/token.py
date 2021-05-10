@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional
 from requests import Request
 
 from ..constants import DEFAULT_APP_NAME
-from ..utils import get_bytes
 from .base import AuthBase
 
 Token = Dict[str, Any]
@@ -15,7 +14,7 @@ class TokenAuth(AuthBase):
 
     __slots__ = ("token",)
 
-    HEADER_TOKEN = get_bytes("X-Authentication-Token")
+    HEADER_TOKEN = "X-Authentication-Token".encode("utf-8")
 
     def __init__(self, token):
         # type: (str) -> None

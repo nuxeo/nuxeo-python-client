@@ -2,7 +2,6 @@
 import base64
 from requests import Request
 
-from ..utils import get_bytes, get_text
 from .base import AuthBase
 
 
@@ -11,7 +10,7 @@ class BasicAuth(AuthBase):
 
     __slots__ = ("username", "password", "_token_header")
 
-    AUTHORIZATION = get_bytes("Authorization")
+    AUTHORIZATION = "Authorization".encode("utf-8")
 
     def __init__(self, username, password):
         # type: (str, str) -> None
@@ -23,9 +22,8 @@ class BasicAuth(AuthBase):
         # type: (str) -> None
         """Apply the given *token*."""
         self.password = token
-        self._token_header = "Basic " + get_text(
-            base64.b64encode(get_bytes(self.username + ":" + self.password))
-        )
+        payload = f"{self.username}:{self.password}".encode("utf-8")
+        self._token_header = f"Basic {base64.b64encode(payload).decode('utf-8')}"
 
     def __eq__(self, other):
         # type: (object) -> bool

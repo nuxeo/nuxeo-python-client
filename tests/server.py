@@ -15,7 +15,6 @@ import socket
 import threading
 import uuid
 
-from nuxeo.utils import get_bytes, get_text
 
 uploads = {}
 
@@ -45,18 +44,18 @@ def generate_response(status, content=None):
     else:
         length = 0
     response = f"HTTP/1.1 {status}\r\nContent-Length: {length}\r\n\r\n{content}"
-    return get_bytes(response)
+    return response.encode("utf-8")
 
 
 def parse_nuxeo_request(request_content):
     lines = request_content.split(b"\r\n")
-    method, path, _ = get_text(lines.pop(0)).split(" ")
+    method, path, _ = lines.pop(0).decode("utf-8").split(" ")
     path = path.split("/")[4:]
     headers = {}
     for line in lines:
         if not line:
             break
-        h = get_text(line).split(": ")
+        h = line.decode("utf-8").split(": ")
         headers[h[0]] = h[1]
     return method, path, headers
 

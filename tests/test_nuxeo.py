@@ -11,7 +11,6 @@ from nuxeo.constants import MAX_RETRY, RETRY_METHODS
 from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
-from nuxeo.utils import get_bytes
 from requests.exceptions import ConnectionError
 
 
@@ -368,7 +367,7 @@ def test_forbidden(server):
     )
 
     auth = server.client.auth
-    server.client.auth = (get_bytes(username), password)
+    server.client.auth = (username.encode("utf-8"), password)
     try:
         with pytest.raises(Forbidden) as e:
             server.users.create(
@@ -384,7 +383,7 @@ def test_unauthorized(server):
     username = "alice"
     password = "test"
     auth = server.client.auth
-    server.client.auth = (get_bytes(username), password)
+    server.client.auth = (username.encode("utf-8"), password)
     try:
         with pytest.raises(Unauthorized) as e:
             server.users.create(
