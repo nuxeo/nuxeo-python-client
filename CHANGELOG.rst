@@ -4,7 +4,7 @@ Changelog
 6.0.0
 -----
 
-Release date: ``2021-0x-xx``
+Release date: ``2021-05-10``
 
 - `NXPY-129 <https://jira.nuxeo.com/browse/NXPY-129>`__: Drop support for Python 2.7 and 3.5
 
