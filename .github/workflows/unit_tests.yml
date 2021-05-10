@@ -12,6 +12,7 @@ on:
     branches: [master]
     paths:
     - 'nuxeo/**/*.py'
+    - 'setup.*'
     - 'tests/*.py'
 
 jobs:
