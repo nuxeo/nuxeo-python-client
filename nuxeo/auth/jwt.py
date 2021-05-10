@@ -1,7 +1,6 @@
 # coding: utf-8
 from requests import Request
 
-from ..utils import get_bytes
 from .base import AuthBase
 
 
@@ -10,7 +9,7 @@ class JWTAuth(AuthBase):
 
     __slots__ = ("token",)
 
-    AUTHORIZATION = get_bytes("Authorization")
+    AUTHORIZATION = "Authorization".encode("utf-8")
 
     def __init__(self, token):
         # type: (str) -> None

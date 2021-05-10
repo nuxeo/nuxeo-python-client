@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
-from nuxeo.utils import get_bytes, version_lt
+from nuxeo.utils import version_lt
 
 from .constants import WORKSPACE_ROOT
 
@@ -207,7 +207,7 @@ def test_fetch_rendition(server):
         res = doc.fetch_rendition("xmlExport")
         assert b'<?xml version="1.0" encoding="UTF-8"?>' in res
         path = f"<path>{doc.path.lstrip('/')}</path>"
-        assert get_bytes(path) in res
+        assert path.encode("utf-8") in res
 
 
 def test_fetch_renditions(server):

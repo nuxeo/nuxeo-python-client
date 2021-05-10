@@ -11,7 +11,7 @@ from jwt import JWT, jwk_from_dict
 from jwt.exceptions import JWTDecodeError
 
 from ..exceptions import OAuth2Error
-from ..utils import get_bytes, log_response
+from ..utils import log_response
 from .base import AuthBase
 
 Token = Dict[str, Any]
@@ -32,7 +32,7 @@ class OAuth2(AuthBase):
         "_token_header",
     )
 
-    AUTHORIZATION = get_bytes("Authorization")
+    AUTHORIZATION = "Authorization".encode("utf-8")
     GRANT_AUTHORIZATION_CODE = "authorization_code"
 
     def __init__(

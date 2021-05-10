@@ -24,7 +24,6 @@ Example output:
     54969ca5-0be2-4bbf-938a-3e8b4016e420
 """
 import argparse
-
 import os
 import re
 from collections import defaultdict
@@ -33,7 +32,6 @@ from urllib.parse import quote
 from requests import HTTPError
 
 from nuxeo.client import Nuxeo
-from nuxeo.utils import get_bytes
 
 
 class BColors(object):
@@ -104,7 +102,7 @@ def find_duplicates_of_uid(uid):
                 "SELECT * FROM Document WHERE ecm:parentId = '" + doc.parentRef + "'"
             )
             query += " AND dc:title = '" + doc.title + "'"
-            request = "query?query=" + quote(get_bytes(query), safe="!=:")
+            request = "query?query=" + quote(query, safe="!=:")
             entries = nuxeo.client.request("GET", request).get("entries")
             if len(entries) > 1:
                 print_duplicates(
@@ -135,7 +133,7 @@ def find_duplicates_with_name(name):
             no_duplicates = False
             print_duplicates("/".join([path, name]), uids)
     if no_duplicates:
-        color_print(f"No duplicate for {get_bytes(name)}.", BColors.OKGREEN)
+        color_print(f"No duplicate for {name!r}.", BColors.OKGREEN)
 
 
 def main():

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Generator, Tuple, Union
 from urllib.parse import quote
 
 from ..models import Batch, Blob, BufferBlob, FileBlob
-from ..utils import get_bytes, log_chunk_details
+from ..utils import log_chunk_details
 
 if TYPE_CHECKING:
     from ..uploads import API
@@ -58,7 +58,7 @@ class Uploader(object):
         self.headers.update(
             {
                 "Cache-Control": "no-cache",
-                "X-File-Name": quote(get_bytes(self.blob.name)),
+                "X-File-Name": quote(self.blob.name),
                 "X-File-Size": str(self.blob.size),
                 "X-File-Type": self.blob.mimetype,
                 "Content-Length": str(self.blob.size),

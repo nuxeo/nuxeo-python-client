@@ -11,8 +11,6 @@ Release date: ``2021-0x-xx``
 Technical changes
 -----------------
 
-- Moved compat.py::``get_bytes()`` to utils.py
-- Moved compat.py::``get_text()`` to utils.py
 - Removed compat.py
 
 5.2.0

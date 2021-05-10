@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 import nuxeo.constants
 import pytest
-from nuxeo.utils import get_bytes
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
@@ -82,7 +81,7 @@ def test_document_get_blobs(server):
         for idx in range(number):
             xpath = f"files:files/{idx}/file"
             blob = doc.fetch_blob(xpath)
-            assert blob == get_bytes(f"foo {idx}")
+            assert blob == f"foo {idx}".encode("utf-8")
 
 
 def test_document_list_update(server):

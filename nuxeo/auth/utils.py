@@ -2,7 +2,7 @@
 from base64 import b64encode
 from typing import Optional
 from ..exceptions import NuxeoError
-from ..utils import get_bytes, get_digest_hash, get_text
+from ..utils import get_digest_hash
 
 
 def make_portal_sso_token(timestamp, random, secret, username, digest_algorithm="md5"):
@@ -14,6 +14,6 @@ def make_portal_sso_token(timestamp, random, secret, username, digest_algorithm=
         raise NuxeoError(err)
 
     clear_token = ":".join([str(timestamp), random, secret, username])
-    digester.update(get_bytes(clear_token))
+    digester.update(clear_token.encode("utf-8"))
     hashed_token = digester.digest()
-    return get_text(b64encode(hashed_token))
+    return b64encode(hashed_token).decode("utf-8")
