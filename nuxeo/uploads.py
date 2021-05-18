@@ -26,7 +26,7 @@ ActualBlob = Union[BufferBlob, FileBlob]
 
 
 class API(APIEndpoint):
-    """ Endpoint for uploads. """
+    """Endpoint for uploads."""
 
     __slots__ = ("__handlers",)
 
@@ -360,21 +360,17 @@ class API(APIEndpoint):
         """
         # Return an empty dict by default instead of raising an error.
         # It is more convenient.
-        creds = {}
+        if not batch.provider:
+            return {}
 
-        if batch.provider:
-            endpoint = f"{self.endpoint}/{batch.uid}/refreshToken"
-            req = self.client.request("POST", endpoint, default=None, **kwargs)
-            if req:
-                creds = req.json()
-                batch.extraInfo.update(**creds)
-            else:
-                # Allow outdated servers (without the refreshToken API) to still work with S3.
-                # It will just end on a ExpiredToken error, but it is better than a 404 error.
-                creds = batch.extraInfo
+        callback = kwargs.pop("token_callback")
+        endpoint = f"{self.endpoint}/{batch.uid}/refreshToken"
+        creds = self.client.request("POST", endpoint, **kwargs).json()
+        if creds == batch.extraInfo:
+            return creds
 
         # Allow to trigger a callback with new credentials
-        callback = kwargs.get("token_callback")
+        batch.extraInfo.update(**creds)
         if callback and callable(callback):
             callback(batch, creds)
 

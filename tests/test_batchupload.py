@@ -4,8 +4,10 @@ import threading
 import uuid
 from collections import defaultdict
 from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
+import responses
 from nuxeo.constants import IDEMPOTENCY_KEY, UP_AMAZON_S3
 from nuxeo.exceptions import (
     CorruptedFile,
@@ -15,7 +17,7 @@ from nuxeo.exceptions import (
     OngoingRequestError,
     UploadError,
 )
-from nuxeo.models import BufferBlob, Document, FileBlob
+from nuxeo.models import Batch, BufferBlob, Document, FileBlob
 from requests.exceptions import ConnectionError
 from sentry_sdk import configure_scope
 
@@ -47,14 +49,59 @@ def get_batch(server):
 
 
 def test_token_callback(server):
-    batch = server.uploads.batch()
-    check = {batch.uid: "falsify"}
+    original_creds = {
+        "bucket": "my-bucket",
+        "baseKey": "directupload/",
+        "endpoint": None,
+        "expiration": 1621345126000,
+        "usePathStyleAccess": False,
+        "region": "eu-west-1",
+        "useS3Accelerate": False,
+        "awsSecretKeyId": "...",
+        "awsSessionToken": "...",
+        "awsSecretAccessKey": "...",
+    }
+    batch = Batch(batchId=str(uuid4()), extraInfo=original_creds)
 
-    def callback(batch, creds):
-        check[batch.uid] = creds
+    check = {batch.uid: None}
 
-    server.uploads.refresh_token(batch, token_callback=callback)
-    assert not check[batch.uid]
+    def callback(my_batch, creds):
+        check[my_batch.uid] = creds.copy()
+
+    # Using the default upload provider
+    # => the callback is not even called
+    creds = server.uploads.refresh_token(batch, token_callback=callback)
+    assert creds == {}
+    assert check[batch.uid] is None
+
+    url = f"{server.client.host}{server.uploads.endpoint}/{batch.uid}/refreshToken"
+    batch.provider = UP_AMAZON_S3
+
+    # Using S3 third-party upload provider, with credentials not expired
+    # => new credentials are then the same as current ones
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.POST, url, json=original_creds)
+
+        creds = server.uploads.refresh_token(batch, token_callback=callback)
+        assert creds == original_creds
+        assert check[batch.uid] is None
+
+    # Using S3 third-party upload provider, with credentials expired
+    # => new credentials are recieved
+    with responses.RequestsMock() as rsps:
+        new_creds = {
+            "awsSecretKeyId": "updated 1",
+            "awsSessionToken": "updated 2",
+            "awsSecretAccessKey": "updated 3",
+        }
+        rsps.add(responses.POST, url, json=new_creds)
+
+        creds = server.uploads.refresh_token(batch, token_callback=callback)
+        assert creds == new_creds
+        assert check[batch.uid] == new_creds
+        assert batch.extraInfo["awsSecretKeyId"] == "updated 1"
+        assert batch.extraInfo["awsSessionToken"] == "updated 2"
+        assert batch.extraInfo["awsSecretAccessKey"] == "updated 3"
 
 
 def test_batch_handler_default(server):
