@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         nuxeo:
           - '10.10'
