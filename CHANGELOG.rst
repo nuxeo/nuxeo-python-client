@@ -4,14 +4,9 @@ Changelog
 6.0.1
 -----
 
-Release date: ``2021-0x-xx``
+Release date: ``2021-05-18``
 
 - `NXPY-223 <https://jira.nuxeo.com/browse/NXPY-223>`__: Fix third-party credentials renewal
-
-Technical changes
------------------
-
--
 
 6.0.0
 -----
