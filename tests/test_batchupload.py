@@ -116,6 +116,10 @@ def test_batch_handler_inexistant(server):
     assert "default" in error
 
 
+def test_batch__post_with_kwarg(server):
+    server.uploads.batch(headers={"upload-provider": "nuxeo"})
+
+
 def test_cancel(server):
     batch = get_batch(server)
     batch.cancel()

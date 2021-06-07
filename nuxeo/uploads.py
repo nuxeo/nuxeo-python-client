@@ -62,8 +62,8 @@ class API(APIEndpoint):
             return []
         return resource
 
-    def post(self, handler=""):
-        # type: (Optional[str]) -> Batch
+    def post(self, handler="", **kwargs):
+        # type: (Optional[str], Any) -> Batch
         """
         Create a batch.
 
@@ -80,7 +80,7 @@ class API(APIEndpoint):
             else:
                 raise InvalidUploadHandler(handler, handlers)
 
-        data = self.client.request("POST", endpoint).json()
+        data = self.client.request("POST", endpoint, **kwargs).json()
         # Set a uniq ID for that batch, it will be used by third-party upload handlers
         data["key"] = str(uuid4())
         return Batch.parse(data, service=self)

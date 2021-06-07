@@ -6,12 +6,12 @@ Changelog
 
 Release date: ``2021-0x-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-225 <https://jira.nuxeo.com/browse/NXPY-225>`__: Allow to pass additional arguments when asking for a ``batchId``
 
 Technical changes
 -----------------
 
--
+- Added ``kwargs`` keyword arguments to nuxeo/uploads.py::\ ``API.post()``
 
 6.0.1
 -----
