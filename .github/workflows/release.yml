@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'The branch, tag or SHA to release from'
+        description: "The branch, tag or SHA to release from"
         required: true
-        default: 'master'
+        default: "master"
 
 jobs:
   pure-built-distribution:
