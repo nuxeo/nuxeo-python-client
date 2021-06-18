@@ -6,7 +6,7 @@ Changelog
 
 Release date: ``2021-0x-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-228 <https://jira.nuxeo.com/browse/NXPY-228>`__: Use proper job names in GitHub workflows
 
 Technical changes
 -----------------

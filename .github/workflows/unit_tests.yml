@@ -3,33 +3,33 @@ name: Unit tests
 on:
   # Check for updates every day
   schedule:
-    - cron:  '0 0 * * *'
+    - cron: "0 0 * * *"
 
   # Check on any PR
   pull_request:
-    branches: '*'
+    branches: "*"
   push:
     branches: [master]
     paths:
-    - 'nuxeo/**/*.py'
-    - 'setup.*'
-    - 'tests/*.py'
+      - "nuxeo/**/*.py"
+      - "setup.*"
+      - "tests/*.py"
 
 jobs:
-  job:
+  unit-tests:
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         nuxeo:
-          - '10.10'
+          - "10.10"
         python:
           # Minimum supported version
-          - '3.6'
+          - "3.6"
           # Maximum supported version
           # Note: 3.10 is still in alpha, so we stick with 3.9 until there is an official 3.10
-          - '3.9'
+          - "3.9"
 
     services:
       nuxeo:
@@ -46,26 +46,26 @@ jobs:
           --health-retries 60
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
 
-    - name: Install dependencies
-      run: python -m pip install -U pip tox
+      - name: Install dependencies
+        run: python -m pip install -U pip tox
 
-    - name: Unit tests
-      env:
-        SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      # Run tox using the version of Python in `PATH`
-      run: python -m tox -e py
+      - name: Unit tests
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        # Run tox using the version of Python in `PATH`
+        run: python -m tox -e py
 
-    - name: Upload coverage to Codecov
-      if: ${{ success() }} || ${{ failure() }}
-      uses: codecov/codecov-action@v1
-      with:
-        files: ./coverage.xml
-        flags: unit
-        env_vars: PYTHON
+      - name: Upload coverage to Codecov
+        if: ${{ success() }} || ${{ failure() }}
+        uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml
+          flags: unit
+          env_vars: PYTHON
