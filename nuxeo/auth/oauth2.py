@@ -45,6 +45,7 @@ class OAuth2(AuthBase):
         token_endpoint=None,  # type: Optional[str]
         redirect_uri=None,  # type: Optional[str]
         openid_configuration_url=None,  # type: Optional[str]
+        subclient_kwargs=None,  # Type: Optional[Dict[str, Any]]
     ):
         # type: (...) -> None
         if not host.endswith("/"):
@@ -59,11 +60,12 @@ class OAuth2(AuthBase):
         # Allow to pass custom endpoints
         if openid_configuration_url:
             # OpenID Connect Discovery
-            with requests.get(openid_configuration_url) as req:
+            subclient_kwargs = subclient_kwargs or {}
+            with requests.get(openid_configuration_url, **subclient_kwargs) as req:
                 self._openid_conf = req.json()
             auth_endpoint = self._openid_conf["authorization_endpoint"]
             token_endpoint = self._openid_conf["token_endpoint"]
-            with requests.get(self._openid_conf["jwks_uri"]) as req:
+            with requests.get(self._openid_conf["jwks_uri"], **subclient_kwargs) as req:
                 self._openid_conf["signing_keys"] = req.json()["keys"]
         else:
             auth_endpoint = authorization_endpoint or DEFAULT_AUTHORIZATION_ENDPOINT
