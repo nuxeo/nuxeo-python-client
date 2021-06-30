@@ -57,15 +57,27 @@ class OAuth2(AuthBase):
         if token:
             self.set_token(token)
 
+        self._client = OAuth2Session(
+            client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri
+        )
+        self._client.session.hooks["response"] = [log_response]
+
         # Allow to pass custom endpoints
         if openid_configuration_url:
             # OpenID Connect Discovery
             subclient_kwargs = subclient_kwargs or {}
-            with requests.get(openid_configuration_url, **subclient_kwargs) as req:
+            with self._client.request(
+                "GET", openid_configuration_url, withhold_token=True, **subclient_kwargs
+            ) as req:
                 self._openid_conf = req.json()
             auth_endpoint = self._openid_conf["authorization_endpoint"]
             token_endpoint = self._openid_conf["token_endpoint"]
-            with requests.get(self._openid_conf["jwks_uri"], **subclient_kwargs) as req:
+            with self._client.request(
+                "GET",
+                self._openid_conf["jwks_uri"],
+                withhold_token=True,
+                **subclient_kwargs
+            ) as req:
                 self._openid_conf["signing_keys"] = req.json()["keys"]
         else:
             auth_endpoint = authorization_endpoint or DEFAULT_AUTHORIZATION_ENDPOINT
@@ -74,11 +86,6 @@ class OAuth2(AuthBase):
                 auth_endpoint = self._host + auth_endpoint
             if not token_endpoint.startswith("https://"):
                 token_endpoint = self._host + token_endpoint
-
-        self._client = OAuth2Session(
-            client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri
-        )
-        self._client.session.hooks["response"] = [log_response]
 
         self._authorization_endpoint = auth_endpoint
         self._token_endpoint = token_endpoint

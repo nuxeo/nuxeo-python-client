@@ -7,6 +7,7 @@ from warnings import warn
 
 import requests
 from requests.adapters import HTTPAdapter
+from requests.sessions import Session
 from urllib3 import __version__ as urllib3_version
 from urllib3.util.retry import Retry
 
@@ -46,7 +47,7 @@ from .exceptions import (
     Unauthorized,
 )
 from .tcp import TCPKeepAliveHTTPSAdapter
-from .utils import json_helper, log_response
+from .utils import json_helper, log_request, log_response
 
 AuthType = Optional[Union[Tuple[str, str], AuthBase]]
 logger = logging.getLogger(__name__)
@@ -75,6 +76,9 @@ HTTP_ERROR = {
     requests.codes.forbidden: Forbidden,
     requests.codes.unauthorized: Unauthorized,
 }
+
+# TODO
+Session.request = log_request
 
 
 class NuxeoClient(object):
@@ -112,7 +116,7 @@ class NuxeoClient(object):
         }
         self.schemas = kwargs.get("schemas", "*")
         self.repository = kwargs.pop("repository", "default")
-        self._session = requests.sessions.Session()
+        self._session = Session()
         self._session.hooks["response"] = [log_response]
         cookies = kwargs.pop("cookies", None)
         if cookies:
@@ -148,7 +152,7 @@ class NuxeoClient(object):
 
     def enable_retry(self):
         # type: () -> None
-        """ Set a max retry for all connection errors with an adaptative backoff. """
+        """Set a max retry for all connection errors with an adaptative backoff."""
         self._session.mount(
             "https://", TCPKeepAliveHTTPSAdapter(max_retries=self.retries)
         )
@@ -272,16 +276,6 @@ class NuxeoClient(object):
         # Allow to pass a custom authentication class
         auth = kwargs.pop("auth", None) or self.auth
 
-        _kwargs = {k: v for k, v in kwargs.items() if k != "params"}
-        logged_params = kwargs.get("params", data if not raw else {})
-        logger.debug(
-            (
-                f"Calling {method} {url!r} with headers={headers!r},"
-                f" params={logged_params!r}, kwargs={_kwargs!r}"
-                f" and cookies={self._session.cookies!r}"
-            )
-        )
-
         exc = None
         try:
             resp = self._session.request(
@@ -352,7 +346,7 @@ class NuxeoClient(object):
 
     def is_reachable(self):
         # type: () -> bool
-        """ Check if the Nuxeo Platform is reachable. """
+        """Check if the Nuxeo Platform is reachable."""
         response = self.request("GET", "runningstatus", default=False)
         if isinstance(response, requests.Response):
             return response.ok
@@ -379,7 +373,7 @@ class NuxeoClient(object):
     @property
     def server_version(self):
         # type: () -> str
-        """ Return the server version or "unknown". """
+        """Return the server version or "unknown"."""
         try:
             return self.server_info()["productVersion"]
         except Exception:

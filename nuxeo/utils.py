@@ -9,6 +9,7 @@ from functools import lru_cache
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from requests import Response
+from requests.sessions import Session
 
 from . import constants
 from .constants import UP_AMAZON_S3
@@ -26,6 +27,7 @@ WIN32_PATCHED_MIME_TYPES = {
     "application/x-mspowerpoint": "application/vnd.ms-powerpoint",
     "application/x-mspowerpoint.12": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 }
+_ORIG_SESSION_REQUEST_METH = Session.request
 
 
 def chunk_partition(file_size, desired_chunk_size, handler=""):
@@ -136,7 +138,7 @@ def get_digester(digest):
 
 def guess_mimetype(filename):
     # type: (str) -> str
-    """ Guess the mimetype of a given file. """
+    """Guess the mimetype of a given file."""
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type:
         if sys.platform == "win32":
@@ -196,6 +198,16 @@ def log_chunk_details(chunk_count, chunk_size, uploaded_chunks, blob_size):
         f" => uploaded data so far is {uploaded_data_length:,} bytes."
     )
     logger.debug(details)
+
+
+def log_request(self, method, url, **kwargs):
+    """
+    Log the HTTP call that will be made.
+    Artguments are identical to `requests.sessions.Session.request()`.
+    """
+    if logger.getEffectiveLevel() >= logging.DEBUG:
+        logger.debug(f"Calling {method.upper()} {url!r} with {kwargs!r}")
+    return _ORIG_SESSION_REQUEST_METH(self, method, url, **kwargs)
 
 
 def log_response(response, *args, **kwargs):
@@ -336,7 +348,7 @@ def version_compare(x, y):
 @lru_cache(maxsize=128)
 def version_compare_client(x, y):
     # type: (str, str) -> int
-    """ Try to compare SemVer and fallback to version_compare on error. """
+    """Try to compare SemVer and fallback to version_compare on error."""
 
     # Ignore date based versions, they will be treated as normal versions
     if x and "-I" in x:
@@ -353,12 +365,12 @@ def version_compare_client(x, y):
 @lru_cache(maxsize=128)
 def version_le(x, y):
     # type: (str, str) -> bool
-    """ x <= y """
+    """x <= y"""
     return version_compare_client(x, y) <= 0
 
 
 @lru_cache(maxsize=128)
 def version_lt(x, y):
     # type: (str, str) -> bool
-    """ x < y """
+    """x < y"""
     return version_compare_client(x, y) < 0
