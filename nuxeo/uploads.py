@@ -283,7 +283,7 @@ class API(APIEndpoint):
         :param kwargs: additional arguments fowarded at the underlying level
         :return: the output of the complete operation
         """
-        if batch.provider == UP_AMAZON_S3:
+        if batch.is_s3():
             blob = batch.blobs[0]
             s3_info = batch.extraInfo
             key = f"{s3_info['baseKey']}{batch.key or blob.name}"
@@ -328,7 +328,7 @@ class API(APIEndpoint):
         """
         chunked = chunked and blob.size > chunk_size
 
-        if batch.provider == UP_AMAZON_S3:
+        if batch.is_s3():
             if chunked:
                 from .handlers.s3 import ChunkUploaderS3 as cls
             else:

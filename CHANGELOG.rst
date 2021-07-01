@@ -9,6 +9,7 @@ Release date: ``2021-0x-xx``
 - `NXPY-228 <https://jira.nuxeo.com/browse/NXPY-228>`__: Use proper job names in GitHub workflows
 - `NXPY-230 <https://jira.nuxeo.com/browse/NXPY-230>`__: Allow to pass requests arguments to the OAuth2 client
 - `NXPY-231 <https://jira.nuxeo.com/browse/NXPY-231>`__: Prevent warnings when packaging the module
+- `NXPY-232 <https://jira.nuxeo.com/browse/NXPY-232>`__: Allow specifying the upload provider type in the batch details
 
 Technical changes
 -----------------

@@ -171,7 +171,14 @@ class Batch(Model):
     def is_s3(self):
         # type: () -> bool
         """Return True if the upload provider is Amazon S3."""
-        return self.provider == UP_AMAZON_S3
+        provider = self.provider or ""
+        if not provider:
+            return False
+
+        if isinstance(self.extraInfo, dict):
+            provider = self.extraInfo.pop("provider_type", provider)
+
+        return provider.lower() == UP_AMAZON_S3
 
     def upload(self, blob, **kwargs):
         # type: (Blob, Any) -> Blob
