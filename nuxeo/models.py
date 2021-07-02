@@ -176,7 +176,7 @@ class Batch(Model):
             return False
 
         if isinstance(self.extraInfo, dict):
-            provider = self.extraInfo.pop("provider_type", provider)
+            provider = self.extraInfo.get("provider_type", "") or provider
 
         return provider.lower() == UP_AMAZON_S3
 
