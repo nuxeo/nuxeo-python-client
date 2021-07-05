@@ -307,8 +307,8 @@ class API(APIEndpoint):
             command="Document.Move", input_obj=uid, params=params
         )
 
-    def query(self, opts=None):
-        # type: (Optional[Dict[str, str]]) -> Dict[str, Any]
+    def query(self, opts=None, **kwargs):
+        # type: (Optional[Dict[str, str]], Any) -> Dict[str, Any]
         """
         Run a query on the documents.
 
@@ -319,12 +319,12 @@ class API(APIEndpoint):
         if "query" in opts:
             query = "NXQL"
         elif "pageProvider" in opts:
-            query = opts["pageProvider"]
+            query = opts.pop("pageProvider")
         else:
             raise BadQuery("Need either a pageProvider or a query")
 
         path = f"query/{query}"
-        res = super().get(path=path, params=opts, cls=dict)
+        res = super().get(path=path, params=opts, cls=dict, **kwargs)
         res["entries"] = [
             Document.parse(entry, service=self) for entry in res["entries"]
         ]

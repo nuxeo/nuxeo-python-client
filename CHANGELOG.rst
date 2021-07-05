@@ -9,11 +9,13 @@ Release date: ``2021-0x-xx``
 - `NXPY-228 <https://jira.nuxeo.com/browse/NXPY-228>`__: Use proper job names in GitHub workflows
 - `NXPY-230 <https://jira.nuxeo.com/browse/NXPY-230>`__: Allow to pass requests arguments to the OAuth2 client
 - `NXPY-231 <https://jira.nuxeo.com/browse/NXPY-231>`__: Prevent warnings when packaging the module
+- `NXPY-233 <https://jira.nuxeo.com/browse/NXPY-233>`__: Allow to pass additional arguments when querying document
 
 Technical changes
 -----------------
 
 - Added ``subclient_kwargs`` keyword argument to ``OAuth2.__init__()``
+- Added ``kwargs`` keyword arguments to nuxeo/documents.py::\ ``API.query()``
 
 6.0.2
 -----
