@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class API(APIEndpoint):
-    """ Endpoint for documents. """
+    """Endpoint for documents."""
 
     __slots__ = ("comments_api", "operations", "workflows_api")
 
@@ -288,7 +288,7 @@ class API(APIEndpoint):
 
     def lock(self, uid):
         # type: (str) -> Dict[str, Any]
-        """ Lock a document. """
+        """Lock a document."""
         return self.operations.execute(command="Document.Lock", input_obj=uid)
 
     def move(self, uid, dst, name=None):
@@ -361,7 +361,7 @@ class API(APIEndpoint):
 
     def unlock(self, uid):
         # type: (str) -> Dict[str, Any]
-        """ Unlock a document. """
+        """Unlock a document."""
         return self.operations.execute(command="Document.Unlock", input_obj=uid)
 
     def untrash(self, uid):
@@ -383,7 +383,7 @@ class API(APIEndpoint):
 
     def workflows(self, document):
         # type: (Document) -> Union[Workflow, List[Workflow]]
-        """ Get the workflows of a document. """
+        """Get the workflows of a document."""
         path = f"id/{document.uid}/@workflow"
         return super(WorkflowsAPI, self.workflows_api).get(
             endpoint=self.endpoint, path=path
