@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class Model(object):
-    """ Base class for all entities. """
+    """Base class for all entities."""
 
     __slots__ = {"service": None}  # type: Dict[str, Any]
 
@@ -43,7 +43,7 @@ class Model(object):
 
     def as_dict(self):
         # type: () -> Dict[str, Any]
-        """ Returns a dict representation of the resource. """
+        """Returns a dict representation of the resource."""
         result = {}
         for key in self.__slots__:
             val = getattr(self, key)
@@ -59,13 +59,13 @@ class Model(object):
     @classmethod
     def parse(cls, json, service=None):
         # type: (Dict[str, Any], Optional[APIEndpoint]) -> Model
-        """ Parse a JSON object into a model instance. """
+        """Parse a JSON object into a model instance."""
         kwargs = {k: v for k, v in json.items()}
         return cls(service=service, **kwargs)
 
     def save(self):
         # type: () -> None
-        """ Save the resource. """
+        """Save the resource."""
         self.service.put(self)
 
 
@@ -105,7 +105,7 @@ class RefreshableModel(Model):
 
 
 class Batch(Model):
-    """ Upload batch. """
+    """Upload batch."""
 
     __slots__ = {
         "batchId": None,
@@ -131,14 +131,14 @@ class Batch(Model):
 
     def cancel(self):
         # type: () -> None
-        """ Cancel an upload batch. """
+        """Cancel an upload batch."""
         if not self.batchId:
             return
         self.service.delete(self.uid)
         self.batchId = None
 
     def delete(self, file_idx):
-        """ Delete a blob from the batch. """
+        """Delete a blob from the batch."""
         if self.batchId:
             self.service.delete(self.uid, file_idx=file_idx)
             self.blobs[file_idx] = None
@@ -171,7 +171,14 @@ class Batch(Model):
     def is_s3(self):
         # type: () -> bool
         """Return True if the upload provider is Amazon S3."""
-        return self.provider == UP_AMAZON_S3
+        provider = self.provider or ""
+        if not provider:
+            return False
+
+        if isinstance(self.extraInfo, dict):
+            provider = self.extraInfo.get("provider_type", "") or provider
+
+        return provider.lower() == UP_AMAZON_S3
 
     def upload(self, blob, **kwargs):
         # type: (Blob, Any) -> Blob
@@ -219,7 +226,7 @@ class Batch(Model):
 
 
 class Blob(Model):
-    """ Blob superclass used for metadata. """
+    """Blob superclass used for metadata."""
 
     __slots__ = {
         "batchId": "",
@@ -237,7 +244,7 @@ class Blob(Model):
     @classmethod
     def parse(cls, json, service=None):
         # type: (Dict[str, Any], Optional[APIEndpoint]) -> Blob
-        """ Parse a JSON object into a blob instance. """
+        """Parse a JSON object into a blob instance."""
         kwargs = {k: v for k, v in json.items()}
         model = cls(service=service, **kwargs)
 
@@ -247,7 +254,7 @@ class Blob(Model):
 
     def to_json(self):
         # type: () -> Dict[str, str]
-        """ Return a JSON object used during the upload. """
+        """Return a JSON object used during the upload."""
         return {"upload-batch": self.batchId, "upload-fileId": str(self.fileIdx)}
 
 
@@ -274,7 +281,7 @@ class BufferBlob(Blob):
     @property
     def data(self):
         # type: () -> StringIO
-        """ Request data. """
+        """Request data."""
         return self.stringio
 
     def __enter__(self):
@@ -289,7 +296,7 @@ class BufferBlob(Blob):
 
 
 class Comment(Model):
-    """ Comment. """
+    """Comment."""
 
     __slots__ = {
         "ancestorIds": [],
@@ -314,12 +321,12 @@ class Comment(Model):
 
     def delete(self):
         # type: () -> None
-        """ Delete the comment. """
+        """Delete the comment."""
         self.service.delete(self.uid)
 
     def has_replies(self):
         # type: () -> bool
-        """ Return True is the comment has at least one reply. """
+        """Return True is the comment has at least one reply."""
         return self.numberOfReplies > 0
 
     def replies(self, **params):
@@ -336,7 +343,7 @@ class Comment(Model):
 
     def reply(self, text):
         # type: (str) -> Comment
-        """ Add a reply to the comment. """
+        """Add a reply to the comment."""
         # Add the reply
         reply_comment = self.service.post(self.uid, text)
 
@@ -391,7 +398,7 @@ class FileBlob(Blob):
 
 
 class Directory(Model):
-    """ Directory. """
+    """Directory."""
 
     __slots__ = {
         "directoryName": None,
@@ -416,12 +423,12 @@ class Directory(Model):
 
     def create(self, entry):
         # type: (DirectoryEntry) -> DirectoryEntry
-        """ Create an entry in the directory. """
+        """Create an entry in the directory."""
         return self.service.post(entry, dir_name=self.uid)
 
     def save(self, entry):
         # type: (DirectoryEntry) -> DirectoryEntry
-        """ Save a modified entry of the directory. """
+        """Save a modified entry of the directory."""
         return self.service.put(entry, dir_name=self.uid)
 
     def delete(self, entry):
@@ -445,7 +452,7 @@ class Directory(Model):
 
 
 class DirectoryEntry(Model):
-    """ Directory entry. """
+    """Directory entry."""
 
     __slots__ = {
         "directoryName": None,
@@ -460,17 +467,17 @@ class DirectoryEntry(Model):
 
     def save(self):
         # type: () -> DirectoryEntry
-        """ Save the entry. """
+        """Save the entry."""
         return self.service.put(self, self.directoryName)
 
     def delete(self):
         # type: () -> None
-        """ Delete the entry. """
+        """Delete the entry."""
         self.service.delete(self.directoryName, self.uid)
 
 
 class Document(RefreshableModel):
-    """ Document. """
+    """Document."""
 
     __slots__ = {
         "changeToken": None,
@@ -497,7 +504,7 @@ class Document(RefreshableModel):
     @property
     def workflows(self):
         # type: () -> List[Workflow]
-        """ Return the workflows associated with the document. """
+        """Return the workflows associated with the document."""
         return self.service.workflows(self)
 
     def add_permission(self, params):
@@ -538,17 +545,17 @@ class Document(RefreshableModel):
 
     def delete(self):
         # type: () -> None
-        """ Delete the document. """
+        """Delete the document."""
         self.service.delete(self.uid)
 
     def fetch_acls(self):
         # type: () -> Dict[str, Any]
-        """ Fetch document ACLs. """
+        """Fetch document ACLs."""
         return self.service.fetch_acls(self.uid)
 
     def fetch_audit(self):
         # type: () -> Dict[str, Any]
-        """ Fetch audit for current document. """
+        """Fetch audit for current document."""
         return self.service.fetch_audit(self.uid)
 
     def fetch_blob(self, xpath="blobholder:0"):
@@ -563,7 +570,7 @@ class Document(RefreshableModel):
 
     def fetch_lock_status(self):
         # type: () -> Dict[str, Any]
-        """ Get lock informations. """
+        """Get lock informations."""
         return self.service.fetch_lock_status(self.uid)
 
     def fetch_rendition(self, name):
@@ -593,22 +600,22 @@ class Document(RefreshableModel):
 
     def get(self, prop):
         # type: (str) -> Any
-        """ Get a property of the document by its name. """
+        """Get a property of the document by its name."""
         return self.properties[prop]
 
     def has_permission(self, permission):
         # type: (str) -> bool
-        """ Verify if a document has the permission. """
+        """Verify if a document has the permission."""
         return self.service.has_permission(self.uid, permission)
 
     def is_locked(self):
         # type: () -> bool
-        """ Get the lock status. """
+        """Get the lock status."""
         return not not self.fetch_lock_status()
 
     def lock(self):
         # type: () -> Dict[str, Any]
-        """ Lock the document. """
+        """Lock the document."""
         return self.service.lock(self.uid)
 
     def move(self, dst, name=None):
@@ -624,12 +631,12 @@ class Document(RefreshableModel):
 
     def remove_permission(self, params):
         # type: (Dict[str, Any]) -> None
-        """ Remove a permission to a document. """
+        """Remove a permission to a document."""
         return self.service.remove_permission(self.uid, params)
 
     def set(self, properties):
         # type: (Dict[str, Any]) -> None
-        """ Add/update the properties of the document. """
+        """Add/update the properties of the document."""
         self.properties.update(properties)
 
     def trash(self):
@@ -639,7 +646,7 @@ class Document(RefreshableModel):
 
     def unlock(self):
         # type: () -> Dict[str, Any]
-        """ Unlock the document. """
+        """Unlock the document."""
         return self.service.unlock(self.uid)
 
     def untrash(self):
@@ -649,7 +656,7 @@ class Document(RefreshableModel):
 
 
 class Group(Model):
-    """ User group. """
+    """User group."""
 
     __slots__ = {
         "entity_type": "group",
@@ -666,12 +673,12 @@ class Group(Model):
 
     def delete(self):
         # type: () -> None
-        """ Delete the group. """
+        """Delete the group."""
         self.service.delete(self.uid)
 
 
 class Operation(Model):
-    """ Automation operation. """
+    """Automation operation."""
 
     __slots__ = {
         "command": None,
@@ -683,12 +690,12 @@ class Operation(Model):
 
     def execute(self, **kwargs):
         # type: (Any) -> Any
-        """ Execute the operation. """
+        """Execute the operation."""
         return self.service.execute(self, **kwargs)
 
 
 class Task(RefreshableModel):
-    """ Workflow task. """
+    """Workflow task."""
 
     __slots__ = {
         "actors": [],
@@ -715,7 +722,7 @@ class Task(RefreshableModel):
 
     def complete(self, action, variables=None, comment=None):
         # type: (str, Optional[Dict[str, Any]], Optional[str]) -> None
-        """ Complete the action of a task. """
+        """Complete the action of a task."""
         updated_task = self.service.complete(
             self, action, variables=variables, comment=comment
         )
@@ -723,19 +730,19 @@ class Task(RefreshableModel):
 
     def delegate(self, actors, comment=None):
         # type: (str, Optional[str]) -> None
-        """ Delegate the task to someone else. """
+        """Delegate the task to someone else."""
         self.service.transfer(self, "delegate", actors, comment=comment)
         self.load()
 
     def reassign(self, actors, comment=None):
         # type: (str, Optional[str]) -> None
-        """ Reassign the task to someone else. """
+        """Reassign the task to someone else."""
         self.service.transfer(self, "reassign", actors, comment=comment)
         self.load()
 
 
 class User(RefreshableModel):
-    """ User. """
+    """User."""
 
     __slots__ = {
         "entity_type": "user",
@@ -763,12 +770,12 @@ class User(RefreshableModel):
 
     def delete(self):
         # type: () -> None
-        """ Delete the user. """
+        """Delete the user."""
         self.service.delete(self.uid)
 
 
 class Workflow(Model):
-    """ Workflow. """
+    """Workflow."""
 
     __slots__ = {
         "attachedDocumentIds": [],
@@ -786,7 +793,7 @@ class Workflow(Model):
     @property
     def tasks(self):
         # type: () -> List[Task]
-        """ Return the tasks associated with the workflow. """
+        """Return the tasks associated with the workflow."""
         return self.service.tasks(self)
 
     @property
@@ -796,10 +803,10 @@ class Workflow(Model):
 
     def delete(self):
         # type: () -> None
-        """ Delete the workflow. """
+        """Delete the workflow."""
         self.service.delete(self.uid)
 
     def graph(self):
         # type: () -> Dict[str, Any]
-        """ Return a JSON representation of the workflow graph. """
+        """Return a JSON representation of the workflow graph."""
         return self.service.graph(self)

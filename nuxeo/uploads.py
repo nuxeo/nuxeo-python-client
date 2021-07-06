@@ -74,12 +74,11 @@ class API(APIEndpoint):
         if handler:
             handler = handler.lower()
             handlers = self.handlers()
-            if handler in handlers:
-                if handler != "default":
-                    endpoint = f"{endpoint}/new/{handler}"
-            else:
+            if handler not in handlers:
                 raise InvalidUploadHandler(handler, handlers)
 
+            if handler != "default":
+                endpoint = f"{endpoint}/new/{handler}"
         data = self.client.request("POST", endpoint, **kwargs).json()
         # Set a uniq ID for that batch, it will be used by third-party upload handlers
         data["key"] = str(uuid4())
@@ -283,7 +282,7 @@ class API(APIEndpoint):
         :param kwargs: additional arguments fowarded at the underlying level
         :return: the output of the complete operation
         """
-        if batch.provider == UP_AMAZON_S3:
+        if batch.is_s3():
             blob = batch.blobs[0]
             s3_info = batch.extraInfo
             key = f"{s3_info['baseKey']}{batch.key or blob.name}"
@@ -328,16 +327,15 @@ class API(APIEndpoint):
         """
         chunked = chunked and blob.size > chunk_size
 
-        if batch.provider == UP_AMAZON_S3:
+        if batch.is_s3():
             if chunked:
                 from .handlers.s3 import ChunkUploaderS3 as cls
             else:
                 from .handlers.s3 import UploaderS3 as cls
+        elif chunked:
+            from .handlers.default import ChunkUploader as cls
         else:
-            if chunked:
-                from .handlers.default import ChunkUploader as cls
-            else:
-                from .handlers.default import Uploader as cls
+            from .handlers.default import Uploader as cls
 
         return cls(self, batch, blob, chunk_size, callback, **kwargs)
 
