@@ -74,7 +74,7 @@ def test_document_create_bytes_warning(server):
 
 
 def test_document_get_blobs(server):
-    """ Fetch all blobs of a given document. """
+    """Fetch all blobs of a given document."""
 
     number = 4
     with Doc(server, blobs=number) as doc:
@@ -146,6 +146,28 @@ def test_document_get_children_with_permissions(server):
     finally:
         doc.delete()
     assert not server.documents.exists(path=doc.path)
+
+
+def test_document_get_children_with_with_provider(server):
+    root = server.documents.get(path=WORKSPACE_ROOT)
+    doc = Document(
+        name=WORKSPACE_NAME, type="Folder", properties={"dc:title": "folder"}
+    )
+    doc = server.documents.create(doc, parent_path=root.path)
+    try:
+        enrichers = ["permissions", "hasFolderishChild"]
+        opts = {
+            "pageProvider": "tree_children",
+            "pageSize": 1,
+            "queryParams": root.uid,
+        }
+        children = server.documents.query(opts=opts, enrichers=enrichers)
+        assert len(children["entries"]) == 1
+        entry = children["entries"][0]
+        assert entry.contextParameters["permissions"]
+        assert "hasFolderishChild" in entry.contextParameters
+    finally:
+        doc.delete()
 
 
 def test_document_trash(server):

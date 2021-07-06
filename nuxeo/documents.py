@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class API(APIEndpoint):
-    """ Endpoint for documents. """
+    """Endpoint for documents."""
 
     __slots__ = ("comments_api", "operations", "workflows_api")
 
@@ -288,7 +288,7 @@ class API(APIEndpoint):
 
     def lock(self, uid):
         # type: (str) -> Dict[str, Any]
-        """ Lock a document. """
+        """Lock a document."""
         return self.operations.execute(command="Document.Lock", input_obj=uid)
 
     def move(self, uid, dst, name=None):
@@ -307,24 +307,24 @@ class API(APIEndpoint):
             command="Document.Move", input_obj=uid, params=params
         )
 
-    def query(self, opts=None):
-        # type: (Optional[Dict[str, str]]) -> Dict[str, Any]
+    def query(self, opts=None, **kwargs):
+        # type: (Optional[Dict[str, str]], Any) -> Dict[str, Any]
         """
         Run a query on the documents.
 
         :param opts: a query or a pageProvider
         :return: the corresponding documents
         """
-        opts = opts or {}
+        opts = opts.copy() if opts else {}
         if "query" in opts:
             query = "NXQL"
         elif "pageProvider" in opts:
-            query = opts["pageProvider"]
+            query = opts.pop("pageProvider")
         else:
             raise BadQuery("Need either a pageProvider or a query")
 
         path = f"query/{query}"
-        res = super().get(path=path, params=opts, cls=dict)
+        res = super().get(path=path, params=opts, cls=dict, **kwargs)
         res["entries"] = [
             Document.parse(entry, service=self) for entry in res["entries"]
         ]
@@ -361,7 +361,7 @@ class API(APIEndpoint):
 
     def unlock(self, uid):
         # type: (str) -> Dict[str, Any]
-        """ Unlock a document. """
+        """Unlock a document."""
         return self.operations.execute(command="Document.Unlock", input_obj=uid)
 
     def untrash(self, uid):
@@ -383,7 +383,7 @@ class API(APIEndpoint):
 
     def workflows(self, document):
         # type: (Document) -> Union[Workflow, List[Workflow]]
-        """ Get the workflows of a document. """
+        """Get the workflows of a document."""
         path = f"id/{document.uid}/@workflow"
         return super(WorkflowsAPI, self.workflows_api).get(
             endpoint=self.endpoint, path=path
