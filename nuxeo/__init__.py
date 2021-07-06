@@ -10,14 +10,14 @@ If that URL should fail, try contacting the author.
 Contributors:
     Antoine Taillefer
     Rémi Cattiau
-    Mickaël Schoentgen <mschoentgen@nuxeo.com>
+    Mickaël Schoentgen
     Léa Klein
     Romain Grasland
     and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
 
 __author__ = "Nuxeo"
-__version__ = "6.0.3"
+__version__ = "6.0.4"
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 
