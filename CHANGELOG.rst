@@ -4,7 +4,7 @@ Changelog
 6.0.3
 -----
 
-Release date: ``2021-0x-xx``
+Release date: ``2021-07-06``
 
 - `NXPY-228 <https://jira.nuxeo.com/browse/NXPY-228>`__: Use proper job names in GitHub workflows
 - `NXPY-230 <https://jira.nuxeo.com/browse/NXPY-230>`__: Allow to pass requests arguments to the OAuth2 client
