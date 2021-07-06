@@ -315,7 +315,7 @@ class API(APIEndpoint):
         :param opts: a query or a pageProvider
         :return: the corresponding documents
         """
-        opts = opts or {}
+        opts = opts.copy() if opts else {}
         if "query" in opts:
             query = "NXQL"
         elif "pageProvider" in opts:
