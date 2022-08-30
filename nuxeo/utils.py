@@ -4,6 +4,10 @@ import hashlib
 import logging
 import mimetypes
 import sys
+<<<<<<< HEAD
+=======
+from distutils.version import StrictVersion
+>>>>>>> eea7138 (NXPY-238: Fix issue with Self signed certificates)
 from packaging.version import Version
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Tuple
@@ -66,6 +70,16 @@ def chunk_partition(file_size, desired_chunk_size, handler=""):
 
 
 def cmp(a, b):
+<<<<<<< HEAD
+=======
+    # type: (Union[None, str, StrictVersion], Union[None, str, StrictVersion]) -> int
+    """
+    cmp() does not exist anymore in Python 3.
+    Note: this function cannot be decorated with lru_cache() because when
+    *a* or *b* is a *StrictVersion* object, it is not hashable.
+    And callers are cached anyway.
+    """
+>>>>>>> eea7138 (NXPY-238: Fix issue with Self signed certificates)
     if str(a) == "0":
         if str(b) == "0":
             return 0
@@ -344,15 +358,21 @@ def version_compare_client(x, y):
 
     try:
         return cmp(Version(x), Version(y))
+<<<<<<< HEAD
     except Exception:
         return version_compare(x, y)
     """
+=======
+>>>>>>> eea7138 (NXPY-238: Fix issue with Self signed certificates)
     except (AttributeError, ValueError):
         return version_compare(x, y)
     except Exception as e:
         if "Invalid version" in e:
             return version_compare(x, y)
+<<<<<<< HEAD
     """
+=======
+>>>>>>> eea7138 (NXPY-238: Fix issue with Self signed certificates)
 
 
 @lru_cache(maxsize=128)

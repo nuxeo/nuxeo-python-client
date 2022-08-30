@@ -5,7 +5,7 @@ import pytest
 from nuxeo.exceptions import BadQuery, HTTPError
 from nuxeo.models import Document, Task, User
 
-from .constants import WORKSPACE_NAME, WORKSPACE_ROOT
+from .constants import SSL_VERIFY, WORKSPACE_NAME, WORKSPACE_ROOT
 
 document = Document(
     name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}
@@ -21,7 +21,9 @@ def workflows(server):
         pass
     for item in ("task-root", "document-route-instances-root"):
         try:
-            server.client.request("DELETE", f"repo/default/path/{item}")
+            server.client.request(
+                "DELETE", f"repo/default/path/{item}", ssl_verify=False
+            )
         except (HTTPError, socket.timeout):
             pass
     return server.workflows
@@ -33,6 +35,16 @@ def tasks(server):
 
 
 def test_basic_workflow(tasks, workflows, server):
+
+    try:
+        if SSL_VERIFY is False:
+            existed_user = server.users.get("georges", ssl_verify=False)
+        else:
+            existed_user = server.users.get("georges")
+        existed_user.delete()
+    except Exception as e:
+        print("Exception in test_basic_workflow: ", e)
+
     user = User(
         properties={
             "firstName": "Georges",
@@ -41,8 +53,14 @@ def test_basic_workflow(tasks, workflows, server):
             "password": "Test",
         }
     )
-    user = server.users.create(user)
-    doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
+    if SSL_VERIFY is False:
+        user = server.users.create(user, ssl_verify=False)
+        doc = server.documents.create(
+            document, parent_path=WORKSPACE_ROOT, ssl_verify=False
+        )
+    else:
+        user = server.users.create(user)
+        doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
         workflow = workflows.start("SerialDocumentReview", doc)
         assert workflow
@@ -70,9 +88,15 @@ def test_basic_workflow(tasks, workflows, server):
         task.complete("validate", variables={"comment": "new comment"})
         assert task.state == "ended"
         assert not doc.workflows
+    except Exception as e:
+        print("exceptions: ", e)
     finally:
-        user.delete()
-        doc.delete()
+        if SSL_VERIFY is False:
+            user.delete(ssl_verify=False)
+            doc.delete(ssl_verify=False)
+        else:
+            user.delete()
+            doc.delete()
 
 
 def test_get_workflows(tasks, workflows):
@@ -97,7 +121,12 @@ def test_get_workflows(tasks, workflows):
 
 
 def test_fetch_graph(server, workflows):
-    doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
+    if SSL_VERIFY is False:
+        doc = server.documents.create(
+            document, parent_path=WORKSPACE_ROOT, ssl_verify=False
+        )
+    else:
+        doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
         options = {
             "attachedDocumentIds": doc.uid,
@@ -108,7 +137,10 @@ def test_fetch_graph(server, workflows):
         assert len(wfs) == 1
         assert wfs[0].graph()
     finally:
-        doc.delete()
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+        else:
+            doc.delete()
 
 
 def test_task_transfer(tasks):

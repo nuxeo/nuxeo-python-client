@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 from requests import Response
 
 from .exceptions import BadQuery, HTTPError
-from .models import Model
+
+# from .models import Model
 
 if TYPE_CHECKING:
     from .client import NuxeoClient
@@ -48,6 +49,7 @@ class APIEndpoint(object):
         cls=None,  # type: Optional[Type]
         raw=False,  # type: bool
         single=False,  # type: bool
+        ssl_verify=None,  # type: bool
         **kwargs,  # type: Any
     ):
         # type: (...) -> Any
@@ -71,7 +73,10 @@ class APIEndpoint(object):
         if path:
             endpoint = f"{endpoint}/{path}"
 
-        response = self.client.request("GET", endpoint, **kwargs)
+        if ssl_verify is False:
+            response = self.client.request("GET", endpoint, ssl_verify=False, **kwargs)
+        else:
+            response = self.client.request("GET", endpoint, **kwargs)
 
         if not isinstance(response, Response):
             return response
@@ -91,8 +96,7 @@ class APIEndpoint(object):
 
         return cls.parse(json, service=self)
 
-    def post(self, resource=None, path=None, raw=False, **kwargs):
-        # type: (Optional[Any], Optional[str], bool, Any) -> Any
+    def post(self, resource=None, path=None, raw=False, ssl_verify=None, **kwargs):
         """
         Creates a new instance of the resource.
 
@@ -112,16 +116,20 @@ class APIEndpoint(object):
         if path:
             endpoint = f"{endpoint}/{path}"
 
-        response = self.client.request(
-            "POST", endpoint, data=resource, raw=raw, **kwargs
-        )
+        if ssl_verify is False:
+            response = self.client.request(
+                "POST", endpoint, data=resource, raw=raw, ssl_verify=False, **kwargs
+            )
+        else:
+            response = self.client.request(
+                "POST", endpoint, data=resource, raw=raw, **kwargs
+            )
 
         if isinstance(response, dict):
             return response
         return self._cls.parse(response.json(), service=self)
 
-    def put(self, resource=None, path=None, **kwargs):
-        # type: (Optional[Model], Optional[str], Any) -> Any
+    def put(self, resource=None, path=None, ssl_verify=None, **kwargs):
         """
         Edits an existing resource.
 
@@ -134,13 +142,17 @@ class APIEndpoint(object):
 
         data = resource.as_dict() if resource else resource
 
-        response = self.client.request("PUT", endpoint, data=data, **kwargs)
+        if ssl_verify is False:
+            response = self.client.request(
+                "PUT", endpoint, ssl_verify=False, data=data, **kwargs
+            )
+        else:
+            response = self.client.request("PUT", endpoint, data=data, **kwargs)
 
         if resource:
             return self._cls.parse(response.json(), service=self)
 
-    def delete(self, resource_id):
-        # type: (str) -> None
+    def delete(self, resource_id, ssl_verify=None):
         """
         Deletes an existing resource.
 
@@ -148,10 +160,12 @@ class APIEndpoint(object):
         """
 
         endpoint = f"{self.endpoint}/{resource_id}"
-        self.client.request("DELETE", endpoint)
+        if ssl_verify is False:
+            self.client.request("DELETE", endpoint, ssl_verify=False)
+        else:
+            self.client.request("DELETE", endpoint)
 
-    def exists(self, path):
-        # type: (str) -> bool
+    def exists(self, path, ssl_verify=None):
         """
         Checks if a resource exists.
 
@@ -161,7 +175,10 @@ class APIEndpoint(object):
         endpoint = f"{self.endpoint}/{path}"
 
         try:
-            self.client.request("GET", endpoint)
+            if ssl_verify is False:
+                self.client.request("GET", endpoint, ssl_verify=False)
+            else:
+                self.client.request("GET", endpoint)
             return True
         except HTTPError as e:
             if e.status != 404:
