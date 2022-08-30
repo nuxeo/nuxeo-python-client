@@ -3,7 +3,7 @@ import pytest
 from nuxeo.models import Comment, Document
 from nuxeo.utils import version_lt
 
-from .constants import WORKSPACE_NAME, WORKSPACE_ROOT
+from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, SSL_VERIFY
 
 document = Document(
     name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}
@@ -20,7 +20,12 @@ def test_crud(server):
         assert not doc.comments()
 
         # Create a comment for that document
-        comment = server.comments.create(doc.uid, "This is my comment")
+        if SSL_VERIFY is False:
+            comment = server.comments.create(
+                doc.uid, "This is my comment", ssl_verify=False
+            )
+        else:
+            comment = server.comments.create(doc.uid, "This is my comment")
         assert isinstance(comment, Comment)
 
         # Check we can retrieve the comment with its ID
@@ -43,22 +48,40 @@ def test_crud(server):
         assert comments[0].modificationDate is not None
 
         # Delete the comment
-        comment.delete()
+        if SSL_VERIFY is False:
+            comment.delete(ssl_verify=False)
+        else:
+            comment.delete()
 
         # Check there si no comments for the document
-        assert not doc.comments()
+        if SSL_VERIFY is False:
+            assert not doc.comments(ssl_verify=False)
+        else:
+            assert not doc.comments()
     finally:
-        doc.delete()
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+        else:
+            doc.delete()
 
 
 def test_reply(server):
     if version_lt(server.client.server_version, "10.3"):
         pytest.skip("Nuxeo 10.3 minimum")
-
-    doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
+    if SSL_VERIFY is False:
+        doc = server.documents.create(
+            document, parent_path=WORKSPACE_ROOT, ssl_verify=False
+        )
+    else:
+        doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
     try:
         # Create a comment for that document
-        comment = server.comments.create(doc.uid, "This is my comment")
+        if SSL_VERIFY is False:
+            comment = server.comments.create(
+                doc.uid, "This is my comment", ssl_verify=False
+            )
+        else:
+            comment = server.comments.create(doc.uid, "This is my comment")
         assert not comment.has_replies()
 
         # Add a 1st reply to that comment
@@ -67,7 +90,10 @@ def test_reply(server):
         assert comment.has_replies()
 
         # Check the comment has 1 reply (refetch it to ensure data is correct)
-        replies = server.comments.get(doc.uid, uid=comment.uid)
+        if SSL_VERIFY is False:
+            replies = server.comments.get(doc.uid, uid=comment.uid, ssl_verify=False)
+        else:
+            replies = server.comments.get(doc.uid, uid=comment.uid)
         assert isinstance(replies, Comment)
         assert replies.numberOfReplies == 1
         assert replies.numberOfReplies == comment.numberOfReplies
@@ -87,12 +113,18 @@ def test_reply(server):
         assert reply2.has_replies()
 
         # Check the comment has 2 direct replies
-        replies = server.comments.get(doc.uid, uid=comment.uid)
+        if SSL_VERIFY is False:
+            replies = server.comments.get(doc.uid, uid=comment.uid, ssl_verify=False)
+        else:
+            replies = server.comments.get(doc.uid, uid=comment.uid)
         assert replies.numberOfReplies == 2
         assert replies.lastReplyDate == reply2.creationDate
 
         # Check the 2nd reply has 1 reply
-        replies = server.comments.get(doc.uid, uid=reply2.uid)
+        if SSL_VERIFY is False:
+            replies = server.comments.get(doc.uid, uid=reply2.uid, ssl_verify=False)
+        else:
+            replies = server.comments.get(doc.uid, uid=reply2.uid)
         assert replies.numberOfReplies == 1
         assert replies.lastReplyDate == last_reply.creationDate
 
@@ -102,4 +134,7 @@ def test_reply(server):
         assert len(comment.replies(pageSize=1, currentPageIndex=1)) == 1
         assert len(comment.replies(pageSize=1, currentPageIndex=2)) == 0
     finally:
-        doc.delete()
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+        else:
+            doc.delete()

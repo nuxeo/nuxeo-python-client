@@ -15,6 +15,8 @@ from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
 from nuxeo.models import FileBlob
 
+from .constants import SSL_VERIFY
+
 
 @pytest.fixture(scope="session")
 def aws_pwd():
@@ -109,7 +111,10 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
     # This will not work as there is no real
     # batch ID existant. This is only to have a better coverage.
     with pytest.raises(HTTPError):
-        batch.complete()
+        if SSL_VERIFY is False:
+            batch.complete(ssl_verify=False)
+        else:
+            batch.complete()
 
 
 def test_upload_not_chunked_error(tmp_path, batch, bucket, server, s3):

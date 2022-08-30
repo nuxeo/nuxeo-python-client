@@ -8,7 +8,7 @@ from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
-from .constants import WORKSPACE_ROOT
+from .constants import WORKSPACE_ROOT, SSL_VERIFY
 
 
 class Doc(object):
@@ -147,7 +147,10 @@ def test_create_doc_and_delete(server):
         assert doc.get("dc:title").startswith("ndt-")
         assert doc.get("dc:title").endswith(".txt")
         assert server.documents.exists(path=doc.path)
-    assert not server.documents.exists(path=doc.path)
+    if SSL_VERIFY is False:
+        assert not server.documents.exists(path=doc.path, ssl_verify=False)
+    else:
+        assert not server.documents.exists(path=doc.path)
 
 
 def test_create_doc_with_space_and_delete(server):

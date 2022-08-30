@@ -9,6 +9,7 @@ from nuxeo.auth import BasicAuth
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import HTTPError
 from requests.cookies import RequestsCookieJar
+from .constants import NUXEO_SERVER_URL
 
 logging.basicConfig(
     format="%(module)-14s %(levelname).1s %(message)s", level=logging.DEBUG
@@ -36,6 +37,8 @@ def no_warnings(recwarn):
         if "unclosed" in message:
             # It may be worth fixing tests leaking sockets and file descriptors
             continue
+        if "Unverified HTTPS request is being made to host" in message:
+            continue
         warn = f"{warning.filename}:{warning.lineno} {message}"
         print(warn, file=sys.stderr)
         warnings.append(warn)
@@ -59,7 +62,7 @@ def repository(server):
 
 @pytest.fixture(scope="session")
 def host():
-    return os.environ.get("NXDRIVE_TEST_NUXEO_URL", "http://localhost:8080/nuxeo")
+    return os.environ.get("NXDRIVE_TEST_NUXEO_URL", NUXEO_SERVER_URL)
 
 
 @pytest.fixture(scope="module")

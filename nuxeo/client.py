@@ -148,7 +148,7 @@ class NuxeoClient(object):
 
     def enable_retry(self):
         # type: () -> None
-        """ Set a max retry for all connection errors with an adaptative backoff. """
+        """Set a max retry for all connection errors with an adaptative backoff."""
         self._session.mount(
             "https://", TCPKeepAliveHTTPSAdapter(max_retries=self.retries)
         )
@@ -210,6 +210,7 @@ class NuxeoClient(object):
         headers=None,  # type: Optional[Dict[str, str]]
         data=None,  # type: Optional[Any]
         raw=False,  # type: bool
+        ssl_verify=None,  # type: bool
         **kwargs,  # type: Any
     ):
         # type: (...) -> Union[requests.Response, Any]
@@ -284,9 +285,20 @@ class NuxeoClient(object):
 
         exc = None
         try:
-            resp = self._session.request(
-                method, url, headers=headers, auth=auth, data=data, **kwargs
-            )
+            if ssl_verify is False:
+                resp = self._session.request(
+                    method,
+                    url,
+                    headers=headers,
+                    auth=auth,
+                    data=data,
+                    verify=False,
+                    **kwargs,
+                )
+            else:
+                resp = self._session.request(
+                    method, url, headers=headers, auth=auth, data=data, **kwargs
+                )
             resp.raise_for_status()
         except Exception as exc:
             if default is object:
@@ -352,7 +364,7 @@ class NuxeoClient(object):
 
     def is_reachable(self):
         # type: () -> bool
-        """ Check if the Nuxeo Platform is reachable. """
+        """Check if the Nuxeo Platform is reachable."""
         response = self.request("GET", "runningstatus", default=False)
         if isinstance(response, requests.Response):
             return response.ok
@@ -368,7 +380,7 @@ class NuxeoClient(object):
         """
         if force or self._server_info is None:
             try:
-                response = self.request("GET", "json/cmis")
+                response = self.request("GET", "json/cmis", ssl_verify=False)
                 self._server_info = response.json()["default"]
             except Exception:
                 logger.warning(
@@ -379,7 +391,7 @@ class NuxeoClient(object):
     @property
     def server_version(self):
         # type: () -> str
-        """ Return the server version or "unknown". """
+        """Return the server version or "unknown"."""
         try:
             return self.server_info()["productVersion"]
         except Exception:

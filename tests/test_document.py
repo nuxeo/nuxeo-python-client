@@ -6,7 +6,7 @@ import pytest
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
-from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST
+from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST, SSL_VERIFY
 
 
 class Doc(object):
@@ -32,7 +32,10 @@ class Doc(object):
         return self.doc
 
     def __exit__(self, *args):
-        self.doc.delete()
+        if SSL_VERIFY is False:
+            self.doc.delete(ssl_verify=False)
+        else:
+            self.doc.delete()
 
 
 def test_document_create(server):
@@ -49,8 +52,15 @@ def test_document_create(server):
         assert doc.get("dc:title") == doc.properties["dc:title"] == "日本.txt"
         assert doc.properties["dc:description"] == "ру́сский"
     finally:
-        doc.delete()
-    assert not server.documents.exists(doc.uid)
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+        else:
+            doc.delete()
+
+    if SSL_VERIFY is False:
+        assert not server.documents.exists(doc.uid, ssl_verify=False)
+    else:
+        assert not server.documents.exists(doc.uid)
 
 
 def test_document_create_bytes_warning(server):
@@ -80,7 +90,10 @@ def test_document_get_blobs(server):
     with Doc(server, blobs=number) as doc:
         for idx in range(number):
             xpath = f"files:files/{idx}/file"
-            blob = doc.fetch_blob(xpath)
+            if SSL_VERIFY is False:
+                blob = doc.fetch_blob(xpath, ssl_verify=False)
+            else:
+                blob = doc.fetch_blob(xpath)
             assert blob == f"foo {idx}".encode("utf-8")
 
 
@@ -95,11 +108,20 @@ def test_document_list_update(server):
     doc1 = server.documents.create(new_doc1, parent_path=WORKSPACE_ROOT)
     doc2 = server.documents.create(new_doc2, parent_path=WORKSPACE_ROOT)
     desc = "sample description"
-    res = server.operations.execute(
-        command="Document.Update",
-        params={"properties": {"dc:description": desc}},
-        input_obj=[doc1.path, doc2.path],
-    )
+
+    if SSL_VERIFY is False:
+        res = server.operations.execute(
+            command="Document.Update",
+            ssl_verify=False,
+            params={"properties": {"dc:description": desc}},
+            input_obj=[doc1.path, doc2.path],
+        )
+    else:
+        res = server.operations.execute(
+            command="Document.Update",
+            params={"properties": {"dc:description": desc}},
+            input_obj=[doc1.path, doc2.path],
+        )
 
     assert res["entity-type"] == "documents"
     assert len(res["entries"]) == 2
@@ -107,25 +129,43 @@ def test_document_list_update(server):
     assert res["entries"][0]["properties"]["dc:description"] == desc
     assert res["entries"][1]["path"] == doc2.path
     assert res["entries"][1]["properties"]["dc:description"] == desc
-    doc1.delete()
-    doc2.delete()
+    if SSL_VERIFY is False:
+        doc1.delete(ssl_verify=False)
+        doc2.delete(ssl_verify=False)
+    else:
+        doc1.delete()
+        doc2.delete()
 
 
 def test_document_move(server):
     doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
     assert repr(doc)
-    folder = Document(name="Test", type="Folder", properties={"dc:title": "Test"})
-    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
-    folder = server.documents.create(folder, parent_path=WORKSPACE_ROOT)
+    folder = Document(name="Test2", type="Folder", properties={"dc:title": "Test2"})
+    if SSL_VERIFY is False:
+        folder = server.documents.create(
+            folder, parent_path=WORKSPACE_ROOT, ssl_verify=False
+        )
+        doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT, ssl_verify=False)
+    else:
+        folder = server.documents.create(folder, parent_path=WORKSPACE_ROOT)
+        doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
-        doc.move(WORKSPACE_ROOT + "/Test", "new name")
-        assert doc.path == WORKSPACE_ROOT + "/Test/new name"
-        children = server.documents.get_children(folder.uid)
+        doc.move(WORKSPACE_ROOT + "/Test2", "new_name")
+        assert WORKSPACE_ROOT + "/Test2/new_name" in doc.path
+        if SSL_VERIFY is False:
+            children = server.documents.get_children(folder.uid, ssl_verify=False)
+        else:
+            children = server.documents.get_children(folder.uid)
         assert len(children) == 1
-        assert children[0].uid == doc.uid
+        if len(children) > 0:
+            assert children[0].uid == doc.uid
     finally:
-        doc.delete()
-        folder.delete()
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+            folder.delete(ssl_verify=False)
+        else:
+            doc.delete()
+            folder.delete()
     assert not server.documents.exists(path=doc.path)
 
 
@@ -144,8 +184,14 @@ def test_document_get_children_with_permissions(server):
         assert len(children) == 1
         assert "ReadWrite" in children[0].contextParameters["permissions"]
     finally:
-        doc.delete()
-    assert not server.documents.exists(path=doc.path)
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+        else:
+            doc.delete()
+    if SSL_VERIFY is False:
+        assert not server.documents.exists(path=doc.path, ssl_verify=False)
+    else:
+        assert not server.documents.exists(path=doc.path)
 
 
 def test_document_get_children_with_with_provider(server):
@@ -217,7 +263,10 @@ def test_document_comment(server):
         assert not doc.comments()
 
         # Create a comment for that document
-        doc.comment("This is my super comment")
+        if SSL_VERIFY is False:
+            doc.comment("This is my super comment", ssl_verify=False)
+        else:
+            doc.comment("This is my super comment")
 
         # There is now 1 comment
         comments = doc.comments()
@@ -225,9 +274,15 @@ def test_document_comment(server):
         assert comments[0].text == "This is my super comment"
 
         # Delete the comment
-        server.comments.delete(comments[0].uid)
+        if SSL_VERIFY is False:
+            server.comments.delete(comments[0].uid, ssl_verify=False)
+        else:
+            server.comments.delete(comments[0].uid)
     finally:
-        doc.delete()
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+        else:
+            doc.delete()
 
 
 def test_comments_with_params(server):
@@ -236,11 +291,18 @@ def test_comments_with_params(server):
         pytest.skip("Nuxeo 10.3 minimum")
 
     doc = Document(name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"})
-    doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
+    if SSL_VERIFY is False:
+        doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT, ssl_verify=False)
+    else:
+        doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
         # Create a bunch of comments for that document
-        for idx in range(8):
-            doc.comment(f"This is my comment n° {idx}")
+        if SSL_VERIFY is False:
+            for idx in range(8):
+                doc.comment(f"This is my comment n° {idx}", ssl_verify=False)
+        else:
+            for idx in range(8):
+                doc.comment(f"This is my comment n° {idx}")
 
         # Get maximum comments with default values
         comments = doc.comments()
@@ -258,4 +320,7 @@ def test_comments_with_params(server):
         comments = doc.comments(pageSize=5, currentPageIndex=2)
         assert len(comments) == 0
     finally:
-        doc.delete()
+        if SSL_VERIFY is False:
+            doc.delete(ssl_verify=False)
+        else:
+            doc.delete()
