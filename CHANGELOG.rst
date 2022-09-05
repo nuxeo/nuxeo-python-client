@@ -7,7 +7,7 @@ Changelog
 Release date: ``2021-xx-xx``
 
 - `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__: Remove Support For Python 3.6
+- `NXPY-241 <https://jira.nuxeo.com/browse/NXPY-241>`__: Remove Support For Python 3.6
 
 Technical changes
 -----------------
