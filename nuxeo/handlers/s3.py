@@ -50,7 +50,11 @@ class UploaderS3(Uploader):
     def _create_s3_client(self, s3_info):
         # type: (Dict[str, Any]) -> BaseClient
         """Create the S3 client."""
-        return boto3.Session().client(
+        print("checking for _create_s3_client")
+        print(UP_AMAZON_S3)
+        print(s3_info.get("endpoint"))
+        print(self._s3_config)
+        s3_instance = boto3.Session().client(
             UP_AMAZON_S3,
             aws_access_key_id=s3_info["awsSecretKeyId"],
             aws_secret_access_key=s3_info["awsSecretAccessKey"],
@@ -58,6 +62,7 @@ class UploaderS3(Uploader):
             endpoint_url=s3_info.get("endpoint") or None,
             config=self._s3_config,
         )
+        print(s3_instance)
 
     def upload(self):
         # type: () -> None
@@ -182,6 +187,14 @@ class ChunkUploaderS3(UploaderS3):
         part_number_marker = 0
 
         while "there are parts":
+            print(">>>there are parts")
+            print(self.s3_client)
+            print(self.bucket)
+            print(self.key)
+            print(self.batch.multiPartUploadId)
+            print(part_number_marker)
+            print(self._max_parts)
+            print(">>there are parts end")
             info = self.s3_client.list_parts(
                 Bucket=self.bucket,
                 Key=self.key,
