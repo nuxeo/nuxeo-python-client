@@ -10,7 +10,7 @@ Token = Dict[str, Any]
 
 
 class TokenAuth(AuthBase):
-    """ Attaches Nuxeo Token Authentication to the given Request object. """
+    """Attaches Nuxeo Token Authentication to the given Request object."""
 
     __slots__ = ("token",)
 
@@ -29,6 +29,7 @@ class TokenAuth(AuthBase):
         device=None,  # type: Optional[str]
         revoke=False,  # type: bool
         auth=None,
+        ssl_verify=True,  # type: bool
     ):
         # type: (...) -> Token
         """
@@ -51,7 +52,13 @@ class TokenAuth(AuthBase):
             params["deviceDescription"] = device
 
         path = "authentication/token"
-        token = client.request("GET", path, params=params, auth=auth).text
+        token = client.request(
+            "GET",
+            path,
+            params=params,
+            auth=auth,
+            ssl_verify=ssl_verify,
+        ).text
         token = "" if (revoke or "\n" in token) else token
         self.set_token(token)
         return token
