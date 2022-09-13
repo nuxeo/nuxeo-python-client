@@ -43,7 +43,7 @@ def test_basic_workflow(tasks, workflows, server):
             existed_user = server.users.get("georges")
         existed_user.delete()
     except Exception as e:
-        print("Exception in test_basic_workflow: ", e)
+        print("Exception: ", e)
 
     user = User(
         properties={
@@ -89,7 +89,7 @@ def test_basic_workflow(tasks, workflows, server):
         assert task.state == "ended"
         assert not doc.workflows
     except Exception as e:
-        print("exceptions: ", e)
+        print("Exception: ", e)
     finally:
         if SSL_VERIFY is False:
             user.delete(ssl_verify=False)

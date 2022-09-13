@@ -66,16 +66,13 @@ class API(APIEndpoint):
         else:
             super().delete(user_id)
 
-    def current_user(self, ssl_verify=None):
+    def current_user(self, ssl_verify=True):
         """
         Get the current user details and validate the connection to the server at the same time.
 
         :return User: user's details
         """
-        if ssl_verify is False:
-            details = self.client.request(
-                "GET", "site/api/v1/me", ssl_verify=False
-            ).json()
-        else:
-            details = self.client.request("GET", "site/api/v1/me").json()
+        details = self.client.request(
+            "GET", "site/api/v1/me", ssl_verify=ssl_verify
+        ).json()
         return User(**details)

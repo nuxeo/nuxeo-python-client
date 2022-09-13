@@ -336,10 +336,13 @@ class Comment(Model):
         # type: () -> str
         return self.id
 
-    def delete(self):
-        # type: () -> None
+    def delete(self, ssl_verify=None):
+        # type: (bool) -> None
         """Delete the comment."""
-        self.service.delete(self.uid)
+        if ssl_verify is False:
+            self.service.delete(self.uid, ssl_verify=False)
+        else:
+            self.service.delete(self.uid)
 
     def has_replies(self):
         # type: () -> bool

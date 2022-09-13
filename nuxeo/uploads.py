@@ -135,10 +135,10 @@ class API(APIEndpoint):
                 return []
         return self.__handlers
 
-    def has_s3(self):
+    def has_s3(self, ssl_verify=True):
         # type: () -> bool
         """Return True if the Amazon S3 upload provider is available."""
-        return UP_AMAZON_S3 in self.handlers()
+        return UP_AMAZON_S3 in self.handlers(ssl_verify)
 
     def send_data(
         self,

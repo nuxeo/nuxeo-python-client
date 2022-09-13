@@ -12,7 +12,7 @@ from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 from requests.exceptions import ConnectionError
-from .constants import NUXEO_SERVER_URL, SSL_VERIFY
+from .constants import SSL_VERIFY
 
 
 @pytest.mark.parametrize(
@@ -113,7 +113,7 @@ def test_check_params_unknown_operation(server):
 
 
 def test_encoding_404_error(server):
-    with patch.object(server.client, "host", new=NUXEO_SERVER_URL):
+    with patch.object(server.client, "host", new="http://localhost:8080/"):
         with pytest.raises((ConnectionError, HTTPError)) as e:
             server.documents.get(path="/")
         if isinstance(e, HTTPError):
