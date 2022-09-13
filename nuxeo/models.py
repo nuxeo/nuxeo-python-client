@@ -60,7 +60,7 @@ class Model(object):
     def parse(cls, json, service=None):
         # type: (Dict[str, Any], Optional[APIEndpoint]) -> Model
         """Parse a JSON object into a model instance."""
-        kwargs = {k: v for k, v in json.items()}
+        kwargs = dict(json.items())
         return cls(service=service, **kwargs)
 
     def save(self):
@@ -262,7 +262,7 @@ class Blob(Model):
     def parse(cls, json, service=None):
         # type: (Dict[str, Any], Optional[APIEndpoint]) -> Blob
         """Parse a JSON object into a blob instance."""
-        kwargs = {k: v for k, v in json.items()}
+        kwargs = dict(json.items())
         model = cls(service=service, **kwargs)
 
         if model.uploaded and model.uploadedSize == 0:

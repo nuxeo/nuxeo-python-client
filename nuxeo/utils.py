@@ -75,12 +75,8 @@ def cmp(a, b):
     And callers are cached anyway.
     """
     if str(a) == "0":
-        if str(b) == "0":
-            return 0
-        return -1
-    if str(b) == "0":
-        return 1
-    return (a > b) - (a < b)
+        return 0 if str(b) == "0" else -1
+    return 1 if str(b) == "0" else (a > b) - (a < b)
 
 
 def get_digest_algorithm(digest):
@@ -328,10 +324,7 @@ def version_compare(x, y):
 
     if x_numbers:
         return 1
-    if y_numbers:
-        return -1
-
-    return 0
+    return -1 if y_numbers else 0
 
 
 @lru_cache(maxsize=128)

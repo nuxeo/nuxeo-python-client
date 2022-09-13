@@ -15,75 +15,19 @@ from requests.exceptions import ConnectionError
 from .constants import SSL_VERIFY
 
 
-@pytest.mark.parametrize(
-    "method, params, is_valid",
-    [
-        # 'file' type in (Blob, str)
-        ("Document.SetBlob", {"file": Blob()}, True),
-        ("Document.SetBlob", {"file": "test.txt"}, True),
-        ("Document.SetBlob", {"file": 0}, False),
-        # 'blockInheritance' type == boolean
-        (
+@pytest.mark.parametrize("method, params, is_valid", [("Document.SetBlob", {"file": Blob()}, True), ("Document.SetBlob", {"file": "test.txt"}, True), ("Document.SetBlob", {"file": 0}, False), (
             "Document.AddPermission",
             {"permission": "Read", "blockInheritance": False},
             True,
-        ),
-        (
+        ), (
             "Document.AddPermission",
             {"permission": "Read", "blockInheritance": "false"},
             False,
-        ),
-        # 'end' type == str
-        ("Document.AddPermission", {"permission": "Read", "end": "01-01-2018"}, True),
-        ("Document.AddPermission", {"permission": "Read", "end": True}, False),
-        # 'value' type == str
-        ("Document.Fetch", {"value": "test.txt"}, True),
-        ("Document.Fetch", {"value": True}, False),
-        # 'target' type == list
-        ("Document.MultiPublish", {"target": ["test1.txt", "test2.txt"]}, True),
-        ("Document.MultiPublish", {"target": 0}, False),
-        # 'pageNo' type == int
-        ("Audit.Query", {"query": "test", "pageNo": 100}, True),
-        # 'pageSize' type == int
-        ("Audit.Query", {"query": "test", "pageNo": "test"}, False),
-        ("Document.Query", {"query": "test", "pageSize": 10}, True),
-        ("Document.Query", {"query": "test", "pageSize": "test"}, False),
-        # 'startPage', 'endPage' type == long
-        ("PDF.ExtractPages", {"startPage": 1, "endPage": int(2)}, True),
-        ("PDF.ExtractPages", {"startPage": "test", "endPage": "test"}, False),
-        # 'info' type == dict
-        ("User.Invite", {"info": {"username": "test"}}, True),
-        ("User.Invite", {"info": 0}, False),
-        # 'properties' type == dict
-        (
+        ), ("Document.AddPermission", {"permission": "Read", "end": "01-01-2018"}, True), ("Document.AddPermission", {"permission": "Read", "end": True}, False), ("Document.Fetch", {"value": "test.txt"}, True), ("Document.Fetch", {"value": True}, False), ("Document.MultiPublish", {"target": ["test1.txt", "test2.txt"]}, True), ("Document.MultiPublish", {"target": 0}, False), ("Audit.Query", {"query": "test", "pageNo": 100}, True), ("Audit.Query", {"query": "test", "pageNo": "test"}, False), ("Document.Query", {"query": "test", "pageSize": 10}, True), ("Document.Query", {"query": "test", "pageSize": "test"}, False), ("PDF.ExtractPages", {"startPage": 1, "endPage": 2}, True), ("PDF.ExtractPages", {"startPage": "test", "endPage": "test"}, False), ("User.Invite", {"info": {"username": "test"}}, True), ("User.Invite", {"info": 0}, False), (
             "Document.Create",
             {"type": "Document", "properties": {"dc:title": "test"}},
             True,
-        ),
-        ("Document.Create", {"type": "Document", "properties": 0}, False),
-        # 'file' type == str
-        ("Blob.Create", {"file": "test.txt"}, True),
-        ("Blob.Create", {"file": 0}, False),
-        # 'value' type == Sequence
-        ("Document.SetProperty", {"xpath": "test", "value": "test"}, True),
-        ("Document.SetProperty", {"xpath": "test", "value": [0, 1, 2]}, True),
-        ("Document.SetProperty", {"xpath": "test", "value": 0}, False),
-        # 'query' type == str
-        ("Document.Query", {"query": "test"}, True),
-        ("Document.Query", {"query": 0}, False),
-        # 'queryParams' type in [list, str]
-        ("Document.Query", {"query": "test", "queryParams": ["a", "b", "c"]}, True),
-        ("Document.Query", {"query": "test", "queryParams": "test"}, True),
-        ("Document.Query", {"query": "test", "queryParams": 0}, False),
-        # 'queryParams' is also optional, None should be accepted
-        ("Document.Query", {"query": "test", "queryParams": None}, True),
-        # 'validationMethod' type == str
-        ("User.Invite", {"validationMethod": "test"}, True),
-        ("User.Invite", {"validationMethod": 0}, False),
-        # unknown param
-        ("Document.Query", {"alien": "alien"}, False),
-    ],
-)
+        ), ("Document.Create", {"type": "Document", "properties": 0}, False), ("Blob.Create", {"file": "test.txt"}, True), ("Blob.Create", {"file": 0}, False), ("Document.SetProperty", {"xpath": "test", "value": "test"}, True), ("Document.SetProperty", {"xpath": "test", "value": [0, 1, 2]}, True), ("Document.SetProperty", {"xpath": "test", "value": 0}, False), ("Document.Query", {"query": "test"}, True), ("Document.Query", {"query": 0}, False), ("Document.Query", {"query": "test", "queryParams": ["a", "b", "c"]}, True), ("Document.Query", {"query": "test", "queryParams": "test"}, True), ("Document.Query", {"query": "test", "queryParams": 0}, False), ("Document.Query", {"query": "test", "queryParams": None}, True), ("User.Invite", {"validationMethod": "test"}, True), ("User.Invite", {"validationMethod": 0}, False), ("Document.Query", {"alien": "alien"}, False)])
 def test_check_params(method, params, is_valid, server):
     if is_valid:
         server.operations.check_params(method, params)
@@ -281,7 +225,7 @@ def test_server_info_bad_response(server):
     server_info = server.client.server_info
 
     with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, server.client.host + "json/cmis", body="...")
+        rsps.add(responses.GET, f"{server.client.host}json/cmis", body="...")
         assert server_info(force=True) is None
 
     # Another call, it must work as expected
@@ -312,7 +256,7 @@ def test_server_version_bad_response_from_server_info(server):
     """
     server.client._server_info = None
     with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, server.client.host + "json/cmis", body="...")
+        rsps.add(responses.GET, f"{server.client.host}json/cmis", body="...")
         assert server.client.server_version == "unknown"
 
     # Another call, it must work as expected
