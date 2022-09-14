@@ -266,4 +266,8 @@ def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
 
     batch.multiPartUploadId = "1234"
     with pytest.raises(KeyError):
-        ChunkUploaderS3(server.uploads, batch, blob, 1024 * 1024 * 5, s3_client=s3)
+        try:
+            ChunkUploaderS3(server.uploads, batch, blob, 1024 * 1024 * 5, s3_client=s3)
+        except Exception as ex:
+            print("Exception in ChunkUploaderS3")
+            print(ex)
