@@ -36,15 +36,23 @@ def bucket():
 
 @pytest.fixture
 def s3(aws_credentials, bucket):
+    print(">>>mock_s3>>>>")
     with mock_s3():
+        print(">>>mock_s3>>>>")
         client = boto3.client(UP_AMAZON_S3, region_name="eu-west-1")
+       
+        print(client)
 
         # Create a bucket
-        client.create_bucket(
-            Bucket=bucket,
-            CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
-        )
-
+        try:
+            client.create_bucket(
+                Bucket=bucket,
+                CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
+            )
+        except Exception as ex:
+            print("Exception---",ex)
+        print("Again===", client)
+        print(">>>mock_s3 Done>>>>")
         yield client
 
 
