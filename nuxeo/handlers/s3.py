@@ -63,6 +63,7 @@ class UploaderS3(Uploader):
             config=self._s3_config,
         )
         print(s3_instance)
+        return s3_instance
 
     def upload(self):
         # type: () -> None
