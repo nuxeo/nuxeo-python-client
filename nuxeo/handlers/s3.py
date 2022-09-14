@@ -202,6 +202,9 @@ class ChunkUploaderS3(UploaderS3):
                 PartNumberMarker=part_number_marker,
                 MaxParts=self._max_parts,
             )
+            
+            print("Parts are >>>>>>>>>>>>>>")
+            print(info)
 
             # Nothing was uploaded yet
             if "Parts" not in info:
@@ -217,6 +220,8 @@ class ChunkUploaderS3(UploaderS3):
                 data_packs.append({"ETag": part["ETag"], "PartNumber": index})
                 uploaded_chunks.append(index)
 
+            print("uploaded_chunks ")
+            print(uploaded_chunks)
             # No more parts
             if not info["IsTruncated"]:
                 break
@@ -334,6 +339,9 @@ class ChunkUploaderS3(UploaderS3):
             UploadId=self.batch.multiPartUploadId,
             MultipartUpload={"Parts": self._data_packs},
         )
+        
+        print("Complete the upload on S3")
+        print(response)
 
         # Save the ETag for the batch.complete() call
         self.batch.etag = response["ETag"]
@@ -343,4 +351,5 @@ class ChunkUploaderS3(UploaderS3):
     def upload(self):
         # type: () -> None
         """Helper to upload the file in one-shot."""
-        list(self.iter_upload())
+        print("Helper to upload the file in one-shot")
+        print(list(self.iter_upload()))
