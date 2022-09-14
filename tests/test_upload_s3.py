@@ -51,6 +51,12 @@ def s3(aws_credentials, bucket):
         except Exception as ex:
             print(ex)
         print(client)
+        response = client.list_buckets()
+
+        # Output the bucket names
+        print('Existing buckets:')
+        for bucket in response['Buckets']:
+            print(f'  {bucket["Name"]}')
         print(">>>mock_s3 Done>>>>")
         yield client
 
