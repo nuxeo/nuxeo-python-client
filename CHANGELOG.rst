@@ -9,6 +9,7 @@ Release date: ``2021-xx-xx``
 - `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
 - `NXPY-241 <https://jira.nuxeo.com/browse/NXPY-241>`__: Remove Support For Python 3.6
 - `NXPY-240 <https://jira.nuxeo.com/browse/NXPY-240>`__: Upgrade Nuxeo Docker Image
+- `NXPY-237 <https://jira.nuxeo.com/browse/NXPY-237>`__: Update Dependencies
 
 Technical changes
 -----------------
