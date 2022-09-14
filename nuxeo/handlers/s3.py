@@ -203,7 +203,7 @@ class ChunkUploaderS3(UploaderS3):
                 PartNumberMarker=part_number_marker,
                 MaxParts=self._max_parts,
             )
-            
+
             print("Parts are >>>>>>>>>>>>>>")
             print(info)
 
@@ -268,9 +268,10 @@ class ChunkUploaderS3(UploaderS3):
             return
 
         # S3 starts counting at 1
-        to_upload = set(range(1, self.chunk_count + 1, 1)) - set(
+        to_upload = set(range(1, self.chunk_count + 1)) - set(
             self.blob.uploadedChunkIds
         )
+
         self._to_upload = sorted(to_upload)
 
     def is_complete(self):
