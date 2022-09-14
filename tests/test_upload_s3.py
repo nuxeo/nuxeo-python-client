@@ -40,7 +40,6 @@ def s3(aws_credentials, bucket):
     with mock_s3():
         print(">>>mock_s3>>>>")
         client = boto3.client(UP_AMAZON_S3, region_name="eu-west-1")
-       
         print(client)
 
         # Create a bucket
