@@ -388,10 +388,8 @@ def test_upload_chunk_timeout(tmp_path, chunked, server):
     assert uploader.timeout(1024 * 1024 * 5) == 60.0 * 5  # 5 MiB
     assert uploader.timeout(1024 * 1024 * 10) == 60.0 * 10  # 10 MiB
     assert uploader.timeout(1024 * 1024 * 20) == 60.0 * 20  # 20 MiB
-
-    uploader._timeout = 0.00001
-    assert uploader.timeout(chunk_size) == 0.00001
-
+    uploader._timeout = 0.0000000000001
+    assert uploader.timeout(chunk_size) == 0.0000000000001
     with pytest.raises(ConnectionError) as exc:
         uploader.upload()
     error = str(exc.value)

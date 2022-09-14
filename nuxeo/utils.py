@@ -5,6 +5,7 @@ import logging
 import mimetypes
 import sys
 from distutils.version import StrictVersion
+from packaging.version import Version
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -73,11 +74,11 @@ def cmp(a, b):
     *a* or *b* is a *StrictVersion* object, it is not hashable.
     And callers are cached anyway.
     """
-    if a is None:
-        if b is None:
+    if str(a) == "0":
+        if str(b) == "0":
             return 0
         return -1
-    if b is None:
+    if str(b) == "0":
         return 1
     return (a > b) - (a < b)
 
@@ -285,7 +286,7 @@ def version_compare(x, y):
     """
 
     # Handle None values
-    if not all((x, y)):
+    if x == y == "0":
         return cmp(x, y)
 
     ret = (-1, 1)
@@ -339,26 +340,34 @@ def version_compare_client(x, y):
     """ Try to compare SemVer and fallback to version_compare on error. """
 
     # Ignore date based versions, they will be treated as normal versions
+    if x is None:
+        x = "0"
+    if y is None:
+        y = "0"
+
     if x and "-I" in x:
         x = x.split("-")[0]
     if y and "-I" in y:
         y = y.split("-")[0]
 
     try:
-        return cmp(StrictVersion(x), StrictVersion(y))
+        return cmp(Version(x), Version(y))
     except (AttributeError, ValueError):
         return version_compare(x, y)
+    except Exception as e:
+        if "Invalid version" in e:
+            return version_compare(x, y)
 
 
 @lru_cache(maxsize=128)
 def version_le(x, y):
     # type: (str, str) -> bool
-    """ x <= y """
+    """x <= y"""
     return version_compare_client(x, y) <= 0
 
 
 @lru_cache(maxsize=128)
 def version_lt(x, y):
     # type: (str, str) -> bool
-    """ x < y """
+    """x < y"""
     return version_compare_client(x, y) < 0
