@@ -541,6 +541,7 @@ class Document(RefreshableModel):
         :param params: Converter permission
         :return: the converter result
         """
+
         return self.service.convert(self.uid, params)
 
     def delete(self):

@@ -160,6 +160,17 @@ class API(APIEndpoint):
                 or "UnsupportedOperationException" in e.message
             ):
                 raise UnavailableConvertor(options)
+            if "Internal Server Error" in e.message:
+                cnv = ""
+                if options["converter"]:
+                    cnv = options["converter"]
+                msg = (
+                    "Internal Server Error or Converter "
+                    + cnv
+                    + " is not registered or "
+                    + "UnavailableConvertor: conversion with options or Unsupported Operation"
+                )
+                raise BadQuery(msg)
             raise e
 
     def fetch_acls(self, uid):

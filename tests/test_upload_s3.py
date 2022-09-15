@@ -252,5 +252,9 @@ def test_wrong_multipart_upload_id(tmp_path, s3, batch, server):
     blob = FileBlob(str(file_in))
 
     batch.multiPartUploadId = "1234"
-    with pytest.raises(KeyError):
+
+    with pytest.raises(Exception) as e:
         ChunkUploaderS3(server.uploads, batch, blob, 1024 * 1024 * 5, s3_client=s3)
+
+    error_str = str(e.value)
+    assert "NoSuchUpload" in error_str

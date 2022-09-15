@@ -538,7 +538,9 @@ def test_upload_error(tmp_path, server):
     uploader._to_upload = [0]
     with pytest.raises(UploadError) as e:
         next(gen)
+
     assert e.value
+    # - assert "already exists" or "Server Error" in e.value.info
     assert "already exists" in e.value.info
 
     # Finish the upload, it must succeed

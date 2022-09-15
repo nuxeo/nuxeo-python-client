@@ -70,7 +70,7 @@ def test_bogus_converter(server):
         with pytest.raises(BadQuery) as e:
             doc.convert({"converter": "converterthatdoesntexist"})
         msg = e.value.args[0]
-        assert msg == "Converter converterthatdoesntexist is not registered"
+        assert "Converter converterthatdoesntexist is not registered" == msg
 
 
 def test_unavailable_converter(monkeypatch, server):
