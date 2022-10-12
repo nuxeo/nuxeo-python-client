@@ -567,15 +567,10 @@ class Document(RefreshableModel):
         :param params: Converter permission
         :return: the converter result
         """
-<<<<<<< HEAD
-
-        return self.service.convert(self.uid, params)
-=======
         if ssl_verify is False:
             return self.service.convert(self.uid, params, ssl_verify=False)
         else:
             return self.service.convert(self.uid, params)
->>>>>>> eea7138 (NXPY-238: Fix issue with Self signed certificates)
 
     def delete(self, ssl_verify=None):
         """Delete the document."""

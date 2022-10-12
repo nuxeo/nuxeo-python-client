@@ -294,7 +294,11 @@ def test_handlers(server):
         assert not server.uploads.has_s3()
 
     # Test the second call does not recall the endpoint, it is cached
-    assert server.uploads.handlers() is handlers
+    print("------------------------------------ server.uploads.handlers(): ", server.uploads.handlers())
+    print("------------------------------------ type(server.uploads.handlers()): ", type(server.uploads.handlers()))
+    print("------------------------------------ handlers: ", handlers)
+    print("------------------------------------ type(handlers): ", type(handlers))
+    assert server.uploads.handlers() == handlers
 
     # Test forcing the recall to the endpoint
     forced_handlers = server.uploads.handlers(force=True)
