@@ -344,11 +344,15 @@ def version_compare_client(x, y):
 
     try:
         return cmp(Version(x), Version(y))
+    except Exception:
+        return version_compare(x, y)
+    """
     except (AttributeError, ValueError):
         return version_compare(x, y)
     except Exception as e:
         if "Invalid version" in e:
             return version_compare(x, y)
+    """
 
 
 @lru_cache(maxsize=128)

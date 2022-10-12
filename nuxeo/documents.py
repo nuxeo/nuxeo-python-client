@@ -153,14 +153,15 @@ class API(APIEndpoint):
                 path=self._path(uid=uid), params=options, adapter=adapter, raw=True
             )
         except HTTPError as e:
+            print("e.message: ", e.message)
             if "is not registered" in e.message:
                 raise BadQuery(e.message)
-            if (
+            elif (
                 "is not available" in e.message
                 or "UnsupportedOperationException" in e.message
             ):
                 raise UnavailableConvertor(options)
-            if "Internal Server Error" in e.message:
+            elif "Internal Server Error" in e.message:
                 cnv = ""
                 if options["converter"]:
                     cnv = options["converter"]
