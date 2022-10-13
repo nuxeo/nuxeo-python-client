@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .comments import API as CommentsAPI
 from .endpoint import APIEndpoint
-from .exceptions import BadQuery, HTTPError, UnavailableConvertor
+from .exceptions import BadQuery, HTTPError, \
+    UnavailableConvertor, UnavailableBogusConvertor, NotRegisteredConvertor
 from .models import Blob, Comment, Document, Workflow
 from .operations import API as OperationsAPI
 from .utils import version_lt
@@ -154,24 +155,18 @@ class API(APIEndpoint):
             )
         except HTTPError as e:
             print("e.message: ", e.message)
+            """
+            if "Internal Server Error" or "is not registered or unavailable" in e.message:
+                raise UnavailableBogusConvertor(options)
+            el
+            """
             if "is not registered" in e.message:
-                raise BadQuery(e.message)
+                raise NotRegisteredConvertor(options)
             elif (
                 "is not available" in e.message
                 or "UnsupportedOperationException" in e.message
             ):
                 raise UnavailableConvertor(options)
-            elif "Internal Server Error" in e.message:
-                cnv = ""
-                if options["converter"]:
-                    cnv = options["converter"]
-                msg = (
-                    "Internal Server Error or Converter "
-                    + cnv
-                    + " is not registered or "
-                    + "UnavailableConvertor: conversion with options or Unsupported Operation"
-                )
-                raise BadQuery(msg)
             raise e
 
     def fetch_acls(self, uid):

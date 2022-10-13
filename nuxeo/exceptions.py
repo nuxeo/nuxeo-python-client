@@ -172,6 +172,60 @@ class UnavailableConvertor(NuxeoError):
         return repr(self)
 
 
+class NotRegisteredConvertor(NuxeoError):
+    """
+    Exception thrown when a converter is not registered.
+
+    :param options: options passed to the conversion request
+    """
+
+    def __init__(self, options):
+        # type: (Dict[str, Any]) -> None
+        self.options = options
+        self.message = str(self)
+
+    def __repr__(self):
+        # type: () -> str
+        return f"ConvertorNotRegistered: conversion with options {self.options!r} can not be done"
+
+    def __str__(self):
+        # type: () -> str
+        return repr(self)
+
+
+class UnavailableBogusConvertor(NuxeoError):
+    pass
+
+"""
+class UnavailableBogusConvertor(NuxeoError):
+    ""
+    Exception thrown when a converter is registered but not
+    available right now (e.g. not installed on the server)
+    or when a converter is not registered
+    and an Internal Server Error is thrown instead of actual error message.
+
+    :param error_message: actual error message
+    :param converter_name: name of the converter if available else empty string
+    ""
+
+    def __init__(self, options):
+        # type: (str, str) -> None
+
+        self.converter_name = options["converter"] if options["converter"] else ""
+        self.message = str(self)
+
+    def __repr__(self):
+        # type: () -> str
+        msg = "Internal Server Error or Converter " + self.converter_name + \
+            " is not registered or unavailable"
+        return msg
+
+    def __str__(self):
+        # type: () -> str
+        return repr(self)
+"""
+
+
 class UploadError(NuxeoError):
     """
     Exception thrown when an upload fails even after retries.
