@@ -171,7 +171,7 @@ def test_fetch_acls(server):
 
         aces = sorted(acls[0]["aces"], key=operator.itemgetter("id"))
         # 2 on Jenkins, 3 locally ...
-        assert len(aces) in (2, 3)
+        assert len(aces) in {2, 3}
         assert aces[0]["id"] == "Administrator:Everything:true:::"
         assert aces[1]["id"] == "members:Read:true:::"
         if len(aces) == 3:

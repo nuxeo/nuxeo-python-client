@@ -280,10 +280,7 @@ class API(APIEndpoint):
 
         path = f"{path}/execute/{operation}"
 
-        headers = {}
-        if void_op:
-            headers = {"X-NXVoidOperation": "true"}
-
+        headers = {"X-NXVoidOperation": "true"} if void_op else {}
         if ssl_verify is False:
             return self.client.request(
                 "POST",

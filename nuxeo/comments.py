@@ -33,7 +33,7 @@ class API(APIEndpoint):
         # Adding "&fetch-comment=repliesSummary" to the URL to retrieve replies number as well
         kwargs = {"fetch-comment": "repliesSummary"}
         if isinstance(params, dict):
-            kwargs.update(params)
+            kwargs |= params
 
         if ssl_verify is False:
             return super().get(path=path, ssl_verify=False, params=kwargs)
@@ -96,7 +96,7 @@ class API(APIEndpoint):
         # Adding "&fetch-comment=repliesSummary" to the URL to retrieve replies number as well
         kwargs = {"fetch-comment": "repliesSummary"}
         if isinstance(params, dict):
-            kwargs.update(params)
+            kwargs |= params
 
         if ssl_verify is False:
             return super().get(

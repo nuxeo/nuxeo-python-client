@@ -73,11 +73,12 @@ def test_document_create_bytes_warning(server):
     try:
         document = server.operations.execute(
             command="Document.Create",
-            input_obj="doc:" + WORKSPACE_ROOT,
+            input_obj=f"doc:{WORKSPACE_ROOT}",
             type="Note",
             name=name,
             properties=properties,
         )
+
     finally:
         if document:
             server.documents.delete(document["uid"])
@@ -150,8 +151,8 @@ def test_document_move(server):
         folder = server.documents.create(folder, parent_path=WORKSPACE_ROOT)
         doc = server.documents.create(doc, parent_path=WORKSPACE_ROOT)
     try:
-        doc.move(WORKSPACE_ROOT + "/Test2", "new_name")
-        assert WORKSPACE_ROOT + "/Test2/new_name" in doc.path
+        doc.move(f"{WORKSPACE_ROOT}/Test2", "new_name")
+        assert f"{WORKSPACE_ROOT}/Test2/new_name" in doc.path
         if SSL_VERIFY is False:
             children = server.documents.get_children(folder.uid, ssl_verify=False)
         else:

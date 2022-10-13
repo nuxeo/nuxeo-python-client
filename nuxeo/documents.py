@@ -185,15 +185,9 @@ class API(APIEndpoint):
             ):
                 raise UnavailableConvertor(options)
             elif "Internal Server Error" in e.message:
-                cnv = ""
-                if options["converter"]:
-                    cnv = options["converter"]
-                msg = (
-                    "Internal Server Error or Converter "
-                    + cnv
-                    + " is not registered or "
-                    + "UnavailableConvertor: conversion with options or Unsupported Operation"
-                )
+                cnv = options["converter"] or ""
+                msg = f"Internal Server Error or Converter {cnv} is not registered or UnavailableConvertor: conversion with options or Unsupported Operation"
+
                 raise BadQuery(msg)
             raise e
 
@@ -401,7 +395,7 @@ class API(APIEndpoint):
         :param uid: the uid of the document
         """
         if version_lt(self.client.server_version, "10.2"):
-            input_obj = "doc:" + uid
+            input_obj = f"doc:{uid}"
             res_obj = self.operations.execute(
                 command="Document.SetLifeCycle", input_obj=input_obj, value="delete"
             )
@@ -423,7 +417,7 @@ class API(APIEndpoint):
         :param uid: the uid of the document
         """
         if version_lt(self.client.server_version, "10.2"):
-            input_obj = "doc:" + uid
+            input_obj = f"doc:{uid}"
             res_obj = self.operations.execute(
                 command="Document.SetLifeCycle", input_obj=input_obj, value="undelete"
             )
