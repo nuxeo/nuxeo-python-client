@@ -107,15 +107,15 @@ class NuxeoClient(object):
         self.headers = {
             "X-Application-Name": app_name,
             "X-Client-Version": version,
-            "User-Agent": app_name + "/" + version,
+            "User-Agent": f"{app_name}/{version}",
             "Accept": "application/json, */*",
         }
+
         self.schemas = kwargs.get("schemas", "*")
         self.repository = kwargs.pop("repository", "default")
         self._session = requests.sessions.Session()
         self._session.hooks["response"] = [log_response]
-        cookies = kwargs.pop("cookies", None)
-        if cookies:
+        if cookies := kwargs.pop("cookies", None):
             self._session.cookies = cookies
         self._session.stream = True
         self.client_kwargs = kwargs
@@ -181,9 +181,9 @@ class NuxeoClient(object):
 
         data = {"query": query}
         if params:
-            data.update(params)
+            data |= params
 
-        url = self.api_path + "/search/lang/NXQL/execute"
+        url = f"{self.api_path}/search/lang/NXQL/execute"
         return self.request("GET", url, params=data).json()
 
     def set(self, repository=None, schemas=None):
@@ -242,7 +242,7 @@ class NuxeoClient(object):
         if "adapter" in kwargs:
             url = f"{url}/@{kwargs.pop('adapter')}"
 
-        kwargs.update(self.client_kwargs)
+        kwargs |= self.client_kwargs
 
         # Set the default value to `object` to allow someone
         # to set `timeout` to `None`.
@@ -255,8 +255,7 @@ class NuxeoClient(object):
         headers.update(
             {"X-NXDocumentProperties": self.schemas, "X-NXRepository": self.repository}
         )
-        enrichers = kwargs.pop("enrichers", None)
-        if enrichers:
+        if enrichers := kwargs.pop("enrichers", None):
             headers["enrichers-document"] = ", ".join(enrichers)
 
         headers.update(self.headers)
@@ -273,7 +272,7 @@ class NuxeoClient(object):
         auth = kwargs.pop("auth", None) or self.auth
 
         _kwargs = {k: v for k, v in kwargs.items() if k != "params"}
-        logged_params = kwargs.get("params", data if not raw else {})
+        logged_params = kwargs.get("params", {} if raw else data)
         logger.debug(
             (
                 f"Calling {method} {url!r} with headers={headers!r},"
@@ -399,7 +398,7 @@ class NuxeoClient(object):
         response = error.response
         error_data = {}
         try:
-            error_data.update(response.json())
+            error_data |= response.json()
         except ValueError:
             error_data["message"] = response.content
         finally:
