@@ -148,7 +148,7 @@ class NuxeoClient(object):
 
     def enable_retry(self):
         # type: () -> None
-        """ Set a max retry for all connection errors with an adaptative backoff. """
+        """Set a max retry for all connection errors with an adaptative backoff."""
         self._session.mount(
             "https://", TCPKeepAliveHTTPSAdapter(max_retries=self.retries)
         )
@@ -352,7 +352,7 @@ class NuxeoClient(object):
 
     def is_reachable(self):
         # type: () -> bool
-        """ Check if the Nuxeo Platform is reachable. """
+        """Check if the Nuxeo Platform is reachable."""
         response = self.request("GET", "runningstatus", default=False)
         if isinstance(response, requests.Response):
             return response.ok
@@ -379,7 +379,7 @@ class NuxeoClient(object):
     @property
     def server_version(self):
         # type: () -> str
-        """ Return the server version or "unknown". """
+        """Return the server version or "unknown"."""
         try:
             return self.server_info()["productVersion"]
         except Exception:

@@ -5,7 +5,7 @@ from requests.exceptions import RetryError
 
 
 class NuxeoError(Exception):
-    """ Mother class for all exceptions. """
+    """Mother class for all exceptions."""
 
 
 class BadQuery(NuxeoError):
@@ -20,7 +20,7 @@ class BadQuery(NuxeoError):
 
 
 class CorruptedFile(NuxeoError):
-    """ Exception thrown when digests of a downloaded blob are different. """
+    """Exception thrown when digests of a downloaded blob are different."""
 
     def __init__(self, filename, server_digest, local_digest):
         # type: (str, str, str) -> None
@@ -41,7 +41,7 @@ class CorruptedFile(NuxeoError):
 
 
 class HTTPError(RetryError, NuxeoError):
-    """ Exception thrown when the server returns an error. """
+    """Exception thrown when the server returns an error."""
 
     _valid_properties = {"status": -1, "message": None, "stacktrace": None}
 
@@ -72,7 +72,7 @@ class HTTPError(RetryError, NuxeoError):
     @classmethod
     def parse(cls, json):
         # type: (Dict[str, Any]) -> HTTPError
-        """ Parse a JSON object into a model instance. """
+        """Parse a JSON object into a model instance."""
         model = cls()
 
         for key, val in json.items():
@@ -82,23 +82,23 @@ class HTTPError(RetryError, NuxeoError):
 
 
 class Conflict(HTTPError):
-    """ Exception thrown when the HTTPError code is 409. """
+    """Exception thrown when the HTTPError code is 409."""
 
     status = 409
 
 
 class Forbidden(HTTPError):
-    """ Exception thrown when the HTTPError code is 403. """
+    """Exception thrown when the HTTPError code is 403."""
 
     status = 403
 
 
 class InvalidBatch(NuxeoError):
-    """ Exception thrown when accessing inexistant or deleted batches. """
+    """Exception thrown when accessing inexistant or deleted batches."""
 
 
 class InvalidUploadHandler(NuxeoError):
-    """ Exception thrown when trying to upload a blob using an invalid handler. """
+    """Exception thrown when trying to upload a blob using an invalid handler."""
 
     def __init__(self, handler, handlers):
         # type: (str, List[str]) -> None
@@ -115,7 +115,7 @@ class InvalidUploadHandler(NuxeoError):
 
 
 class OAuth2Error(HTTPError):
-    """ Exception thrown when an OAuth2 error happens. """
+    """Exception thrown when an OAuth2 error happens."""
 
     status = 400
 
@@ -126,7 +126,7 @@ class OAuth2Error(HTTPError):
 
 
 class OngoingRequestError(Conflict):
-    """ Exception thrown when doing an idempotent call that is already being processed. """
+    """Exception thrown when doing an idempotent call that is already being processed."""
 
     def __init__(self, request_uid):
         # type: (str) -> None
@@ -145,7 +145,7 @@ class OngoingRequestError(Conflict):
 
 
 class Unauthorized(HTTPError):
-    """ Exception thrown when the HTTPError code is 401. """
+    """Exception thrown when the HTTPError code is 401."""
 
     status = 401
 
@@ -166,6 +166,59 @@ class UnavailableConvertor(NuxeoError):
     def __repr__(self):
         # type: () -> str
         return f"UnavailableConvertor: conversion with options {self.options!r} is not available"
+
+    def __str__(self):
+        # type: () -> str
+        return repr(self)
+
+
+class NotRegisteredConvertor(NuxeoError):
+    """
+    Exception thrown when a converter is not registered.
+
+    :param options: options passed to the conversion request
+    """
+
+    def __init__(self, options):
+        # type: (Dict[str, Any]) -> None
+        self.options = options
+        self.message = str(self)
+
+    def __repr__(self):
+        # type: () -> str
+        return f"ConvertorNotRegistered: conversion with options {self.options!r} can not be done"
+
+    def __str__(self):
+        # type: () -> str
+        return repr(self)
+
+
+class UnavailableBogusConvertor(NuxeoError):
+    """
+    Exception thrown when a converter is registered but not
+    available right now (e.g. not installed on the server)
+    or when a converter is not registered
+    and an Internal Server Error is thrown instead of actual error message.
+
+    :param error_message: actual error message
+    :param converter_name: name of the converter if available else empty string
+    """
+
+    def __init__(self, error_message, converter_name):
+        # type: (str, str) -> None
+        self.error_message = error_message
+        self.converter_name = converter_name
+        self.message = str(self)
+
+    def __repr__(self):
+        # type: () -> str
+        msg = (
+            "Internal Server Error or Converter "
+            + self.converter_name
+            + " is not registered or "
+            + "UnavailableConvertor: conversion with options or Unsupported Operation"
+        )
+        return msg
 
     def __str__(self):
         # type: () -> str
