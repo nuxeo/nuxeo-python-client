@@ -211,14 +211,12 @@ class UnavailableBogusConvertor(NuxeoError):
         self.message = str(self)
 
     def __repr__(self):
-        # type: () -> str
-        msg = (
+        return (
             "Internal Server Error or Converter "
             + self.converter_name
             + " is not registered or "
             + "UnavailableConvertor: conversion with options or Unsupported Operation"
         )
-        return msg
 
     def __str__(self):
         # type: () -> str

@@ -24,7 +24,7 @@ class ResponseAutomation(Response):
         self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.headers["content-length"] = "1024"
-        self.url = nuxeo_url + "site/automation"
+        self.url = f"{nuxeo_url}site/automation"
 
 
 class ResponseChunkedContents(Response):
@@ -33,7 +33,7 @@ class ResponseChunkedContents(Response):
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["transfer-encoding"] = "chunked"
-        self.url = nuxeo_url + "small%20file.txt"
+        self.url = f"{nuxeo_url}small%20file.txt"
 
     @property
     def content(self):
@@ -46,7 +46,7 @@ class ResponseChunkedJsonContents(Response):
         self.status_code = 200
         self.headers["content-type"] = "application/json; nuxeo-entity=document"
         self.headers["transfer-encoding"] = "chunked"
-        self.url = nuxeo_url + "small%20file.txt"
+        self.url = f"{nuxeo_url}small%20file.txt"
 
     @property
     def content(self):
@@ -59,7 +59,7 @@ class ResponseChunkedJsonContentsTooLong(Response):
         self.status_code = 200
         self.headers["content-type"] = "application/json; nuxeo-entity=document"
         self.headers["transfer-encoding"] = "chunked"
-        self.url = nuxeo_url + "small%20file.txt"
+        self.url = f"{nuxeo_url}small%20file.txt"
 
     @property
     def content(self):
@@ -72,7 +72,7 @@ class ResponseCmis(Response):
         self.status_code = 200
         self.headers["content-type"] = "application/json"
         self.headers["content-length"] = "1024"
-        self.url = nuxeo_url + "json/cmis"
+        self.url = f"{nuxeo_url}json/cmis"
 
 
 class ResponseEmpty(Response):
@@ -80,7 +80,7 @@ class ResponseEmpty(Response):
         super().__init__()
         self.status_code = 200
         self.headers["content-type"] = "application/json"
-        self.url = nuxeo_url + "nothing"
+        self.url = f"{nuxeo_url}nothing"
 
     @property
     def content(self):
@@ -93,7 +93,7 @@ class ResponseError409(Response):
         self.status_code = 409
         self.headers["content-type"] = "application/json"
         self.headers["transfer-encoding"] = "chunked"
-        self.url = nuxeo_url + "nothing"
+        self.url = f"{nuxeo_url}nothing"
 
     @property
     def content(self):
@@ -142,7 +142,7 @@ class ResponseIso(Response):
         self.status_code = 200
         self.headers["content-type"] = "application/octet-stream"
         self.headers["content-length"] = "734334976"
-        self.url = nuxeo_url + "700.3%20MiB.iso"
+        self.url = f"{nuxeo_url}700.3%20MiB.iso"
 
     @property
     def content(self):
@@ -155,7 +155,7 @@ class ResponseMov(Response):
         self.status_code = 200
         self.headers["content-type"] = "video/quicktime"
         self.headers["content-length"] = 1088996060
-        self.url = nuxeo_url + "1.0%20GiB.mov"
+        self.url = f"{nuxeo_url}1.0%20GiB.mov"
 
     @property
     def content(self):
@@ -168,7 +168,7 @@ class ResponseMxf(Response):
         self.status_code = 200
         self.headers["content-type"] = "application/mxf"
         self.headers["content-length"] = "8932294324"
-        self.url = nuxeo_url + "8.3%20GiB.mxf"
+        self.url = f"{nuxeo_url}8.3%20GiB.mxf"
 
     @property
     def content(self):
@@ -181,7 +181,7 @@ class ResponseTextError(Response):
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = "1024"
-        self.url = nuxeo_url + "big%20file.txt"
+        self.url = f"{nuxeo_url}big%20file.txt"
 
     @property
     def content(self):
@@ -194,7 +194,7 @@ class ResponseTextOk(Response):
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = "1024"
-        self.url = nuxeo_url + "small%20file.txt"
+        self.url = f"{nuxeo_url}small%20file.txt"
 
     @property
     def content(self):
@@ -207,7 +207,7 @@ class ResponseTextTooLong(Response):
         self.status_code = 200
         self.headers["content-type"] = "text/plain"
         self.headers["content-length"] = 4096 * 2
-        self.url = nuxeo_url + "big%20file.txt"
+        self.url = f"{nuxeo_url}big%20file.txt"
 
     @property
     def content(self):

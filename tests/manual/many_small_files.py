@@ -38,7 +38,7 @@ def upload_file(server, filename):
 @profile
 def download_file(server, file_in, i):
     filename = f"{file_in}_{i}"
-    file_out = filename + ".dl"
+    file_out = f"{filename}.dl"
     try:
         operation = server.operations.new("Blob.Get")
         operation.input_obj = f"/default-domain/workspaces/{filename}"
