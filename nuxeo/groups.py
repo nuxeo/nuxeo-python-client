@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class API(APIEndpoint):
-    """ Endpoint for groups. """
+    """Endpoint for groups."""
 
     __slots__ = ("params",)
 
@@ -18,43 +18,57 @@ class API(APIEndpoint):
         self.params = {"fetch-group": ["memberUsers", "memberGroups"]}
         super().__init__(client, endpoint=endpoint, cls=Group, headers=headers)
 
-    def get(self, group_id=None):
-        # type: (Optional[str]) -> Group
+    def get(self, group_id=None, ssl_verify=None):
+        # type: (Optional[str], Optional[bool]) -> Group
         """
         Get the detail of a group.
 
         :param group_id: the id of the group
         :return: the group
         """
-        return super().get(path=group_id, params=self.params)
+        if ssl_verify is False:
+            return super().get(path=group_id, params=self.params, ssl_verify=False)
+        else:
+            return super().get(path=group_id, params=self.params)
 
-    def post(self, group):
-        # type: (Group) -> Group
+    def post(self, group, ssl_verify=None):
+        # type: (Group, bool) -> Group
         """
         Create a group.
 
         :param group: the group to create
         :return: the created group
         """
-        return super().post(resource=group, params=self.params)
+
+        if ssl_verify is False:
+            return super().post(resource=group, params=self.params, ssl_verify=False)
+        else:
+            return super().post(resource=group, params=self.params)
 
     create = post  # Alias for clarity
 
-    def put(self, group):
-        # type: (Group) -> Group
+    def put(self, group, ssl_verify=None):
+        # type: (Group, bool) -> Group
         """
         Update a group.
 
         :param group: the group to update
         :return: the updated group
         """
-        return super().put(group)
+        if ssl_verify is False:
+            return super().put(group, ssl_verify=False)
+        else:
+            return super().put(group)
 
-    def delete(self, group_id):
-        # type: (str) -> None
+    def delete(self, group_id, ssl_verify=None):
+        # type: (str, bool) -> None
         """
         Delete a group.
 
         :param group_id: the id of the group to delete
         """
-        super().delete(group_id)
+
+        if ssl_verify is False:
+            super().delete(group_id, ssl_verify=False)
+        else:
+            super().delete(group_id)

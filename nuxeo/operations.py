@@ -40,7 +40,7 @@ PARAM_TYPES = {
 
 
 class API(APIEndpoint):
-    """ Endpoint for operations. """
+    """Endpoint for operations."""
 
     __slots__ = ()
 
@@ -56,7 +56,7 @@ class API(APIEndpoint):
 
     def get(self, **kwargs):
         # type: (Any) -> Dict[str, Any]
-        """ Get the list of available operations from the server. """
+        """Get the list of available operations from the server."""
         return super().get()
 
     def put(self, **kwargs):
@@ -192,6 +192,7 @@ class API(APIEndpoint):
             enrichers=enrichers,
             default=default,
             timeout=timeout,
+            ssl_verify=False,
         )
 
         # Save to a file, part by part of chunk_size
@@ -214,7 +215,7 @@ class API(APIEndpoint):
     @staticmethod
     def get_attributes(operation, **kwargs):
         # type: (Operation, Any) -> Tuple[str, Any, Dict[str, Any]]
-        """ Get the operation attributes. """
+        """Get the operation attributes."""
         if operation:
             command = operation.command
             input_obj = operation.input_obj
@@ -229,7 +230,7 @@ class API(APIEndpoint):
 
     def build_payload(self, params, context):
         # type: (Dict[str, Any], Dict[str, Any]) -> Dict[str, Any]
-        """ Create sanitized operation payload. """
+        """Create sanitized operation payload."""
         data = {"params": self.sanitize(params)}  # type: Dict[str, Any]
         clean_context = self.sanitize(context)  # type: Dict[str, Any]
         if clean_context:
@@ -240,7 +241,7 @@ class API(APIEndpoint):
     @staticmethod
     def sanitize(obj):
         # type: (Dict[str, Any]) -> Dict[str, Any]
-        """ Sanitize the operation parameters. """
+        """Sanitize the operation parameters."""
         if not obj:
             return {}
 
@@ -262,7 +263,7 @@ class API(APIEndpoint):
 
     def new(self, command, **kwargs):
         # type: (str, Any) -> Operation
-        """ Make a new Operation object. """
+        """Make a new Operation object."""
         return Operation(command=command, service=self, **kwargs)
 
     def save_to_file(self, operation, resp, path, **kwargs):

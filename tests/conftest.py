@@ -37,6 +37,8 @@ def no_warnings(recwarn):
         if "unclosed" in message:
             # It may be worth fixing tests leaking sockets and file descriptors
             continue
+        if "Unverified HTTPS request is being made to host" in message:
+            continue
         warn = f"{warning.filename}:{warning.lineno} {message}"
         print(warn, file=sys.stderr)
         warnings.append(warn)

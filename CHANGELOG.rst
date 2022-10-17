@@ -11,6 +11,7 @@ Release date: ``2022-xx-xx``
 - `NXPY-240 <https://jira.nuxeo.com/browse/NXPY-240>`__: Upgrade Nuxeo Docker Image
 - `NXPY-237 <https://jira.nuxeo.com/browse/NXPY-237>`__: Update Dependencies
 - `NXPY-239 <https://jira.nuxeo.com/browse/NXPY-239>`__: Fix tests cases on Python
+- `NXPY-238 <https://jira.nuxeo.com/browse/NXPY-239>`__: Fix issue with Self signed certificates
 
 Technical changes
 -----------------

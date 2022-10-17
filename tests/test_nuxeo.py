@@ -12,6 +12,7 @@ from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 from requests.exceptions import ConnectionError
+from .constants import SSL_VERIFY
 
 
 @pytest.mark.parametrize(
@@ -236,7 +237,10 @@ def test_max_retry(caplog, retry_server, method):
     session = retry_server.client._session
 
     with pytest.raises(requests.exceptions.ConnectionError):
-        session.request(method, "http://example.42.org")
+        if SSL_VERIFY is False:
+            session.request(method, "http://example.42.org", verify=SSL_VERIFY)
+        else:
+            session.request(method, "http://example.42.org")
 
     for retry_number, record in enumerate(caplog.records, 1):
         assert record.levelname == "WARNING"
@@ -330,9 +334,12 @@ def test_request_token(server):
     prev_auth = server.client.auth
     try:
         token = server.client.request_auth_token(
-            device_id, permission, app_name=app_name, device=device
+            device_id, permission, app_name=app_name, device=device, ssl_verify=SSL_VERIFY
         )
-        assert server.users.current_user()
+        if SSL_VERIFY is False:
+            assert server.users.current_user(ssl_verify=SSL_VERIFY)
+        else:
+            assert server.users.current_user()
 
         # Calling twice should return the same token
         same_token = server.client.request_auth_token(
@@ -345,7 +352,10 @@ def test_request_token(server):
 
 def test_send_wrong_method(server):
     with pytest.raises(BadQuery):
-        server.client.request("TEST", "example")
+        if SSL_VERIFY is False:
+            server.client.request("TEST", "example", ssl_verify=SSL_VERIFY)
+        else:
+            server.client.request("TEST", "example")
 
 
 def test_server_reachable(server):
@@ -397,7 +407,17 @@ def test_unauthorized(server):
 def test_param_format(server, recwarn):
     params = "stringnotadict"
     with pytest.raises(HTTPError):
-        server.client.request("GET", "test", params=params)
+        if SSL_VERIFY is False:
+            server.client.request("GET", "test", params=params, ssl_verify=False)
+        else:
+            server.client.request("GET", "test", params=params)
+
+    if (
+        SSL_VERIFY is False
+        and recwarn
+        and "Adding certificate verification is strongly advised" in str(recwarn[0])
+    ):
+        recwarn.pop()
 
     assert len(recwarn) == 0
 
@@ -408,7 +428,10 @@ def test_param_format(server, recwarn):
         r"to get rid of that warning.",
     ):
         with pytest.raises(HTTPError):
-            server.client.request("GET", "test", params=params)
+            if SSL_VERIFY is False:
+                server.client.request("GET", "test", params=params, ssl_verify=False)
+            else:
+                server.client.request("GET", "test", params=params)
 
 
 def test_header_format(server):
@@ -419,7 +442,12 @@ def test_header_format(server):
     ):
         with pytest.raises(HTTPError):
             headers = {"test.wrong.typo": "error"}
-            server.client.request("GET", "test", headers=headers)
+            if SSL_VERIFY is False:
+                server.client.request(
+                    "GET", "test", headers=headers, ssl_verify=SSL_VERIFY
+                )
+            else:
+                server.client.request("GET", "test", headers=headers)
 
 
 def test_can_use(server):

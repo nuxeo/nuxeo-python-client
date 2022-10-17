@@ -249,34 +249,6 @@ def log_response(response, *args, **kwargs):
 @lru_cache(maxsize=128)
 def version_compare(x, y):
     # type: (str, str) -> int
-    """
-    Compare version numbers using the usual x.y.z pattern.
-    For instance, will result in:
-        - 5.9.3 > 5.9.2
-        - 5.9.3 > 5.8
-        - 5.8 > 5.6.0
-        - 5.10 > 5.1.2
-        - 1.3.0524 > 1.3.0424
-        - 1.4 > 1.3.0524
-        - ...
-    Also handles snapshots and hotfixes:
-        - 5.9.4-SNAPSHOT > 5.9.3-SNAPSHOT
-        - 5.9.4-SNAPSHOT > 5.9.3
-        - 5.9.4-SNAPSHOT < 5.9.4
-        - 5.9.4-SNAPSHOT < 5.9.5
-        - 5.8.0-HF15 > 5.8
-        - 5.8.0-HF15 > 5.7.1-SNAPSHOT
-        - 5.8.0-HF15 < 5.9.1
-        - 5.8.0-HF15 > 5.8.0-HF14
-        - 5.8.0-HF15 > 5.6.0-HF35
-        - 5.8.0-HF15 < 5.10.0-HF01
-        - 5.8.0-HF15-SNAPSHOT > 5.8
-        - 5.8.0-HF15-SNAPSHOT > 5.8.0-HF14-SNAPSHOT
-        - 5.8.0-HF15-SNAPSHOT > 5.8.0-HF14
-        - 5.8.0-HF15-SNAPSHOT < 5.8.0-HF15
-        - 5.8.0-HF15-SNAPSHOT < 5.8.0-HF16-SNAPSHOT
-    """
-
     # Handle None values
     if x == y == "0":
         return cmp(x, y)
