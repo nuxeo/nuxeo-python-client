@@ -4,7 +4,13 @@ import time
 from uuid import uuid4
 
 import pytest
-from nuxeo.exceptions import BadQuery, HTTPError, UnavailableConvertor
+from nuxeo.exceptions import (
+    BadQuery,
+    HTTPError,
+    UnavailableConvertor,
+    NotRegisteredConvertor,
+    UnavailableBogusConvertor,
+)
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
@@ -65,16 +71,25 @@ def test_add_remove_permission(server):
         assert acls[0]["name"] == "inherited"
 
 
-def test_bogus_converter(server):
-    with Doc(server, with_blob=True) as doc:
-        with pytest.raises(BadQuery) as e:
-            doc.convert({"converter": "converterthatdoesntexist"})
-        msg = e.value.args[0]
-        assert msg == "Converter converterthatdoesntexist is not registered"
+def test_bogus_converter(monkeypatch, server):
+    converter = "converterthatdoesnotexist"
+
+    def get(*args, **kwargs):
+        """Mimic the error message when a converter does not exists."""
+        raise HTTPError(message=f"{converter} is not registered")
+
+    with Doc(server) as doc:
+        monkeypatch.setattr("nuxeo.endpoint.APIEndpoint.get", get)
+        with pytest.raises(NotRegisteredConvertor) as e:
+            doc.convert({"converter": converter})
+        assert isinstance(e.value, NotRegisteredConvertor)
+        assert str(e.value).startswith(
+            "ConvertorNotRegistered: conversion with options"
+        )
 
 
 def test_unavailable_converter(monkeypatch, server):
-    converter = "converterthatisunvailable"
+    converter = "converterthatisunavailable"
 
     def get(*args, **kwargs):
         """Mimic the error message when a converter is not available."""
@@ -86,6 +101,21 @@ def test_unavailable_converter(monkeypatch, server):
             doc.convert({"converter": converter})
         assert isinstance(e.value, UnavailableConvertor)
         assert str(e.value).startswith("UnavailableConvertor: conversion with options")
+
+
+def test_unavailable_bogus_converter(monkeypatch, server):
+    converter = "converterthatisunavailableordoesnotexists"
+
+    def get(*args, **kwargs):
+        """Mimic the error message when a converter is not available."""
+        raise HTTPError(message="Internal Server Error")
+
+    with Doc(server) as doc:
+        monkeypatch.setattr("nuxeo.endpoint.APIEndpoint.get", get)
+        with pytest.raises(UnavailableBogusConvertor) as e:
+            doc.convert({"converter": converter})
+        assert isinstance(e.value, UnavailableBogusConvertor)
+        assert str(e.value).startswith("Internal Server Error or Converter ")
 
 
 def test_convert(server):

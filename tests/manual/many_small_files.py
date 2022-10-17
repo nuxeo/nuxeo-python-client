@@ -5,6 +5,7 @@ from memory_profiler import profile
 
 from nuxeo.client import Nuxeo
 from nuxeo.models import Document, FileBlob
+from tests.constants import NUXEO_SERVER_URL
 
 
 def create_random_file(file_in, i):
@@ -65,7 +66,7 @@ def run_test(server):
 
 if __name__ == "__main__":
     server = Nuxeo(
-        host=os.environ.get("NXDRIVE_TEST_NUXEO_URL", "http://localhost:8080/nuxeo"),
+        host=os.environ.get("NXDRIVE_TEST_NUXEO_URL", NUXEO_SERVER_URL),
         auth=("Administrator", "Administrator"),
     )
     server.client.set(schemas=["dublincore"])
