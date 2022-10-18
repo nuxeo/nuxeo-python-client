@@ -22,7 +22,7 @@ def workflows(server):
     for item in ("task-root", "document-route-instances-root"):
         try:
             server.client.request(
-                "DELETE", f"repo/default/path/{item}", ssl_verify=False
+                "DELETE", f"repo/default/path/{item}", ssl_verify=SSL_VERIFY
             )
         except (HTTPError, socket.timeout):
             pass
@@ -37,10 +37,7 @@ def tasks(server):
 def test_basic_workflow(tasks, workflows, server):
 
     try:
-        if SSL_VERIFY is False:
-            existed_user = server.users.get("georges", ssl_verify=False)
-        else:
-            existed_user = server.users.get("georges")
+        existed_user = server.users.get("georges", ssl_verify=SSL_VERIFY)
         existed_user.delete()
     except Exception as e:
         print("Exception: ", e)
@@ -53,14 +50,10 @@ def test_basic_workflow(tasks, workflows, server):
             "password": "Test",
         }
     )
-    if SSL_VERIFY is False:
-        user = server.users.create(user, ssl_verify=False)
-        doc = server.documents.create(
-            document, parent_path=WORKSPACE_ROOT, ssl_verify=False
-        )
-    else:
-        user = server.users.create(user)
-        doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
+    user = server.users.create(user, ssl_verify=SSL_VERIFY)
+    doc = server.documents.create(
+        document, parent_path=WORKSPACE_ROOT, ssl_verify=SSL_VERIFY
+    )
     try:
         workflow = workflows.start("SerialDocumentReview", doc)
         assert workflow
@@ -91,12 +84,8 @@ def test_basic_workflow(tasks, workflows, server):
     except Exception as e:
         print("Exception: ", e)
     finally:
-        if SSL_VERIFY is False:
-            user.delete(ssl_verify=False)
-            doc.delete(ssl_verify=False)
-        else:
-            user.delete()
-            doc.delete()
+        user.delete(ssl_verify=SSL_VERIFY)
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 def test_get_workflows(tasks, workflows):
@@ -121,12 +110,9 @@ def test_get_workflows(tasks, workflows):
 
 
 def test_fetch_graph(server, workflows):
-    if SSL_VERIFY is False:
-        doc = server.documents.create(
-            document, parent_path=WORKSPACE_ROOT, ssl_verify=False
-        )
-    else:
-        doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
+    doc = server.documents.create(
+        document, parent_path=WORKSPACE_ROOT, ssl_verify=SSL_VERIFY
+    )
     try:
         options = {
             "attachedDocumentIds": doc.uid,
@@ -137,10 +123,7 @@ def test_fetch_graph(server, workflows):
         assert len(wfs) == 1
         assert wfs[0].graph()
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 def test_task_transfer(tasks):

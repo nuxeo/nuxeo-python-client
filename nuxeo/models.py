@@ -137,16 +137,13 @@ class Batch(Model):
         self.service.delete(self.uid)
         self.batchId = None
 
-    def delete(self, file_idx, ssl_verify=None):
+    def delete(self, file_idx, ssl_verify=True):
         """Delete a blob from the batch."""
         if self.batchId:
-            if ssl_verify is False:
-                self.service.delete(self.uid, file_idx=file_idx, ssl_verify=False)
-            else:
-                self.service.delete(self.uid, file_idx=file_idx)
+            self.service.delete(self.uid, file_idx=file_idx, ssl_verify=ssl_verify)
             self.blobs[file_idx] = None
 
-    def get(self, file_idx, ssl_verify=None):
+    def get(self, file_idx, ssl_verify=True):
         # type: (int, bool) -> Blob
         """
         Get the blob info.
@@ -156,14 +153,11 @@ class Batch(Model):
         """
         if self.batchId is None:
             raise InvalidBatch("Cannot fetch blob for inexistant/deleted batch.")
-        if ssl_verify is False:
-            blob = self.service.get(self.uid, file_idx=file_idx, ssl_verify=False)
-        else:
-            blob = self.service.get(self.uid, file_idx=file_idx)
+        blob = self.service.get(self.uid, file_idx=file_idx, ssl_verify=ssl_verify)
         self.blobs[file_idx] = blob
         return blob
 
-    def get_uploader(self, blob, ssl_verify=None, **kwargs):
+    def get_uploader(self, blob, ssl_verify=True, **kwargs):
         # type: (Blob, bool, Any) -> Blob
         """
         Get an uploader for blob.
@@ -172,10 +166,7 @@ class Batch(Model):
         :param kwargs: the upload settings
         :return: the uploader
         """
-        if ssl_verify is False:
-            return self.service.get_uploader(self, blob, ssl_verify=False, **kwargs)
-        else:
-            return self.service.get_uploader(self, blob, **kwargs)
+        return self.service.get_uploader(self, blob, **kwargs)
 
     def is_s3(self):
         # type: () -> bool
@@ -189,7 +180,7 @@ class Batch(Model):
 
         return provider.lower() == UP_AMAZON_S3
 
-    def upload(self, blob, ssl_verify=None, **kwargs):
+    def upload(self, blob, ssl_verify=True, **kwargs):
         # type: (Blob, bool, Any) -> Blob
         """
         Upload a blob.
@@ -198,12 +189,9 @@ class Batch(Model):
         :param kwargs: the upload settings
         :return: the blob info
         """
-        if ssl_verify is False:
-            return self.service.upload(self, blob, ssl_verify=False, **kwargs)
-        else:
-            return self.service.upload(self, blob, **kwargs)
+        return self.service.upload(self, blob, ssl_verify=ssl_verify, **kwargs)
 
-    def execute(self, operation, file_idx=None, params=None, ssl_verify=None):
+    def execute(self, operation, file_idx=None, params=None, ssl_verify=True):
         # type: (str, int, Dict[str, Any], bool) -> Any
         """
         Execute an operation on this batch.
@@ -213,14 +201,11 @@ class Batch(Model):
         :param params: parameters of the operation
         :return: the output of the operation
         """
-        if ssl_verify is False:
-            return self.service.execute(
-                self, operation, file_idx, params, ssl_verify=False
-            )
-        else:
-            return self.service.execute(self, operation, file_idx, params)
+        return self.service.execute(
+            self, operation, file_idx, params, ssl_verify=ssl_verify
+        )
 
-    def attach(self, doc, file_idx=None, ssl_verify=None):
+    def attach(self, doc, file_idx=None, ssl_verify=True):
         # type: (str, Optional[int], bool) -> Any
         """
         Attach one or all files of this batch to a document.
@@ -229,12 +214,9 @@ class Batch(Model):
         :param file_idx: target file
         :return: the output of the attach operation
         """
-        if ssl_verify is False:
-            return self.service.attach(self, doc, file_idx, ssl_verify=False)
-        else:
-            return self.service.attach(self, doc, file_idx)
+        return self.service.attach(self, doc, file_idx, ssl_verify=ssl_verify)
 
-    def complete(self, ssl_verify=None, **kwargs):
+    def complete(self, ssl_verify=True, **kwargs):
         # type: (bool, Any) -> Any
         """
         Complete a S3 Direct Upload.
@@ -242,10 +224,7 @@ class Batch(Model):
         :param kwargs: additional arguments fowarded at the underlying level
         :return: the output of the complete operation
         """
-        if ssl_verify is False:
-            return self.service.complete(self, ssl_verify=False, **kwargs)
-        else:
-            return self.service.complete(self, **kwargs)
+        return self.service.complete(self, ssl_verify=ssl_verify, **kwargs)
 
 
 class Blob(Model):
@@ -342,13 +321,10 @@ class Comment(Model):
         # type: () -> str
         return self.id
 
-    def delete(self, ssl_verify=None):
+    def delete(self, ssl_verify=True):
         # type: (bool) -> None
         """Delete the comment."""
-        if ssl_verify is False:
-            self.service.delete(self.uid, ssl_verify=False)
-        else:
-            self.service.delete(self.uid)
+        self.service.delete(self.uid, ssl_verify=ssl_verify)
 
     def has_replies(self):
         # type: () -> bool
@@ -540,7 +516,7 @@ class Document(RefreshableModel):
 
         :param params: permission to add
         """
-        return self.service.add_permission(self.uid, params, ssl_verify=ssl_verify)
+        return self.service.add_permission(self.uid, params)
 
     def comment(self, text, ssl_verify=True):
         # type: (str, bool) -> Comment
@@ -568,7 +544,7 @@ class Document(RefreshableModel):
         :return: the converter result
         """
 
-        return self.service.convert(self.uid, params, ssl_verify=ssl_verify)
+        return self.service.convert(self.uid, params)
 
     def delete(self, ssl_verify=True):
         # type: (bool) -> None
@@ -598,7 +574,7 @@ class Document(RefreshableModel):
     def fetch_lock_status(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Get lock informations."""
-        return self.service.fetch_lock_status(self.uid, ssl_verify=ssl_verify)
+        return self.service.fetch_lock_status(self.uid)
 
     def fetch_rendition(self, name, ssl_verify=True):
         # type: (str, bool) -> Union[str, bytes]
@@ -622,7 +598,7 @@ class Document(RefreshableModel):
 
         :param name: transition name
         """
-        doc = self.service.follow_transition(self.uid, name, ssl_verify=ssl_verify)
+        doc = self.service.follow_transition(self.uid, name)
         self.load(doc)
 
     def get(self, prop):
@@ -633,7 +609,7 @@ class Document(RefreshableModel):
     def has_permission(self, permission, ssl_verify=True):
         # type: (str, bool) -> bool
         """Verify if a document has the permission."""
-        return self.service.has_permission(self.uid, permission, ssl_verify=ssl_verify)
+        return self.service.has_permission(self.uid, permission)
 
     def is_locked(self):
         # type: () -> bool
@@ -643,7 +619,7 @@ class Document(RefreshableModel):
     def lock(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Lock the document."""
-        return self.service.lock(self.uid, ssl_verify=ssl_verify)
+        return self.service.lock(self.uid)
 
     def move(self, dst, name=None, ssl_verify=True):
         # type: (str, Optional[str], bool) -> None
@@ -653,13 +629,13 @@ class Document(RefreshableModel):
         :param dst: The new parent path
         :param name: Rename the document if specified
         """
-        doc = self.service.move(self.uid, dst, name, ssl_verify=ssl_verify)
+        doc = self.service.move(self.uid, dst, name)
         self.load(doc)
 
     def remove_permission(self, params, ssl_verify=True):
         # type: (Dict[str, Any], bool) -> None
         """Remove a permission to a document."""
-        return self.service.remove_permission(self.uid, params, ssl_verify=ssl_verify)
+        return self.service.remove_permission(self.uid, params)
 
     def set(self, properties):
         # type: (Dict[str, Any]) -> None
@@ -668,17 +644,17 @@ class Document(RefreshableModel):
 
     def trash(self, ssl_verify=True):
         # type: (bool) -> None
-        doc = self.service.trash(self.uid, ssl_verify=ssl_verify)
+        doc = self.service.trash(self.uid)
         self.load(doc)
 
     def unlock(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Unlock the document."""
-        return self.service.unlock(self.uid, ssl_verify=ssl_verify)
+        return self.service.unlock(self.uid)
 
     def untrash(self, ssl_verify=True):
         # type: (bool) -> None
-        doc = self.service.untrash(self.uid, ssl_verify=ssl_verify)
+        doc = self.service.untrash(self.uid)
         self.load(doc)
 
 

@@ -191,8 +191,7 @@ class API(APIEndpoint):
             headers=headers,
             enrichers=enrichers,
             default=default,
-            timeout=timeout,
-            ssl_verify=False,
+            timeout=timeout,  # ssl_verify=False,
         )
 
         # Save to a file, part by part of chunk_size

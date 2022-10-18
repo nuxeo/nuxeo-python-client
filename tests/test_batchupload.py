@@ -29,10 +29,7 @@ new_doc = Document(name="Document", type="File", properties={"dc:title": "foo"})
 
 
 def get_batch(server):
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
     assert batch
     assert repr(batch)
     assert batch.uid
@@ -108,28 +105,19 @@ def test_token_callback(server):
 
 
 def test_batch_handler_default(server):
-    if SSL_VERIFY is False:
-        server.uploads.batch(handler="default", ssl_verify=False)
-    else:
-        server.uploads.batch(handler="default")
+    server.uploads.batch(handler="default", ssl_verify=SSL_VERIFY)
 
 
 def test_batch_handler_inexistant(server):
     with pytest.raises(InvalidUploadHandler) as exc:
-        if SSL_VERIFY is False:
-            server.uploads.batch(handler="light", ssl_verify=False)
-        else:
-            server.uploads.batch(handler="light")
+        server.uploads.batch(handler="light", ssl_verify=SSL_VERIFY)
     error = str(exc.value)
     assert "light" in error
     assert "default" in error
 
 
 def test_batch__post_with_kwarg(server):
-    if SSL_VERIFY is False:
-        server.uploads.batch(headers={"upload-provider": "nuxeo"}, ssl_verify=False)
-    else:
-        server.uploads.batch(headers={"upload-provider": "nuxeo"})
+    server.uploads.batch(headers={"upload-provider": "nuxeo"}, ssl_verify=SSL_VERIFY)
 
 
 def test_cancel(server):
@@ -138,10 +126,7 @@ def test_cancel(server):
     assert batch.uid is None
     batch.cancel()
     with pytest.raises(InvalidBatch) as e:
-        if SSL_VERIFY is False:
-            batch.get(0, ssl_verify=False)
-        else:
-            batch.get(0)
+        batch.get(0, ssl_verify=SSL_VERIFY)
     assert str(e.value)
     batch.delete(0)
 
@@ -176,10 +161,7 @@ def test_digester(tmp_path, hash, is_valid, server):
         batch = get_batch(server)
         operation = server.operations.new("Blob.AttachOnDocument")
         operation.params = {"document": WORKSPACE_ROOT + "/Document"}
-        if SSL_VERIFY is False:
-            operation.input_obj = batch.get(0, ssl_verify=False)
-        else:
-            operation.input_obj = batch.get(0)
+        operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         operation = server.operations.new("Blob.Get")
@@ -192,18 +174,12 @@ def test_digester(tmp_path, hash, is_valid, server):
                 operation.execute(file_out=file_out, digest=hash)
             assert str(e.value)
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 @pytest.mark.parametrize("chunked", [False, True])
 def test_empty_file(chunked, server):
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
     batch.upload(BufferBlob(data="", name="Test.txt"), chunked=chunked)
 
 
@@ -218,30 +194,21 @@ def test_execute(server):
             file_idx=0,
             params={"document": WORKSPACE_ROOT + "/Document"},
         )
-        if SSL_VERIFY is False:
-            doc = server.documents.get(
-                path=WORKSPACE_ROOT + "/Document", ssl_verify=False
-            )
-        else:
-            doc = server.documents.get(path=WORKSPACE_ROOT + "/Document")
+        doc = server.documents.get(
+            path=WORKSPACE_ROOT + "/Document", ssl_verify=SSL_VERIFY
+        )
         assert doc.properties["file:content"]
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
         assert blob == b"data"
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 def test_fetch(server):
     batch = get_batch(server)
 
-    if SSL_VERIFY is False:
-        blob = batch.get(0, ssl_verify=False)
-    else:
-        blob = batch.get(0)
+    blob = batch.get(0, ssl_verify=SSL_VERIFY)
     assert not blob.fileIdx
     assert blob.uploadType == "normal"
     assert blob.name == "Test.txt"
@@ -256,10 +223,7 @@ def test_fetch(server):
     batch.delete(0)
     assert not batch.blobs[0]
 
-    if SSL_VERIFY is False:
-        blob = batch.get(1, ssl_verify=False)
-    else:
-        blob = batch.get(1)
+    blob = batch.get(1, ssl_verify=SSL_VERIFY)
     assert blob.fileIdx == 1
     assert blob.uploadType == "normal"
     assert blob.name == "Test2.txt"
@@ -305,10 +269,7 @@ def test_handlers_server_error(server):
 def test_handlers_custom(server):
     server.uploads._API__handlers = ["custom"]
     with pytest.raises(HTTPError):
-        if SSL_VERIFY is False:
-            server.uploads.batch(handler="custom", ssl_verify=False)
-        else:
-            server.uploads.batch(handler="custom")
+        server.uploads.batch(handler="custom", ssl_verify=SSL_VERIFY)
 
 
 @pytest.mark.parametrize(
@@ -327,21 +288,15 @@ def test_mimetype(filename, mimetypes, tmp_path, server):
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         # Upload the blob
-        if SSL_VERIFY is False:
-            batch = server.uploads.batch(ssl_verify=False)
-        else:
-            batch = server.uploads.batch()
-        uploader = batch.get_uploader(blob)
+        batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
+        uploader = batch.get_uploader(blob, ssl_verify=SSL_VERIFY)
         uploader.upload()
 
         # Attach the blob to the doc
         operation = server.operations.new("Blob.AttachOnDocument")
         operation.params = {"document": doc.path}
 
-        if SSL_VERIFY is False:
-            operation.input_obj = batch.get(0, ssl_verify=False)
-        else:
-            operation.input_obj = batch.get(0)
+        operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         # Fetch doc metadata
@@ -353,10 +308,7 @@ def test_mimetype(filename, mimetypes, tmp_path, server):
         mimetype = info["properties"]["file:content"]["mime-type"]
         assert mimetype in mimetypes
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 @pytest.mark.parametrize(
@@ -376,20 +328,14 @@ def test_bad_mimetype(bad_mimetype, expected_mimetype, tmp_path, server):
     doc = server.documents.create(new_doc, parent_path=WORKSPACE_ROOT)
     try:
         # Upload the blob
-        if SSL_VERIFY is False:
-            batch = server.uploads.batch(ssl_verify=False)
-        else:
-            batch = server.uploads.batch()
+        batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
         uploader = batch.get_uploader(blob)
         uploader.upload()
 
         # Attach the blob to the doc
         operation = server.operations.new("Blob.AttachOnDocument")
         operation.params = {"document": doc.path}
-        if SSL_VERIFY is False:
-            operation.input_obj = batch.get(0, ssl_verify=False)
-        else:
-            operation.input_obj = batch.get(0)
+        operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         # Fetch doc metadata
@@ -401,10 +347,7 @@ def test_bad_mimetype(bad_mimetype, expected_mimetype, tmp_path, server):
         mimetype = info["properties"]["file:content"]["mime-type"]
         assert mimetype == expected_mimetype
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 def test_operation(server):
@@ -415,26 +358,17 @@ def test_operation(server):
         assert not doc.properties["file:content"]
         operation = server.operations.new("Blob.AttachOnDocument")
         operation.params = {"document": WORKSPACE_ROOT + "/Document"}
-        if SSL_VERIFY is False:
-            operation.input_obj = batch.get(0, ssl_verify=False)
-        else:
-            operation.input_obj = batch.get(0)
+        operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute()
-        if SSL_VERIFY is False:
-            doc = server.documents.get(
-                path=WORKSPACE_ROOT + "/Document", ssl_verify=False
-            )
-        else:
-            doc = server.documents.get(path=WORKSPACE_ROOT + "/Document")
+        doc = server.documents.get(
+            path=WORKSPACE_ROOT + "/Document", ssl_verify=SSL_VERIFY
+        )
         assert doc.properties["file:content"]
         blob = doc.fetch_blob()
         assert isinstance(blob, bytes)
         assert blob == b"data"
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 @pytest.mark.parametrize("chunked", [False, True])
@@ -447,10 +381,7 @@ def test_upload_chunk_timeout(tmp_path, chunked, server):
 
     blob = FileBlob(str(file_in), mimetype="application/octet-stream")
 
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
     uploader = batch.get_uploader(blob, chunked=chunked, chunk_size=chunk_size)
 
     assert uploader.timeout(-1) == 60.0
@@ -486,10 +417,7 @@ def test_upload(tmp_path, chunked, server):
             assert upload.blob.uploadedSize == sizes[len(upload.blob.uploadedChunkIds)]
             assert upload.blob.uploadType == "chunked"
 
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
 
     chunk_size = 1024
     file_size = 4096 if chunked else 1024
@@ -505,10 +433,7 @@ def test_upload(tmp_path, chunked, server):
         )
         operation = server.operations.new("Blob.AttachOnDocument")
         operation.params = {"document": WORKSPACE_ROOT + "/Document"}
-        if SSL_VERIFY is False:
-            operation.input_obj = batch.get(0, ssl_verify=False)
-        else:
-            operation.input_obj = batch.get(0)
+        operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         operation = server.operations.new("Document.Fetch")
@@ -520,10 +445,7 @@ def test_upload(tmp_path, chunked, server):
         operation.input_obj = WORKSPACE_ROOT + "/Document"
         file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 @pytest.mark.parametrize("chunked", [False, True])
@@ -548,10 +470,7 @@ def test_upload_several_callbacks(tmp_path, chunked, server):
             assert upload.blob.uploadedSize == sizes[len(upload.blob.uploadedChunkIds)]
             assert upload.blob.uploadType == "chunked"
 
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
 
     chunk_size = 1024
     file_size = 4096 if chunked else 1024
@@ -568,10 +487,7 @@ def test_upload_several_callbacks(tmp_path, chunked, server):
         )
         operation = server.operations.new("Blob.AttachOnDocument")
         operation.params = {"document": WORKSPACE_ROOT + "/Document"}
-        if SSL_VERIFY is False:
-            operation.input_obj = batch.get(0, ssl_verify=False)
-        else:
-            operation.input_obj = batch.get(0)
+        operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         operation = server.operations.new("Document.Fetch")
@@ -583,10 +499,7 @@ def test_upload_several_callbacks(tmp_path, chunked, server):
         operation.input_obj = WORKSPACE_ROOT + "/Document"
         file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
     # Check the callback count (1 for not chucked)
     assert check == 4 if chunked else 1
@@ -596,10 +509,7 @@ def test_get_uploader(tmp_path, server):
     def callback(*args):
         assert args
 
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
     file_in = tmp_path / "file_in"
     file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
@@ -611,17 +521,11 @@ def test_get_uploader(tmp_path, server):
     for idx, _ in enumerate(uploader.iter_upload(), 1):
         assert idx == len(uploader.blob.uploadedChunkIds)
 
-    if SSL_VERIFY is False:
-        assert batch.get(0, ssl_verify=False)
-    else:
-        assert batch.get(0)
+    assert batch.get(0, ssl_verify=SSL_VERIFY)
 
 
 def test_upload_error(tmp_path, server):
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
     file_in = tmp_path / "file_in"
     file_in.write_bytes(b"\x00" + os.urandom(1024 * 1024) + b"\x00")
 
@@ -664,10 +568,7 @@ def test_upload_retry(tmp_path, retry_server):
         )
 
         with serv:
-            if SSL_VERIFY is False:
-                batch = server.uploads.batch(ssl_verify=False)
-            else:
-                batch = server.uploads.batch()
+            batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
             blob = FileBlob(str(file_in), mimetype="application/octet-stream")
             batch.upload(blob, chunked=True, chunk_size=256 * 1024)
             close_server.set()  # release server block
@@ -687,28 +588,19 @@ def test_upload_resume(tmp_path, server):
         )
 
         with serv:
-            if SSL_VERIFY is False:
-                batch = server.uploads.batch(ssl_verify=False)
-            else:
-                batch = server.uploads.batch()
+            batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
             blob = FileBlob(str(file_in), mimetype="application/octet-stream")
 
             with pytest.raises(UploadError) as e:
-                if SSL_VERIFY is False:
-                    batch.upload(
-                        blob, chunked=True, chunk_size=256 * 1024, ssl_verify=False
-                    )
-                else:
-                    batch.upload(blob, chunked=True, chunk_size=256 * 1024)
+                batch.upload(
+                    blob, chunked=True, chunk_size=256 * 1024, ssl_verify=SSL_VERIFY
+                )
             assert str(e.value)
 
             # Resume the upload
-            if SSL_VERIFY is False:
-                batch.upload(
-                    blob, chunked=True, chunk_size=256 * 1024, ssl_verify=False
-                )
-            else:
-                batch.upload(blob, chunked=True, chunk_size=256 * 1024)
+            batch.upload(
+                blob, chunked=True, chunk_size=256 * 1024, ssl_verify=SSL_VERIFY
+            )
 
             # No-op
             batch.complete()
@@ -718,16 +610,10 @@ def test_upload_resume(tmp_path, server):
 
 
 def test_wrong_batch_id(server):
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
     batch.uid = "1234"
     with pytest.raises(HTTPError):
-        if SSL_VERIFY is False:
-            batch.get(0, ssl_verify=False)
-        else:
-            batch.get(0)
+        batch.get(0, ssl_verify=SSL_VERIFY)
 
 
 def test_idempotent_requests(tmp_path, server):
@@ -739,10 +625,7 @@ def test_idempotent_requests(tmp_path, server):
     file_in = tmp_path / "file_in"
     file_in.write_bytes(os.urandom(1024 * 1024 * 10))
 
-    if SSL_VERIFY is False:
-        batch = server.uploads.batch(ssl_verify=False)
-    else:
-        batch = server.uploads.batch()
+    batch = server.uploads.batch(ssl_verify=SSL_VERIFY)
     blob = FileBlob(str(file_in))
     batch.upload(blob, chunked=True, chunk_size=1024 * 1024)
 
@@ -767,12 +650,9 @@ def test_idempotent_requests(tmp_path, server):
     # Create a folder
     name = str(uuid.uuid4())
     folder = Document(name=name, type="Folder", properties={"dc:title": name})
-    if SSL_VERIFY is False:
-        doc = server.documents.create(
-            folder, parent_path=WORKSPACE_ROOT, ssl_verify=False
-        )
-    else:
-        doc = server.documents.create(folder, parent_path=WORKSPACE_ROOT)
+    doc = server.documents.create(
+        folder, parent_path=WORKSPACE_ROOT, ssl_verify=SSL_VERIFY
+    )
 
     try:
         # Concurrent calls to the same endpoint
@@ -807,7 +687,4 @@ def test_idempotent_requests(tmp_path, server):
         assert res[error] == current_identical_errors
         assert res[children[0].uid] == current_identical_doc + 10
     finally:
-        if SSL_VERIFY is False:
-            doc.delete(ssl_verify=False)
-        else:
-            doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)

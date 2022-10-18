@@ -14,10 +14,7 @@ class Georges(object):
     def __enter__(self):
         existed_user = None
         try:
-            if SSL_VERIFY is False:
-                existed_user = self.server.users.get("georges", ssl_verify=False)
-            else:
-                existed_user = self.server.users.get("georges")
+            existed_user = self.server.users.get("georges", ssl_verify=SSL_VERIFY)
             existed_user.delete()
         finally:
             user = User(
@@ -30,10 +27,7 @@ class Georges(object):
                     "password": "Test",
                 }
             )
-            if SSL_VERIFY is False:
-                self.user = self.server.users.create(user, ssl_verify=False)
-            else:
-                self.user = self.server.users.create(user)
+            self.user = self.server.users.create(user, ssl_verify=SSL_VERIFY)
             return self.user
 
     def __exit__(self, *args):
@@ -45,29 +39,17 @@ def test_create_delete_user_dict(server):
         assert georges.properties["firstName"] == "Georges"
         assert georges.properties["lastName"] == "Abitbol"
         assert georges.properties["company"] == "Pom Pom Gali resort"
-        if SSL_VERIFY is False:
-            assert server.users.exists("georges", ssl_verify=False)
-        else:
-            assert server.users.exists("georges")
-    if SSL_VERIFY is False:
-        assert not server.users.exists("georges", ssl_verify=False)
-    else:
-        assert not server.users.exists("georges")
+        assert server.users.exists("georges", ssl_verify=SSL_VERIFY)
+    assert not server.users.exists("georges", ssl_verify=SSL_VERIFY)
 
 
 def test_create_wrong_arguments(server):
     with pytest.raises(BadQuery):
-        if SSL_VERIFY is False:
-            server.users.create(1, ssl_verify=False)
-        else:
-            server.users.create(1)
+        server.users.create(1, ssl_verify=SSL_VERIFY)
 
 
 def test_current_user(server):
-    if SSL_VERIFY is False:
-        user = server.users.current_user(ssl_verify=False)
-    else:
-        user = server.users.current_user()
+    user = server.users.current_user(ssl_verify=SSL_VERIFY)
     assert isinstance(user, User)
     assert user.uid == "Administrator"
     assert "administrators" in [g["name"] for g in user.extendedGroups]
@@ -75,20 +57,14 @@ def test_current_user(server):
 
 
 def test_fetch(server):
-    if SSL_VERIFY is False:
-        user = server.users.get("Administrator", ssl_verify=False)
-    else:
-        user = server.users.get("Administrator")
+    user = server.users.get("Administrator", ssl_verify=SSL_VERIFY)
     assert user
     assert repr(user)
     assert "administrators" in user.properties["groups"]
 
 
 def test_fetch_unknown_user(server):
-    if SSL_VERIFY is False:
-        assert not server.users.exists("Administrator2", ssl_verify=False)
-    else:
-        assert not server.users.exists("Administrator2")
+    assert not server.users.exists("Administrator2", ssl_verify=SSL_VERIFY)
 
 
 def test_lazy_loading(server):
@@ -108,18 +84,12 @@ def test_update_user(server, host):
         company = "Classe Américaine"
         georges.properties["company"] = company
         georges.save()
-        if SSL_VERIFY is False:
-            user = server.users.get("georges", ssl_verify=False)
-        else:
-            user = server.users.get("georges")
+        user = server.users.get("georges", ssl_verify=SSL_VERIFY)
         assert user.properties["company"] == company
 
         auth = BasicAuth("georges", "Test")
         server2 = Nuxeo(host=host, auth=auth)
-        if SSL_VERIFY is False:
-            assert server2.users.current_user(ssl_verify=False)
-        else:
-            assert server2.users.current_user()
+        assert server2.users.current_user(ssl_verify=SSL_VERIFY)
 
 
 def test_update_user_autoset_change_password(server, host):
@@ -129,7 +99,4 @@ def test_update_user_autoset_change_password(server, host):
 
         auth = BasicAuth("georges", "Test2")
         server2 = Nuxeo(host=host, auth=auth)
-        if SSL_VERIFY is False:
-            assert server2.users.current_user(ssl_verify=False)
-        else:
-            assert server2.users.current_user()
+        assert server2.users.current_user(ssl_verify=SSL_VERIFY)

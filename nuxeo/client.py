@@ -295,8 +295,6 @@ class NuxeoClient(object):
             ssl_verify_needed = ssl_verify
         if ssl_verify_needed and "verify" in kwargs.keys():
             ssl_verify_needed = kwargs["verify"]
-        if ssl_verify_needed is None:
-            ssl_verify_needed = True
         kwargs.pop("verify")
 
         try:

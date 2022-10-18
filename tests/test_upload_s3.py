@@ -111,10 +111,7 @@ def test_upload_not_chunked(tmp_path, batch, bucket, server, s3):
     # This will not work as there is no real
     # batch ID existant. This is only to have a better coverage.
     with pytest.raises(HTTPError):
-        if SSL_VERIFY is False:
-            batch.complete(ssl_verify=False)
-        else:
-            batch.complete()
+        batch.complete(ssl_verify=SSL_VERIFY)
 
 
 def test_upload_not_chunked_error(tmp_path, batch, bucket, server, s3):

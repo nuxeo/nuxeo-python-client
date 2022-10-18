@@ -334,12 +334,13 @@ def test_request_token(server):
     prev_auth = server.client.auth
     try:
         token = server.client.request_auth_token(
-            device_id, permission, app_name=app_name, device=device, ssl_verify=SSL_VERIFY
+            device_id,
+            permission,
+            app_name=app_name,
+            device=device,
+            ssl_verify=SSL_VERIFY,
         )
-        if SSL_VERIFY is False:
-            assert server.users.current_user(ssl_verify=SSL_VERIFY)
-        else:
-            assert server.users.current_user()
+        assert server.users.current_user(ssl_verify=SSL_VERIFY)
 
         # Calling twice should return the same token
         same_token = server.client.request_auth_token(
@@ -352,10 +353,7 @@ def test_request_token(server):
 
 def test_send_wrong_method(server):
     with pytest.raises(BadQuery):
-        if SSL_VERIFY is False:
-            server.client.request("TEST", "example", ssl_verify=SSL_VERIFY)
-        else:
-            server.client.request("TEST", "example")
+        server.client.request("TEST", "example", ssl_verify=SSL_VERIFY)
 
 
 def test_server_reachable(server):
@@ -407,10 +405,7 @@ def test_unauthorized(server):
 def test_param_format(server, recwarn):
     params = "stringnotadict"
     with pytest.raises(HTTPError):
-        if SSL_VERIFY is False:
-            server.client.request("GET", "test", params=params, ssl_verify=False)
-        else:
-            server.client.request("GET", "test", params=params)
+        server.client.request("GET", "test", params=params, ssl_verify=SSL_VERIFY)
 
     if (
         SSL_VERIFY is False
@@ -428,10 +423,7 @@ def test_param_format(server, recwarn):
         r"to get rid of that warning.",
     ):
         with pytest.raises(HTTPError):
-            if SSL_VERIFY is False:
-                server.client.request("GET", "test", params=params, ssl_verify=False)
-            else:
-                server.client.request("GET", "test", params=params)
+            server.client.request("GET", "test", params=params, ssl_verify=SSL_VERIFY)
 
 
 def test_header_format(server):
@@ -442,12 +434,7 @@ def test_header_format(server):
     ):
         with pytest.raises(HTTPError):
             headers = {"test.wrong.typo": "error"}
-            if SSL_VERIFY is False:
-                server.client.request(
-                    "GET", "test", headers=headers, ssl_verify=SSL_VERIFY
-                )
-            else:
-                server.client.request("GET", "test", headers=headers)
+            server.client.request("GET", "test", headers=headers, ssl_verify=SSL_VERIFY)
 
 
 def test_can_use(server):
