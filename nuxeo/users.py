@@ -17,7 +17,7 @@ class API(APIEndpoint):
         # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
         super().__init__(client, endpoint=endpoint, cls=User, headers=headers)
 
-    def get(self, user_id=None, ssl_verify=None):
+    def get(self, user_id=None, ssl_verify=True):
         # type: (Optional[str], Optional[bool]) -> User
         """
         Get the detail of a user.
@@ -25,12 +25,9 @@ class API(APIEndpoint):
         :param user_id: the id of the user
         :return: the user
         """
-        if ssl_verify is False:
-            return super().get(path=user_id, ssl_verify=False)
-        else:
-            return super().get(path=user_id)
+        return super().get(path=user_id, ssl_verify=ssl_verify)
 
-    def post(self, user, ssl_verify=None):
+    def post(self, user, ssl_verify=True):
         # type: (User, bool) -> User
         """
         Create a user.
@@ -38,14 +35,11 @@ class API(APIEndpoint):
         :param user: the user to create
         :return: the created user
         """
-        if ssl_verify is False:
-            return super().post(user, ssl_verify=False)
-        else:
-            return super().post(user)
+        return super().post(user, ssl_verify=ssl_verify)
 
     create = post  # Alias for clarity
 
-    def put(self, user, ssl_verify=None):
+    def put(self, user, ssl_verify=True):
         # type: (User, bool) -> User
         """
         Update a user.
@@ -53,24 +47,18 @@ class API(APIEndpoint):
         :param user: the user to update
         :return: the updated user
         """
-        if ssl_verify is False:
-            return super().put(user, ssl_verify=False)
-        else:
-            return super().put(user)
+        return super().put(user, ssl_verify=ssl_verify)
 
-    def delete(self, user_id, ssl_verify=None):
+    def delete(self, user_id, ssl_verify=True):
         # type: (str, bool) -> None
         """
         Delete a user.
 
         :param user_id: the id of the user to delete
         """
-        if ssl_verify is False:
-            super().delete(user_id, ssl_verify=False)
-        else:
-            super().delete(user_id)
+        super().delete(user_id, ssl_verify=ssl_verify)
 
-    def current_user(self, ssl_verify=None):
+    def current_user(self, ssl_verify=True):
         # type: (bool) -> User
         """
         Get the current user details and validate the connection to the server at the same time.

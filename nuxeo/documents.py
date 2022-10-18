@@ -39,7 +39,7 @@ class API(APIEndpoint):
         self.workflows_api = workflows
         super().__init__(client, endpoint=endpoint, cls=Document, headers=headers)
 
-    def get(self, uid=None, path=None, ssl_verify=None):
+    def get(self, uid=None, path=None, ssl_verify=True):
         # type: (Optional[str], Optional[str], Optional[bool]) -> Document
         """
         Get the detail of a document.
@@ -48,12 +48,9 @@ class API(APIEndpoint):
         :param path: the path of the document
         :return: the document
         """
-        if ssl_verify is False:
-            return super().get(path=self._path(uid=uid, path=path), ssl_verify=False)
-        else:
-            return super().get(path=self._path(uid=uid, path=path))
+        return super().get(path=self._path(uid=uid, path=path), ssl_verify=ssl_verify)
 
-    def post(self, document, parent_id=None, parent_path=None, ssl_verify=None):
+    def post(self, document, parent_id=None, parent_path=None, ssl_verify=True):
         # type: (Document, Optional[str], Optional[str], Optional[bool]) -> Document
         """
         Create a document.
@@ -63,20 +60,15 @@ class API(APIEndpoint):
         :param parent_path: the path of the parent document
         :return: the created document
         """
-        if ssl_verify is False:
-            return super().post(
-                document,
-                path=self._path(uid=parent_id, path=parent_path),
-                ssl_verify=False,
-            )
-        else:
-            return super().post(
-                document, path=self._path(uid=parent_id, path=parent_path)
-            )
+        return super().post(
+            document,
+            path=self._path(uid=parent_id, path=parent_path),
+            ssl_verify=ssl_verify,
+        )
 
     create = post  # Alias for clarity
 
-    def put(self, document, ssl_verify=None):
+    def put(self, document, ssl_verify=True):
         # type: (Document, bool) -> Document
         """
         Update a document.
@@ -84,26 +76,20 @@ class API(APIEndpoint):
         :param document: the document to update
         :return: the updated document
         """
-        if ssl_verify is False:
-            return super().put(
-                document, path=self._path(uid=document.uid), ssl_verify=False
-            )
-        else:
-            return super().put(document, path=self._path(uid=document.uid))
+        return super().put(
+            document, path=self._path(uid=document.uid), ssl_verify=ssl_verify
+        )
 
-    def delete(self, document_id, ssl_verify=None):
+    def delete(self, document_id, ssl_verify=True):
         # type: (str, bool) -> None
         """
         Delete a document.
 
         :param document_id: the id of the document to delete
         """
-        if ssl_verify is False:
-            super().delete(self._path(uid=document_id), ssl_verify=False)
-        else:
-            super().delete(self._path(uid=document_id))
+        super().delete(self._path(uid=document_id), ssl_verify=ssl_verify)
 
-    def exists(self, uid=None, path=None, ssl_verify=None):
+    def exists(self, uid=None, path=None, ssl_verify=True):
         # type: (Optional[str], Optional[str], Optional[bool]) -> bool
         """
         Check if a document exists.
@@ -113,10 +99,7 @@ class API(APIEndpoint):
         :return: True if it exists, else False
         """
         try:
-            if ssl_verify is False:
-                self.get(uid=uid, path=path, ssl_verify=False)
-            else:
-                self.get(uid=uid, path=path)
+            self.get(uid=uid, path=path, ssl_verify=ssl_verify)
             return True
         except HTTPError as e:
             if e.status != 404:
@@ -135,7 +118,7 @@ class API(APIEndpoint):
             command="Document.AddPermission", input_obj=uid, params=params
         )
 
-    def comment(self, uid, text, ssl_verify=None):
+    def comment(self, uid, text, ssl_verify=True):
         # type: (str, str, bool) -> Comment
         """
         Add a new comment for a given document.
@@ -144,12 +127,9 @@ class API(APIEndpoint):
         :param text: the content of the comment
         :return: the comment
         """
-        if ssl_verify is False:
-            return self.comments_api.create(uid, text, ssl_verify=False)
-        else:
-            return self.comments_api.create(uid, text)
+        return self.comments_api.create(uid, text, ssl_verify=ssl_verify)
 
-    def comments(self, uid, ssl_verify=None, params=None):
+    def comments(self, uid, ssl_verify=True, params=None):
         # type: (str, bool, Any) -> List[Comment]
         """
         Get the comments of a document.
@@ -160,13 +140,10 @@ class API(APIEndpoint):
         :return: the list of comments
         """
 
-        if ssl_verify is False:
-            return self.comments_api.get(uid, ssl_verify=False, params=params)
-        else:
-            return self.comments_api.get(uid, params=params)
+        return self.comments_api.get(uid, ssl_verify=ssl_verify, params=params)
 
-    def convert(self, uid, options):
-        # type: (str, Dict[str, str]) -> Union[str, Dict[str, Any]]
+    def convert(self, uid, options, ssl_verify=True):
+        # type: (str, Dict[str, str], bool) -> Union[str, Dict[str, Any]]
         """
         Convert a blob into another format.
 
@@ -186,7 +163,11 @@ class API(APIEndpoint):
 
         try:
             return super().get(
-                path=self._path(uid=uid), params=options, adapter=adapter, raw=True
+                path=self._path(uid=uid),
+                params=options,
+                adapter=adapter,
+                raw=True,
+                ssl_verify=ssl_verify,
             )
         except HTTPError as e:
             if "is not registered" in e.message:
@@ -202,8 +183,8 @@ class API(APIEndpoint):
                 )
             raise e
 
-    def fetch_acls(self, uid):
-        # type: (str) -> Dict[str, Any]
+    def fetch_acls(self, uid, ssl_verify=True):
+        # type: (str, bool) -> Dict[str, Any]
         """
         Fetch the ACLs of a document.
 
@@ -211,22 +192,28 @@ class API(APIEndpoint):
         :return: the ACLs
         """
         req = super().get(
-            path=self._path(uid=uid), cls=dict, headers=self.headers, enrichers=["acls"]
+            path=self._path(uid=uid),
+            cls=dict,
+            headers=self.headers,
+            enrichers=["acls"],
+            ssl_verify=ssl_verify,
         )
         return req["contextParameters"]["acls"]
 
-    def fetch_audit(self, uid):
-        # type: (str) -> Dict[str, Any]
+    def fetch_audit(self, uid, ssl_verify=True):
+        # type: (str, bool) -> Dict[str, Any]
         """
         Fetch the audit of a document.
 
         :param uid: the uid of the document
         :return: the audit
         """
-        return super().get(self._path(uid=uid), adapter="audit", cls=dict)
+        return super().get(
+            self._path(uid=uid), adapter="audit", cls=dict, ssl_verify=ssl_verify
+        )
 
     def fetch_lock_status(self, uid):
-        # type: (str) -> Dict[str, Any]
+        # type: (str, bool) -> Dict[str, Any]
         """
         Fetch the lock status of a document.
 
@@ -241,8 +228,8 @@ class API(APIEndpoint):
         else:
             return {}
 
-    def fetch_rendition(self, uid, name):
-        # type: (str, str) -> Union[str, bytes]
+    def fetch_rendition(self, uid, name, ssl_verify=True):
+        # type: (str, str, bool) -> Union[str, bytes]
         """
         Fetch a rendition of a document.
 
@@ -251,10 +238,12 @@ class API(APIEndpoint):
         :return: the corresponding rendition
         """
         adapter = f"rendition/{name}"
-        return super().get(path=self._path(uid=uid), raw=True, adapter=adapter)
+        return super().get(
+            path=self._path(uid=uid), raw=True, adapter=adapter, ssl_verify=ssl_verify
+        )
 
-    def fetch_renditions(self, uid):
-        # type: (str) -> List[Union[str, bytes]]
+    def fetch_renditions(self, uid, ssl_verify=True):
+        # type: (str, bool) -> List[Union[str, bytes]]
         """
         Fetch all renditions of a document.
 
@@ -264,7 +253,9 @@ class API(APIEndpoint):
         headers = self.headers or {}
         headers.update({"enrichers-document": "renditions"})
 
-        req = super().get(path=self._path(uid=uid), cls=dict, headers=headers)
+        req = super().get(
+            path=self._path(uid=uid), cls=dict, headers=headers, ssl_verify=ssl_verify
+        )
         return [rend["name"] for rend in req["contextParameters"]["renditions"]]
 
     def follow_transition(self, uid, name):
@@ -280,7 +271,7 @@ class API(APIEndpoint):
             command="Document.FollowLifecycleTransition", input_obj=uid, params=params
         )
 
-    def fetch_blob(self, uid=None, path=None, xpath="blobholder:0", ssl_verify=None):
+    def fetch_blob(self, uid=None, path=None, xpath="blobholder:0", ssl_verify=True):
         # type: (Optional[str], Optional[str], str, bool) -> Blob
         """
         Get the blob of a document.
@@ -291,19 +282,14 @@ class API(APIEndpoint):
         :return: the blob
         """
         adapter = f"blob/{xpath}"
-        if ssl_verify is False:
-            return super().get(
-                path=self._path(uid=uid, path=path),
-                raw=True,
-                adapter=adapter,
-                ssl_verify=False,
-            )
-        else:
-            return super().get(
-                path=self._path(uid=uid, path=path), raw=True, adapter=adapter
-            )
+        return super().get(
+            path=self._path(uid=uid, path=path),
+            raw=True,
+            adapter=adapter,
+            ssl_verify=ssl_verify,
+        )
 
-    def get_children(self, uid=None, path=None, enrichers=None, ssl_verify=None):
+    def get_children(self, uid=None, path=None, enrichers=None, ssl_verify=True):
         # type: (Optional[str], Optional[str], Optional[List[str]], bool) -> List[Document]
         """
         Get the children of a document.
@@ -313,19 +299,12 @@ class API(APIEndpoint):
         :param enrichers: additionnal details to fetch at the same time, e.g.: ["permissions"]
         :return: the document children
         """
-        if ssl_verify is False:
-            return super().get(
-                path=self._path(uid=uid, path=path),
-                enrichers=enrichers,
-                adapter="children",
-                ssl_verify=False,
-            )
-        else:
-            return super().get(
-                path=self._path(uid=uid, path=path),
-                enrichers=enrichers,
-                adapter="children",
-            )
+        return super().get(
+            path=self._path(uid=uid, path=path),
+            enrichers=enrichers,
+            adapter="children",
+            ssl_verify=ssl_verify,
+        )
 
     def has_permission(self, uid, permission):
         # type: (str, str) -> bool

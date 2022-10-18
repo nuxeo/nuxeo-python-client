@@ -533,19 +533,16 @@ class Document(RefreshableModel):
         """Return the workflows associated with the document."""
         return self.service.workflows(self)
 
-    def add_permission(self, params, ssl_verify=None):
+    def add_permission(self, params, ssl_verify=True):
         # type: (Dict[str, Any], bool) -> None
         """
         Add a permission to a document.
 
         :param params: permission to add
         """
-        if ssl_verify is False:
-            return self.service.add_permission(self.uid, params, ssl_verify=False)
-        else:
-            return self.service.add_permission(self.uid, params)
+        return self.service.add_permission(self.uid, params, ssl_verify=ssl_verify)
 
-    def comment(self, text, ssl_verify=None):
+    def comment(self, text, ssl_verify=True):
         # type: (str, bool) -> Comment
         """
         Add a comment to the document.
@@ -553,22 +550,16 @@ class Document(RefreshableModel):
         :param text: the comment message
         :return: a comment object
         """
-        if ssl_verify is False:
-            return self.service.comment(self.uid, text, ssl_verify=False)
-        else:
-            return self.service.comment(self.uid, text)
+        return self.service.comment(self.uid, text, ssl_verify=ssl_verify)
 
-    def comments(self, ssl_verify=None, **params):
+    def comments(self, ssl_verify=True, **params):
         # type: (bool, Any) -> List[Comment]
         """Return the comments associated with the document.
         Any additionnal arguments will be passed to the *params* parent's call.
         """
-        if ssl_verify is False:
-            return self.service.comments(self.uid, params=params, ssl_verify=False)
-        else:
-            return self.service.comments(self.uid, params=params)
+        return self.service.comments(self.uid, params=params, ssl_verify=ssl_verify)
 
-    def convert(self, params, ssl_verify=None):
+    def convert(self, params, ssl_verify=True):
         # type: (Dict[str, Any], bool) -> Union[Dict[str, Any], str]
         """
         Convert the document to another format.
@@ -577,36 +568,24 @@ class Document(RefreshableModel):
         :return: the converter result
         """
 
-        if ssl_verify is False:
-            return self.service.convert(self.uid, params, ssl_verify=False)
-        else:
-            return self.service.convert(self.uid, params)
+        return self.service.convert(self.uid, params, ssl_verify=ssl_verify)
 
-    def delete(self, ssl_verify=None):
+    def delete(self, ssl_verify=True):
         # type: (bool) -> None
         """Delete the document."""
-        if ssl_verify is False:
-            self.service.delete(self.uid, ssl_verify=False)
-        else:
-            self.service.delete(self.uid)
+        self.service.delete(self.uid, ssl_verify=ssl_verify)
 
-    def fetch_acls(self, ssl_verify=None):
+    def fetch_acls(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Fetch document ACLs."""
-        if ssl_verify is False:
-            return self.service.fetch_acls(self.uid, ssl_verify=False)
-        else:
-            return self.service.fetch_acls(self.uid)
+        return self.service.fetch_acls(self.uid, ssl_verify=ssl_verify)
 
-    def fetch_audit(self, ssl_verify=None):
+    def fetch_audit(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Fetch audit for current document."""
-        if ssl_verify is False:
-            return self.service.fetch_audit(self.uid, ssl_verify=False)
-        else:
-            return self.service.fetch_audit(self.uid)
+        return self.service.fetch_audit(self.uid, ssl_verify=ssl_verify)
 
-    def fetch_blob(self, xpath="blobholder:0", ssl_verify=None):
+    def fetch_blob(self, xpath="blobholder:0", ssl_verify=True):
         # type: (str, bool) -> Blob
         """
         Retrieve one of the blobs attached to the document.
@@ -614,51 +593,36 @@ class Document(RefreshableModel):
         :param xpath: the xpath to the blob
         :return: the blob
         """
-        if ssl_verify is False:
-            return self.service.fetch_blob(uid=self.uid, xpath=xpath, ssl_verify=False)
-        else:
-            return self.service.fetch_blob(uid=self.uid, xpath=xpath)
+        return self.service.fetch_blob(uid=self.uid, xpath=xpath, ssl_verify=ssl_verify)
 
-    def fetch_lock_status(self, ssl_verify=None):
+    def fetch_lock_status(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Get lock informations."""
-        if ssl_verify is False:
-            return self.service.fetch_lock_status(self.uid, ssl_verify=False)
-        else:
-            return self.service.fetch_lock_status(self.uid)
+        return self.service.fetch_lock_status(self.uid, ssl_verify=ssl_verify)
 
-    def fetch_rendition(self, name, ssl_verify=None):
+    def fetch_rendition(self, name, ssl_verify=True):
         # type: (str, bool) -> Union[str, bytes]
         """
         :param name: Rendition name to use
         :return: The rendition content
         """
-        if ssl_verify is False:
-            return self.service.fetch_rendition(self.uid, name, ssl_verify=False)
-        else:
-            return self.service.fetch_rendition(self.uid, name)
+        return self.service.fetch_rendition(self.uid, name, ssl_verify=ssl_verify)
 
-    def fetch_renditions(self, ssl_verify=None):
+    def fetch_renditions(self, ssl_verify=True):
         # type: (bool) -> List[Union[str, bytes]]
         """
         :return: Available renditions for this document
         """
-        if ssl_verify is False:
-            return self.service.fetch_renditions(self.uid, ssl_verify=False)
-        else:
-            return self.service.fetch_renditions(self.uid)
+        return self.service.fetch_renditions(self.uid, ssl_verify=ssl_verify)
 
-    def follow_transition(self, name, ssl_verify=None):
+    def follow_transition(self, name, ssl_verify=True):
         # type: (str, bool) -> None
         """
         Follow a lifecycle transition on this document.
 
         :param name: transition name
         """
-        if ssl_verify is False:
-            doc = self.service.follow_transition(self.uid, name, ssl_verify=False)
-        else:
-            doc = self.service.follow_transition(self.uid, name)
+        doc = self.service.follow_transition(self.uid, name, ssl_verify=ssl_verify)
         self.load(doc)
 
     def get(self, prop):
@@ -666,28 +630,22 @@ class Document(RefreshableModel):
         """Get a property of the document by its name."""
         return self.properties[prop]
 
-    def has_permission(self, permission, ssl_verify=None):
+    def has_permission(self, permission, ssl_verify=True):
         # type: (str, bool) -> bool
         """Verify if a document has the permission."""
-        if ssl_verify is False:
-            return self.service.has_permission(self.uid, permission, ssl_verify=False)
-        else:
-            return self.service.has_permission(self.uid, permission)
+        return self.service.has_permission(self.uid, permission, ssl_verify=ssl_verify)
 
     def is_locked(self):
         # type: () -> bool
         """Get the lock status."""
         return not not self.fetch_lock_status()
 
-    def lock(self, ssl_verify=None):
+    def lock(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Lock the document."""
-        if ssl_verify is False:
-            return self.service.lock(self.uid, ssl_verify=False)
-        else:
-            return self.service.lock(self.uid)
+        return self.service.lock(self.uid, ssl_verify=ssl_verify)
 
-    def move(self, dst, name=None, ssl_verify=None):
+    def move(self, dst, name=None, ssl_verify=True):
         # type: (str, Optional[str], bool) -> None
         """
         Move a document into another parent.
@@ -695,47 +653,32 @@ class Document(RefreshableModel):
         :param dst: The new parent path
         :param name: Rename the document if specified
         """
-        if ssl_verify is False:
-            doc = self.service.move(self.uid, dst, name, ssl_verify=False)
-        else:
-            doc = self.service.move(self.uid, dst, name)
+        doc = self.service.move(self.uid, dst, name, ssl_verify=ssl_verify)
         self.load(doc)
 
-    def remove_permission(self, params, ssl_verify=None):
+    def remove_permission(self, params, ssl_verify=True):
         # type: (Dict[str, Any], bool) -> None
         """Remove a permission to a document."""
-        if ssl_verify is False:
-            return self.service.remove_permission(self.uid, params, ssl_verify=False)
-        else:
-            return self.service.remove_permission(self.uid, params)
+        return self.service.remove_permission(self.uid, params, ssl_verify=ssl_verify)
 
     def set(self, properties):
         # type: (Dict[str, Any]) -> None
         """Add/update the properties of the document."""
         self.properties.update(properties)
 
-    def trash(self, ssl_verify=None):
+    def trash(self, ssl_verify=True):
         # type: (bool) -> None
-        if ssl_verify is False:
-            doc = self.service.trash(self.uid, ssl_verify=False)
-        else:
-            doc = self.service.trash(self.uid)
+        doc = self.service.trash(self.uid, ssl_verify=ssl_verify)
         self.load(doc)
 
-    def unlock(self, ssl_verify=None):
+    def unlock(self, ssl_verify=True):
         # type: (bool) -> Dict[str, Any]
         """Unlock the document."""
-        if ssl_verify is False:
-            return self.service.unlock(self.uid, ssl_verify=False)
-        else:
-            return self.service.unlock(self.uid)
+        return self.service.unlock(self.uid, ssl_verify=ssl_verify)
 
-    def untrash(self, ssl_verify=None):
+    def untrash(self, ssl_verify=True):
         # type: (bool) -> None
-        if ssl_verify is False:
-            doc = self.service.untrash(self.uid, ssl_verify=False)
-        else:
-            doc = self.service.untrash(self.uid)
+        doc = self.service.untrash(self.uid, ssl_verify=ssl_verify)
         self.load(doc)
 
 
@@ -755,13 +698,10 @@ class Group(Model):
         # type: () -> str
         return self.groupname
 
-    def delete(self, ssl_verify=None):
+    def delete(self, ssl_verify=True):
         # type: (bool) -> None
         """Delete the group."""
-        if ssl_verify is False:
-            self.service.delete(self.uid, ssl_verify=False)
-        else:
-            self.service.delete(self.uid)
+        self.service.delete(self.uid, ssl_verify=ssl_verify)
 
 
 class Operation(Model):
@@ -855,13 +795,10 @@ class User(RefreshableModel):
         self.properties["password"] = password
         self.save()
 
-    def delete(self, ssl_verify=None):
+    def delete(self, ssl_verify=True):
         # type: (bool) -> None
         """Delete the user."""
-        if ssl_verify is False:
-            self.service.delete(self.uid, ssl_verify=False)
-        else:
-            self.service.delete(self.uid)
+        self.service.delete(self.uid, ssl_verify=ssl_verify)
 
 
 class Workflow(Model):

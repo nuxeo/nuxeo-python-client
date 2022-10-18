@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class API(APIEndpoint):
-    """ Endpoint for comments. """
+    """Endpoint for comments."""
 
     __slots__ = ()
 
@@ -17,7 +17,7 @@ class API(APIEndpoint):
         # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
         super().__init__(client, endpoint=endpoint, cls=Comment, headers=headers)
 
-    def get(self, docuid, uid=None, ssl_verify=None, params=None):
+    def get(self, docuid, uid=None, ssl_verify=True, params=None):
         # type: (str, str, bool, Any) -> Comment
         """
         Get the detail of a comment.
@@ -34,12 +34,9 @@ class API(APIEndpoint):
         if isinstance(params, dict):
             kwargs.update(params)
 
-        if ssl_verify is False:
-            return super().get(path=path, ssl_verify=False, params=kwargs)
-        else:
-            return super().get(path=path, params=kwargs)
+        return super().get(ssl_verify=ssl_verify, path=path, params=kwargs)
 
-    def post(self, docuid, text, ssl_verify=None):
+    def post(self, docuid, text, ssl_verify=True):
         # type: (str, str, bool) -> Comment
         """
         Create a comment.
@@ -49,16 +46,13 @@ class API(APIEndpoint):
         """
         kwargs = {"entity-type": "comment", "parentId": docuid, "text": text}
 
-        if ssl_verify is False:
-            return super().post(
-                path=docuid, adapter="comment", ssl_verify=False, resource=kwargs
-            )
-        else:
-            return super().post(path=docuid, adapter="comment", resource=kwargs)
+        return super().post(
+            ssl_verify=ssl_verify, path=docuid, adapter="comment", resource=kwargs
+        )
 
     create = post  # Alias for clarity
 
-    def put(self, comment, ssl_verify=None):
+    def put(self, comment, ssl_verify=True):
         # type: (Comment, bool) -> None
         """
         Update a comment.
@@ -67,24 +61,18 @@ class API(APIEndpoint):
         :return: the entry updated
         """
         path = f"{comment.parentId}/@comment/{comment.uid}"
-        if ssl_verify is False:
-            return super().put(resource=comment, path=path, ssl_verify=False)
-        else:
-            return super().put(resource=comment, path=path)
+        return super().put(resource=comment, path=path, ssl_verify=ssl_verify)
 
-    def delete(self, uid, ssl_verify=None):
+    def delete(self, uid, ssl_verify=True):
         # type: (str, bool) -> None
         """
         Delete a comment.
 
         :param uid: the ID of the comment to delete
         """
-        if ssl_verify is False:
-            super().delete(uid, ssl_verify=False)
-        else:
-            super().delete(uid)
+        super().delete(uid, ssl_verify=ssl_verify)
 
-    def replies(self, uid, ssl_verify=None, params=None):
+    def replies(self, uid, ssl_verify=True, params=None):
         # type: (str, bool, Any) -> List[Comment]
         """
         Get the replies of the comment.
@@ -99,9 +87,6 @@ class API(APIEndpoint):
         if isinstance(params, dict):
             kwargs.update(params)
 
-        if ssl_verify is False:
-            return super().get(
-                path=uid, adapter="comment", ssl_verify=False, params=kwargs
-            )
-        else:
-            return super().get(path=uid, adapter="comment", params=kwargs)
+        return super().get(
+            path=uid, adapter="comment", ssl_verify=ssl_verify, params=kwargs
+        )
