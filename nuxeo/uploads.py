@@ -266,9 +266,7 @@ class API(APIEndpoint):
 
         path = f"{path}/execute/{operation}"
 
-        headers = {}
-        if void_op:
-            headers = {"X-NXVoidOperation": "true"}
+        headers = {"X-NXVoidOperation": "true"} if void_op else {}
         return self.client.request(
             "POST",
             path,

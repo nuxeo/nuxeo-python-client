@@ -285,7 +285,6 @@ class API(APIEndpoint):
         unlock_path = kwargs.pop("unlock_path", None)
         lock_path = kwargs.pop("lock_path", None)
         use_lock = callable(unlock_path) and callable(lock_path)
-        locker = None
 
         # Several callbacks are accepted, tuple is used to keep order
         callback = kwargs.pop("callback", None)
@@ -294,8 +293,7 @@ class API(APIEndpoint):
         else:
             callbacks = tuple([callback] if callable(callback) else [])
 
-        if use_lock:
-            locker = unlock_path(path)
+        locker = unlock_path(path) if use_lock else None
         try:
             with open(path, "ab") as f:
                 chunk_size = kwargs.get("chunk_size", self.client.chunk_size)

@@ -64,7 +64,7 @@ def test_document_create_bytes_warning(server):
     try:
         document = server.operations.execute(
             command="Document.Create",
-            input_obj="doc:" + WORKSPACE_ROOT,
+            input_obj=f"doc:{WORKSPACE_ROOT}",
             type="Note",
             name=name,
             properties=properties,
@@ -125,8 +125,8 @@ def test_document_move(server):
         doc, parent_path=WORKSPACE_ROOT, ssl_verify=SSL_VERIFY
     )
     try:
-        doc.move(WORKSPACE_ROOT + "/Test2", "new_name")
-        assert WORKSPACE_ROOT + "/Test2/new_name" in doc.path
+        doc.move(f"{WORKSPACE_ROOT}/Test2", "new_name")
+        assert f"{WORKSPACE_ROOT}/Test2/new_name" in doc.path
         children = server.documents.get_children(folder.uid, ssl_verify=SSL_VERIFY)
         assert len(children) == 1
         if len(children) > 0:

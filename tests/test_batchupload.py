@@ -160,12 +160,12 @@ def test_digester(tmp_path, hash, is_valid, server):
     try:
         batch = get_batch(server)
         operation = server.operations.new("Blob.AttachOnDocument")
-        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
+        operation.params = {"document": f"{WORKSPACE_ROOT}/Document"}
         operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         operation = server.operations.new("Blob.Get")
-        operation.input_obj = WORKSPACE_ROOT + "/Document"
+        operation.input_obj = f"{WORKSPACE_ROOT}/Document"
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
@@ -192,10 +192,10 @@ def test_execute(server):
         batch.execute(
             "Blob.AttachOnDocument",
             file_idx=0,
-            params={"document": WORKSPACE_ROOT + "/Document"},
+            params={"document": f"{WORKSPACE_ROOT}/Document"},
         )
         doc = server.documents.get(
-            path=WORKSPACE_ROOT + "/Document", ssl_verify=SSL_VERIFY
+            path=f"{WORKSPACE_ROOT}/Document", ssl_verify=SSL_VERIFY
         )
         assert doc.properties["file:content"]
         blob = doc.fetch_blob()
@@ -357,11 +357,11 @@ def test_operation(server):
     try:
         assert not doc.properties["file:content"]
         operation = server.operations.new("Blob.AttachOnDocument")
-        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
+        operation.params = {"document": f"{WORKSPACE_ROOT}/Document"}
         operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute()
         doc = server.documents.get(
-            path=WORKSPACE_ROOT + "/Document", ssl_verify=SSL_VERIFY
+            path=f"{WORKSPACE_ROOT}/Document", ssl_verify=SSL_VERIFY
         )
         assert doc.properties["file:content"]
         blob = doc.fetch_blob()
@@ -432,17 +432,17 @@ def test_upload(tmp_path, chunked, server):
             blob, chunked=chunked, callback=callback, chunk_size=chunk_size
         )
         operation = server.operations.new("Blob.AttachOnDocument")
-        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
+        operation.params = {"document": f"{WORKSPACE_ROOT}/Document"}
         operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         operation = server.operations.new("Document.Fetch")
-        operation.params = {"value": WORKSPACE_ROOT + "/Document"}
+        operation.params = {"value": f"{WORKSPACE_ROOT}/Document"}
         info = operation.execute()
         digest = info["properties"]["file:content"]["digest"]
 
         operation = server.operations.new("Blob.Get")
-        operation.input_obj = WORKSPACE_ROOT + "/Document"
+        operation.input_obj = f"{WORKSPACE_ROOT}/Document"
         file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
         doc.delete(ssl_verify=SSL_VERIFY)
@@ -486,17 +486,17 @@ def test_upload_several_callbacks(tmp_path, chunked, server):
             blob, chunked=chunked, callback=callbacks, chunk_size=chunk_size
         )
         operation = server.operations.new("Blob.AttachOnDocument")
-        operation.params = {"document": WORKSPACE_ROOT + "/Document"}
+        operation.params = {"document": f"{WORKSPACE_ROOT}/Document"}
         operation.input_obj = batch.get(0, ssl_verify=SSL_VERIFY)
         operation.execute(void_op=True)
 
         operation = server.operations.new("Document.Fetch")
-        operation.params = {"value": WORKSPACE_ROOT + "/Document"}
+        operation.params = {"value": f"{WORKSPACE_ROOT}/Document"}
         info = operation.execute()
         digest = info["properties"]["file:content"]["digest"]
 
         operation = server.operations.new("Blob.Get")
-        operation.input_obj = WORKSPACE_ROOT + "/Document"
+        operation.input_obj = f"{WORKSPACE_ROOT}/Document"
         file_out = operation.execute(file_out=file_out, digest=digest)
     finally:
         doc.delete(ssl_verify=SSL_VERIFY)

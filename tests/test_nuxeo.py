@@ -281,7 +281,7 @@ def test_server_info_bad_response(server):
     server_info = server.client.server_info
 
     with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, server.client.host + "json/cmis", body="...")
+        rsps.add(responses.GET, f"{server.client.host}json/cmis", body="...")
         assert server_info(force=True) is None
 
     # Another call, it must work as expected
@@ -312,7 +312,7 @@ def test_server_version_bad_response_from_server_info(server):
     """
     server.client._server_info = None
     with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, server.client.host + "json/cmis", body="...")
+        rsps.add(responses.GET, f"{server.client.host}json/cmis", body="...")
         assert server.client.server_version == "unknown"
 
     # Another call, it must work as expected
