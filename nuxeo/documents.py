@@ -213,7 +213,7 @@ class API(APIEndpoint):
         )
 
     def fetch_lock_status(self, uid):
-        # type: (str, bool) -> Dict[str, Any]
+        # type: (str) -> Dict[str, Any]
         """
         Fetch the lock status of a document.
 

@@ -56,12 +56,9 @@ def test_crud(server):
 def test_reply(server):
     if version_lt(server.client.server_version, "10.3"):
         pytest.skip("Nuxeo 10.3 minimum")
-    if SSL_VERIFY is False:
-        doc = server.documents.create(
-            document, parent_path=WORKSPACE_ROOT, ssl_verify=SSL_VERIFY
-        )
-    else:
-        doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
+    doc = server.documents.create(
+        document, parent_path=WORKSPACE_ROOT, ssl_verify=SSL_VERIFY
+    )
     try:
         # Create a comment for that document
         comment = server.comments.create(

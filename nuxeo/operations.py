@@ -135,6 +135,7 @@ class API(APIEndpoint):
         void_op=False,  # type: bool
         headers=None,  # type: Optional[Dict[str, str]]
         file_out=None,  # type: Optional[str]
+        ssl_verify=True,  # type: bool
         **kwargs,  # type: Any
     ):
         # type: (...) -> Any
@@ -191,7 +192,8 @@ class API(APIEndpoint):
             headers=headers,
             enrichers=enrichers,
             default=default,
-            timeout=timeout,  # ssl_verify=False,
+            timeout=timeout,
+            ssl_verify=ssl_verify,
         )
 
         # Save to a file, part by part of chunk_size
