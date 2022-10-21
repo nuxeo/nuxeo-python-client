@@ -178,9 +178,7 @@ class API(APIEndpoint):
             ):
                 raise UnavailableConvertor(options)
             elif "Internal Server Error" in e.message:
-                raise UnavailableBogusConvertor(
-                    e.message, options["converter"] if options["converter"] else ""
-                )
+                raise UnavailableBogusConvertor(e.message, options["converter"] or "")
             raise e
 
     def fetch_acls(self, uid, ssl_verify=True):
@@ -409,7 +407,7 @@ class API(APIEndpoint):
         :param uid: the uid of the document
         """
         if version_lt(self.client.server_version, "10.2"):
-            input_obj = "doc:" + uid
+            input_obj = f"doc:{uid}"
             res_obj = self.operations.execute(
                 command="Document.SetLifeCycle", input_obj=input_obj, value="undelete"
             )

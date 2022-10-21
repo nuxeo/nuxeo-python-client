@@ -233,8 +233,7 @@ class API(APIEndpoint):
         # type: (Dict[str, Any], Dict[str, Any]) -> Dict[str, Any]
         """Create sanitized operation payload."""
         data = {"params": self.sanitize(params)}  # type: Dict[str, Any]
-        clean_context = self.sanitize(context)  # type: Dict[str, Any]
-        if clean_context:
+        if clean_context := self.sanitize(context):
             data["context"] = clean_context
 
         return data
