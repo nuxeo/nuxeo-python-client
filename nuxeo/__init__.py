@@ -13,11 +13,14 @@ Contributors:
     Mickaël Schoentgen
     Léa Klein
     Romain Grasland
+    Anindya Roy
+    Sweta Yadav
+    Shekhar Gupta
     and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
 
 __author__ = "Nuxeo"
-__version__ = "6.0.4"
+__version__ = "6.1.0"
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 

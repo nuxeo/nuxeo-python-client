@@ -1,12 +1,11 @@
 Changelog
 =========
 
-6.0.4
+6.1.0
 -----
 
-Release date: ``2022-xx-xx``
+Release date: ``2022-10-21``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
 - `NXPY-241 <https://jira.nuxeo.com/browse/NXPY-241>`__: Remove Support For Python 3.6
 - `NXPY-240 <https://jira.nuxeo.com/browse/NXPY-240>`__: Upgrade Nuxeo Docker Image
 - `NXPY-237 <https://jira.nuxeo.com/browse/NXPY-237>`__: Update Dependencies
@@ -16,7 +15,7 @@ Release date: ``2022-xx-xx``
 Technical changes
 -----------------
 
--
+- Added ``ssl_verify`` arguments
 
 6.0.3
 -----
