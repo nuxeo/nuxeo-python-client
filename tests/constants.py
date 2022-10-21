@@ -1,5 +1,6 @@
 # coding: utf-8
 WORKSPACE_ROOT = "/default-domain/workspaces"
 WORKSPACE_NAME = "ws-python-tests"
-WORKSPACE_TEST = WORKSPACE_ROOT + "/" + WORKSPACE_NAME
+WORKSPACE_TEST = f"{WORKSPACE_ROOT}/{WORKSPACE_NAME}"
 NUXEO_SERVER_URL = "http://localhost:8080/nuxeo"
+SSL_VERIFY = False  # True/False

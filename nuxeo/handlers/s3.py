@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class UploaderS3(Uploader):
-    """ Helper for uploads using Amazon S3 Direct Upload (single). """
+    """Helper for uploads using Amazon S3 Direct Upload (single)."""
 
     __slots__ = ("bucket", "key", "s3_client", "_s3_config")
 
@@ -61,7 +61,7 @@ class UploaderS3(Uploader):
 
     def upload(self):
         # type: () -> None
-        """ Upload the file. """
+        """Upload the file."""
         with self.blob as fd:
             try:
                 # Note: we are using put_object() rather than upload_fileobj()
@@ -90,7 +90,7 @@ class UploaderS3(Uploader):
 
 
 class ChunkUploaderS3(UploaderS3):
-    """ Helper for chunked uploads using Amazon S3 Direct Upload (multipart). """
+    """Helper for chunked uploads using Amazon S3 Direct Upload (multipart)."""
 
     __slots__ = ("_data_packs", "_max_parts", "_to_upload")
 
@@ -228,6 +228,7 @@ class ChunkUploaderS3(UploaderS3):
         :return: the chunk count and uploaded chunks
         """
         if self.batch.multiPartUploadId:
+
             self.chunk_size, uploaded_chunks, self._data_packs = self._state()
         else:
             # It's a new upload
@@ -244,7 +245,7 @@ class ChunkUploaderS3(UploaderS3):
 
     def _compute_chunks_left(self):
         # type: () -> None
-        """ Compare the set of uploaded chunks with the final list. """
+        """Compare the set of uploaded chunks with the final list."""
         if self.is_complete():
             return
 

@@ -37,8 +37,8 @@ class API(APIEndpoint):
         # Available upload handlers
         self.__handlers = None  # type: Optional[List[str]]
 
-    def get(self, batch_id, file_idx=None):
-        # type: (str, Optional[int]) -> Union[List[Blob], Blob]
+    def get(self, batch_id, file_idx=None, ssl_verify=True):
+        # type: (str, Optional[int], bool) -> Union[List[Blob], Blob]
         """
         Get the detail of a batch.
 
@@ -53,7 +53,7 @@ class API(APIEndpoint):
         if file_idx is not None:
             path = f"{path}/{file_idx}"
 
-        resource = super().get(path=path)
+        resource = super().get(path=path, ssl_verify=ssl_verify)
 
         if file_idx is not None:
             resource.batchId = batch_id
@@ -62,8 +62,8 @@ class API(APIEndpoint):
             return []
         return resource
 
-    def post(self, handler="", **kwargs):
-        # type: (Optional[str], Any) -> Batch
+    def post(self, handler="", ssl_verify=True, **kwargs):
+        # type: (Optional[str], bool, Any) -> Batch
         """
         Create a batch.
 
@@ -79,7 +79,9 @@ class API(APIEndpoint):
 
             if handler != "default":
                 endpoint = f"{endpoint}/new/{handler}"
-        data = self.client.request("POST", endpoint, **kwargs).json()
+        data = self.client.request(
+            "POST", endpoint, ssl_verify=ssl_verify, **kwargs
+        ).json()
         # Set a uniq ID for that batch, it will be used by third-party upload handlers
         data["key"] = str(uuid4())
         return Batch.parse(data, service=self)
@@ -90,8 +92,8 @@ class API(APIEndpoint):
         # type: (Any) -> None
         raise NotImplementedError()
 
-    def delete(self, batch_id, file_idx=None):
-        # type: (str, Optional[int]) -> None
+    def delete(self, batch_id, file_idx=None, ssl_verify=True):
+        # type: (str, Optional[int], bool) -> None
         """
         Delete a batch or a blob.
 
@@ -104,10 +106,10 @@ class API(APIEndpoint):
         resource = batch_id
         if file_idx is not None:
             resource += f"/{file_idx}"
-        super().delete(resource)
+        super().delete(resource, ssl_verify=ssl_verify)
 
-    def handlers(self, force=False):
-        # type: (Optional[bool]) -> List[str]
+    def handlers(self, force=False, ssl_verify=True):
+        # type: (Optional[bool], Optional[bool]) -> List[str]
         """
         Get available upload handlers.
 
@@ -116,7 +118,7 @@ class API(APIEndpoint):
         if self.__handlers is None or force:
             endpoint = f"{self.endpoint}/handlers"
             try:
-                response = self.client.request("GET", endpoint)
+                response = self.client.request("GET", endpoint, ssl_verify=ssl_verify)
                 self.__handlers = list(response.json()["handlers"][0].values())
             except Exception:
                 # This is not good, no handlers == no uploads!
@@ -125,10 +127,10 @@ class API(APIEndpoint):
                 return []
         return self.__handlers
 
-    def has_s3(self):
-        # type: () -> bool
+    def has_s3(self, ssl_verify=True):
+        # type: (bool) -> bool
         """Return True if the Amazon S3 upload provider is available."""
-        return UP_AMAZON_S3 in self.handlers()
+        return UP_AMAZON_S3 in self.handlers(ssl_verify=ssl_verify)
 
     def send_data(
         self,
@@ -139,6 +141,7 @@ class API(APIEndpoint):
         index,  # type: int
         headers,  # type: Dict[str, str]
         data_len=0,  # type: Optional[int]
+        ssl_verify=True,  # type: bool
         **kwargs,  # type: Any
     ):
         # type: (...) -> Blob
@@ -165,13 +168,18 @@ class API(APIEndpoint):
 
         try:
             return super().post(
-                resource=data, path=path, raw=True, headers=headers, **kwargs
+                resource=data,
+                path=path,
+                raw=True,
+                headers=headers,
+                ssl_verify=ssl_verify,
+                **kwargs,
             )
         except HTTPError as e:
             raise UploadError(name, chunk=index if chunked else None, info=str(e))
 
-    def state(self, path, blob, chunk_size=UPLOAD_CHUNK_SIZE):
-        # type: (str, ActualBlob, int) -> Tuple[int, List[int]]
+    def state(self, path, blob, chunk_size=UPLOAD_CHUNK_SIZE, ssl_verify=True):
+        # type: (str, ActualBlob, int, bool) -> Tuple[int, List[int]]
         """
         Get the state of a blob.
 
@@ -189,7 +197,7 @@ class API(APIEndpoint):
         :return: a tuple of the chunk count and
                  the set of uploaded chunk indexes
         """
-        info = super().get(path, default=None)
+        info = super().get(path, default=None, ssl_verify=ssl_verify)
 
         if info:
             chunk_count = int(info.chunkCount)
@@ -206,6 +214,7 @@ class API(APIEndpoint):
         batch,  # type: Batch
         blob,  # type: ActualBlob
         chunked=False,  # type: bool
+        ssl_verify=True,  # type: bool
         chunk_size=UPLOAD_CHUNK_SIZE,  # type: int
         callback=None,  # type: Union[Callable, Tuple[Callable]]
     ):
@@ -230,8 +239,16 @@ class API(APIEndpoint):
         uploader.upload()
         return uploader.blob
 
-    def execute(self, batch, operation, file_idx=None, params=None, void_op=True):
-        # type: (Batch, str, Optional[int], Optional[Dict[str,Any]], bool) -> Any
+    def execute(
+        self,
+        batch,
+        operation,
+        file_idx=None,
+        params=None,
+        void_op=True,
+        ssl_verify=True,
+    ):
+        # type: (...) -> Any
         """
         Execute an operation with the batch or one of its files as an input.
 
@@ -249,16 +266,17 @@ class API(APIEndpoint):
 
         path = f"{path}/execute/{operation}"
 
-        headers = {}
-        if void_op:
-            headers = {"X-NXVoidOperation": "true"}
-
+        headers = {"X-NXVoidOperation": "true"} if void_op else {}
         return self.client.request(
-            "POST", path, data={"params": params}, headers=headers or None
+            "POST",
+            path,
+            data={"params": params},
+            headers=headers or None,
+            ssl_verify=ssl_verify,
         )
 
-    def attach(self, batch, doc, file_idx=None):
-        # type: (Batch, str, Optional[int]) -> Any
+    def attach(self, batch, doc, file_idx=None, ssl_verify=True):
+        # type: (Batch, str, Optional[int], Optional[bool]) -> Any
         """
         Attach one or all files of a batch to a document.
 
@@ -270,10 +288,12 @@ class API(APIEndpoint):
         params = {"document": doc}
         if file_idx is None and batch.upload_idx > 1:
             params["xpath"] = "files:files"
-        return self.execute(batch, "Blob.Attach", file_idx, params)
+        return self.execute(
+            batch, "Blob.Attach", file_idx, params, ssl_verify=ssl_verify
+        )
 
-    def complete(self, batch, **kwargs):
-        # type: (Batch, Any) -> Any
+    def complete(self, batch, ssl_verify=True, **kwargs):
+        # type: (Batch, bool, Any) -> Any
         """
         Complete an upload.
         This is a no-op when using the default upload provider.
@@ -294,7 +314,9 @@ class API(APIEndpoint):
                 "etag": batch.etag,
             }
             endpoint = f"{self.endpoint}/{batch.uid}/{batch.upload_idx - 1}/complete"
-            return self.client.request("POST", endpoint, data=params, **kwargs)
+            return self.client.request(
+                "POST", endpoint, data=params, ssl_verify=ssl_verify, **kwargs
+            )
 
         # Doing a /complete with the default upload provider
         # will end on a HTTP 409 Conflict error.
@@ -339,8 +361,8 @@ class API(APIEndpoint):
 
         return cls(self, batch, blob, chunk_size, callback, **kwargs)
 
-    def refresh_token(self, batch, **kwargs):
-        # type: (Batch, Any) -> Dict[str, Any]
+    def refresh_token(self, batch, ssl_verify=True, **kwargs):
+        # type: (Batch, bool, Any) -> Dict[str, Any]
         """
         Get fresh tokens for the given batch.
         The *Batch.extraInfo* dict will be updated inplace with the new data.
@@ -363,7 +385,9 @@ class API(APIEndpoint):
 
         callback = kwargs.pop("token_callback")
         endpoint = f"{self.endpoint}/{batch.uid}/refreshToken"
-        creds = self.client.request("POST", endpoint, **kwargs).json()
+        creds = self.client.request(
+            "POST", endpoint, ssl_verify=ssl_verify, **kwargs
+        ).json()
         if creds == batch.extraInfo:
             return creds
 

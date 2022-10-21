@@ -4,6 +4,7 @@ from nuxeo.auth import BasicAuth
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import BadQuery
 from nuxeo.users import User
+from .constants import SSL_VERIFY
 
 
 class Georges(object):
@@ -11,18 +12,23 @@ class Georges(object):
         self.server = server
 
     def __enter__(self):
-        user = User(
-            properties={
-                "lastName": "Abitbol",
-                "firstName": "Georges",
-                "username": "georges",
-                "email": "georges@example.com",
-                "company": "Pom Pom Gali resort",
-                "password": "Test",
-            }
-        )
-        self.user = self.server.users.create(user)
-        return self.user
+        existed_user = None
+        try:
+            existed_user = self.server.users.get("georges", ssl_verify=SSL_VERIFY)
+            existed_user.delete()
+        finally:
+            user = User(
+                properties={
+                    "lastName": "Abitbol",
+                    "firstName": "Georges",
+                    "username": "georges",
+                    "email": "georges@example.com",
+                    "company": "Pom Pom Gali resort",
+                    "password": "Test",
+                }
+            )
+            self.user = self.server.users.create(user, ssl_verify=SSL_VERIFY)
+            return self.user
 
     def __exit__(self, *args):
         self.user.delete()
@@ -33,17 +39,17 @@ def test_create_delete_user_dict(server):
         assert georges.properties["firstName"] == "Georges"
         assert georges.properties["lastName"] == "Abitbol"
         assert georges.properties["company"] == "Pom Pom Gali resort"
-        assert server.users.exists("georges")
-    assert not server.users.exists("georges")
+        assert server.users.exists("georges", ssl_verify=SSL_VERIFY)
+    assert not server.users.exists("georges", ssl_verify=SSL_VERIFY)
 
 
 def test_create_wrong_arguments(server):
     with pytest.raises(BadQuery):
-        server.users.create(1)
+        server.users.create(1, ssl_verify=SSL_VERIFY)
 
 
 def test_current_user(server):
-    user = server.users.current_user()
+    user = server.users.current_user(ssl_verify=SSL_VERIFY)
     assert isinstance(user, User)
     assert user.uid == "Administrator"
     assert "administrators" in [g["name"] for g in user.extendedGroups]
@@ -51,14 +57,14 @@ def test_current_user(server):
 
 
 def test_fetch(server):
-    user = server.users.get("Administrator")
+    user = server.users.get("Administrator", ssl_verify=SSL_VERIFY)
     assert user
     assert repr(user)
     assert "administrators" in user.properties["groups"]
 
 
 def test_fetch_unknown_user(server):
-    assert not server.users.exists("Administrator2")
+    assert not server.users.exists("Administrator2", ssl_verify=SSL_VERIFY)
 
 
 def test_lazy_loading(server):
@@ -78,12 +84,12 @@ def test_update_user(server, host):
         company = "Classe Américaine"
         georges.properties["company"] = company
         georges.save()
-        user = server.users.get("georges")
+        user = server.users.get("georges", ssl_verify=SSL_VERIFY)
         assert user.properties["company"] == company
 
         auth = BasicAuth("georges", "Test")
         server2 = Nuxeo(host=host, auth=auth)
-        assert server2.users.current_user()
+        assert server2.users.current_user(ssl_verify=SSL_VERIFY)
 
 
 def test_update_user_autoset_change_password(server, host):
@@ -93,4 +99,4 @@ def test_update_user_autoset_change_password(server, host):
 
         auth = BasicAuth("georges", "Test2")
         server2 = Nuxeo(host=host, auth=auth)
-        assert server2.users.current_user()
+        assert server2.users.current_user(ssl_verify=SSL_VERIFY)

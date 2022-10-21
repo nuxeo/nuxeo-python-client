@@ -107,9 +107,10 @@ class NuxeoClient(object):
         self.headers = {
             "X-Application-Name": app_name,
             "X-Client-Version": version,
-            "User-Agent": app_name + "/" + version,
+            "User-Agent": f"{app_name}/{version}",
             "Accept": "application/json, */*",
         }
+
         self.schemas = kwargs.get("schemas", "*")
         self.repository = kwargs.pop("repository", "default")
         self._session = requests.sessions.Session()
@@ -119,6 +120,11 @@ class NuxeoClient(object):
             self._session.cookies = cookies
         self._session.stream = True
         self.client_kwargs = kwargs
+
+        self.ssl_verify_needed = True
+        if "verify" in kwargs:
+            self.ssl_verify_needed = kwargs["verify"]
+
         atexit.register(self.on_exit)
 
         # Cache for the server information
@@ -183,7 +189,7 @@ class NuxeoClient(object):
         if params:
             data.update(params)
 
-        url = self.api_path + "/search/lang/NXQL/execute"
+        url = f"{self.api_path}/search/lang/NXQL/execute"
         return self.request("GET", url, params=data).json()
 
     def set(self, repository=None, schemas=None):
@@ -210,6 +216,7 @@ class NuxeoClient(object):
         headers=None,  # type: Optional[Dict[str, str]]
         data=None,  # type: Optional[Any]
         raw=False,  # type: bool
+        ssl_verify=True,  # type: bool
         **kwargs,  # type: Any
     ):
         # type: (...) -> Union[requests.Response, Any]
@@ -273,7 +280,7 @@ class NuxeoClient(object):
         auth = kwargs.pop("auth", None) or self.auth
 
         _kwargs = {k: v for k, v in kwargs.items() if k != "params"}
-        logged_params = kwargs.get("params", data if not raw else {})
+        logged_params = kwargs.get("params", {} if raw else data)
         logger.debug(
             (
                 f"Calling {method} {url!r} with headers={headers!r},"
@@ -283,9 +290,23 @@ class NuxeoClient(object):
         )
 
         exc = None
+        ssl_verify_needed = self.ssl_verify_needed
+
+        if ssl_verify_needed:
+            ssl_verify_needed = ssl_verify
+        if ssl_verify_needed and "verify" in kwargs:
+            ssl_verify_needed = kwargs["verify"]
+        kwargs.pop("verify")
+
         try:
             resp = self._session.request(
-                method, url, headers=headers, auth=auth, data=data, **kwargs
+                method,
+                url,
+                headers=headers,
+                auth=auth,
+                data=data,
+                verify=ssl_verify_needed,
+                **kwargs,
             )
             resp.raise_for_status()
         except Exception as exc:
@@ -322,6 +343,7 @@ class NuxeoClient(object):
         app_name=DEFAULT_APP_NAME,  # type: str
         device=None,  # type: Optional[str]
         revoke=False,  # type: bool
+        ssl_verify=True,  # type: bool
     ):
         # type: (...) -> str
         """
@@ -343,6 +365,7 @@ class NuxeoClient(object):
             device=device,
             revoke=revoke,
             auth=self.auth,
+            ssl_verify=ssl_verify,
         )
 
         # Use the (potentially re-newed) token from now on
@@ -359,8 +382,8 @@ class NuxeoClient(object):
         else:
             return bool(response)
 
-    def server_info(self, force=False):
-        # type: (bool) -> Dict[str, str]
+    def server_info(self, force=False, ssl_verify=True):
+        # type: (bool, bool) -> Dict[str, str]
         """
         Retreive server information.
 
@@ -368,7 +391,7 @@ class NuxeoClient(object):
         """
         if force or self._server_info is None:
             try:
-                response = self.request("GET", "json/cmis")
+                response = self.request("GET", "json/cmis", ssl_verify=ssl_verify)
                 self._server_info = response.json()["default"]
             except Exception:
                 logger.warning(
@@ -377,11 +400,11 @@ class NuxeoClient(object):
         return self._server_info
 
     @property
-    def server_version(self):
-        # type: () -> str
+    def server_version(self, ssl_verify=True):
+        # type: (bool) -> str
         """Return the server version or "unknown"."""
         try:
-            return self.server_info()["productVersion"]
+            return self.server_info(ssl_verify)["productVersion"]
         except Exception:
             return "unknown"
 
@@ -431,10 +454,12 @@ class Nuxeo(object):
         host=DEFAULT_URL,  # type: str
         app_name=DEFAULT_APP_NAME,  # type: str
         version=__version__,  # type: str
+        verify=True,  # bool
         client=NuxeoClient,  # type: Type[NuxeoClient]
         **kwargs,  # type: Any
     ):
         # type: (...) -> None
+        kwargs["verify"] = verify
         self.client = client(
             auth, host=host, app_name=app_name, version=version, **kwargs
         )

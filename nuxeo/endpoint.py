@@ -48,6 +48,7 @@ class APIEndpoint(object):
         cls=None,  # type: Optional[Type]
         raw=False,  # type: bool
         single=False,  # type: bool
+        ssl_verify=True,  # type: bool
         **kwargs,  # type: Any
     ):
         # type: (...) -> Any
@@ -71,7 +72,7 @@ class APIEndpoint(object):
         if path:
             endpoint = f"{endpoint}/{path}"
 
-        response = self.client.request("GET", endpoint, **kwargs)
+        response = self.client.request("GET", endpoint, ssl_verify=ssl_verify, **kwargs)
 
         if not isinstance(response, Response):
             return response
@@ -91,8 +92,8 @@ class APIEndpoint(object):
 
         return cls.parse(json, service=self)
 
-    def post(self, resource=None, path=None, raw=False, **kwargs):
-        # type: (Optional[Any], Optional[str], bool, Any) -> Any
+    def post(self, resource=None, path=None, raw=False, ssl_verify=True, **kwargs):
+        # type: (Optional[Any], Optional[str], bool, bool, Any) -> Any
         """
         Creates a new instance of the resource.
 
@@ -113,15 +114,15 @@ class APIEndpoint(object):
             endpoint = f"{endpoint}/{path}"
 
         response = self.client.request(
-            "POST", endpoint, data=resource, raw=raw, **kwargs
+            "POST", endpoint, data=resource, raw=raw, ssl_verify=ssl_verify, **kwargs
         )
 
         if isinstance(response, dict):
             return response
         return self._cls.parse(response.json(), service=self)
 
-    def put(self, resource=None, path=None, **kwargs):
-        # type: (Optional[Model], Optional[str], Any) -> Any
+    def put(self, resource=None, path=None, ssl_verify=True, **kwargs):
+        # type: (Optional[Model], Optional[str], bool, Any) -> Any
         """
         Edits an existing resource.
 
@@ -134,13 +135,15 @@ class APIEndpoint(object):
 
         data = resource.as_dict() if resource else resource
 
-        response = self.client.request("PUT", endpoint, data=data, **kwargs)
+        response = self.client.request(
+            "PUT", endpoint, ssl_verify=ssl_verify, data=data, **kwargs
+        )
 
         if resource:
             return self._cls.parse(response.json(), service=self)
 
-    def delete(self, resource_id):
-        # type: (str) -> None
+    def delete(self, resource_id, ssl_verify=True):
+        # type: (str, bool) -> None
         """
         Deletes an existing resource.
 
@@ -148,10 +151,10 @@ class APIEndpoint(object):
         """
 
         endpoint = f"{self.endpoint}/{resource_id}"
-        self.client.request("DELETE", endpoint)
+        self.client.request("DELETE", endpoint, ssl_verify=ssl_verify)
 
-    def exists(self, path):
-        # type: (str) -> bool
+    def exists(self, path, ssl_verify=True):
+        # type: (str, bool) -> bool
         """
         Checks if a resource exists.
 
@@ -161,7 +164,7 @@ class APIEndpoint(object):
         endpoint = f"{self.endpoint}/{path}"
 
         try:
-            self.client.request("GET", endpoint)
+            self.client.request("GET", endpoint, ssl_verify=ssl_verify)
             return True
         except HTTPError as e:
             if e.status != 404:

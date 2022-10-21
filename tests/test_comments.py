@@ -3,7 +3,7 @@ import pytest
 from nuxeo.models import Comment, Document
 from nuxeo.utils import version_lt
 
-from .constants import WORKSPACE_NAME, WORKSPACE_ROOT
+from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, SSL_VERIFY
 
 document = Document(
     name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}
@@ -20,7 +20,9 @@ def test_crud(server):
         assert not doc.comments()
 
         # Create a comment for that document
-        comment = server.comments.create(doc.uid, "This is my comment")
+        comment = server.comments.create(
+            doc.uid, "This is my comment", ssl_verify=SSL_VERIFY
+        )
         assert isinstance(comment, Comment)
 
         # Check we can retrieve the comment with its ID
@@ -43,22 +45,25 @@ def test_crud(server):
         assert comments[0].modificationDate is not None
 
         # Delete the comment
-        comment.delete()
+        comment.delete(ssl_verify=SSL_VERIFY)
 
         # Check there si no comments for the document
-        assert not doc.comments()
+        assert not doc.comments(ssl_verify=SSL_VERIFY)
     finally:
-        doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)
 
 
 def test_reply(server):
     if version_lt(server.client.server_version, "10.3"):
         pytest.skip("Nuxeo 10.3 minimum")
-
-    doc = server.documents.create(document, parent_path=WORKSPACE_ROOT)
+    doc = server.documents.create(
+        document, parent_path=WORKSPACE_ROOT, ssl_verify=SSL_VERIFY
+    )
     try:
         # Create a comment for that document
-        comment = server.comments.create(doc.uid, "This is my comment")
+        comment = server.comments.create(
+            doc.uid, "This is my comment", ssl_verify=SSL_VERIFY
+        )
         assert not comment.has_replies()
 
         # Add a 1st reply to that comment
@@ -67,7 +72,7 @@ def test_reply(server):
         assert comment.has_replies()
 
         # Check the comment has 1 reply (refetch it to ensure data is correct)
-        replies = server.comments.get(doc.uid, uid=comment.uid)
+        replies = server.comments.get(doc.uid, uid=comment.uid, ssl_verify=SSL_VERIFY)
         assert isinstance(replies, Comment)
         assert replies.numberOfReplies == 1
         assert replies.numberOfReplies == comment.numberOfReplies
@@ -87,12 +92,12 @@ def test_reply(server):
         assert reply2.has_replies()
 
         # Check the comment has 2 direct replies
-        replies = server.comments.get(doc.uid, uid=comment.uid)
+        replies = server.comments.get(doc.uid, uid=comment.uid, ssl_verify=SSL_VERIFY)
         assert replies.numberOfReplies == 2
         assert replies.lastReplyDate == reply2.creationDate
 
         # Check the 2nd reply has 1 reply
-        replies = server.comments.get(doc.uid, uid=reply2.uid)
+        replies = server.comments.get(doc.uid, uid=reply2.uid, ssl_verify=SSL_VERIFY)
         assert replies.numberOfReplies == 1
         assert replies.lastReplyDate == last_reply.creationDate
 
@@ -102,4 +107,4 @@ def test_reply(server):
         assert len(comment.replies(pageSize=1, currentPageIndex=1)) == 1
         assert len(comment.replies(pageSize=1, currentPageIndex=2)) == 0
     finally:
-        doc.delete()
+        doc.delete(ssl_verify=SSL_VERIFY)

@@ -40,7 +40,7 @@ PARAM_TYPES = {
 
 
 class API(APIEndpoint):
-    """ Endpoint for operations. """
+    """Endpoint for operations."""
 
     __slots__ = ()
 
@@ -56,7 +56,7 @@ class API(APIEndpoint):
 
     def get(self, **kwargs):
         # type: (Any) -> Dict[str, Any]
-        """ Get the list of available operations from the server. """
+        """Get the list of available operations from the server."""
         return super().get()
 
     def put(self, **kwargs):
@@ -135,6 +135,7 @@ class API(APIEndpoint):
         void_op=False,  # type: bool
         headers=None,  # type: Optional[Dict[str, str]]
         file_out=None,  # type: Optional[str]
+        ssl_verify=True,  # type: bool
         **kwargs,  # type: Any
     ):
         # type: (...) -> Any
@@ -192,6 +193,7 @@ class API(APIEndpoint):
             enrichers=enrichers,
             default=default,
             timeout=timeout,
+            ssl_verify=ssl_verify,
         )
 
         # Save to a file, part by part of chunk_size
@@ -214,7 +216,7 @@ class API(APIEndpoint):
     @staticmethod
     def get_attributes(operation, **kwargs):
         # type: (Operation, Any) -> Tuple[str, Any, Dict[str, Any]]
-        """ Get the operation attributes. """
+        """Get the operation attributes."""
         if operation:
             command = operation.command
             input_obj = operation.input_obj
@@ -229,7 +231,7 @@ class API(APIEndpoint):
 
     def build_payload(self, params, context):
         # type: (Dict[str, Any], Dict[str, Any]) -> Dict[str, Any]
-        """ Create sanitized operation payload. """
+        """Create sanitized operation payload."""
         data = {"params": self.sanitize(params)}  # type: Dict[str, Any]
         clean_context = self.sanitize(context)  # type: Dict[str, Any]
         if clean_context:
@@ -240,7 +242,7 @@ class API(APIEndpoint):
     @staticmethod
     def sanitize(obj):
         # type: (Dict[str, Any]) -> Dict[str, Any]
-        """ Sanitize the operation parameters. """
+        """Sanitize the operation parameters."""
         if not obj:
             return {}
 
@@ -262,7 +264,7 @@ class API(APIEndpoint):
 
     def new(self, command, **kwargs):
         # type: (str, Any) -> Operation
-        """ Make a new Operation object. """
+        """Make a new Operation object."""
         return Operation(command=command, service=self, **kwargs)
 
     def save_to_file(self, operation, resp, path, **kwargs):
@@ -285,7 +287,6 @@ class API(APIEndpoint):
         unlock_path = kwargs.pop("unlock_path", None)
         lock_path = kwargs.pop("lock_path", None)
         use_lock = callable(unlock_path) and callable(lock_path)
-        locker = None
 
         # Several callbacks are accepted, tuple is used to keep order
         callback = kwargs.pop("callback", None)
@@ -294,8 +295,7 @@ class API(APIEndpoint):
         else:
             callbacks = tuple([callback] if callable(callback) else [])
 
-        if use_lock:
-            locker = unlock_path(path)
+        locker = unlock_path(path) if use_lock else None
         try:
             with open(path, "ab") as f:
                 chunk_size = kwargs.get("chunk_size", self.client.chunk_size)
