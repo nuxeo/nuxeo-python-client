@@ -11,6 +11,7 @@ on:
   push:
     branches: [master]
     paths:
+      - ".github/workflows/unit_tests.yml"
       - "nuxeo/**/*.py"
       - "setup.*"
       - "tests/*.py"
