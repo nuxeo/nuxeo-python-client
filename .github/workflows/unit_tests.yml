@@ -26,7 +26,7 @@ jobs:
         nuxeo: [ {"url": "https://nuxeo-drive-preview.platform.dev.nuxeo.com/nuxeo:2021", "name": "2021"}, {"url": "https://drive-2023.beta.nuxeocloud.com/nuxeo:2023", "name": "2023" } ]
         python:
           # Maximum supported version
-          # Note: 3.10 is still in alpha, so we stick with 3.9 until there is an official 3.10
+          # Note: 3.10  is still in alpha, so we stick with 3.9 until there is an official 3.10
           - "3.9"
 
     name: unit-tests(${{ matrix.nuxeo.name }}, ${{ matrix.python }})
