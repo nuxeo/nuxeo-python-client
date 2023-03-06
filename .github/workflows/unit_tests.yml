@@ -7,7 +7,12 @@ on:
 
   # Check on any PR
   pull_request:
-    branches: "*"
+    #branches: "*"
+    paths:
+      - ".github/workflows/unit_tests.yml"
+      - "nuxeo/**/*.py"
+      - "setup.*"
+      - "tests/*.py"
   push:
     branches: [master]
     paths:
