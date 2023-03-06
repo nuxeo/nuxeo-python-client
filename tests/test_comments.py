@@ -25,7 +25,7 @@ def test_crud(server):
         )
         assert isinstance(comment, Comment)
 
-        # Check we can retrieve the comment with its ID
+        # Check we can retrieve  the comment with its ID
         assert server.comments.get(doc.uid, uid=comment.uid)
 
         # There is now 1 comment
