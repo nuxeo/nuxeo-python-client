@@ -2,17 +2,12 @@ name: Unit tests
 
 on:
   # Check for updates every day
- # schedule:
- #   - cron: "0 0 * * *"
+  schedule:
+    - cron: "0 0 * * *"
 
   # Check on any PR
   pull_request:
-    #branches: "*"
-    paths:
-      - ".github/workflows/unit_tests.yml"
-      - "nuxeo/**/*.py"
-      - "setup.*"
-      - "tests/*.py"
+    branches: "*"
   push:
     branches: [master]
     paths:
@@ -27,17 +22,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nuxeo: [ {"url": "https://nuxeo-drive-preview.platform.dev.nuxeo.com/nuxeo:2021", "name": "2021"}, {"url": "https://drive-2023.beta.nuxeocloud.com/nuxeo:2023", "name": "2023" } ]
+        nuxeo:
+          - "2021"
+          - "2023.0.91"
         python:
           # Maximum supported version
           # Note: 3.10 is  still in alpha, so we stick with 3.9 until there is an official 3.10
           - "3.9"
 
-    name: unit-tests(${{ matrix.nuxeo.name }}, ${{ matrix.python }})
-
     services:
       nuxeo:
-        image: ${{ matrix.nuxeo.url }}
+        image: docker-private.packages.nuxeo.com/nuxeo/nuxeo:${{ matrix.nuxeo }}
         credentials:
           username: ${{ secrets.NUXEO_DOCKER_USER }}
           password: ${{ secrets.NUXEO_DOCKER_PWD }}
