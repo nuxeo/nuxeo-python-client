@@ -11,7 +11,7 @@ Release date: ``2022-xx-xx``
 Technical changes
 -----------------
 
-
+- Switched flake8 from gitlab to github
 
 
 6.1.0
