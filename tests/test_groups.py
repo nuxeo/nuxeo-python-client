@@ -48,30 +48,23 @@ def test_create_delete_subgroup(server):
         if server.groups.exists("ParentGroup", ssl_verify=SSL_VERIFY):
             group1 = server.groups.get("ParentGroup", ssl_verify=SSL_VERIFY)
             group1.delete(ssl_verify=SSL_VERIFY)
-            print("Existing ParentGroup deleted")
     finally:
         group1 = server.groups.create(group_1, ssl_verify=SSL_VERIFY)
-        print("ParentGroup created")
 
     # Create second group
     group_2 = Group(groupname="SubGroup", grouplabel="SubGroup Test")
     try:
-        # if server.groups.exists("SubGroup", ssl_verify=SSL_VERIFY):
         group2 = server.groups.get("SubGroup", ssl_verify=SSL_VERIFY)
         group2.delete(ssl_verify=SSL_VERIFY)
-        print("Existing SubGroup deleted")
     finally:
         group2 = server.groups.create(group_2, ssl_verify=SSL_VERIFY)
-        print("SubGroup created")
 
     # Add group2 to subgroups of group1
     group1.memberGroups = [group2.groupname]
     group1.save()
 
     group2.delete(ssl_verify=SSL_VERIFY)
-    print("ParentGroup deleted finally")
     group1.delete(ssl_verify=SSL_VERIFY)
-    print("ubGroup deleted finally")
 
 
 def test_create_wrong_arguments(server):

@@ -184,6 +184,7 @@ def test_create_doc_with_space_and_delete(server):
     document = Doc(server, doc_type="Workspace")
     document.filename += " (2)"
     with document as doc:
+        print(f"document : {doc}")
         assert isinstance(doc, Document)
         assert " " in doc.path
         assert " " in doc.get("dc:title")
