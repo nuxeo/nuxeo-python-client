@@ -56,10 +56,10 @@ def test_create_delete_subgroup(server):
     # Create second group
     group_2 = Group(groupname="SubGroup", grouplabel="SubGroup Test")
     try:
-        if server.groups.exists("SubGroup", ssl_verify=SSL_VERIFY):
-            group2 = server.groups.get("SubGroup", ssl_verify=SSL_VERIFY)
-            group2.delete(ssl_verify=SSL_VERIFY)
-            print("Existing SubGroup deleted")
+        # if server.groups.exists("SubGroup", ssl_verify=SSL_VERIFY):
+        group2 = server.groups.get("SubGroup", ssl_verify=SSL_VERIFY)
+        group2.delete(ssl_verify=SSL_VERIFY)
+        print("Existing SubGroup deleted")
     finally:
         group2 = server.groups.create(group_2, ssl_verify=SSL_VERIFY)
         print("SubGroup created")
