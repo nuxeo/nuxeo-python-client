@@ -175,11 +175,12 @@ def test_guess_mimetype(name, mime):
     if isinstance(mime, tuple):
         assert guess_mimetype(name) in mime
     else:
+        print(f"name: {name}, type: {guess_mimetype(name)}")
         assert guess_mimetype(name) == mime
 
 
 def test_guess_mimetype_patch():
-    """ Test WIN32_PATCHED_MIME_TYPES. """
+    """Test WIN32_PATCHED_MIME_TYPES."""
 
     with patch.object(sys, "platform", new="win32"):
         assert guess_mimetype("foo.ppt")
