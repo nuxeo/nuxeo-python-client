@@ -109,7 +109,7 @@ class APIEndpoint(object):
                 raise BadQuery("Data must be a Model object or a dictionary.")
 
         endpoint = kwargs.pop("endpoint", "") or self.endpoint
-
+        print(f">>>>>>> path: {path}")
         if path:
             endpoint = f"{endpoint}/{path}"
 
