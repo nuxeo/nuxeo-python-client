@@ -57,11 +57,8 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -U pip tox
 
-      - name: Add Mimetype
-        run: python -c "import mimetypes; mimetypes.add_type('application/javascript', '.js')"
-
       - name: Check JS File content type
-        run: python -c "import mimetypes; print (mimetypes.guess_type('lunr.js'))"
+        run: python -c "import mimetypes; mimetypes.add_type('application/javascript', '.js'); print (mimetypes.guess_type('lunr.js'))"
 
       - name: Unit tests
         env:
