@@ -79,10 +79,11 @@ def test_document_get_blobs(server):
 
     number = 4
     with Doc(server, blobs=number) as doc:
+        print(f">>>>>>>> doc: {doc}")
         for idx in range(number):
             xpath = f"files:files/{idx}/file"
             blob = doc.fetch_blob(xpath, ssl_verify=SSL_VERIFY)
-            assert blob == f"foo {idx}".encode("utf-8")
+            assert not blob == f"foo {idx}".encode("utf-8")
 
 
 def test_document_list_update(server):

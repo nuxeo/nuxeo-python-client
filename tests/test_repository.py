@@ -183,7 +183,6 @@ def test_create_doc_and_delete(server):
 def test_create_doc_with_space_and_delete(server):
     document = Doc(server, doc_type="Workspace")
     document.filename += " (2)"
-    document = server.documents.get(uid=document.uid)
     with document as doc:
         print(f"document : {doc}")
         assert isinstance(doc, Document)
