@@ -31,6 +31,7 @@ class Doc(object):
             properties={"dc:title": self.filename},
         )
         self.doc = self.server.documents.create(doc, parent_path=WORKSPACE_ROOT)
+        print(f" self.doc: {self.doc}")
 
         if self.blob:
             blob = BufferBlob(
@@ -39,6 +40,8 @@ class Doc(object):
             batch = self.server.uploads.batch()
             blob = batch.upload(blob)
             self.doc.properties["file:content"] = blob
+            print(f"path : {self.doc.path}")
+            # self.doc.path = WORKSPACE_ROOT + "/" + self.filename
             self.doc.save()
         return self.doc
 
