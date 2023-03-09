@@ -57,6 +57,9 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -U pip tox
 
+      - name: Check JS File content type
+        run: python -c "import mimetypes; print (mimetypes.guess_type('lunr.js'))"
+
       - name: Unit tests
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
