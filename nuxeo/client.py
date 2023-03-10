@@ -245,12 +245,9 @@ class NuxeoClient(object):
             raise BadQuery("method parameter is not a valid HTTP method.")
 
         # Construct the full URL without double slashes
-        print(f">>>>path.lstrip('/') : {path.lstrip('/')}")
         url = self.host + path.lstrip("/")
-        print(f">>>> url: {url}")
         if "adapter" in kwargs:
             url = f"{url}/@{kwargs.pop('adapter')}"
-            print(f">>> if url: {url}")
 
         kwargs.update(self.client_kwargs)
 
@@ -311,7 +308,7 @@ class NuxeoClient(object):
                 verify=ssl_verify_needed,
                 **kwargs,
             )
-            print(f">>> resp: {resp}")
+            print(f">>> resp: {resp.json()}")
             resp.raise_for_status()
         except Exception as exc:
             if default is object:

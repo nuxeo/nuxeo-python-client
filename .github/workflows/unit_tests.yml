@@ -17,7 +17,7 @@ on:
 
 jobs:
   unit-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
@@ -56,9 +56,6 @@ jobs:
 
       - name: Install dependencies
         run: python -m pip install -U pip tox
-
-      - name: Check JS File content type
-        run: python -c "import mimetypes; print (mimetypes.guess_type('lunr.js'))"
 
       - name: Unit tests
         env:

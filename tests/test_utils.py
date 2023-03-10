@@ -96,7 +96,7 @@ def test_get_digester(hash, digester):
         ("foo.html", "text/html"),
         ("foo.css", "text/css"),
         ("foo.csv", "text/csv"),
-        ("foo.js", "application/javascript"),
+        ("foo.js", "text/javascript"),
         # Image
         ("foo.jpg", "image/jpeg"),
         ("foo.jpeg", "image/jpeg"),
