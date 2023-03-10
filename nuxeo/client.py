@@ -308,7 +308,6 @@ class NuxeoClient(object):
                 verify=ssl_verify_needed,
                 **kwargs,
             )
-            print(f">>> resp: {resp.json()}")
             resp.raise_for_status()
         except Exception as exc:
             if default is object:
