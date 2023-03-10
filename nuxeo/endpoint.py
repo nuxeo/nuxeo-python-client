@@ -115,7 +115,6 @@ class APIEndpoint(object):
         response = self.client.request(
             "POST", endpoint, data=resource, raw=raw, ssl_verify=ssl_verify, **kwargs
         )
-        print(f">>>>>>> response: {response.json()}")
 
         if isinstance(response, dict):
             return response
