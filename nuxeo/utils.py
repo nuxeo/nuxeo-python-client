@@ -127,13 +127,11 @@ def guess_mimetype(filename):
     # type: (str) -> str
     """Guess the mimetype of a given file."""
     mime_type, _ = mimetypes.guess_type(filename)
-    print(f" output mime: {mime_type}")
     if mime_type:
         if sys.platform == "win32":
             # Patch bad Windows MIME types
             # See http://bugs.python.org/issue15207 and NXP-11660
             mime_type = WIN32_PATCHED_MIME_TYPES.get(mime_type, mime_type)
-            print(f"validated mime: {mime_type} ")
         return mime_type
 
     return "application/octet-stream"

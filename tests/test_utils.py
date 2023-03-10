@@ -175,7 +175,6 @@ def test_guess_mimetype(name, mime):
     if isinstance(mime, tuple):
         assert guess_mimetype(name) in mime
     else:
-        print(f"name: {name}, type: {guess_mimetype(name)}")
         assert guess_mimetype(name) == mime
 
 
