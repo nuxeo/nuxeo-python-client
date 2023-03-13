@@ -115,8 +115,7 @@ class NuxeoClient(object):
         self.repository = kwargs.pop("repository", "default")
         self._session = requests.sessions.Session()
         self._session.hooks["response"] = [log_response]
-        cookies = kwargs.pop("cookies", None)
-        if cookies:
+        if cookies := kwargs.pop("cookies", None):
             self._session.cookies = cookies
         self._session.stream = True
         self.client_kwargs = kwargs
@@ -187,7 +186,7 @@ class NuxeoClient(object):
 
         data = {"query": query}
         if params:
-            data.update(params)
+            data |= params
 
         url = f"{self.api_path}/search/lang/NXQL/execute"
         return self.request("GET", url, params=data).json()
@@ -249,7 +248,7 @@ class NuxeoClient(object):
         if "adapter" in kwargs:
             url = f"{url}/@{kwargs.pop('adapter')}"
 
-        kwargs.update(self.client_kwargs)
+        kwargs |= self.client_kwargs
 
         # Set the default value to `object` to allow someone
         # to set `timeout` to `None`.
@@ -262,8 +261,7 @@ class NuxeoClient(object):
         headers.update(
             {"X-NXDocumentProperties": self.schemas, "X-NXRepository": self.repository}
         )
-        enrichers = kwargs.pop("enrichers", None)
-        if enrichers:
+        if enrichers := kwargs.pop("enrichers", None):
             headers["enrichers-document"] = ", ".join(enrichers)
 
         headers.update(self.headers)
@@ -424,7 +422,7 @@ class NuxeoClient(object):
         response = error.response
         error_data = {}
         try:
-            error_data.update(response.json())
+            error_data |= response.json()
         except ValueError:
             error_data["message"] = response.content
         finally:

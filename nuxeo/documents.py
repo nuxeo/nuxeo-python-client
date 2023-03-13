@@ -60,14 +60,11 @@ class API(APIEndpoint):
         :param parent_path: the path of the parent document
         :return: the created document
         """
-        # print(f">>>>> documents.post: {parent_path}")
-        doc = super().post(
+        return super().post(
             document,
             path=self._path(uid=parent_id, path=parent_path),
             ssl_verify=ssl_verify,
         )
-        # print(f">>>>> doc :{doc}")
-        return doc
 
     create = post  # Alias for clarity
 
@@ -181,9 +178,7 @@ class API(APIEndpoint):
             ):
                 raise UnavailableConvertor(options)
             elif "Internal Server Error" in e.message:
-                raise UnavailableBogusConvertor(
-                    e.message, options["converter"] if options["converter"] else ""
-                )
+                raise UnavailableBogusConvertor(e.message, options["converter"] or "")
             raise e
 
     def fetch_acls(self, uid, ssl_verify=True):
@@ -412,7 +407,7 @@ class API(APIEndpoint):
         :param uid: the uid of the document
         """
         if version_lt(self.client.server_version, "10.2"):
-            input_obj = "doc:" + uid
+            input_obj = f"doc:{uid}"
             res_obj = self.operations.execute(
                 command="Document.SetLifeCycle", input_obj=input_obj, value="undelete"
             )
