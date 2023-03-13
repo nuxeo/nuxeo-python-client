@@ -60,13 +60,13 @@ class API(APIEndpoint):
         :param parent_path: the path of the parent document
         :return: the created document
         """
-        print(f">>>>> documents.post: {parent_path}")
+        # print(f">>>>> documents.post: {parent_path}")
         doc = super().post(
             document,
             path=self._path(uid=parent_id, path=parent_path),
             ssl_verify=ssl_verify,
         )
-        print(f">>>>> doc :{doc}")
+        # print(f">>>>> doc :{doc}")
         return doc
 
     create = post  # Alias for clarity
