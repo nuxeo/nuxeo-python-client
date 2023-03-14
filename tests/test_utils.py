@@ -96,7 +96,7 @@ def test_get_digester(hash, digester):
         ("foo.html", "text/html"),
         ("foo.css", "text/css"),
         ("foo.csv", "text/csv"),
-        ("foo.js", "application/javascript"),
+        ("foo.js", "text/javascript"),
         # Image
         ("foo.jpg", "image/jpeg"),
         ("foo.jpeg", "image/jpeg"),
@@ -179,7 +179,7 @@ def test_guess_mimetype(name, mime):
 
 
 def test_guess_mimetype_patch():
-    """ Test WIN32_PATCHED_MIME_TYPES. """
+    """Test WIN32_PATCHED_MIME_TYPES."""
 
     with patch.object(sys, "platform", new="win32"):
         assert guess_mimetype("foo.ppt")

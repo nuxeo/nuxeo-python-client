@@ -12,6 +12,7 @@ Technical changes
 -----------------
 
 - Switched flake8 from gitlab to github
+- Added F401 warning in ignore list for flake8
 
 
 6.1.0
