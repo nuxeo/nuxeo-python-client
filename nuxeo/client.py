@@ -297,9 +297,7 @@ class NuxeoClient(object):
         if ssl_verify_needed and "verify" in kwargs:
             ssl_verify_needed = kwargs["verify"]
         kwargs.pop("verify")
-        print(
-            f">>>>> url: {url}, headers: {headers}, data: {data}, verify: {ssl_verify_needed}, agrs: {kwargs}"
-        )
+
         try:
             resp = self._session.request(
                 method,
