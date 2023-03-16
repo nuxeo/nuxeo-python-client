@@ -24,10 +24,10 @@ jobs:
       matrix:
         nuxeo:
           - "2021"
-          - "2023.0.98"
+          - "2023.0.107"
         python:
           # Maximum supported version
-          # Note: 3.10 is  still in alpha, so we stick with 3.9 until there is an official 3.10
+          # Note: 3.10 is still in alpha, so we stick with 3.9 until there is an official 3.10
           - "3.9"
 
     services:
