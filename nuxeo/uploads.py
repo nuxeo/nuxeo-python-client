@@ -197,9 +197,7 @@ class API(APIEndpoint):
         :return: a tuple of the chunk count and
                  the set of uploaded chunk indexes
         """
-        info = super().get(path, default=None, ssl_verify=ssl_verify)
-
-        if info:
+        if info := super().get(path, default=None, ssl_verify=ssl_verify):
             chunk_count = int(info.chunkCount)
             uploaded_chunks = [int(i) for i in info.uploadedChunkIds]
         else:
