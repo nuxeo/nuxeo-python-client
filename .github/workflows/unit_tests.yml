@@ -14,6 +14,7 @@ on:
       - "nuxeo/**/*.py"
       - "setup.*"
       - "tests/*.py"
+      - ".github/workflows/unit_tests.yml"
 
 jobs:
   unit-tests:
