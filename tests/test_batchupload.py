@@ -292,7 +292,7 @@ def test_mimetype(filename, mimetypes, tmp_path, server):
         uploader = batch.get_uploader(blob, ssl_verify=SSL_VERIFY)
         uploader.upload()
 
-        # Attach the blob to the doc
+        # Attach the blob  to the doc
         operation = server.operations.new("Blob.AttachOnDocument")
         operation.params = {"document": doc.path}
 

@@ -113,7 +113,7 @@ class API(APIEndpoint):
         """
         Get available upload handlers.
 
-        :param force: force  refreshing the list
+        :param force: force refreshing the list
         """
         if self.__handlers is None or force:
             endpoint = f"{self.endpoint}/handlers"
