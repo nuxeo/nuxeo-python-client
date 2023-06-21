@@ -217,7 +217,7 @@ class ChunkUploaderS3(UploaderS3):
     def state(self):
         # type: () -> Tuple[int, List]
         """
-        Get the state  of a multipart upload.
+        Get the state of a multipart upload.
 
         If the blob upload has not begun yet, the server
         will return a 404 error, so we initialize the
