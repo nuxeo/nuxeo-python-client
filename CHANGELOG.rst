@@ -15,6 +15,15 @@ Technical changes
 - Switched flake8 from gitlab to github
 - Added F401 warning in ignore list for flake8
 
+Minor changes
+-----------------
+
+- Upgraded `actions/download-artifact` from 2 to 3
+- Upgraded `actions/upload-artifact` from 2 to 3
+- Upgraded `actions/setup-python` from 2 to 4
+- Upgraded `actions/checkout` from 2 to 3
+- Upgraded `codecov/codecov-action` from 1 to 3.1.2
+
 
 6.1.0
 -----
