@@ -14,7 +14,7 @@ def test_document_fetch_by_property(server):
 
 
 def test_document_fetch_by_property_params_validation(server):
-    """ Missing mandatory params. """
+    """Missing mandatory params."""
     operation = server.operations.new("Document.FetchByProperty")
     operation.params = {"property": "dc:title"}
 

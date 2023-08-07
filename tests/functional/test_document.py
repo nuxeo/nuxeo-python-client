@@ -6,7 +6,7 @@ import pytest
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
-from .constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST, SSL_VERIFY
+from ..constants import WORKSPACE_NAME, WORKSPACE_ROOT, WORKSPACE_TEST, SSL_VERIFY
 
 
 class Doc(object):

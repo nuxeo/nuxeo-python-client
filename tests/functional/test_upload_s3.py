@@ -15,7 +15,7 @@ from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
 from nuxeo.models import FileBlob
 
-from .constants import SSL_VERIFY
+from ..constants import SSL_VERIFY
 
 
 @pytest.fixture(scope="session")

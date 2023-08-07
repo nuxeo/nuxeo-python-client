@@ -10,7 +10,7 @@ import pytest
 from requests import HTTPError, Response
 from nuxeo.client import NuxeoClient
 from nuxeo.utils import log_response
-from .constants import NUXEO_SERVER_URL
+from ..constants import NUXEO_SERVER_URL
 
 nuxeo_url = NUXEO_SERVER_URL
 
