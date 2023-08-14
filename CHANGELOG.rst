@@ -8,6 +8,7 @@ Release date: ``2022-xx-xx``
 
 - `NXPY-243 <https://jira.nuxeo.com/browse/NXPY-243>`__: Python client fix testcase
 - `NXPY-244 <https://jira.nuxeo.com/browse/NXPY-244>`__: Align Python Client with LTS 2023
+- `NXPY-247 <https://jira.nuxeo.com/browse/NXPY-247>`__: Configure testcases
 
 Technical changes
 -----------------

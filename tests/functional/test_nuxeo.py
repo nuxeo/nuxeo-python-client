@@ -12,7 +12,7 @@ from nuxeo.endpoint import APIEndpoint
 from nuxeo.exceptions import BadQuery, Forbidden, HTTPError, Unauthorized
 from nuxeo.models import Blob, User
 from requests.exceptions import ConnectionError
-from .constants import SSL_VERIFY
+from ..constants import SSL_VERIFY
 
 
 @pytest.mark.parametrize(

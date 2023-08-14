@@ -21,8 +21,8 @@ from nuxeo.models import Batch, BufferBlob, Document, FileBlob
 from requests.exceptions import ConnectionError
 from sentry_sdk import configure_scope
 
-from .constants import WORKSPACE_ROOT, SSL_VERIFY
-from .server import Server
+from ..constants import WORKSPACE_ROOT, SSL_VERIFY
+from ..server import Server
 
 
 new_doc = Document(name="Document", type="File", properties={"dc:title": "foo"})

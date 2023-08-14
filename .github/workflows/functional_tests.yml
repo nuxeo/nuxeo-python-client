@@ -1,4 +1,4 @@
-name: Unit tests
+name: Functional tests
 
 on:
   # Check for updates every day
@@ -13,10 +13,10 @@ on:
     paths:
       - "nuxeo/**/*.py"
       - "setup.*"
-      - "tests/unit/*.py"
+      - "tests/functional/*.py"
 
 jobs:
-  unit-tests:
+  functional-tests:
     runs-on: ubuntu-latest
 
     strategy:
@@ -58,16 +58,16 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -U pip tox
 
-      - name: Unit tests
+      - name: Functional tests
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         # Run tox using the version of Python in `PATH`
-        run: python -m tox -e unit
+        run: python -m tox -e functional
 
       - name: Upload coverage to Codecov
         if: ${{ success() }} || ${{ failure() }}
         uses: codecov/codecov-action@v3.1.2
         with:
           files: ./coverage.xml
-          flags: unit
+          flags: functional
           env_vars: PYTHON

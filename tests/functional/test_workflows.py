@@ -5,7 +5,7 @@ import pytest
 from nuxeo.exceptions import BadQuery, HTTPError
 from nuxeo.models import Document, Task, User
 
-from .constants import SSL_VERIFY, WORKSPACE_NAME, WORKSPACE_ROOT
+from ..constants import SSL_VERIFY, WORKSPACE_NAME, WORKSPACE_ROOT
 
 document = Document(
     name=WORKSPACE_NAME, type="File", properties={"dc:title": "bar.txt"}

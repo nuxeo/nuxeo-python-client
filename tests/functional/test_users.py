@@ -4,7 +4,7 @@ from nuxeo.auth import BasicAuth
 from nuxeo.client import Nuxeo
 from nuxeo.exceptions import BadQuery
 from nuxeo.users import User
-from .constants import SSL_VERIFY
+from ..constants import SSL_VERIFY
 
 
 class Georges(object):

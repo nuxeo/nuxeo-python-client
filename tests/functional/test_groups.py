@@ -5,7 +5,7 @@ import pytest
 from nuxeo.exceptions import BadQuery
 from nuxeo.models import Group
 
-from .constants import SSL_VERIFY
+from ..constants import SSL_VERIFY
 
 
 def get_group(server):

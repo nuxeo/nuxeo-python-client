@@ -14,7 +14,7 @@ from nuxeo.exceptions import (
 from nuxeo.models import BufferBlob, Document
 from nuxeo.utils import version_lt
 
-from .constants import WORKSPACE_ROOT, SSL_VERIFY
+from ..constants import WORKSPACE_ROOT, SSL_VERIFY
 
 
 class Doc(object):
