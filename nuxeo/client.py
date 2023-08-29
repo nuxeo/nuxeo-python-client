@@ -285,7 +285,6 @@ class NuxeoClient(object):
             (
                 f"Calling {method} {url!r} with headers={headers!r},"
                 f" params={logged_params!r}, kwargs={_kwargs!r}"
-                f" and cookies={self._session.cookies!r}"
             )
         )
 

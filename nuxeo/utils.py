@@ -1,4 +1,5 @@
 # coding: utf-8
+import copy
 from _hashlib import HASH
 import hashlib
 import logging
@@ -235,10 +236,21 @@ def log_response(response, *args, **kwargs):
         # or the operation does not return anything by default
         content = "<no content>"
 
-    logger.debug(
-        f"Response from {response.url!r} [{response.status_code}]: {content!r}"
-        f" with headers {headers!r} and cookies {response.cookies!r}"
+    split_responseUrl = "&".join(
+        [x for x in copy.deepcopy(response.url.split("&")) if not x.startswith("X-Amz")]
     )
+    if headers.get("Set-Cookie", "Location") != "":
+        headers_without_cookie = copy.deepcopy(headers)
+        headers_without_cookie.update(dict.fromkeys(["Set-Cookie", "Location"], ""))
+        logger.debug(
+            f"Response from {split_responseUrl!r} [{response.status_code}]: {content!r}"
+            f" with headers {headers_without_cookie!r}"
+        )
+    else:
+        logger.debug(
+            f"Response from {split_responseUrl!r} [{response.status_code}]: {content!r}"
+            f" with headers {headers!r}"
+        )
     return response
 
 
