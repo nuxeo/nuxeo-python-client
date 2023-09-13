@@ -288,10 +288,7 @@ def version_compare(x, y):
 
     if x_numbers:
         return 1
-    if y_numbers:
-        return -1
-
-    return 0
+    return -1 if y_numbers else 0
 
 
 @lru_cache(maxsize=128)
