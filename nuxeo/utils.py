@@ -237,7 +237,7 @@ def log_response(response, *args, **kwargs):
 
     logger.debug(
         f"Response from {response.url!r} [{response.status_code}]: {content!r}"
-        f" with headers {headers!r} and cookies {response.cookies!r}"
+        f" with headers {headers!r}"
     )
     return response
 
