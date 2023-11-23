@@ -4,7 +4,7 @@ Changelog
 6.1.1
 -----
 
-Release date: ``2022-xx-xx``
+Release date: ``2023-11-23``
 
 - `NXPY-243 <https://jira.nuxeo.com/browse/NXPY-243>`__: Python client fix testcase
 - `NXPY-244 <https://jira.nuxeo.com/browse/NXPY-244>`__: Align Python Client with LTS 2023
