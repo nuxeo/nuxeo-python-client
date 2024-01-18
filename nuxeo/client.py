@@ -289,13 +289,14 @@ class NuxeoClient(object):
         )
 
         exc = None
+
         if not self.ssl_verify_needed:
             ssl_verify = False
 
         if "verify" in kwargs:
             if not kwargs["verify"]:
                 ssl_verify = False
-            kwargs.pop("verify")        
+            kwargs.pop("verify")
 
         try:
             resp = self._session.request(
