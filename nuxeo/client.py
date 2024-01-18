@@ -304,7 +304,7 @@ class NuxeoClient(object):
                 headers=headers,
                 auth=auth,
                 data=data,
-                verify=ssl_verify_needed,
+                verify=ssl_verify,
                 **kwargs,
             )
             resp.raise_for_status()
