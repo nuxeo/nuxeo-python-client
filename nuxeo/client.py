@@ -115,8 +115,7 @@ class NuxeoClient(object):
         self.repository = kwargs.pop("repository", "default")
         self._session = requests.sessions.Session()
         self._session.hooks["response"] = [log_response]
-        cookies = kwargs.pop("cookies", None)
-        if cookies:
+        if cookies := kwargs.pop("cookies", None):
             self._session.cookies = cookies
         self._session.stream = True
         self.client_kwargs = kwargs
@@ -262,8 +261,7 @@ class NuxeoClient(object):
         headers.update(
             {"X-NXDocumentProperties": self.schemas, "X-NXRepository": self.repository}
         )
-        enrichers = kwargs.pop("enrichers", None)
-        if enrichers:
+        if enrichers := kwargs.pop("enrichers", None):
             headers["enrichers-document"] = ", ".join(enrichers)
 
         headers.update(self.headers)
