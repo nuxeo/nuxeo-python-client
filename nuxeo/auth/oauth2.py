@@ -24,6 +24,7 @@ class OAuth2(AuthBase):
 
     __slots__ = (
         "token",
+        "verify",
         "_authorization_endpoint",
         "_client",
         "_host",
@@ -54,9 +55,11 @@ class OAuth2(AuthBase):
         self._openid_conf = {}
         self._token_header = ""
         self.token = {}  # type: Token
+        self.verify = None
         if token:
             self.set_token(token)
-
+        if subclient_kwargs and "verify" in subclient_kwargs:
+            self.verify = subclient_kwargs["verify"]
         # Allow to pass custom endpoints
         if openid_configuration_url:
             # OpenID Connect Discovery
@@ -95,10 +98,7 @@ class OAuth2(AuthBase):
         # type: () -> bool
         """Check whenever the current token is expired or not."""
         token = self.token
-        if not token:
-            return False
-
-        return token["expires_at"] < time()
+        return token["expires_at"] < time() if token else False
 
     def create_authorization_url(self, **kwargs):
         # type: (Any) -> Tuple[str, str, str]
@@ -124,6 +124,9 @@ class OAuth2(AuthBase):
             1. *authorization_response* or;
             2. *code* and *state*.
         """
+        kwargs = kwargs if kwargs else {}
+        if self.verify is not None and "verify" not in kwargs:
+            kwargs["verify"] = self.verify
         token = self._request(
             self._client.fetch_token,
             self._token_endpoint,
@@ -133,13 +136,14 @@ class OAuth2(AuthBase):
         self.set_token(token)
         return token
 
-    def refresh_token(self):
-        # type: () -> Token
+    def refresh_token(self, **kwargs):
+        # type: (dict) -> Token
         """Do refresh the current token using the *refresh_token*."""
         token = self._request(
             self._client.refresh_token,
             self._token_endpoint,
             self.token["refresh_token"],
+            **kwargs
         )
         self.set_token(token)
         return token
@@ -175,7 +179,9 @@ class OAuth2(AuthBase):
     def __call__(self, r):
         # type: (requests.Request) -> requests.Request
         if self.token_is_expired():
-            self.refresh_token()
-
+            if self.verify is not None:
+                self.refresh_token(verify=self.verify)
+            else:
+                self.refresh_token()
         r.headers[self.AUTHORIZATION] = self._token_header
         return r

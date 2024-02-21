@@ -6,12 +6,14 @@ Changelog
 
 Release date: ``2024-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-254 <https://jira.nuxeo.com/browse/NXPY-254>`__: Authorization Error for OAuth
 
 Technical changes
 -----------------
 
-- 
+- Added ``verify`` to ``OAuth2``
+- Added ``kwargs`` to ``OAuth2.refresh_token()``
+
 
 Minor changes
 -----------------
