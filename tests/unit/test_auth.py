@@ -6,6 +6,8 @@ from nuxeo.auth.utils import make_portal_sso_token
 from nuxeo.exceptions import NuxeoError
 from ..constants import NUXEO_SERVER_URL
 from requests import Request
+from time import time
+from unittest.mock import patch
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
@@ -170,3 +172,42 @@ def test_token_equality():
     auth1 = TokenAuth("secure_token")
     auth2 = TokenAuth("0")
     assert auth1 != auth2
+
+
+def test_request_token():
+
+    time_now = int(time())
+    token = {
+        "access_token": "<ACCESS>",
+        "refresh_token": "<REFRESH>",
+        "token_type": "bearer",
+        "expires_in": 2500,
+        "expires_at": time_now,
+    }
+
+    def mocked_request_(*args, **kwargs):
+        return token
+
+    with patch.object(OAuth2, "_request", new=mocked_request_):
+        auth = OAuth2(
+            NUXEO_SERVER_URL,
+            subclient_kwargs={
+                "verify": True,
+            },
+        )
+        assert auth
+
+        requested_token = auth.request_token()
+        assert requested_token == token
+
+        req = Request("POST", "https://httpbin.org/get", auth=auth)
+        refreshed_token = auth.__call__(req)
+        assert refreshed_token
+
+        auth_no_verify = OAuth2(
+            NUXEO_SERVER_URL,
+        )
+        auth_no_verify.token = token
+        assert auth_no_verify.verify is None
+        refreshed_token_new = auth_no_verify.__call__(req)
+        assert refreshed_token_new
