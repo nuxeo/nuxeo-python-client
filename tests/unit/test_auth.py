@@ -4,6 +4,7 @@ import responses
 from nuxeo.auth import BasicAuth, JWTAuth, OAuth2, PortalSSOAuth, TokenAuth
 from nuxeo.auth.utils import make_portal_sso_token
 from nuxeo.exceptions import NuxeoError
+from ..constants import NUXEO_SERVER_URL
 from requests import Request
 
 # We do not need to set-up a server and log the current test

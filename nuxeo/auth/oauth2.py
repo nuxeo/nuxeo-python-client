@@ -124,7 +124,7 @@ class OAuth2(AuthBase):
             1. *authorization_response* or;
             2. *code* and *state*.
         """
-        kwargs = kwargs if kwargs else {}
+        kwargs = kwargs or {}
         if self.verify is not None and "verify" not in kwargs:
             kwargs["verify"] = self.verify
         token = self._request(
