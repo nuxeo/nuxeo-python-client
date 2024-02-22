@@ -121,9 +121,7 @@ class NuxeoClient(object):
         self._session.stream = True
         self.client_kwargs = kwargs
 
-        self.ssl_verify_needed = True
-        if "verify" in kwargs:
-            self.ssl_verify_needed = kwargs["verify"]
+        self.ssl_verify_needed = kwargs.get("verify", True)
 
         atexit.register(self.on_exit)
 
