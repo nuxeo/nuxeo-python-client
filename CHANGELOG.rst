@@ -6,12 +6,13 @@ Changelog
 
 Release date: ``2024-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-253 <https://jira.nuxeo.com/browse/NXPY-253>`__: Restore capability to use the client with a local HTTP server
+
 
 Technical changes
 -----------------
 
-- 
+-
 
 Minor changes
 -----------------
