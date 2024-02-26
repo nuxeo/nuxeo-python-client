@@ -6,17 +6,17 @@ Changelog
 
 Release date: ``2024-xx-xx``
 
-- `NXPY- <https://jira.nuxeo.com/browse/NXPY->`__:
+- `NXPY-255 <https://jira.nuxeo.com/browse/NXPY-255>`__: Fix Test cases for moto3
 
 Technical changes
 -----------------
 
-- 
+-
 
 Minor changes
 -----------------
 
--
+- Replaced mock_s3 with mock_aws in test_upload_s3.py
 
 6.1.1
 -----
