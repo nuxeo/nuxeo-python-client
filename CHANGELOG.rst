@@ -11,12 +11,17 @@ Release date: ``2024-xx-xx``
 Technical changes
 -----------------
 
--
+- Replaced mock_s3 with mock_aws in test_upload_s3.py
 
 Minor changes
 -----------------
 
-- Replaced mock_s3 with mock_aws in test_upload_s3.py
+- Upgraded `actions/checkout` from 3 to 4
+- Upgraded `actions/download-artifact` from 3 to 4
+- Upgraded `actions/upload-artifact` from 3 to 4
+- Upgraded `actions/setup-python` from 4 to 5
+- Upgraded `codecov/codecov-action` from 3.1.2 to 3.1.5
+- Upgraded `pypa/gh-action-pypi-publish` from master to release/v1
 
 6.1.1
 -----
