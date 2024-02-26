@@ -9,7 +9,7 @@ from unittest.mock import patch
 import boto3
 import pytest
 import requests.exceptions
-from moto import mock_s3
+from moto import mock_aws
 from nuxeo.constants import UP_AMAZON_S3
 from nuxeo.exceptions import HTTPError, UploadError
 from nuxeo.handlers.s3 import ChunkUploaderS3, UploaderS3
@@ -38,7 +38,7 @@ def bucket():
 
 @pytest.fixture
 def s3(aws_credentials, bucket):
-    with mock_s3():
+    with mock_aws():
         client = boto3.client(UP_AMAZON_S3, region_name="eu-west-1")
 
         # Create a bucket
