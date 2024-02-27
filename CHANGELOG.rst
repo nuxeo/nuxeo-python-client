@@ -6,6 +6,7 @@ Changelog
 
 Release date: ``2024-xx-xx``
 
+- `NXPY-253 <https://jira.nuxeo.com/browse/NXPY-253>`__: Restore capability to use the client with a local HTTP server
 - `NXPY-255 <https://jira.nuxeo.com/browse/NXPY-255>`__: Fix Test cases for moto3
 
 Technical changes
