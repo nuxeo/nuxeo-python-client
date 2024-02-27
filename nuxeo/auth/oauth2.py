@@ -98,7 +98,10 @@ class OAuth2(AuthBase):
         # type: () -> bool
         """Check whenever the current token is expired or not."""
         token = self.token
-        return token["expires_at"] < time() if token else False
+        if not token:
+            return False
+
+        return token["expires_at"] < time()
 
     def create_authorization_url(self, **kwargs):
         # type: (Any) -> Tuple[str, str, str]

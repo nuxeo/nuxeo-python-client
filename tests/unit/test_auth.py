@@ -177,6 +177,13 @@ def test_token_equality():
 def test_request_token():
 
     time_now = int(time())
+    old_token = {
+        "access_token": "<ACCESS>",
+        "refresh_token": "<REFRESH>",
+        "token_type": "bearer",
+        "expires_in": 2500,
+        "expires_at": 0,
+    }
     token = {
         "access_token": "<ACCESS>",
         "refresh_token": "<REFRESH>",
@@ -201,13 +208,27 @@ def test_request_token():
         assert requested_token == token
 
         req = Request("POST", "https://httpbin.org/get", auth=auth)
-        refreshed_token = auth.__call__(req)
-        assert refreshed_token
+        auth.__call__(req)
+        assert auth.token == token
 
         auth_no_verify = OAuth2(
             NUXEO_SERVER_URL,
         )
-        auth_no_verify.token = token
+        auth_no_verify.token = old_token
         assert auth_no_verify.verify is None
-        refreshed_token_new = auth_no_verify.__call__(req)
-        assert refreshed_token_new
+        auth_no_verify.__call__(req)
+        assert auth_no_verify.token == token
+
+        auth_false_verify = OAuth2(
+            NUXEO_SERVER_URL,
+            subclient_kwargs={
+                "verify": False,
+            },
+        )
+        auth_false_verify.token = old_token
+        auth_false_verify.__call__(req)
+        assert auth_false_verify.token == token
+
+        auth_false_verify.token = None
+        auth_false_verify.__call__(req)
+        assert auth_false_verify.token is not token
