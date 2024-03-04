@@ -174,43 +174,58 @@ def test_token_equality():
     assert auth1 != auth2
 
 
-def test_request_token():
+time_now = int(time())
+old_token = {
+    "access_token": "<ACCESS>",
+    "refresh_token": "<REFRESH>",
+    "token_type": "bearer",
+    "expires_in": 2500,
+    "expires_at": 0,
+}
+token = {
+    "access_token": "<ACCESS>",
+    "refresh_token": "<REFRESH>",
+    "token_type": "bearer",
+    "expires_in": 2500,
+    "expires_at": time_now,
+}
 
-    time_now = int(time())
-    old_token = {
-        "access_token": "<ACCESS>",
-        "refresh_token": "<REFRESH>",
-        "token_type": "bearer",
-        "expires_in": 2500,
-        "expires_at": 0,
-    }
-    token = {
-        "access_token": "<ACCESS>",
-        "refresh_token": "<REFRESH>",
-        "token_type": "bearer",
-        "expires_in": 2500,
-        "expires_at": time_now,
-    }
 
-    def mocked_request_(*args, **kwargs):
-        return token
+def mocked_request_(*args, **kwargs):
+    return token
 
+
+auth = OAuth2(
+    NUXEO_SERVER_URL,
+    subclient_kwargs={
+        "verify": True,
+    },
+)
+
+auth_false_verify = OAuth2(
+    NUXEO_SERVER_URL,
+    subclient_kwargs={
+        "verify": False,
+    },
+)
+
+req = Request("POST", "https://httpbin.org/get", auth=auth)
+
+
+def test_request_token_with_veriry_true():
     with patch.object(OAuth2, "_request", new=mocked_request_):
-        auth = OAuth2(
-            NUXEO_SERVER_URL,
-            subclient_kwargs={
-                "verify": True,
-            },
-        )
-        assert auth
-
         requested_token = auth.request_token()
         assert requested_token == token
 
-        req = Request("POST", "https://httpbin.org/get", auth=auth)
+
+def test_refresh_token_with_verify_true():
+    with patch.object(OAuth2, "_request", new=mocked_request_):
         auth.__call__(req)
         assert auth.token == token
 
+
+def test_refresh_token_without_verify():
+    with patch.object(OAuth2, "_request", new=mocked_request_):
         auth_no_verify = OAuth2(
             NUXEO_SERVER_URL,
         )
@@ -219,16 +234,16 @@ def test_request_token():
         auth_no_verify.__call__(req)
         assert auth_no_verify.token == token
 
-        auth_false_verify = OAuth2(
-            NUXEO_SERVER_URL,
-            subclient_kwargs={
-                "verify": False,
-            },
-        )
+
+def test_refresh_token_with_verify_false():
+    with patch.object(OAuth2, "_request", new=mocked_request_):
         auth_false_verify.token = old_token
         auth_false_verify.__call__(req)
         assert auth_false_verify.token == token
 
+
+def test_refresh_token_when_no_token():
+    with patch.object(OAuth2, "_request", new=mocked_request_):
         auth_false_verify.token = None
         auth_false_verify.__call__(req)
         assert auth_false_verify.token is not token
