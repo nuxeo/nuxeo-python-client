@@ -299,7 +299,7 @@ class NuxeoClient(object):
         try:
             logger.info(
                 f"$$$$$$ with session.request method: {method!r}; url: {url!r}; \
-                    headers: {headers!r}; auth: {auth!r}; data: {data!r}; \
+                    headers: {headers!r}; auth: {auth!r}; \
                         verify: {ssl_verify!r}; kwargs: {kwargs!r}"
             )
             resp = self._session.request(
