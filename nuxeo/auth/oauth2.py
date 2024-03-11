@@ -14,6 +14,12 @@ from ..exceptions import OAuth2Error
 from ..utils import log_response
 from .base import AuthBase
 
+import logging
+import traceback
+
+
+logger = logging.getLogger(__name__)
+
 Token = Dict[str, Any]
 DEFAULT_AUTHORIZATION_ENDPOINT = "oauth2/authorize"
 DEFAULT_TOKEN_ENDPOINT = "oauth2/token"
@@ -27,6 +33,7 @@ class OAuth2(AuthBase):
         "verify",
         "_authorization_endpoint",
         "_client",
+        "_counter",
         "_host",
         "_openid_conf",
         "_token_endpoint",
@@ -52,6 +59,7 @@ class OAuth2(AuthBase):
         if not host.endswith("/"):
             host += "/"
         self._host = host
+        self._counter = 0
         self._openid_conf = {}
         self._token_header = ""
         self.token = {}  # type: Token
@@ -90,6 +98,9 @@ class OAuth2(AuthBase):
         # type: (Callable, Any, Any) -> Any
         """Make a request with the OAuthlib client and shadow exceptions."""
         try:
+            logger.info(
+                f"###### inside oauth2 _request calling method: {method!r} with args: {args!r}; kwargs: {kwargs!r}"
+            )
             return method(*args, **kwargs)
         except AuthlibBaseError as exc:
             raise OAuth2Error(exc.description) from None
@@ -115,7 +126,7 @@ class OAuth2(AuthBase):
             self._authorization_endpoint,
             code_challenge=code_challenge,
             code_challenge_method="S256",
-            **kwargs
+            **kwargs,
         )
         return uri, state, code_verifier
 
@@ -130,25 +141,47 @@ class OAuth2(AuthBase):
         kwargs = kwargs or {}
         if self.verify is not None and "verify" not in kwargs:
             kwargs["verify"] = self.verify
+        logger.info(f"@@@@@@ inside request_token previous TOKEN= {self.token!r}")
+        logger.info(
+            f"@@@@@@ inside request_token kwargs['verify']: {kwargs['verify']!r}"
+        )
+        logger.info(
+            f"@@@@@@ inside request_token traceback: {traceback.extract_stack()!r}"
+        )
         token = self._request(
             self._client.fetch_token,
             self._token_endpoint,
             grant_type=self.GRANT_AUTHORIZATION_CODE,
-            **kwargs
+            **kwargs,
         )
         self.set_token(token)
+        logger.info(f"@@@@@@ inside request_token new TOKEN: {token!r}")
         return token
 
     def refresh_token(self, **kwargs):
         # type: (dict) -> Token
         """Do refresh the current token using the *refresh_token*."""
+
+        self._counter += 1
+        logger.info(
+            f"!!!!!! inside refresh_token traceback: {traceback.extract_stack()!r}"
+        )
+        logger.info(f"!!!!!! inside refresh_token counter= {self._counter!r}")
+        logger.info(f"!!!!!! inside refresh_token previous TOKEN= {self.token!r}")
+        logger.info(
+            f"!!!!!! inside refresh_token calling _request with self._token_endpoint: \
+                {self._token_endpoint!r}; self.token['refresh_token']: \
+                    {self.token['refresh_token']!r}"
+        )
         token = self._request(
             self._client.refresh_token,
             self._token_endpoint,
             self.token["refresh_token"],
-            **kwargs
+            **kwargs,
         )
         self.set_token(token)
+        logger.info(f"!!!!!! inside refresh_token new TOKEN: {token!r}")
+
         return token
 
     def set_token(self, token):
