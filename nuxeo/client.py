@@ -297,11 +297,6 @@ class NuxeoClient(object):
             kwargs.pop("verify")
 
         try:
-            logger.info(
-                f"$$$$$$ with session.request method: {method!r}; url: {url!r}; \
-                    headers: {headers!r}; auth: {auth!r}; \
-                        verify: {ssl_verify!r}; kwargs: {kwargs!r}"
-            )
             resp = self._session.request(
                 method,
                 url,
