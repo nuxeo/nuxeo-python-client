@@ -6,12 +6,15 @@ Changelog
 
 Release date: ``2024-xx-xx``
 
+- `NXPY-254 <https://jira.nuxeo.com/browse/NXPY-254>`__: Authorization Error for OAuth
 - `NXPY-253 <https://jira.nuxeo.com/browse/NXPY-253>`__: Restore capability to use the client with a local HTTP server
 - `NXPY-255 <https://jira.nuxeo.com/browse/NXPY-255>`__: Fix Test cases for moto3
 
 Technical changes
 -----------------
 
+- Added ``verify`` to ``OAuth2`` to  turn off the certificate verification when using self signed certificates (values: True/ False).
+- Added ``kwargs`` to ``OAuth2.refresh_token()`` to pass parameters (ex. ``verify``).
 - Replaced mock_s3 with mock_aws in test_upload_s3.py
 
 Minor changes
