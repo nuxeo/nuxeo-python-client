@@ -14,8 +14,6 @@ from ..exceptions import OAuth2Error
 from ..utils import log_response
 from .base import AuthBase
 
-import traceback
-
 Token = Dict[str, Any]
 DEFAULT_AUTHORIZATION_ENDPOINT = "oauth2/authorize"
 DEFAULT_TOKEN_ENDPOINT = "oauth2/token"
