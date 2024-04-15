@@ -320,7 +320,7 @@ class NuxeoClient(object):
                     verify=ssl_verify,
                     **kwargs,
                 )
-            else:
+            elif resp.status_code != 200:
                 resp = self._session.request(
                     method,
                     url,
