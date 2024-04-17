@@ -9,6 +9,7 @@ Release date: ``2024-xx-xx``
 - `NXPY-254 <https://jira.nuxeo.com/browse/NXPY-254>`__: Authorization Error for OAuth
 - `NXPY-253 <https://jira.nuxeo.com/browse/NXPY-253>`__: Restore capability to use the client with a local HTTP server
 - `NXPY-255 <https://jira.nuxeo.com/browse/NXPY-255>`__: Fix Test cases for moto3
+- `NXPY-258 <https://jira.nuxeo.com/browse/NXPY-258>`__: File download from aws S3 with auto-redirect not working in case of OAuth
 
 Technical changes
 -----------------
