@@ -307,8 +307,11 @@ class NuxeoClient(object):
                 verify=ssl_verify,
                 **kwargs,
             )
-            if resp.status_code == 302:
-                redirect_url = resp.headers["Location"]
+            if resp.status_code in range(301, 309):
+                try:
+                    redirect_url = resp.headers["Location"]
+                except Exception:
+                    redirect_url = ""
                 if "amazonaws.com" in redirect_url:
                     resp = requests.get(
                         url=resp.headers["Location"],
