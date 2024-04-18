@@ -4,11 +4,12 @@ Changelog
 6.1.2
 -----
 
-Release date: ``2024-xx-xx``
+Release date: ``2024-04-18``
 
-- `NXPY-254 <https://jira.nuxeo.com/browse/NXPY-254>`__: Authorization Error for OAuth
 - `NXPY-253 <https://jira.nuxeo.com/browse/NXPY-253>`__: Restore capability to use the client with a local HTTP server
+- `NXPY-254 <https://jira.nuxeo.com/browse/NXPY-254>`__: Authorization Error for OAuth
 - `NXPY-255 <https://jira.nuxeo.com/browse/NXPY-255>`__: Fix Test cases for moto3
+- `NXPY-256 <https://jira.nuxeo.com/browse/NXPY-256>`__: Upgrade from Node 16 to 20
 - `NXPY-258 <https://jira.nuxeo.com/browse/NXPY-258>`__: File download from aws S3 with auto-redirect not working in case of OAuth
 
 Technical changes
