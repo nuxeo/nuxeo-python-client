@@ -15,7 +15,7 @@ ActualBlob = Union[BufferBlob, FileBlob]
 
 
 class Uploader(object):
-    """ Helper for uploads """
+    """Helper for uploads"""
 
     __slots__ = (
         "batch",
@@ -108,7 +108,7 @@ class Uploader(object):
 
     def upload(self):
         # type: () -> None
-        """ Upload the file. """
+        """Upload the file."""
         with self.blob as src:
             data = src if self.blob.size else None
             timeout = self.timeout(self.chunk_size)
@@ -133,7 +133,7 @@ class Uploader(object):
 
     def _update_batch(self):
         # type: () -> None
-        """ Add the uploaded blob info to the batch. """
+        """Add the uploaded blob info to the batch."""
         if self.is_complete():
             # All the parts have been uploaded, update the attributes
             self.blob.batchId = self.batch.uid
@@ -142,7 +142,7 @@ class Uploader(object):
 
 
 class ChunkUploader(Uploader):
-    """ Helper for chunked uploads """
+    """Helper for chunked uploads"""
 
     __slots__ = ("_to_upload",)
 
@@ -176,7 +176,7 @@ class ChunkUploader(Uploader):
 
     def _compute_chunks_left(self):
         # type: () -> None
-        """ Compare the set of uploaded chunks with the final list. """
+        """Compare the set of uploaded chunks with the final list."""
         if self.is_complete():
             return
 
