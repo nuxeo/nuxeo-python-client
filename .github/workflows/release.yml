@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: python-package-distributions*
+          pattern: python-package-distributions-*
           path: dist/
           merge-multiple: true
       - run: ls -l dist
