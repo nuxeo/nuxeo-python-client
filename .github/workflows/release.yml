@@ -54,7 +54,7 @@ jobs:
           path: dist/
           merge-multiple: true
       - run: ls -l dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
