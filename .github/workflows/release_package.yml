@@ -7,6 +7,10 @@ on:
         description: "The branch, tag or SHA to release from"
         required: true
         default: "release-fix"
+  push:
+    branches: [release-fix]
+    paths:
+      - ".github/workflows/release_package.yml"
 
 jobs:
   pure-built-distribution:
