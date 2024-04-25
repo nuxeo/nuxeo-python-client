@@ -67,4 +67,4 @@ jobs:
         run: python -m pip install twine
 
       - name: Upload Python Client on Packages
-        run: python -m twine upload --repository-url https://packages.nuxeo.com/repository/pypi-public/ -u ${{ secrets.PACKAGE_USERNAME }} -p ${{ secrets.PACKAGE_TOKEN }} dist/*
+        run: python -m twine upload --repository-url https://packages.nuxeo.com/repository/pypi-public/ -u "${{ secrets.PACKAGE_USERNAME }}" -p "${{ secrets.PACKAGE_TOKEN }}" dist/*
