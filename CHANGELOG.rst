@@ -18,8 +18,7 @@ Technical changes
 
 - Added ``verify`` to ``OAuth2`` to  turn off the certificate verification when using self signed certificates (values: True/ False).
 - Added ``kwargs`` to ``OAuth2.refresh_token()`` to pass parameters (ex. ``verify``).
-- Replaced mock_s3 with mock_aws in test_upload_s3.py.
-- Replaced `pypa/gh-action-pypi-publish` github action with `packages.nuxeo.com`.
+- Replaced mock_s3 with mock_aws in test_upload_s3.py
 
 Minor changes
 -----------------
@@ -29,6 +28,7 @@ Minor changes
 - Upgraded `actions/upload-artifact` from 3 to 4
 - Upgraded `actions/setup-python` from 4 to 5
 - Upgraded `codecov/codecov-action` from 3.1.2 to 3.1.5
+- Upgraded `pypa/gh-action-pypi-publish` from master to release/v1
 
 6.1.1
 -----
