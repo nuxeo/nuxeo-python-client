@@ -4,7 +4,7 @@ Changelog
 6.1.2
 -----
 
-Release date: ``2024-04-18``
+Release date: ``2024-05-02``
 
 - `NXPY-253 <https://jira.nuxeo.com/browse/NXPY-253>`__: Restore capability to use the client with a local HTTP server
 - `NXPY-254 <https://jira.nuxeo.com/browse/NXPY-254>`__: Authorization Error for OAuth
