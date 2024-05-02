@@ -55,11 +55,6 @@ jobs:
           merge-multiple: true
       - run: ls -l dist
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
-        id: extract_branch
-
       - name: Set-up Python
         uses: actions/setup-python@v5
         with:
@@ -70,5 +65,5 @@ jobs:
 
       - name: Upload Python Client on PyPi API Packages
         env:
-          PYPI_API_REPO_URL: ${{ steps.extract_branch.outputs.branch == 'master' && 'public' || 'private' }}
+          PYPI_API_REPO_URL: ${{ github.ref == 'refs/heads/master' && 'public' || 'private' }}
         run: python -m twine upload --repository-url "https://packages.nuxeo.com/repository/pypi-${{ env.PYPI_API_REPO_URL }}/" -u "${{ secrets.PYPI_API_NUXEO_PACKAGE_USERNAME }}" -p "${{ secrets.PYPI_API_NUXEO_PACKAGE_TOKEN }}" dist/*
