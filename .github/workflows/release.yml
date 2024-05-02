@@ -64,6 +64,17 @@ jobs:
         run: python -m pip install twine
 
       - name: Upload Python Client on PyPi API Packages
+        uses: pypa/gh-action-pypi-publish@release/v1
         env:
           PYPI_API_REPO_URL: ${{ github.ref == 'refs/heads/master' && 'public' || 'private' }}
-        run: python -m twine upload --repository-url "https://packages.nuxeo.com/repository/pypi-${{ env.PYPI_API_REPO_URL }}/" -u "${{ secrets.PYPI_API_NUXEO_PACKAGE_USERNAME }}" -p "${{ secrets.PYPI_API_NUXEO_PACKAGE_TOKEN }}" dist/*
+        with:
+          repository-url: "https://packages.nuxeo.com/repository/pypi-${{ env.PYPI_API_REPO_URL }}/"
+          user: ${{ secrets.PYPI_API_NUXEO_PACKAGE_USERNAME }}
+          password: ${{ secrets.PYPI_API_NUXEO_PACKAGE_TOKEN }}
+          skip_existing: true
+          verbose: true
+
+      #- name: Upload Python Client on PyPi API Packages
+      #  env:
+      #    PYPI_API_REPO_URL: ${{ github.ref == 'refs/heads/master' && 'public' || 'private' }}
+      #  run: python -m twine upload --repository-url "https://packages.nuxeo.com/repository/pypi-${{ env.PYPI_API_REPO_URL }}/" -u "${{ secrets.PYPI_API_NUXEO_PACKAGE_USERNAME }}" -p "${{ secrets.PYPI_API_NUXEO_PACKAGE_TOKEN }}" dist/*
