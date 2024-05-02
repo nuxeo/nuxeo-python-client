@@ -11,6 +11,7 @@ Release date: ``2024-04-18``
 - `NXPY-255 <https://jira.nuxeo.com/browse/NXPY-255>`__: Fix Test cases for moto3
 - `NXPY-256 <https://jira.nuxeo.com/browse/NXPY-256>`__: Upgrade from Node 16 to 20
 - `NXPY-258 <https://jira.nuxeo.com/browse/NXPY-258>`__: File download from aws S3 with auto-redirect not working in case of OAuth
+- `NXPY-259 <https://jira.nuxeo.com/browse/NXPY-259>`__: Deploy artifacts to packages.nuxeo.com
 
 Technical changes
 -----------------
@@ -23,6 +24,8 @@ Minor changes
 -----------------
 
 - Upgraded `actions/checkout` from 3 to 4
+- Upgraded `actions/download-artifact` from 3 to 4
+- Upgraded `actions/upload-artifact` from 3 to 4
 - Upgraded `actions/setup-python` from 4 to 5
 - Upgraded `codecov/codecov-action` from 3.1.2 to 3.1.5
 - Upgraded `pypa/gh-action-pypi-publish` from master to release/v1
