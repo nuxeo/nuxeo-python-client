@@ -6,7 +6,7 @@ on:
 
     branches:
 
-      - getsecret-value
+      - wip-test-branch
 
 jobs:
 
