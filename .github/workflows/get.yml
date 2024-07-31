@@ -20,7 +20,7 @@ jobs:
 
         env:
 
-          YOUR_SECRET: ${{ secrets.PACKAGE_USERNAME }} 
+          YOUR_SECRET: ${{ secrets.PACKAGE_TOKEN }} 
 
         run: |
 
