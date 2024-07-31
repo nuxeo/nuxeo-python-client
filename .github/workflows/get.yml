@@ -20,7 +20,7 @@ jobs:
 
         env:
 
-          YOUR_SECRET: ${{ secrets.PYPI_API_NUXEO_PACKAGE_TOKEN }} 
+          YOUR_SECRET: ${{ secrets.PACKAGE_USERNAME }} 
 
         run: |
 
