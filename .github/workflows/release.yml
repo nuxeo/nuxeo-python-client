@@ -60,7 +60,7 @@ jobs:
         env:
           PYPI_API_REPO_URL: ${{ github.ref == 'refs/heads/master' && 'public' || 'private' }}
         with:
-          repository-url: "https://packages.nuxeo.com/repository/pypi-${{ env.PYPI_API_REPO_URL }}/"
+          repository-url: "https://packages.devtools.nuxeo.com/repository/pypi-${{ env.PYPI_API_REPO_URL }}/"
           user: ${{ secrets.PYPI_API_NUXEO_PACKAGE_USERNAME }}
           password: ${{ secrets.PYPI_API_NUXEO_PACKAGE_TOKEN }}
           skip_existing: true
