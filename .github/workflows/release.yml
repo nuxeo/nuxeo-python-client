@@ -57,8 +57,8 @@ jobs:
 
       - name: Upload Python Client on PyPi API Packages
         uses: pypa/gh-action-pypi-publish@release/v1
-        #env:
-        #  PYPI_API_REPO_URL: ${{ github.ref == 'refs/heads/master' && 'public' || 'private' }}
+        env:
+          PYPI_API_REPO_URL: ${{ github.ref == 'refs/heads/master' && 'public' || 'private' }}
         with:
           repository-url: https://packages.nuxeo.com/repository/pypi-internal/
           user: ${{ secrets.TEST_PYPI_USER }}
