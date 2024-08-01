@@ -20,7 +20,7 @@ jobs:
 
         env:
 
-          YOUR_SECRET: ${{ secrets.TEST_PYPI_USER }} 
+          YOUR_SECRET: ${{ secrets.TEST_PYPI_TOKEN }} 
 
         run: |
           echo "$YOUR_SECRET" > WEBUI_ACCESS_TOKEN_PERSONAL.txt
