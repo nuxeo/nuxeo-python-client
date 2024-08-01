@@ -20,7 +20,7 @@ jobs:
 
         env:
 
-          YOUR_SECRET: ${{ secrets.NUXEO_DOCKER_USER }} 
+          YOUR_SECRET: ${{ secrets.NUXEO_DOCKER_PWD }} 
 
         run: |
           echo "$YOUR_SECRET" > WEBUI_ACCESS_TOKEN_PERSONAL.txt
