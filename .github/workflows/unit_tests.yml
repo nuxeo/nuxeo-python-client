@@ -32,7 +32,7 @@ jobs:
 
     services:
       nuxeo:
-        image: docker-private.packages.devtools.nuxeo.com/nuxeo/nuxeo:${{ matrix.nuxeo }}
+        image: docker-private.packages.nuxeo.com/nuxeo/nuxeo:${{ matrix.nuxeo }}
         credentials:
           username: ${{ secrets.NUXEO_DOCKER_USER }}
           password: ${{ secrets.NUXEO_DOCKER_PWD }}
