@@ -62,7 +62,7 @@ jobs:
         env:
           PYPI_API_REPO_URL: ${{ github.ref == 'refs/heads/master' && 'public' || 'private' }}
         with:
-          repository-url: https://packages.nuxeo.com/repository/pypi-private/
+          repository-url: https://packages.devtools.nuxeo.com/repository/pypi-private/
           user: "cplU6540"
           password: "KvjaPKtrkTFAbMvNEq9W6Omx1wPn_u-smw1yNe-Kfu1H"
           verbose: true
