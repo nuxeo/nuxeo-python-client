@@ -12,6 +12,7 @@ Release date: ``2024-05-02``
 - `NXPY-256 <https://jira.nuxeo.com/browse/NXPY-256>`__: Upgrade from Node 16 to 20
 - `NXPY-258 <https://jira.nuxeo.com/browse/NXPY-258>`__: File download from aws S3 with auto-redirect not working in case of OAuth
 - `NXPY-259 <https://jira.nuxeo.com/browse/NXPY-259>`__: Deploy artifacts to packages.nuxeo.com
+- `NXPY-261 <https://hyland.atlassian.net/browse/NXPY-261>`__: Deploy artifacts to pypi.org
 
 Technical changes
 -----------------
