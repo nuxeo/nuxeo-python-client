@@ -87,10 +87,6 @@ def test_get_digester(hash, digester):
         scope._should_capture = False
         assert not get_digester(hash)
 
-        scope = get_isolation_scope()
-        scope._should_capture = False
-        assert not get_digester(hash)
-
 
 @pytest.mark.parametrize(
     "name, mime",
