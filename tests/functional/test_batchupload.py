@@ -19,7 +19,7 @@ from nuxeo.exceptions import (
 )
 from nuxeo.models import Batch, BufferBlob, Document, FileBlob
 from requests.exceptions import ConnectionError
-from sentry_sdk import get_current_scope, get_isolation_scope  # configure_scope
+from sentry_sdk import get_current_scope, get_isolation_scope
 
 from ..constants import WORKSPACE_ROOT, SSL_VERIFY
 from ..server import Server
