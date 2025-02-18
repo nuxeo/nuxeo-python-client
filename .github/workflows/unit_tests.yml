@@ -62,9 +62,7 @@ jobs:
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         # Run tox using the version of Python in `PATH`
-        run: |
-          echo "SENTRY_DSN: ${{ secrets.SENTRY_DSN }}"
-          python -m tox -e unit
+        run: python -m tox -e unit
 
       - name: Upload coverage to Codecov
         if: ${{ success() }} || ${{ failure() }}
