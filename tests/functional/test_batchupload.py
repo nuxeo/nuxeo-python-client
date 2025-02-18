@@ -176,6 +176,14 @@ def test_digester(tmp_path, hash, is_valid, server):
                 scope._should_capture = False
                 operation.execute(file_out=file_out, digest=hash)
             assert str(e.value)
+            with pytest.raises(CorruptedFile) as e, get_current_scope() as scope:
+                scope._should_capture = False
+                operation.execute(file_out=file_out, digest=hash)
+            assert str(e.value)
+            with pytest.raises(CorruptedFile) as e, get_isolation_scope() as scope:
+                scope._should_capture = False
+                operation.execute(file_out=file_out, digest=hash)
+            assert str(e.value)
     finally:
         doc.delete(ssl_verify=SSL_VERIFY)
 
