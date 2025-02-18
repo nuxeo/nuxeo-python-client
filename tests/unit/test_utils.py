@@ -14,7 +14,7 @@ from nuxeo.utils import (
     version_le,
     version_lt,
 )
-from sentry_sdk import configure_scope, get_current_scope, get_isolation_scope
+from sentry_sdk import get_current_scope, get_isolation_scope # configure_scope
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
