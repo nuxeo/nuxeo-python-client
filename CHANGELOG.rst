@@ -1,6 +1,18 @@
 Changelog
 =========
 
+6.1.3
+-----
+
+Release date: ``2025-xx-xx``
+
+- `NXPY-262 <https://hyland.atlassian.net/browse/NXPY-262>`__: Upgrade dependencies
+
+Technical changes
+-----------------
+
+- Replaced configure_scope with get_current_scope and get_isolation_scope in functional/test_batchupload.py and unit/test_utils.py
+
 6.1.2
 -----
 

@@ -19,7 +19,7 @@ from nuxeo.exceptions import (
 )
 from nuxeo.models import Batch, BufferBlob, Document, FileBlob
 from requests.exceptions import ConnectionError
-from sentry_sdk import configure_scope
+from sentry_sdk import get_isolation_scope
 
 from ..constants import WORKSPACE_ROOT, SSL_VERIFY
 from ..server import Server
@@ -169,7 +169,8 @@ def test_digester(tmp_path, hash, is_valid, server):
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
-            with pytest.raises(CorruptedFile) as e, configure_scope() as scope:
+            scope = get_isolation_scope()
+            with pytest.raises(CorruptedFile) as e:
                 scope._should_capture = False
                 operation.execute(file_out=file_out, digest=hash)
             assert str(e.value)

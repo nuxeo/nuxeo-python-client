@@ -14,7 +14,7 @@ from nuxeo.utils import (
     version_le,
     version_lt,
 )
-from sentry_sdk import configure_scope
+from sentry_sdk import get_current_scope
 
 # We do not need to set-up a server and log the current test
 skip_logging = True
@@ -83,9 +83,9 @@ def test_get_digester(hash, digester):
     if digester:
         assert get_digester(hash).name == digester
     else:
-        with configure_scope() as scope:
-            scope._should_capture = False
-            assert not get_digester(hash)
+        scope = get_current_scope()
+        scope._should_capture = False
+        assert not get_digester(hash)
 
 
 @pytest.mark.parametrize(
