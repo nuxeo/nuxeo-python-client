@@ -86,7 +86,10 @@ def test_get_digester(hash, digester):
         print(f">>>> configure_scope: {configure_scope()}")
         print(f">>>> get_current_scope: {get_current_scope()}")
         print(f">>>> get_isolation_scope: {get_isolation_scope()}")
-        with configure_scope() as scope:
+        with get_current_scope() as scope:
+            scope._should_capture = False
+            assert not get_digester(hash)
+        with get_isolation_scope() as scope:
             scope._should_capture = False
             assert not get_digester(hash)
 
