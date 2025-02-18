@@ -6,6 +6,7 @@ Changelog
 
 Release date: ``2025-xx-xx``
 
+- `NXPY-261 <https://hyland.atlassian.net/browse/NXPY-261>`__: Deploy artifacts to pypi.org
 - `NXPY-262 <https://hyland.atlassian.net/browse/NXPY-262>`__: Upgrade dependencies
 
 Technical changes
