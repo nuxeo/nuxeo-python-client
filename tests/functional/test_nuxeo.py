@@ -45,7 +45,7 @@ from ..constants import SSL_VERIFY
         # 'pageNo' type == int
         # ("Audit.Query", {"query": "test", "pageNo": 100}, True),
         # 'pageSize' type == int
-        # ("Audit.Query", {"query": "test", "pageNo": "test"}, False),
+        ("Audit.Query", {"query": "test", "pageNo": "test"}, False),
         ("Document.Query", {"query": "test", "pageSize": 10}, True),
         ("Document.Query", {"query": "test", "pageSize": "test"}, False),
         # 'startPage', 'endPage' type == long
