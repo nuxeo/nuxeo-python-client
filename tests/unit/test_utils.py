@@ -83,7 +83,7 @@ def test_get_digester(hash, digester):
     if digester:
         assert get_digester(hash).name == digester
     else:
-        print(f">>>> configure_scope: {configure_scope()}")
+        # print(f">>>> configure_scope: {configure_scope()}")
         print(f">>>> get_current_scope: {get_current_scope()}")
         print(f">>>> get_isolation_scope: {get_isolation_scope()}")
         with get_current_scope() as scope:
