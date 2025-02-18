@@ -169,12 +169,6 @@ def test_digester(tmp_path, hash, is_valid, server):
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
-            scope = get_current_scope()
-            with pytest.raises(CorruptedFile) as e:
-                scope._should_capture = False
-                operation.execute(file_out=file_out, digest=hash)
-            assert str(e.value)
-
             scope = get_isolation_scope()
             with pytest.raises(CorruptedFile) as e:
                 scope._should_capture = False
