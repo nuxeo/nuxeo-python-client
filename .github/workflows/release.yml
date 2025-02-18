@@ -65,5 +65,5 @@ jobs:
           # password: ${{ secrets.PYPI_API_NUXEO_PACKAGE_TOKEN }}
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          skip_existing: true
+          skip-existing: true
           verbose: true
