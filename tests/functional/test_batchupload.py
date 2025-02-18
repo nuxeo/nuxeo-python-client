@@ -169,9 +169,6 @@ def test_digester(tmp_path, hash, is_valid, server):
         if is_valid:
             operation.execute(file_out=file_out, digest=hash)
         else:
-            print(f">>>> configure_scope: {configure_scope()}")
-            # print(f">>>> get_current_scope: {get_current_scope()}")
-            print(f">>>> get_isolation_scope: {get_isolation_scope()}")
             with pytest.raises(CorruptedFile) as e, get_current_scope() as scope:
                 scope._should_capture = False
                 operation.execute(file_out=file_out, digest=hash)
