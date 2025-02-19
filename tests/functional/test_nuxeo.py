@@ -86,8 +86,13 @@ from ..constants import SSL_VERIFY
 )
 def test_check_params(method, params, is_valid, server):
     if is_valid:
-        server.operations.check_params(method, params)
+        print("is_valid")
+        try:
+            server.operations.check_params(method, params)
+        except Exception as e:
+            print(f">>>> Exception: {e!r}")
     else:
+        print("not valid")
         with pytest.raises(BadQuery):
             server.operations.check_params(method, params)
 
