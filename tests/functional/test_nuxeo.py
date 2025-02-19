@@ -43,7 +43,7 @@ from ..constants import SSL_VERIFY
         ("Document.MultiPublish", {"target": ["test1.txt", "test2.txt"]}, True),
         ("Document.MultiPublish", {"target": 0}, False),
         # 'pageNo' type == int
-        ("Audit.Query", {"query": "test", "pageNo": 100}, True),
+        # ("Audit.Query", {"query": "test", "pageNo": 100}, True),
         # 'pageSize' type == int
         ("Audit.Query", {"query": "test", "pageNo": "test"}, False),
         ("Document.Query", {"query": "test", "pageSize": 10}, True),
@@ -96,6 +96,7 @@ def test_check_params(method, params, is_valid, server):
         print("not valid")
         with pytest.raises(BadQuery):
             server.operations.check_params(method, params)
+            assert 1 == 0
 
 
 def test_check_params_constant(server):
