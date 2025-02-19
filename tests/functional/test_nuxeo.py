@@ -91,6 +91,7 @@ def test_check_params(method, params, is_valid, server):
             server.operations.check_params(method, params)
         except Exception as e:
             print(f">>>> Exception: {e!r}")
+            assert 1 == 0
     else:
         print("not valid")
         with pytest.raises(BadQuery):
