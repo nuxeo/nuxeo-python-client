@@ -82,6 +82,7 @@ class API(APIEndpoint):
                 for alias in operation.get("aliases", []):
                     self.ops[alias] = operation
 
+        print(f">>>> self.ops: {self.ops!r}")
         return self.ops
 
     def check_params(self, command, params):
@@ -92,6 +93,7 @@ class API(APIEndpoint):
         """
 
         operation = self.operations.get(command)
+        print(f">>>> operation: {operation!r}")
         if not operation:
             raise BadQuery(f"{command!r} is not a registered operation")
 
