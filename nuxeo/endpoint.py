@@ -73,6 +73,9 @@ class APIEndpoint(object):
             endpoint = f"{endpoint}/{path}"
 
         response = self.client.request("GET", endpoint, ssl_verify=ssl_verify, **kwargs)
+        print(f"#### endpoint: {endpoint!r}")
+        print(f"#### kwargs: {kwargs!r}")
+        print(f"#### response: {response!r}")
 
         if not isinstance(response, Response):
             return response
