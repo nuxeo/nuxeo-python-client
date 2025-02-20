@@ -90,6 +90,7 @@ def test_check_params(method, params, is_valid, server):
     else:
         with pytest.raises(BadQuery):
             server.operations.check_params(method, params)
+    assert 1 == 0
 
 
 def test_check_params_constant(server):
