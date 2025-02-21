@@ -46,6 +46,7 @@ class API(APIEndpoint):
 
     # Operations cache
     ops = {}  # type: Dict[str, Any]
+    oper = {}
 
     def __init__(self, client, endpoint="site/automation", headers=None):
         # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
@@ -79,10 +80,10 @@ class API(APIEndpoint):
         """
         if self.ops:
             print("**** self.ops Available")
-        else:
-            print("**** self.ops NOT Available 001")
-            oper = self.get()
-            print(f">>>> ops: {oper!r}")
+        if not self.oper:
+            print("**** self.oper NOT Available 001")
+            self.oper = self.get()
+            print(f">>>> oper: {self.oper!r}")
             
         if not self.ops:
             print("**** self.ops NOT Available")
