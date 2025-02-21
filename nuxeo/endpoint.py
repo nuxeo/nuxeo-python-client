@@ -64,6 +64,7 @@ class APIEndpoint(object):
         :return: one or more instances of cls parsed from
                  the returned JSON
         """
+        print("**** APIEndpoint get()")
         endpoint = kwargs.pop("endpoint", "") or self.endpoint
 
         if not cls:
@@ -71,10 +72,11 @@ class APIEndpoint(object):
 
         if path:
             endpoint = f"{endpoint}/{path}"
-
-        response = self.client.request("GET", endpoint, ssl_verify=ssl_verify, **kwargs)
+        
         print(f"#### endpoint: {endpoint!r}")
         print(f"#### kwargs: {kwargs!r}")
+
+        response = self.client.request("GET", endpoint, ssl_verify=ssl_verify, **kwargs)
         print(f"#### response: {response!r}")
 
         if not isinstance(response, Response):
