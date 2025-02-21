@@ -46,6 +46,7 @@ class API(APIEndpoint):
 
     # Operations cache
     ops = {}  # type: Dict[str, Any]
+    oper = {}
 
     def __init__(self, client, endpoint="site/automation", headers=None):
         # type: (NuxeoClient, str, Optional[Dict[str, str]]) -> None
@@ -57,6 +58,8 @@ class API(APIEndpoint):
     def get(self, **kwargs):
         # type: (Any) -> Dict[str, Any]
         """Get the list of available operations from the server."""
+        import traceback
+        print(f"**** traceback: {traceback.extract_stack()}")
         return super().get()
 
     def put(self, **kwargs):
@@ -75,13 +78,22 @@ class API(APIEndpoint):
 
         :return: the available operations
         """
+        if self.ops:
+            print("**** self.ops Available")
+        if not self.oper:
+            print("**** self.oper NOT Available 001")
+            self.oper = self.get()
+            print(f">>>> oper: {self.oper!r}")
+            
         if not self.ops:
+            print("**** self.ops NOT Available")
             response = self.get()
             for operation in response["operations"]:
                 self.ops[operation["id"]] = operation
                 for alias in operation.get("aliases", []):
                     self.ops[alias] = operation
 
+        # print(f">>>> self.ops: {self.ops!r}")
         return self.ops
 
     def check_params(self, command, params):
@@ -92,6 +104,7 @@ class API(APIEndpoint):
         """
 
         operation = self.operations.get(command)
+        # print(f">>>> operation: {operation!r}")
         if not operation:
             raise BadQuery(f"{command!r} is not a registered operation")
 
