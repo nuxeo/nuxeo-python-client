@@ -79,6 +79,11 @@ class API(APIEndpoint):
         """
         if self.ops:
             print("**** self.ops Available")
+        else:
+            print("**** self.ops NOT Available 001")
+            oper = self.get()
+            print(f">>>> ops: {oper!r}")
+            
         if not self.ops:
             print("**** self.ops NOT Available")
             response = self.get()
