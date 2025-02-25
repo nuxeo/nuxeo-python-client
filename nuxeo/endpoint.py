@@ -64,7 +64,6 @@ class APIEndpoint(object):
         :return: one or more instances of cls parsed from
                  the returned JSON
         """
-        print("**** APIEndpoint get()")
         endpoint = kwargs.pop("endpoint", "") or self.endpoint
 
         if not cls:
@@ -72,34 +71,25 @@ class APIEndpoint(object):
 
         if path:
             endpoint = f"{endpoint}/{path}"
-        
-        print(f"#### endpoint: {endpoint!r}")
-        print(f"#### kwargs: {kwargs!r}")
 
         response = self.client.request("GET", endpoint, ssl_verify=ssl_verify, **kwargs)
-        print(f"#### response: {response!r}")
 
         if not isinstance(response, Response):
-            print(f"^^^^ response: {response!r}")
             return response
 
         if raw or response.status_code == 204:
-            print(f"^^^^ response.content: {response.content!r}")
             return response.content
         json = response.json()
 
         if cls is dict:
-            print(f"^^^^ cls is dict json: {json!r}")
             return json
 
         if not single and isinstance(json, dict) and "entries" in json:
             json = json["entries"]
 
         if isinstance(json, list):
-            print(f"^^^^ json, list: {json!r}, {list!r}")
             return [cls.parse(resource, service=self) for resource in json]
 
-        print(f"^^^^ cls.parse(json, service=self): {cls.parse(json, service=self)!r}")
         return cls.parse(json, service=self)
 
     def post(self, resource=None, path=None, raw=False, ssl_verify=True, **kwargs):
