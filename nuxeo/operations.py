@@ -75,9 +75,7 @@ class API(APIEndpoint):
 
         :return: the available operations
         """
-            
         if not self.ops:
-            print("**** self.ops NOT Available")
             response = self.get()
             for operation in response["operations"]:
                 self.ops[operation["id"]] = operation
@@ -94,7 +92,6 @@ class API(APIEndpoint):
         """
 
         operation = self.operations.get(command)
-        # print(f">>>> operation: {operation!r}")
         if not operation:
             raise BadQuery(f"{command!r} is not a registered operation")
 
