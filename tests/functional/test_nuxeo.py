@@ -43,9 +43,9 @@ from ..constants import SSL_VERIFY
         ("Document.MultiPublish", {"target": ["test1.txt", "test2.txt"]}, True),
         ("Document.MultiPublish", {"target": 0}, False),
         # 'pageNo' type == int
-        ("Audit.Query", {"query": "test", "pageNo": 100}, True),
+        # ("Audit.Query", {"query": "test", "pageNo": 100}, True), # mathod depricated in LTS 2025
         # 'pageSize' type == int
-        ("Audit.Query", {"query": "test", "pageNo": "test"}, False),
+        # ("Audit.Query", {"query": "test", "pageNo": "test"}, False), # mathod depricated in LTS 2025
         ("Document.Query", {"query": "test", "pageSize": 10}, True),
         ("Document.Query", {"query": "test", "pageSize": "test"}, False),
         # 'startPage', 'endPage' type == long
@@ -84,9 +84,7 @@ from ..constants import SSL_VERIFY
         ("Document.Query", {"alien": "alien"}, False),
     ],
 )
-def test_check_params(method, params, is_valid, server, NUXEO_SERVER_URL):
-    if "2025" in NUXEO_SERVER_URL and "Audit.Query" in method:
-        return
+def test_check_params(method, params, is_valid, server):
     if is_valid:
         server.operations.check_params(method, params)
     else:
