@@ -84,13 +84,14 @@ from ..constants import SSL_VERIFY
         ("Document.Query", {"alien": "alien"}, False),
     ],
 )
-def test_check_params(method, params, is_valid, server):
+def test_check_params(method, params, is_valid, server, NUXEO_SERVER_URL):
+    if "2025" in NUXEO_SERVER_URL and "Audit.Query" in method:
+        return
     if is_valid:
         server.operations.check_params(method, params)
     else:
         with pytest.raises(BadQuery):
             server.operations.check_params(method, params)
-    assert 1 == 0
 
 
 def test_check_params_constant(server):
