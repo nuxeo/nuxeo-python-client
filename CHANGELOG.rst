@@ -9,6 +9,7 @@ Release date: ``2025-xx-xx``
 - `NXPY-261 <https://hyland.atlassian.net/browse/NXPY-261>`__: Deploy artifacts to PyPI.org
 - `NXPY-262 <https://hyland.atlassian.net/browse/NXPY-262>`__: Upgrade dependencies
 - `NXPY-263 <https://hyland.atlassian.net/browse/NXPY-263>`__: Align Python client with LTS 2025
+- `NXPY-264 <https://hyland.atlassian.net/browse/NXPY-264>`__: Code Scanning - Incomplete URL substring sanitization
 
 Technical changes
 -----------------
