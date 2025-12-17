@@ -9,7 +9,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import __version__ as urllib3_version
 from urllib3.util.retry import Retry
-
+from urllib.parse import urlparse
 from . import (
     __version__,
     comments,
@@ -312,7 +312,9 @@ class NuxeoClient(object):
                     redirect_url = resp.headers["Location"]
                 except Exception:
                     redirect_url = ""
-                if "amazonaws.com" in redirect_url:
+                hostname = urlparse(redirect_url).hostname or ""
+                # Safely check if hostname is a subdomain of amazonaws.com
+                if hostname == "amazonaws.com" or hostname.endswith(".amazonaws.com"):
                     resp = requests.get(
                         url=resp.headers["Location"],
                         headers=resp.headers,
