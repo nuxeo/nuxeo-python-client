@@ -745,6 +745,7 @@ class TestRequestIntegration:
 
         call_kwargs = mock_session.request.call_args
         sent_params = call_kwargs.kwargs.get("params")
+
         assert sent_params["userId"] == "uid-alice"
         assert sent_params["actors"] == ["user:uid-bob", "user:uid-carol"]
         assert sent_params["pageSize"] == "10"  # untouched
