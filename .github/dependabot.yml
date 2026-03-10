@@ -3,16 +3,16 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
-version: 2
+version: 1
 updates:
-  - package-ecosystem: "" # See documentation for possible values
+  - package-ecosystem: "github-actions" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
     labels:
       - dependencies
       - QA/CI
-     assignees:
+    assignees:
       - mr-shekhar
 
      # Python requirements
