@@ -10,7 +10,7 @@ on:
 
   # Check on any PR
   pull_request:
-    branches: "*"
+    branches: ["*"]
   push:
     branches: [master]
     paths:
@@ -60,7 +60,9 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install dependencies
-        run: python -m pip install -U pip tox
+        run: |
+          python -m pip install -U pip tox
+          pip install -r requirements.txt
 
       - name: Functional tests
         env:
