@@ -31,7 +31,6 @@ jobs:
           - "2025.0.157"
         python:
           # Maximum supported version
-          # Note: 3.10 is still in alpha, so we stick with 3.9 until there is an official 3.10
           - "3.13.1"
 
     services:
