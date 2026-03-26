@@ -32,7 +32,7 @@ jobs:
         python:
           # Maximum supported version
           # Note: 3.10 is still in alpha, so we stick with 3.9 until there is an official 3.10
-          - "3.9"
+          - "3.13.1"
 
     services:
       nuxeo:
@@ -69,7 +69,7 @@ jobs:
         run: python -m tox -e unit
 
       - name: Upload coverage to Codecov
-        if: ${{ success() }} || ${{ failure() }}
+        if: ${{ success() || failure() }}
         uses: codecov/codecov-action@v3.1.5
         with:
           files: ./coverage.xml
