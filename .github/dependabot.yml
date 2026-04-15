@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    assignees:
+      - mr-shekhar
+    labels:
+      - dependencies
+      - QA/CI
+
+  # Python requirements
+  - package-ecosystem: pip
+    directory: /deps
+    schedule:
+      interval: daily
+    assignees:
+      - mr-shekhar
+    labels:
+      - dependencies
+    open-pull-requests-limit: 30
