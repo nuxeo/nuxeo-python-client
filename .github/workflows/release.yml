@@ -51,7 +51,7 @@ jobs:
       - source-distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: python-package-distributions-*
           path: dist/
