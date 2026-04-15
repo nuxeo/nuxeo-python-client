@@ -17,9 +17,9 @@ boto3==1.42.45 \
      --hash=sha256:4db50b8b39321fab87ff7f40ab407887d436d004c1f2b0dfdf56e42b4884709b \
      --hash=sha256:5074e074a718a6f3c2b519cbb9ceab258f17b331a143d23351d487984f2a412f
     # via nuxeo
-botocore==1.42.45 \
-     --hash=sha256:a5ea5d1b7c46c2d5d113879e45b21eaf7d60dc865f4bcb46dfcf0703fe3429f4 \
-     --hash=sha256:40b577d07b91a0ed26879da9e4658d82d3a400382446af1014d6ad3957497545
+botocore==1.42.89 \
+     --hash=sha256:95ac52f472dad29942f3088b278ab493044516c16dbf9133c975af16527baa99 \
+     --hash=sha256:d9b786c8d9db6473063b4cc5be0ba7e6a381082307bd6afb69d4216f9fa95f35
 cachetools==5.5.2 \
     --hash=sha256:d26a22bcc62eb95c3beabd9f1ee5e820d3d2704fe2967cbe350e20c8ffcd3f0a
     # via tox
