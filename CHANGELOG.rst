@@ -11,6 +11,7 @@ Release date: ``2025-xx-xx``
 - `NXPY-263 <https://hyland.atlassian.net/browse/NXPY-263>`__: Align Python client with LTS 2025
 - `NXPY-264 <https://hyland.atlassian.net/browse/NXPY-264>`__: Code Scanning - Incomplete URL substring sanitization
 - `NXPY-265 <https://hyland.atlassian.net/browse/NXPY-265>`__: Code Scanning - Workflow does not contain permissions
+- `NXPY-266 <https://hyland.atlassian.net/browse/NXPY-266>`__: Align on user and group generated UID
 
 Technical changes
 -----------------

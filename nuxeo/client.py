@@ -2,7 +2,7 @@
 import atexit
 import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 from warnings import warn
 
 import requests
@@ -88,39 +88,6 @@ class NuxeoClient(object):
     :param kwargs: kwargs passed to :func:`NuxeoClient.request`
     """
 
-    # Cache mapping username -> generated UID.
-    # Populated lazily on first encounter via resolve_uid / resolve_username.
-    userid_mapper = {}  # type: Dict[str, str]
-
-    # --- Known param keys that carry a username value in REQUESTS ---
-    # These keys, when found inside the ``params`` dict sent to the server
-    # (either as URL query parameters or inside the automation payload),
-    # contain a username string that must be translated to a generated UID.
-    _USERNAME_REQUEST_KEYS = frozenset({
-        "username",        # Document.AddPermission, User.Invite, …
-        "user",            # Document.RemovePermission, …
-        "users",           # bulk user references
-        "userId",          # Task queries, …
-        "actors",          # Task delegate / reassign (may be a list)
-        "delegatedActors",  # Task delegate (may be a list)
-    })
-
-    # --- Known response keys whose value is a username / list of usernames ---
-    # After the server starts returning generated UIDs in these fields, we
-    # translate them back to usernames so callers (e.g. Drive) see no change.
-    _USERNAME_RESPONSE_KEYS = frozenset({
-        "lockOwner",
-        "dc:lastContributor",
-        "dc:creator",
-        "dc:contributors",   # list of usernames
-        "lastContributor",   # filesystem-item style
-        "principalName",     # audit entries
-        "actors",            # task actors (list, prefixed "user:…")
-        "initiator",         # workflow initiator
-        "author",            # comment author
-        "creator",           # some simplified payloads
-    })
-
     def __init__(
         self,
         auth=None,  # type: AuthType
@@ -161,6 +128,10 @@ class NuxeoClient(object):
         # Cache for the server information
         self._server_info = None
 
+        # Mapper: username -> generated UUID.
+        # Populated automatically when a user entity response is received.
+        self.userid_mapper = {}  # type: Dict[str, str]
+
         # Ensure the host is well formatted
         if not self.host.endswith("/"):
             self.host += "/"
@@ -183,6 +154,36 @@ class NuxeoClient(object):
         # type: () -> None
         self._session.close()
 
+    def _translate_user_entity(self, data):
+        # type: (Any) -> Any
+        """Detect user entity responses and replace UUID *id* with username.
+
+        When the server returns a user entity whose ``id`` is a generated
+        UUID (different from ``properties.username``), seed the mapper
+        and normalise ``id`` back to the username so callers always see
+        a username string.
+
+        Handles single user dicts *and* lists/dicts that embed user
+        entities (e.g. search results with ``entries``).
+        """
+        if isinstance(data, dict):
+            if data.get("entity-type") == "user":
+                uuid_val = data.get("id")
+                username = (data.get("properties") or {}).get("username")
+                if uuid_val and username and uuid_val != username:
+                    self.userid_mapper[username] = uuid_val
+                    data["id"] = username
+            else:
+                # Walk into "entries" lists (search / list responses)
+                entries = data.get("entries")
+                if isinstance(entries, list):
+                    for entry in entries:
+                        self._translate_user_entity(entry)
+        elif isinstance(data, list):
+            for item in data:
+                self._translate_user_entity(item)
+        return data
+
     def enable_retry(self):
         # type: () -> None
         """Set a max retry for all connection errors with an adaptative backoff."""
@@ -200,134 +201,6 @@ class NuxeoClient(object):
         self._session.close()
         self._session.mount("https://", TCPKeepAliveHTTPSAdapter())
         self._session.mount("http://", HTTPAdapter())
-
-    # ------------------------------------------------------------------
-    #  Username ↔ Generated-UID mapping
-    # ------------------------------------------------------------------
-
-    def _fetch_uid_for_username(self, username):
-        # type: (str) -> str
-        """
-        Call the server to obtain the generated UID for *username*.
-
-        .. note::
-            Dummy placeholder — returns a deterministic fake UID.
-            Replace the body once the actual server endpoint is known.
-        """
-        dummy_uid = f"uid-{username}"
-        logger.debug("_fetch_uid_for_username(%r) -> %r  [DUMMY]", username, dummy_uid)
-        return dummy_uid
-
-    def _fetch_username_for_uid(self, uid):
-        # type: (str) -> str
-        """
-        Call the server to obtain the username for a generated *uid*.
-
-        .. note::
-            Dummy placeholder — strips the ``uid-`` prefix.
-            Replace the body once the actual server endpoint is known.
-        """
-        dummy_username = uid.replace("uid-", "", 1) if uid.startswith("uid-") else uid
-        logger.debug("_fetch_username_for_uid(%r) -> %r  [DUMMY]", uid, dummy_username)
-        return dummy_username
-
-    def resolve_uid(self, username):
-        # type: (str) -> str
-        """Return the generated UID for *username*, using cache first."""
-        if username in self.userid_mapper:
-            return self.userid_mapper[username]
-
-        uid = self._fetch_uid_for_username(username)
-        self.userid_mapper[username] = uid
-        return uid
-
-    def resolve_username(self, uid):
-        # type: (str) -> str
-        """Return the username for a generated *uid*, using reverse cache first."""
-        for username, mapped_uid in self.userid_mapper.items():
-            if mapped_uid == uid:
-                return username
-
-        username = self._fetch_username_for_uid(uid)
-        self.userid_mapper[username] = uid
-        return username
-
-    # ------------------------------------------------------------------
-    #  Request / Response translation helpers
-    # ------------------------------------------------------------------
-
-    def _translate_request_params(self, params):
-        # type: (Dict[str, Any]) -> Dict[str, Any]
-        """
-        Scan *params* for known username-carrying keys and replace each
-        username value with its corresponding generated UID.
-
-        Returns a **new** dict — the original is never mutated.
-        """
-        if not params:
-            return params
-
-        translated = {}
-        for key, value in params.items():
-            if key not in self._USERNAME_REQUEST_KEYS:
-                translated[key] = value
-                continue
-
-            if isinstance(value, str):
-                translated[key] = self._translate_single_username_to_uid(value)
-            elif isinstance(value, list):
-                translated[key] = [
-                    self._translate_single_username_to_uid(v) if isinstance(v, str) else v
-                    for v in value
-                ]
-            else:
-                translated[key] = value
-        return translated
-
-    def _translate_single_username_to_uid(self, value):
-        # type: (str) -> str
-        """Translate a single username string to its UID.
-
-        Supports prefixed values like ``"user:john"``."""
-        if ":" in value:
-            prefix, name = value.split(":", 1)
-            return f"{prefix}:{self.resolve_uid(name)}"
-        return self.resolve_uid(value)
-
-    def _translate_response(self, data):
-        # type: (Any) -> Any
-        """
-        Recursively walk *data* (dict / list) and replace generated UIDs
-        with usernames in every field whose key is in
-        ``_USERNAME_RESPONSE_KEYS``.
-
-        Mutates in-place for efficiency.
-        """
-        if isinstance(data, dict):
-            for key, value in data.items():
-                if key in self._USERNAME_RESPONSE_KEYS:
-                    data[key] = self._translate_uid_value_to_username(value)
-                elif isinstance(value, (dict, list)):
-                    self._translate_response(value)
-        elif isinstance(data, list):
-            for item in data:
-                if isinstance(item, (dict, list)):
-                    self._translate_response(item)
-        return data
-
-    def _translate_uid_value_to_username(self, value):
-        # type: (Any) -> Any
-        """Translate a single UID string (or list of UIDs) back to username(s).
-
-        Supports prefixed values like ``"user:uid-john"``."""
-        if isinstance(value, str):
-            if ":" in value:
-                prefix, uid_part = value.split(":", 1)
-                return f"{prefix}:{self.resolve_username(uid_part)}"
-            return self.resolve_username(value)
-        elif isinstance(value, list):
-            return [self._translate_uid_value_to_username(v) for v in value]
-        return value
 
     def query(
         self,
@@ -410,12 +283,8 @@ class NuxeoClient(object):
 
         kwargs.update(self.client_kwargs)
 
-        # --- Translate URL query params (e.g. ?userId=alice) -----------
-        if "params" in kwargs and isinstance(kwargs["params"], dict):
-            kwargs["params"] = self._translate_request_params(kwargs["params"])
-
         # Set the default value to `object` to allow someone
-        # to set `default` to `None`.
+        # to set `timeout` to `None`.
         if kwargs.get("timeout", object) is object:
             kwargs["timeout"] = (TIMEOUT_CONNECT, TIMEOUT_READ)
 
@@ -508,13 +377,13 @@ class NuxeoClient(object):
             exc = None
             del exc
 
-        # --- Wrap response so .json() auto-translates UIDs → usernames ---
-        if isinstance(resp, requests.Response) and self.userid_mapper is not None:
+        # Intercept JSON responses to translate user entity UUIDs
+        if isinstance(resp, requests.Response):
             _original_json = resp.json
 
             def _translated_json(**kw):
                 data = _original_json(**kw)
-                return self._translate_response(data)
+                return self._translate_user_entity(data)
 
             resp.json = _translated_json  # type: ignore[assignment]
 

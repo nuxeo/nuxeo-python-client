@@ -1,8 +1,7 @@
 # coding: utf-8
-import logging
 from collections.abc import Sequence
 from os import fsync
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
 
 from requests import Response
 
@@ -14,8 +13,6 @@ from .utils import get_digester
 
 if TYPE_CHECKING:
     from .client import NuxeoClient
-
-logger = logging.getLogger(__name__)
 
 # Types allowed for operations parameters
 # See https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html
@@ -168,11 +165,6 @@ class API(APIEndpoint):
 
         command, input_obj, params, context = self.get_attributes(operation, **kwargs)
 
-        # ── REQUEST TRANSLATION: username → generated UID ──
-        # Before param validation and sending, replace any username values
-        # in known param keys with their corresponding generated UIDs.
-        params = self.client._translate_request_params(params)
-
         if check_params:
             self.check_params(command, params)
 
@@ -216,8 +208,7 @@ class API(APIEndpoint):
 
         if json:
             try:
-                result = resp.json()
-                return result
+                return resp.json()
             except ValueError:
                 pass
         return resp.content
