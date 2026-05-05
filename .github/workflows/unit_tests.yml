@@ -19,24 +19,15 @@ on:
       - "tests/unit/*.py"
 
 jobs:
-  unit-tests:
-    name: ${{ matrix.nuxeo }}
+  unit-tests-2023:
+    name: "2023"
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - nuxeo: "2023"
-            url: "https://drive-2023.beta.nuxeocloud.com/nuxeo"
-            username_secret: "NUXEO_2023_TEST_USERNAME"
-            password_secret: "NUXEO_2023_TEST_PASSWORD"
-            python: "3.13.1"
-          - nuxeo: "2025"
-            url: "https://drive-2025.beta.nuxeocloud.com/nuxeo"
-            username_secret: "NUXEO_2025_TEST_USERNAME"
-            password_secret: "NUXEO_2025_TEST_PASSWORD"
-            python: "3.13.1"
+        python:
+          - "3.13.1"
 
     steps:
       - uses: actions/checkout@v4
@@ -52,9 +43,46 @@ jobs:
       - name: Unit tests
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          NXDRIVE_TEST_NUXEO_URL: ${{ matrix.url }}
-          NUXEO_TEST_USERNAME: ${{ secrets[matrix.username_secret] }}
-          NUXEO_TEST_PASSWORD: ${{ secrets[matrix.password_secret] }}
+          NXDRIVE_TEST_NUXEO_URL: https://drive-2023.beta.nuxeocloud.com/nuxeo/
+          NUXEO_TEST_USERNAME: ${{ secrets.NUXEO_2023_TEST_USERNAME }}
+          NUXEO_TEST_PASSWORD: ${{ secrets.NUXEO_2023_TEST_PASSWORD }}
+        # Run tox using the version of Python in `PATH`
+        run: python -m tox -e unit
+
+      - name: Upload coverage to Codecov
+        if: ${{ success() || failure() }}
+        uses: codecov/codecov-action@v3.1.5
+        with:
+          files: ./coverage.xml
+          flags: unit
+          env_vars: PYTHON
+  unit-tests-2025:
+    name: "2025"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python:
+          - "3.13.1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install dependencies
+        run: python -m pip install -U pip tox
+
+      - name: Unit tests
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          NXDRIVE_TEST_NUXEO_URL: https://drive-2025.beta.nuxeocloud.com/nuxeo/
+          NUXEO_TEST_USERNAME: ${{ secrets.NUXEO_2025_TEST_USERNAME }}
+          NUXEO_TEST_PASSWORD: ${{ secrets.NUXEO_2025_TEST_PASSWORD }}
         # Run tox using the version of Python in `PATH`
         run: python -m tox -e unit
 
