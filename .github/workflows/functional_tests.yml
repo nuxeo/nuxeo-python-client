@@ -25,29 +25,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nuxeo:
-          - "2023"
-          - "2025"
-        python:
-          # Maximum supported version
-          - "3.13.1"
-
-    services:
-      nuxeo:
-        image: docker-private.packages.nuxeo.com/nuxeo/nuxeo:${{ matrix.nuxeo }}
-        credentials:
-          username: ${{ secrets.NUXEO_DOCKER_USER }}
-          password: ${{ secrets.NUXEO_DOCKER_PWD }}
-        env:
-          NUXEO_CLID: ${{ secrets.NUXEO_CLID }}
-        ports:
-          - 8080:8080
-        # Set health checks to wait for hotfixes installation
-        options: >-
-          --health-cmd "curl -f -s http://localhost:8080/nuxeo/runningstatus"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 60
+        include:
+          - nuxeo: "2023"
+            url: "https://drive-2023.beta.nuxeocloud.com/nuxeo"
+            username_secret: "NUXEO_2023_TEST_USERNAME"
+            password_secret: "NUXEO_2023_TEST_PASSWORD"
+            python: "3.13.1"
+          - nuxeo: "2025"
+            url: "https://drive-2025.beta.nuxeocloud.com/nuxeo"
+            username_secret: "NUXEO_2025_TEST_USERNAME"
+            password_secret: "NUXEO_2025_TEST_PASSWORD"
+            python: "3.13.1"
 
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +51,9 @@ jobs:
       - name: Functional tests
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          NXDRIVE_TEST_NUXEO_URL: ${{ matrix.url }}
+          NUXEO_TEST_USERNAME: ${{ secrets[matrix.username_secret] }}
+          NUXEO_TEST_PASSWORD: ${{ secrets[matrix.password_secret] }}
         # Run tox using the version of Python in `PATH`
         run: python -m tox -e functional
 
