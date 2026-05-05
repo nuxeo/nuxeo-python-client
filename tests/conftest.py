@@ -69,19 +69,8 @@ def host():
 def server(host):
     cookies = RequestsCookieJar()
     cookies.set("device", "python-client")
-    print(f">>>>>>>>>>>>> Connecting to url {os.environ.get("NXDRIVE_TEST_NUXEO_URL")} <<<<<<<<<<<<<<<<")
-    if (
-        "NUXEO_TEST_USERNAME" not in os.environ
-        or "NUXEO_TEST_PASSWORD" not in os.environ
-    ):
-        raise ValueError(
-            "Environment variables NUXEO_TEST_USERNAME and NUXEO_TEST_PASSWORD must be set"
-        )
     username = os.environ.get("NUXEO_TEST_USERNAME")
     password = os.environ.get("NUXEO_TEST_PASSWORD")
-    print(
-        f">>>>>>>>>>>>> Using {username}:{password} to connect to {host} <<<<<<<<<<<<<<<<"
-    )
     server = Nuxeo(
         host=host,
         auth=BasicAuth(username, password),
