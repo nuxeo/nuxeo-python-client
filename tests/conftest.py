@@ -65,13 +65,20 @@ def host():
     return os.environ.get("NXDRIVE_TEST_NUXEO_URL", NUXEO_SERVER_URL)
 
 
+@pytest.fixture(scope="session")
+def nuxeo_user():
+    return os.environ.get("NUXEO_TEST_USERNAME", "Administrator")
+
+
 @pytest.fixture(scope="module")
 def server(host):
     cookies = RequestsCookieJar()
     cookies.set("device", "python-client")
+    username = os.environ.get("NUXEO_TEST_USERNAME", "Administrator")
+    password = os.environ.get("NUXEO_TEST_PASSWORD", "Administrator")
     server = Nuxeo(
         host=host,
-        auth=BasicAuth("Administrator", "Administrator"),
+        auth=BasicAuth(username, password),
         cookies=cookies,
     )
     server.client.set(schemas=["dublincore"])

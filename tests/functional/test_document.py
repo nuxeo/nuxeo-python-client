@@ -204,13 +204,13 @@ def test_follow_transition(server):
         doc.delete()
 
 
-def test_add_permission(server):
+def test_add_permission(server, nuxeo_user):
     if version_lt(server.client.server_version, "10.10"):
         pytest.skip("Nuxeo 10.10 minimum")
 
     with patch.object(nuxeo.constants, "CHECK_PARAMS", new=True), Doc(server) as doc:
         # NXPY-84: here we should not fail with KeyError: 'list' in check_params()
-        doc.add_permission({"permission": "ReadWrite", "users": ["Administrator"]})
+        doc.add_permission({"permission": "ReadWrite", "users": [nuxeo_user]})
 
 
 def test_document_comment(server):
