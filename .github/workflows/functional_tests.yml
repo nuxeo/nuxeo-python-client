@@ -20,6 +20,7 @@ on:
 
 jobs:
   functional-tests:
+    name: ${{ matrix.nuxeo }}
     runs-on: ubuntu-latest
 
     strategy:
