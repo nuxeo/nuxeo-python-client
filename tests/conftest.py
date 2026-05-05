@@ -69,8 +69,11 @@ def host():
 def server(host):
     cookies = RequestsCookieJar()
     cookies.set("device", "python-client")
-    username = os.environ.get("NUXEO_TEST_USERNAME", "Administrator")
-    password = os.environ.get("NUXEO_TEST_PASSWORD", "Administrator")
+    username = os.environ.get("NUXEO_TEST_USERNAME")
+    password = os.environ.get("NUXEO_TEST_PASSWORD")
+    print(
+        f">>>>>>>>>>>>> Using {username}:{password} to connect to {host} <<<<<<<<<<<<<<<<"
+    )
     server = Nuxeo(
         host=host,
         auth=BasicAuth(username, password),
