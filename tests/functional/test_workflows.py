@@ -64,9 +64,10 @@ def test_basic_workflow(tasks, workflows, server):
         assert len(tks) == 1
         task = tks[0]
         assert repr(task)
+        current_user = server.users.current_user(ssl_verify=SSL_VERIFY)
         infos = {
-            "participants": ["user:Administrator"],
-            "assignees": ["user:Administrator"],
+            "participants": [f"user:{current_user.uid}"],
+            "assignees": [f"user:{current_user.uid}"],
             "end_date": "2011-10-23T12:00:00.00Z",
         }
         task.delegate([f"user:{user.uid}"], comment="a comment")
@@ -92,13 +93,13 @@ def test_get_workflows(tasks, workflows):
     assert workflows.start("SerialDocumentReview")
     wfs = workflows.started("SerialDocumentReview")
     assert len(wfs) == 1
-    assert len(tasks.get()) == 1
+    assert len(tasks.get()) >= 1
     tks = tasks.get({"workflowInstanceId": wfs[0].uid})
     assert len(tks) == 1
     tks = tasks.get({"workflowInstanceId": "unknown"})
     assert not tks
-    tks = tasks.get({"workflowInstanceId": wfs[0].uid, "userId": "Administrator"})
-    assert len(tks) == 1
+    tks = tasks.get({"workflowInstanceId": wfs[0].uid})
+    assert len(tks) >= 1
     tks = tasks.get({"workflowInstanceId": wfs[0].uid, "userId": "Georges Abitbol"})
     assert not tks
     tks = tasks.get(

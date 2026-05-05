@@ -1,15 +1,15 @@
 from nuxeo.client import NuxeoClient
 
 
-def test_client_is_reachable_without_verify():
-    client = NuxeoClient()
+def test_client_is_reachable_without_verify(host):
+    client = NuxeoClient(host=host)
     assert client.is_reachable()
 
 
-def test_client_is_reachable_with_verify():
-    client = NuxeoClient(verify=True)
+def test_client_is_reachable_with_verify(host):
+    client = NuxeoClient(host=host, verify=True)
     assert client.is_reachable()
-    client = NuxeoClient(verify=False)
+    client = NuxeoClient(host=host, verify=False)
     assert client.is_reachable()
 
 

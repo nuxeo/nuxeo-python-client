@@ -48,16 +48,16 @@ def test_create_wrong_arguments(server):
         server.users.create(1, ssl_verify=SSL_VERIFY)
 
 
-def test_current_user(server):
+def test_current_user(server, nuxeo_user):
     user = server.users.current_user(ssl_verify=SSL_VERIFY)
     assert isinstance(user, User)
-    assert user.uid == "Administrator"
+    assert user.uid == nuxeo_user
     assert "administrators" in [g["name"] for g in user.extendedGroups]
     assert user.isAdministrator
 
 
-def test_fetch(server):
-    user = server.users.get("Administrator", ssl_verify=SSL_VERIFY)
+def test_fetch(server, nuxeo_user):
+    user = server.users.get(nuxeo_user, ssl_verify=SSL_VERIFY)
     assert user
     assert repr(user)
     assert "administrators" in user.properties["groups"]

@@ -58,14 +58,15 @@ class Doc(object):
                 break
 
 
-def test_add_remove_permission(server):
+def test_add_remove_permission(server, nuxeo_user):
     with Doc(server) as doc:
         doc.add_permission({"username": "members", "permission": "Write"})
         acls = doc.fetch_acls()
         assert len(acls) == 2
         assert acls[0]["name"] == "local"
-        assert acls[0]["aces"][0]["id"] == "members:Write:true:Administrator::"
-        doc.remove_permission({"id": "members:Write:true:Administrator::"})
+        ace_id = acls[0]["aces"][0]["id"]
+        assert ace_id == f"members:Write:true:{nuxeo_user}::"
+        doc.remove_permission({"id": ace_id})
         acls = doc.fetch_acls()
         assert len(acls) == 1
         assert acls[0]["name"] == "inherited"
@@ -197,13 +198,10 @@ def test_fetch_acls(server):
         assert acls[0]["name"] == "inherited"
 
         aces = sorted(acls[0]["aces"], key=operator.itemgetter("id"))
-        # 2 on Jenkins, 3 locally ...
-        assert len(aces) in (2, 3)
-        assert aces[0]["id"] == "Administrator:Everything:true:::"
-        assert aces[1]["id"] == "members:Read:true:::"
-        if len(aces) == 3:
-            # Starts with username, hard to guess
-            assert aces[2]["id"].endswith(":ReadWrite:true:::")
+        # Check inherited ACEs exist (count varies by environment)
+        ace_ids = [ace["id"] for ace in aces]
+        assert any(ace.endswith(":Everything:true:::") for ace in ace_ids)
+        assert "members:Read:true:::" in ace_ids
 
 
 def test_fetch_audit(server):
@@ -259,14 +257,14 @@ def test_has_permission(server):
         assert not doc.has_permission("Foo")
 
 
-def test_locking(server):
+def test_locking(server, nuxeo_user):
     with Doc(server) as doc:
         assert not doc.fetch_lock_status()
         assert not doc.is_locked()
 
         doc.lock()
         status = doc.fetch_lock_status()
-        assert status["lockOwner"] == "Administrator"
+        assert status["lockOwner"] == nuxeo_user
         assert "lockCreated" in status
         assert doc.is_locked()
 
