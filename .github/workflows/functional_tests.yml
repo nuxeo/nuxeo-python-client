@@ -26,9 +26,8 @@ jobs:
       fail-fast: false
       matrix:
         nuxeo:
-          - "2021"
-          - "2023.0.159"
-          - "2025.0.157"
+          - "2023"
+          - "2025"
         python:
           # Maximum supported version
           - "3.13.1"

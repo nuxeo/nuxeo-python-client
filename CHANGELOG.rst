@@ -14,6 +14,7 @@ Release date: ``2026-xx-xx``
 - `NXPY-268 <https://hyland.atlassian.net/browse/NXPY-268>`__: Enable dependabot version update
 - `NXPY-269 <https://hyland.atlassian.net/browse/NXPY-269>`__: Fix functional test
 - `NXPY-270 <https://hyland.atlassian.net/browse/NXPY-270>`__: Upgrade Python version
+- `NXPY-273 <https://hyland.atlassian.net/browse/NXPY-273>`__: Fix Docker Login Credentials
 
 Technical changes
 -----------------
