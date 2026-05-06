@@ -16,6 +16,7 @@ Contributors:
     Anindya Roy
     Pooja Ramkrishna Daine
     Sweta Yadav
+    Saptarshi Ghosh
     Shekhar Gupta
     and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
