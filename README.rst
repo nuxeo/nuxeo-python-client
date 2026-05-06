@@ -4,9 +4,9 @@ Client Library for Nuxeo API
 |Build Status| |Quality| |Coverage|
 
 The Nuxeo Python Client is a Python client library for the Nuxeo
-Automation and REST API. It works with Python 3.6+.
+Automation and REST API. It works with Python 3.13.1+.
 
-This is an ongoing project, supported by Nuxeo.
+This is an ongoing project, supported by Hyland.
 
 Getting Started
 ---------------
@@ -55,9 +55,9 @@ Requirements
 
 The Nuxeo Python client works only with:
 
--  the Nuxeo Platform >= LTS 2015
--  ``requests`` >= 2.12.2 (for unicode authentication)
--  ``setuptools`` >= 30.3.0
+-  the Nuxeo Platform >= LTS 2023
+-  ``requests`` >= 2.32.4
+-  ``setuptools`` >= 80.9.0
 
 Quick Start
 -----------
@@ -209,7 +209,7 @@ Reporting Issues
 ~~~~~~~~~~~~~~~~
 
 You can follow the developments in the Nuxeo Python Client project of
-our JIRA bug tracker: `NXPY <https://jira.nuxeo.com/browse/NXPY>`__.
+our JIRA bug tracker: `NXPY <https://hyland.atlassian.net/jira/software/c/projects/NXPY/issues>`__.
 
 You can report issues on
 `answers.nuxeo.com <http://answers.nuxeo.com>`__.
@@ -218,7 +218,7 @@ License
 -------
 
 `Apache License 2.0 <https://www.apache.org/licenses/LICENSE-2.0.txt>`__
-Copyright (c) Nuxeo
+Copyright (c) Hyland
 
 About Nuxeo
 -----------
@@ -232,7 +232,7 @@ tools and a modular architecture, the Nuxeo Platform and Products
 provide clear business value to some of the most recognizable brands
 including Verizon, Electronic Arts, Sharp, FICO, the U.S. Navy, and
 Boeing. Nuxeo is headquartered in New York and Paris. More information
-is available at `www.nuxeo.com <http://www.nuxeo.com/>`__.
+is available at `www.hyland.com <https://www.hyland.com/solutions/products/nuxeo-platform>`__.
 
 .. |Build Status| image:: https://github.com/nuxeo/nuxeo-python-client/workflows/Unit%20tests/badge.svg
    :target: https://github.com/nuxeo/nuxeo-python-client/actions?query=workflow%3A%22Unit+tests%22
