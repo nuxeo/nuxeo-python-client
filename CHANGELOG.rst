@@ -1,10 +1,10 @@
 Changelog
 =========
 
-6.1.3
+7.0.0
 -----
 
-Release date: ``2026-xx-xx``
+Release date: ``2026-05-06``
 
 - `NXPY-261 <https://hyland.atlassian.net/browse/NXPY-261>`__: Deploy artifacts to PyPI.org
 - `NXPY-262 <https://hyland.atlassian.net/browse/NXPY-262>`__: Upgrade dependencies
@@ -14,6 +14,7 @@ Release date: ``2026-xx-xx``
 - `NXPY-268 <https://hyland.atlassian.net/browse/NXPY-268>`__: Enable dependabot version update
 - `NXPY-269 <https://hyland.atlassian.net/browse/NXPY-269>`__: Fix functional test
 - `NXPY-270 <https://hyland.atlassian.net/browse/NXPY-270>`__: Upgrade Python version
+- `NXPY-272 <https://hyland.atlassian.net/browse/NXPY-272>`__: Release Nuxeo Python Client 7.0.0
 - `NXPY-273 <https://hyland.atlassian.net/browse/NXPY-273>`__: Fix Docker Login Credentials
 
 Technical changes
