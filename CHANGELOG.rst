@@ -16,6 +16,7 @@ Release date: ``2026-05-06``
 - `NXPY-270 <https://hyland.atlassian.net/browse/NXPY-270>`__: Upgrade Python version
 - `NXPY-272 <https://hyland.atlassian.net/browse/NXPY-272>`__: Release Nuxeo Python Client 7.0.0
 - `NXPY-273 <https://hyland.atlassian.net/browse/NXPY-273>`__: Fix Docker Login Credentials
+- `NXPY-274 <https://hyland.atlassian.net/browse/NXPY-274>`__: Update readme
 
 Technical changes
 -----------------
