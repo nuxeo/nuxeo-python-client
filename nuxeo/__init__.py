@@ -16,12 +16,13 @@ Contributors:
     Anindya Roy
     Pooja Ramkrishna Daine
     Sweta Yadav
+    Saptarshi Ghosh
     Shekhar Gupta
     and https://github.com/nuxeo/nuxeo-python-client/graphs/contributors
 """
 
 __author__ = "Nuxeo"
-__version__ = "6.1.2"
+__version__ = "7.0.0"
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 
