@@ -128,6 +128,10 @@ class NuxeoClient(object):
         # Cache for the server information
         self._server_info = None
 
+        # Mapper: username -> generated UUID.
+        # Populated automatically when a user entity response is received.
+        self.userid_mapper = {}  # type: Dict[str, str]
+
         # Ensure the host is well formatted
         if not self.host.endswith("/"):
             self.host += "/"
@@ -149,6 +153,36 @@ class NuxeoClient(object):
     def on_exit(self):
         # type: () -> None
         self._session.close()
+
+    def _translate_user_entity(self, data):
+        # type: (Any) -> Any
+        """Detect user entity responses and replace UUID *id* with username.
+
+        When the server returns a user entity whose ``id`` is a generated
+        UUID (different from ``properties.username``), seed the mapper
+        and normalise ``id`` back to the username so callers always see
+        a username string.
+
+        Handles single user dicts *and* lists/dicts that embed user
+        entities (e.g. search results with ``entries``).
+        """
+        if isinstance(data, dict):
+            if data.get("entity-type") == "user":
+                uuid_val = data.get("id")
+                username = (data.get("properties") or {}).get("username")
+                if uuid_val and username and uuid_val != username:
+                    self.userid_mapper[username] = uuid_val
+                    data["id"] = username
+            else:
+                # Walk into "entries" lists (search / list responses)
+                entries = data.get("entries")
+                if isinstance(entries, list):
+                    for entry in entries:
+                        self._translate_user_entity(entry)
+        elif isinstance(data, list):
+            for item in data:
+                self._translate_user_entity(item)
+        return data
 
     def enable_retry(self):
         # type: () -> None
@@ -342,6 +376,16 @@ class NuxeoClient(object):
             # Explicitly break a reference cycle
             exc = None
             del exc
+
+        # Intercept JSON responses to translate user entity UUIDs
+        if isinstance(resp, requests.Response):
+            _original_json = resp.json
+
+            def _translated_json(**kw):
+                data = _original_json(**kw)
+                return self._translate_user_entity(data)
+
+            resp.json = _translated_json  # type: ignore[assignment]
 
         return resp
 
