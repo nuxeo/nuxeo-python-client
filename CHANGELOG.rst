@@ -7,6 +7,7 @@ Changelog
 Release date: ``2026-06-22``
 
 - `NXPY-266 <https://hyland.atlassian.net/browse/NXPY-266>`__: Align on user and group generated UUID
+- `NXPY-276 <https://hyland.atlassian.net/browse/NXPY-276>`__: Release Python Client 7.1.0
 - `NXPY-277 <https://hyland.atlassian.net/browse/NXPY-277>`__: Update README on Github to add releases page (pypi)
 
 7.0.0
