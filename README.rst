@@ -8,6 +8,8 @@ Automation and REST API. It works with Python 3.13.1+.
 
 This is an ongoing project, supported by Hyland.
 
+Find the releases on `PyPI <https://pypi.org/project/nuxeo/>`__.
+
 Getting Started
 ---------------
 
