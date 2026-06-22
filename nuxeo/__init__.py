@@ -22,7 +22,7 @@ Contributors:
 """
 
 __author__ = "Nuxeo"
-__version__ = "7.0.0"
+__version__ = "7.1.0"
 __copyright__ = """
     Copyright Nuxeo (https://www.nuxeo.com) and others.
 
