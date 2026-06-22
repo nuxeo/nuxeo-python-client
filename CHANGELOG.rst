@@ -1,6 +1,15 @@
 Changelog
 =========
 
+7.1.0
+-----
+
+Release date: ``2026-06-22``
+
+- `NXPY-266 <https://hyland.atlassian.net/browse/NXPY-266>`__: Align on user and group generated UUID
+- `NXPY-277 <https://hyland.atlassian.net/browse/NXPY-277>`__: Update README on Github to add releases page (pypi)
+
+
 7.0.0
 -----
 
@@ -11,7 +20,6 @@ Release date: ``2026-05-06``
 - `NXPY-263 <https://hyland.atlassian.net/browse/NXPY-263>`__: Align Python client with LTS 2025
 - `NXPY-264 <https://hyland.atlassian.net/browse/NXPY-264>`__: Code Scanning - Incomplete URL substring sanitization
 - `NXPY-265 <https://hyland.atlassian.net/browse/NXPY-265>`__: Code Scanning - Workflow does not contain permissions
-- `NXPY-266 <https://hyland.atlassian.net/browse/NXPY-266>`__: Align on user and group generated UID
 - `NXPY-268 <https://hyland.atlassian.net/browse/NXPY-268>`__: Enable dependabot version update
 - `NXPY-269 <https://hyland.atlassian.net/browse/NXPY-269>`__: Fix functional test
 - `NXPY-270 <https://hyland.atlassian.net/browse/NXPY-270>`__: Upgrade Python version
