@@ -1,6 +1,13 @@
 Changelog
 =========
 
+7.x.x
+-----
+
+Release date: ``YYYY-MM-DD``
+
+- `NXPY-278 <https://hyland.atlassian.net/browse/NXPY-278>`__: Create and publish git tag on successful release
+
 7.1.0
 -----
 

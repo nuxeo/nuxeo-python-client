@@ -68,3 +68,27 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
           verbose: true
+
+  publish-github-tag:
+    name: Publish GitHub tag
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
+
+      - name: Fetch current version
+        id: package-version
+        run: echo "version=$(python -c 'from nuxeo import __version__; print(__version__)')" >> "$GITHUB_OUTPUT"
+
+      - name: Create and publish GitHub tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package-version.outputs.version }}
+        run: |
+          tag="release-${VERSION}"
+          git tag "$tag"
+          git push origin "$tag"
+          gh release create "$tag" --verify-tag --generate-notes --title "$tag"
