@@ -12,13 +12,27 @@ on:
         default: "master"
 
 jobs:
-  pure-built-distribution:
-    name: Build pure wheel
+  resolve-release-ref:
+    name: Resolve release ref
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.release-ref.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
+      - name: Resolve release commit
+        id: release-ref
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  pure-built-distribution:
+    name: Build pure wheel
+    needs: resolve-release-ref
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-release-ref.outputs.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: 3.13.1 # Maximum supported version
@@ -31,11 +45,12 @@ jobs:
 
   source-distribution:
     name: Build source distribution
+    needs: resolve-release-ref
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ needs.resolve-release-ref.outputs.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: 3.13.1 # Maximum supported version
@@ -71,13 +86,19 @@ jobs:
 
   publish-github-tag:
     name: Publish GitHub tag
-    needs: publish
+    needs:
+      - publish
+      - resolve-release-ref
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ needs.resolve-release-ref.outputs.sha }}
           fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.13.1 # Keep aligned with build jobs
 
       - name: Fetch current version
         id: package-version
@@ -89,6 +110,21 @@ jobs:
           VERSION: ${{ steps.package-version.outputs.version }}
         run: |
           tag="release-${VERSION}"
-          git tag "$tag"
-          git push origin "$tag"
-          gh release create "$tag" --verify-tag --generate-notes --title "$tag"
+          target_sha=$(git rev-parse HEAD)
+
+          if git rev-parse --verify "refs/tags/${tag}" >/dev/null 2>&1; then
+            tag_sha=$(git rev-list -n 1 "$tag")
+            if [[ "$tag_sha" != "$target_sha" ]]; then
+              echo "::error::Tag ${tag} already points to ${tag_sha}, expected ${target_sha}."
+              exit 1
+            fi
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "GitHub release ${tag} already exists."
+          else
+            gh release create "$tag" --verify-tag --generate-notes --title "$tag"
+          fi
