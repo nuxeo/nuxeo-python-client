@@ -18,7 +18,7 @@ jobs:
     outputs:
       sha: ${{ steps.release-ref.outputs.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.branch }}
       - name: Resolve release commit
@@ -48,7 +48,7 @@ jobs:
     needs: resolve-release-ref
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.resolve-release-ref.outputs.sha }}
       - uses: actions/setup-python@v5
