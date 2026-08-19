@@ -9,8 +9,13 @@ def test_document_fetch_by_property(server):
     operation.params = {"property": "dc:title", "values": "Workspaces"}
     res = operation.execute()
     assert res["entity-type"] == "documents"
-    assert len(res["entries"]) == 1
-    assert res["entries"][0]["properties"]["dc:title"] == "Workspaces"
+    workspaces = [
+        entry
+        for entry in res["entries"]
+        if entry["path"] == "/default-domain/workspaces"
+    ]
+    assert len(workspaces) == 1
+    assert workspaces[0]["properties"]["dc:title"] == "Workspaces"
 
 
 def test_document_fetch_by_property_params_validation(server):

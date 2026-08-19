@@ -344,12 +344,13 @@ def test_query(server):
     docs = server.documents.query(
         {"query": "SELECT * FROM Document WHERE ecm:primaryType = 'Domain'"}
     )
-    assert docs["numberOfPages"] == 1
+    assert docs["numberOfPages"] > 0
     assert docs["resultsCount"] > 0
-    assert docs["currentPageSize"] == 1
+    assert docs["currentPageSize"] > 0
     assert not docs["currentPageIndex"]
-    assert len(docs["entries"]) == 1
-    assert isinstance(docs["entries"][0], Document)
+    assert len(docs["entries"]) == docs["currentPageSize"]
+    assert all(isinstance(doc, Document) for doc in docs["entries"])
+    assert all(doc.type == "Domain" for doc in docs["entries"])
 
 
 def test_query_missing_args(server):

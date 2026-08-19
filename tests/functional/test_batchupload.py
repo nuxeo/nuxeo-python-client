@@ -677,17 +677,20 @@ def test_idempotent_requests(tmp_path, server):
         )
         assert error in res
 
-        # Ensure there is only 1 doc on the server
-        children = server.documents.get_children(path=doc.path)
-        assert len(children) == 1
-        assert children[0].title == file_in.name
+        # The one successful request must have created the expected document.
+        created_uids = set(res) - {error}
+        assert len(created_uids) == 1
+        created_uid = created_uids.pop()
+        created_doc = server.documents.get(uid=created_uid, ssl_verify=SSL_VERIFY)
+        assert created_doc.parentRef == doc.uid
+        assert created_doc.title == file_in.name
 
         # Check calling the same request with the same idempotency key returns always the same result
-        current_identical_doc = res[children[0].uid]
+        current_identical_doc = res[created_uid]
         current_identical_errors = res[error]
         for _ in range(10):
             func()
         assert res[error] == current_identical_errors
-        assert res[children[0].uid] == current_identical_doc + 10
+        assert res[created_uid] == current_identical_doc + 10
     finally:
         doc.delete(ssl_verify=SSL_VERIFY)

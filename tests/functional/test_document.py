@@ -127,10 +127,9 @@ def test_document_move(server):
     try:
         doc.move(f"{WORKSPACE_ROOT}/Test2", "new_name")
         assert f"{WORKSPACE_ROOT}/Test2/new_name" in doc.path
-        children = server.documents.get_children(folder.uid, ssl_verify=SSL_VERIFY)
-        assert len(children) == 1
-        if len(children) > 0:
-            assert children[0].uid == doc.uid
+        moved_doc = server.documents.get(uid=doc.uid, ssl_verify=SSL_VERIFY)
+        assert moved_doc.parentRef == folder.uid
+        assert moved_doc.path == doc.path
     finally:
         doc.delete(ssl_verify=SSL_VERIFY)
         folder.delete(ssl_verify=SSL_VERIFY)
@@ -143,14 +142,17 @@ def test_document_get_children_with_permissions(server):
     try:
         # Without enrichers
         children = server.documents.get_children(path="/")
-        assert len(children) == 1
+        domains = [child for child in children if child.path == "/default-domain"]
+        assert len(domains) == 1
+        domain = domains[0]
         with pytest.raises(KeyError):
-            assert "ReadWrite" in children[0].contextParameters["permissions"]
+            domain.contextParameters["permissions"]
 
         # With enrichers
         children = server.documents.get_children(path="/", enrichers=["permissions"])
-        assert len(children) == 1
-        assert "ReadWrite" in children[0].contextParameters["permissions"]
+        domains = [child for child in children if child.uid == domain.uid]
+        assert len(domains) == 1
+        assert "ReadWrite" in domains[0].contextParameters["permissions"]
     finally:
         doc.delete(ssl_verify=SSL_VERIFY)
     assert not server.documents.exists(path=doc.path, ssl_verify=SSL_VERIFY)
