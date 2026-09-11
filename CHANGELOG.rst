@@ -1,12 +1,13 @@
 Changelog
 =========
 
-7.x.x
+7.1.1
 -----
 
-Release date: ``YYYY-MM-DD``
+Release date: ``2026-MM-DD``
 
 - `NXPY-278 <https://hyland.atlassian.net/browse/NXPY-278>`__: Create and publish git tag on successful release
+- `NXPY-279 <https://hyland.atlassian.net/browse/NXPY-279>`__: Upgrade GitHub actions to NodeJS 24 versions
 
 7.1.0
 -----
